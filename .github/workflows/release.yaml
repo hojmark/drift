@@ -1,0 +1,28 @@
+name: ⛴️ Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required by Release target
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up runner
+        uses: ./.github/actions/setup-runner
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet run --project ./build/_build.csproj --target Release --commit ${{ github.sha }}
+
+      - name: Display test results
+        continue-on-error: true
+        if: always()
+        run: dotnet trx --verbosity verbose

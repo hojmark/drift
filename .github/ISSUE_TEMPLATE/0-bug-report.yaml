@@ -1,0 +1,58 @@
+# Adapted from https://github.com/grafana/grafana/blob/main/.github/ISSUE_TEMPLATE/0-bug-report.yaml?plain=1
+name: 🐞 Bug Report
+description: "File a bug report"
+labels: [ "bug" ]
+assignees:
+  - hojmark
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+
+  - type: textarea
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Did this work before?
+      description: If applicable, what version of Drift did this last work correctly in?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: How do I reproduce it?
+      placeholder: Steps to reproduce...
+      value: |
+        1. Run command '...'
+        2. Type '...'
+        3. Observe that '...'
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Environment
+      description: Drift version / Operating System
+      placeholder: |
+        - Drift version:
+        - OS:
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Other information
+      description: Is there any other information that could help in understanding or resolving the issue?
+    validations:
+      required: false

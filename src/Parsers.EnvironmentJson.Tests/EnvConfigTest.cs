@@ -1,0 +1,15 @@
+using Drift.TestUtilities.ResourceProviders;
+using Environment = Drift.Domain.Environment;
+
+namespace Drift.Parsers.EnvironmentJson.Tests;
+
+//TODO move out of this project
+public class EnvConfigTest {
+  //[Explicit( "Not a feature yet" )]
+  //[Test]
+  public void CanDeserializeEnvConfigTest() {
+    var stream = LocalTestResourceProvider.GetStream( "drift-env.json" );
+    var environment = JsonConverter.Deserialize<Environment>( stream );
+    Verify( environment );
+  }
+}

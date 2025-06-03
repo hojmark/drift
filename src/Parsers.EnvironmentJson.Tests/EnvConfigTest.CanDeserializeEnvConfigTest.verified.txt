@@ -1,0 +1,18 @@
+﻿{
+  Name: demo00,
+  Active: true,
+  Agents: [
+    {
+      Address: 127.0.0.1,
+      Authentication: {
+        Type: None
+      }
+    },
+    {
+      Address: 192.168.0.103,
+      Authentication: {
+        Type: ApiKey
+      }
+    }
+  ]
+}

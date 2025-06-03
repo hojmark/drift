@@ -1,0 +1,46 @@
+name: 🔄 Commit checks
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      verbose:
+        description: 'Verbosity level'
+        required: false
+        default: 'normal'
+        type: choice
+        options:
+          - 'quiet'
+          - 'minimal'
+          - 'normal'
+          - 'detailed'
+          - 'diagnostic'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      ACTIONS_RUNNER_DEBUG: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up runner
+        uses: ./.github/actions/setup-runner
+
+      - name: Run tests
+        run: dotnet run --project ./build/_build.csproj --target TestAll --commit ${{ github.sha }} --verbose ${{ github.event.inputs.verbose }}
+
+      - name: Display test results
+        continue-on-error: true
+        if: always()
+        run: dotnet trx --verbosity verbose #--output
+
+      - name: Check for build warnings
+        continue-on-error: true # TODO remove
+        run: dotnet run --project ./build/_build.csproj --target CheckBuildWarnings --skip

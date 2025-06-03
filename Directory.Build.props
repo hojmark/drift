@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <AssemblyName>Drift.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>Drift.$(MSBuildProjectName)</RootNamespace>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>13</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>

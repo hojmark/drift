@@ -1,0 +1,70 @@
+network:
+  subnets:
+    - id: subnet_trusted
+      network: "192.168.0.0/24"
+      gateway: "192.168.0.1"
+      vlan: 20
+      description: "Subnet for trusted equipment and computers"
+      devices:
+        - "switch1"
+        - "client3"
+        - "client4"
+
+  devices:
+    - id: opnsense-router
+      type: switch
+      ip_address: 192.168.0.1
+      interfaces:
+        - id: eth0
+          vlan: 10
+          connected_to: switch2-eth0
+
+    - id: switch2
+      type: switch
+      ip_address: 192.168.0.2
+      interfaces:
+        - id: eth0
+          vlan: 10
+          connected_to: switch1-eth0
+        - id: eth1
+          vlan: 20
+          connected_to: client1
+
+    - id: client1
+      type: host
+      ip_address: localhost
+      vlan: 20
+      #connected_to: switch1-eth1
+      tests:
+        - "ping_gateway"
+        - "ping_proxmox"
+        - "ping_nonexistantip"
+        - "route_to_gateway"
+
+  tests:
+    - id: "ping_gateway"
+      type: ping #icmp echo?
+      destination: gateway # gateway|[ip]|iprange|subnet|hostname|non-local-gateway?(traceroute gateway -I)
+      expected_result: success
+      description: "Ping test between two clients"
+      #capture_snapshot: true
+
+    - id: "ping_proxmox"
+      type: ping #icmp echo?
+      destination: 192.168.0.21 # gateway|[ip]|iprange|subnet|hostname|non-local-gateway?(traceroute gateway -I)
+      expected_result: success
+      description: "Ping test between two clients"
+      #capture_snapshot: true
+      
+    - id: "ping_nonexistantip"
+      type: ping #icmp echo?
+      destination: 192.168.0.20 # gateway|[ip]|iprange|subnet|hostname|non-local-gateway?(traceroute gateway -I)
+      expected_result: failure
+      description: "Ping test between two clients"
+      #capture_snapshot: true
+
+    - id: "route_to_gateway"
+      type: traceroute
+      destination: gateway # gateway|[ip]|hostname
+      description: "Traceroute to the gateway or external device"
+      #capture_snapshot: true

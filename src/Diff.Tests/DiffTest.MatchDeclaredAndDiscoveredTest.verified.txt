@@ -1,0 +1,55 @@
+﻿[
+  {
+    "PropertyPath": "Device[Hostname:t14].Addresses[t14]",
+    "Original": {
+      "Value": "t14",
+      "Required": true,
+      "Type": "hostname"
+    },
+    "Updated": {
+      "Value": "t14",
+      "Required": null,
+      "Type": "hostname"
+    },
+    "DiffType": "unchanged"
+  },
+  {
+    "PropertyPath": "Device[Hostname:t14].Addresses[t14-MAC]",
+    "Original": {
+      "Value": "t14-MAC",
+      "Required": false,
+      "Type": "mac"
+    },
+    "Updated": null,
+    "DiffType": "removed"
+  },
+  {
+    "PropertyPath": "Device[Hostname:t14]",
+    "Original": {
+      "Addresses": [
+        {
+          "Type": "hostname",
+          "Value": "t14",
+          "Required": true
+        },
+        {
+          "Type": "mac",
+          "Value": "t14-MAC",
+          "Required": false
+        }
+      ],
+      "Ports": []
+    },
+    "Updated": {
+      "Addresses": [
+        {
+          "Type": "hostname",
+          "Value": "t14",
+          "Required": null
+        }
+      ],
+      "Ports": []
+    },
+    "DiffType": "unchanged"
+  }
+]

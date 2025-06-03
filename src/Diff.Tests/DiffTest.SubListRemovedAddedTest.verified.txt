@@ -1,0 +1,65 @@
+﻿[
+  {
+    "PropertyPath": "ScanResult[DiffDevice_192.168.0.21].Addresses[IDeviceAddress_192.168.0.21]",
+    "Original": {
+      "Value": "192.168.0.21",
+      "Required": null,
+      "Type": "iPv4"
+    },
+    "Updated": {
+      "Value": "192.168.0.21",
+      "Required": null,
+      "Type": "iPv4"
+    },
+    "DiffType": "unchanged"
+  },
+  {
+    "PropertyPath": "ScanResult[DiffDevice_192.168.0.21].Ports[Port_22]",
+    "Original": {
+      "Value": 22
+    },
+    "Updated": null,
+    "DiffType": "removed"
+  },
+  {
+    "PropertyPath": "ScanResult[DiffDevice_192.168.0.21]",
+    "Original": {
+      "Addresses": [
+        {
+          "Type": "iPv4",
+          "Value": "192.168.0.21",
+          "Required": null
+        }
+      ],
+      "Ports": [
+        {
+          "Value": 22
+        },
+        {
+          "Value": 443
+        },
+        {
+          "Value": 80
+        }
+      ]
+    },
+    "Updated": {
+      "Addresses": [
+        {
+          "Type": "iPv4",
+          "Value": "192.168.0.21",
+          "Required": null
+        }
+      ],
+      "Ports": [
+        {
+          "Value": 443
+        },
+        {
+          "Value": 80
+        }
+      ]
+    },
+    "DiffType": "unchanged"
+  }
+]

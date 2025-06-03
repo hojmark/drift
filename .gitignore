@@ -1,0 +1,13 @@
+bin/
+obj/
+.nuke/temp
+.nuke/parameters.local.json
+*.user
+*.idea
+*.DotSettings
+*.received.*
+artifacts/
+publish/
+TestResults/
+build.binlog
+build-warnings.log

@@ -1,0 +1,32 @@
+# Adapted from https://github.com/grafana/grafana/blob/main/.github/ISSUE_TEMPLATE/1-feature_requests.md?plain=1
+name: 🌟 Feature Request
+description: "Request a feature"
+labels: [ "enhancement" ]
+assignees:
+  - hojmark
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for being interested in the Drift project and taking your time to suggest an enhancement or new feature.
+
+  - type: textarea
+    attributes:
+      label: Why is this needed?
+      description: What problem does this feature solve? Why is it important?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: What would you like to be added?
+      description: Briefly describe the feature or enhancement you're requesting.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Who is this feature for?
+      description: Who will benefit from this feature? What kind of users or use cases?
+    validations:
+      required: true

@@ -1,0 +1,58 @@
+﻿[
+  {
+    "PropertyPath": "Snapshot.Devices[1].Addresses[1].Value",
+    "Original": "ABC",
+    "Updated": "DEF",
+    "DiffType": "changed"
+  },
+  {
+    "PropertyPath": "Snapshot.Devices[1].Ports[0]",
+    "Original": {
+      "Value": 443
+    },
+    "Updated": {
+      "Value": 22
+    },
+    "DiffType": "changed"
+  },
+  {
+    "PropertyPath": "Snapshot.Devices[1].Ports[1]",
+    "Original": {
+      "Value": 80
+    },
+    "Updated": {
+      "Value": 443
+    },
+    "DiffType": "changed"
+  },
+  {
+    "PropertyPath": "Snapshot.Devices[1].Ports[2]",
+    "Original": null,
+    "Updated": {
+      "Value": 80
+    },
+    "DiffType": "added"
+  },
+  {
+    "PropertyPath": "Snapshot.Devices[2].Addresses[0].Value",
+    "Original": "192.168.0.22",
+    "Updated": "192.168.0.150",
+    "DiffType": "changed"
+  },
+  {
+    "PropertyPath": "Snapshot.Devices[2].Addresses[1]",
+    "Original": {
+      "Value": "abcdefghijklmnopqrstu",
+      "Required": null,
+      "Type": "mac"
+    },
+    "Updated": null,
+    "DiffType": "removed"
+  },
+  {
+    "PropertyPath": "Snapshot.Info.Environment",
+    "Original": "Dev",
+    "Updated": "Prod",
+    "DiffType": "changed"
+  }
+]

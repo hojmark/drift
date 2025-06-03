@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <PackageReference Include="YamlDotNet" Version="16.3.0"/>
+    </ItemGroup>
+    <PropertyGroup>
+        <!-- TODO no-arg constructor for YAML deserialization -> find a better solution -->
+        <NoWarn>$(NoWarn);CS8618</NoWarn>
+    </PropertyGroup>
+</Project>

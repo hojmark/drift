@@ -1,0 +1,26 @@
+using YamlDotNet.Serialization;
+
+namespace Drift.Domain.Device.Declared;
+
+[YamlSerializable]
+public enum DeclaredDeviceState {
+  /*AlwaysUp,
+  Flexible,
+  AlwaysDown*/
+  
+  /// <summary>
+  /// Device must always be up (online)
+  /// </summary>
+  Up = 1,
+
+  /// <summary>
+  /// Device can be up or down (no strict requirement)
+  /// </summary>
+  Dynamic = 2, // TODO less ambiguous name?
+
+  /// <summary>
+  /// Device should always be down (offline)
+  /// </summary>
+  Down = 3
+}
+

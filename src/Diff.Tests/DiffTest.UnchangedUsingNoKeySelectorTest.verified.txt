@@ -1,0 +1,40 @@
+﻿[
+  {
+    "PropertyPath": "ScanResult[0].Addresses[0]",
+    "Original": {
+      "Type": "ipV4",
+      "Value": "192.168.0.10",
+      "IsId": null
+    },
+    "Updated": {
+      "Type": "ipV4",
+      "Value": "192.168.0.10",
+      "IsId": null
+    },
+    "DiffType": "unchanged"
+  },
+  {
+    "PropertyPath": "ScanResult[0]",
+    "Original": {
+      "Addresses": [
+        {
+          "Type": "ipV4",
+          "Value": "192.168.0.10",
+          "IsId": null
+        }
+      ],
+      "Ports": []
+    },
+    "Updated": {
+      "Addresses": [
+        {
+          "Type": "ipV4",
+          "Value": "192.168.0.10",
+          "IsId": null
+        }
+      ],
+      "Ports": []
+    },
+    "DiffType": "unchanged"
+  }
+]

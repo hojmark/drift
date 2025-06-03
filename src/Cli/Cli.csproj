@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RuntimeIdentifiers>linux-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
+        <OutputType>Exe</OutputType>
+        <PublishAot>true</PublishAot>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <AssemblyName>drift</AssemblyName>
+        <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+        <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault> <!-- todo remove -->
+        <Version>0.0.0-undefined</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="embedded_resources\**\*"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Drift.Cli.Tests"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj"/>
+        <ProjectReference Include="..\Diff\Diff.csproj"/>
+        <ProjectReference Include="..\Domain\Domain.csproj"/>
+        <ProjectReference Include="..\Parsers.SpecYaml\Parsers.SpecYaml.csproj"/>
+        <ProjectReference Include="..\Utils\Utils.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Humanizer" Version="2.14.1"/>
+        <PackageReference Include="IPNetwork2" Version="3.1.764"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.4"/>
+        <PackageReference Include="NaturalSort.Extension" Version="4.3.0"/>
+        <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="7.0.0"/>
+        <PackageReference Include="Spectre.Console.Cli" Version="0.50.0"/>
+        <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1"/>
+        <PackageReference Include="System.CommandLine.Hosting" Version="0.4.0-alpha.22272.1"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Options: T: type, M: method, P: property -->
+        <AdditionalFiles Include="BannedSymbols.txt"/>
+    </ItemGroup>
+
+</Project>

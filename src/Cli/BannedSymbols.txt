@@ -1,0 +1,28 @@
+M:System.Console.WriteLine(); Use NormalOutput.WriteLine instead.
+M:System.Console.WriteLine(System.Boolean); Use NormalOutput.WriteLine instead.
+M:System.Console.WriteLine(System.Char); Use NormalOutput.WriteLine instead.
+M:System.Console.WriteLine(System.String); Use NormalOutput.WriteLine instead.
+M:System.Console.WriteLine(System.Int32); Use NormalOutput.WriteLine instead.
+M:System.Console.WriteLine(System.Int64); Use NormalOutput.WriteLine instead.
+M:System.Console.WriteLine(System.Object); Use NormalOutput.WriteLine instead.
+M:System.Console.WriteLine(System.String,System.Object); Use NormalOutput.WriteLine instead.
+
+M:System.Console.Write(System.Boolean); Use NormalOutput.Write instead.
+M:System.Console.Write(System.Char); Use NormalOutput.Write instead.
+M:System.Console.Write(System.String); Use NormalOutput.Write instead.
+M:System.Console.Write(System.Int32); Use NormalOutput.Write instead.
+M:System.Console.Write(System.Int64); Use NormalOutput.Write instead.
+M:System.Console.Write(System.Object); Use NormalOutput.Write instead.
+M:System.Console.Write(System.String,System.Object); Use NormalOutput.Write instead.
+
+M:System.IO.TextWriter.WriteLine(); Use NormalOutput.WriteLine instead.
+M:System.IO.TextWriter.WriteLine(System.Boolean); Use NormalOutput.WriteLine instead.
+M:System.IO.TextWriter.WriteLine(System.Char); Use NormalOutput.WriteLine instead.
+M:System.IO.TextWriter.WriteLine(System.String); Use NormalOutput.WriteLine instead.
+M:System.IO.TextWriter.WriteLine(System.Int32); Use NormalOutput.WriteLine instead.
+M:System.IO.TextWriter.WriteLine(System.Int64); Use NormalOutput.WriteLine instead.
+M:System.IO.TextWriter.WriteLine(System.Object); Use NormalOutput.WriteLine instead.
+M:System.IO.TextWriter.WriteLine(System.String,System.Object); Use NormalOutput.WriteLine instead.
+
+P:System.Console.Out; Use NormalOutput instead
+P:System.Console.Error; Use NormalOutput instead

@@ -6,6 +6,7 @@ namespace Drift.Cli.E2ETests.Installation;
 
 public class InstallTests {
   //TODO split test into at least two parts
+  [Explicit("Disable until there's a release")]
   [Test]
   public async Task InstallLatestVersion() {
     // Arrange: find the install.sh script
@@ -31,6 +32,8 @@ public class InstallTests {
       var installProcess =
         await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( installScript );
+
+      Assert.That( installProcess.ExitCode, Is.EqualTo( 0 ) );
 
       Console.WriteLine( "------------------- install.sh output ----------------------" );
 

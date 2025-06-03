@@ -29,10 +29,10 @@ public class VersionHelper {
       // TODO update when having first version
       //Log.Error( "No releases found. Cannot determine next version." );
       //return;
-      latestTagName = "v1.0.0-alpha.1";
+      latestTagName = "v1.0.0-alpha.0";
     }
 
-    Log.Debug( "Latest release is {Name} with tag {TagName}", latest.Name, latestTagName );
+    Log.Debug( "Latest release is {Name} with tag {TagName}", latest?.Name, latestTagName );
 
     var nextReleaseVersion = GetNextReleaseVersionFromTagNameOrThrow( latestTagName );
     var nextReleaseName = CreateReleaseName( nextReleaseVersion );

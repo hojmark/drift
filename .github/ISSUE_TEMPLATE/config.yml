@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 💬 Ask a question
+  - name: 💬 Question
     url: https://github.com/hojmark/drift/discussions/categories/q-a
-    about: Ask the community for help here
+    about: Ask the community for help

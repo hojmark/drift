@@ -1,11 +1,12 @@
-# Adapted from https://github.com/devlooped/dotnet-trx/blob/main/.github/release.yml
 changelog:
+  # Global exclude (no need to re-exclude in the categories section)
   exclude:
     labels:
       - dependencies
     authors:
       - dependabot
       - github-actions
+
   categories:
     - title: ✨ Enhancements
       labels:

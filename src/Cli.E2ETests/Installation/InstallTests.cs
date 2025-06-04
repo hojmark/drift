@@ -6,7 +6,6 @@ namespace Drift.Cli.E2ETests.Installation;
 
 public class InstallTests {
   //TODO split test into at least two parts
-  [Explicit("Disable until there's a release")]
   [Test]
   public async Task InstallLatestVersion() {
     // Arrange: find the install.sh script

@@ -1,0 +1,18 @@
+# Adapted from https://github.com/devlooped/dotnet-trx/blob/main/.github/release.yml
+changelog:
+  exclude:
+    labels:
+      - dependencies
+    authors:
+      - dependabot
+      - github-actions
+  categories:
+    - title: ✨ Enhancements
+      labels:
+        - enhancement
+    - title: 🐛 Bug fixes
+      labels:
+        - bug
+    - title: 🧹 Housekeeping
+      labels:
+        - '*'

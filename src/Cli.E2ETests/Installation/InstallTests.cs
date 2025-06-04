@@ -111,4 +111,10 @@ public class InstallTests {
     return Task.CompletedTask;
     // TODO
   }
+
+  //[Test]
+  public Task InstallWithoutInstallerPrerequisites() {
+    return Task.CompletedTask;
+    // TODO
+  }
 }

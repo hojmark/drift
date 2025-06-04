@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/drift-spec-v1-preview-schema.json",
+  "title": "Drift spec YAML specification",
+  "description": "Drift spec YAML specification",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Version of the specification. Follows Semantic Versioning 2.0.0.",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "network": {
+      "type": "object",
+      "description": "Network declaration",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID of the top-level network, potentially covering multiple subnets"
+        },
+        "subnets": {
+          "type": "array",
+          "description": "Array of subnets within the network",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique identifier of the subnet"
+              },
+              "network": {
+                "type": "string",
+                "description": "Network address in CIDR notation (e.g., '192.168.1.0/24')",
+                "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:[0-9]|[1-2][0-9]|3[0-2])$"
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether the subnet is enabled or disabled"
+              }
+            },
+            "required": [
+              "id",
+              "network"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "devices": {
+          "type": "array",
+          "description": "Array of network devices",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique identifier for the device"
+              },
+              "addresses": {
+                "type": "array",
+                "description": "Addresses assigned to the device",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "const": "ip-v4"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "IPv4 address e.g. 192.168.0.10",
+                          "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+                        },
+                        "is_id": {
+                          "type": "boolean",
+                          "description": "Whether the address contributes to the device ID"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "const": "mac"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "MAC address e.g. 00:11:22:33:AA:BB",
+                          "pattern": "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+                        },
+                        "is_id": {
+                          "type": "boolean",
+                          "description": "Whether the address contributes to the device ID"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "const": "hostname"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Hostname"
+                        },
+                        "is_id": {
+                          "type": "boolean",
+                          "description": "Whether the address contributes to the device ID"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "minItems": 0
+              },
+              "state": {
+                "type": "string",
+                "description": "Current operational state of the device",
+                "enum": [
+                  "up",
+                  "down",
+                  "dynamic"
+                ]
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether the device is enabled or disabled"
+              }
+            },
+            "required": [
+              "id",
+              "addresses"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "subnets"
+      ],
+      "additionalProperties": false
+    },
+    "settings": {
+      "type": "object",
+      "description": "Configuration settings for drift detection behavior",
+      "properties": {
+        "unknown_devices": {
+          "type": "string",
+          "description": "How to handle devices discovered that are not in the specification",
+          "enum": [
+            "allowed",
+            "disallowed"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version"
+  ],
+  "additionalProperties": false
+}

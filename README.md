@@ -95,8 +95,8 @@ Probably! But I’d love to hear what you think.
 
 ### ▸ I’d really like feature X!
 
-Awesome! Please open an issue and I’ll make sure to consider it.
+Awesome! Please [open an issue](https://github.com/hojmark/drift/issues/new/choose) and I’ll make sure to consider it.
 
 ### ▸ I think I found a bug?
 
-Oops! Mind opening an issue, so I can take a look?
+Oops! Mind [opening an issue](https://github.com/hojmark/drift/issues/new/choose), so I can take a look?

@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/drift-spec-v1-preview-schema.json",
+  "title": "Drift spec YAML schema",
+  "description": "JSON schema for validating Drift network specs",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "1.0.0-preview",
+      "description": "Specification version following Semantic Versioning 2.0.0."
+    },
+    "network": {
+      "type": "object",
+      "description": "Network declaration",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the top-level network (may span multiple subnets)"
+        },
+        "subnets": {
+          "type": "array",
+          "description": "Subnets within the network",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique identifier of the subnet"
+              },
+              "network": {
+                "type": "string",
+                "description": "Network address in CIDR notation (e.g., '192.168.1.0/24')",
+                "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:[0-9]|[1-2][0-9]|3[0-2])$"
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether the subnet is enabled or disabled"
+              }
+            },
+            "required": [
+              "id",
+              "network"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "devices": {
+          "type": "array",
+          "description": "Known network devices with their expected addresses and states",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique identifier for the device"
+              },
+              "addresses": {
+                "type": "array",
+                "description": "Addresses associated with this device (IP, MAC, hostname)",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "const": "ip-v4"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "IPv4 address (e.g., '192.168.0.10')",
+                          "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+                        },
+                        "is_id": {
+                          "type": "boolean",
+                          "description": "Whether this address is used to uniquely identify the device (default: false)\n"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "const": "mac"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "MAC address (e.g., '00:1B:44:11:3A:B7')",
+                          "pattern": "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+                        },
+                        "is_id": {
+                          "type": "boolean",
+                          "description": "Whether this address is used to uniquely identify the device (default: false)\n"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "const": "hostname"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "DNS hostname or FQDN (e.g., 'server01', 'printer.local')"
+                        },
+                        "is_id": {
+                          "type": "boolean",
+                          "description": "Whether this address is used to uniquely identify the device (default: false)\n"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "minItems": 0
+              },
+              "state": {
+                "type": "string",
+                "description": "Current operational state of the device",
+                "enum": [
+                  "up",
+                  "down",
+                  "dynamic"
+                ]
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether the device is enabled or disabled"
+              }
+            },
+            "required": [
+              "id",
+              "addresses"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "subnets"
+      ],
+      "additionalProperties": false
+    },
+    "settings": {
+      "type": "object",
+      "description": "Global configuration options",
+      "properties": {
+        "unknown_devices": {
+          "type": "string",
+          "description": "How to handle devices discovered that are not in the specification",
+          "enum": [
+            "allowed",
+            "disallowed"
+          ]
+        },
+        "ping_throttling": {
+          "type": "number",
+          "description": "Number of pings a second. Lower values reduce network noise and avoid triggering intrusion detection systems.",
+          "minimum": 0.1,
+          "maximum": 10000,
+          "examples": [
+            0.1,
+            0.5,
+            1,
+            10,
+            50,
+            200,
+            1000,
+            10000
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version"
+  ],
+  "additionalProperties": false
+}

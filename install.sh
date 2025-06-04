@@ -75,7 +75,7 @@ if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
     exit_with_error "Missing dependencies: ${MISSING_DEPS[*]}. Installation cancelled."
   fi
 fi
-exit # JUST WHILE TESTING
+
 # Setup temp dir and cleanup trap
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT

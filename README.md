@@ -80,7 +80,7 @@ known devices.
 ### ▸ Is there any documentation?
 
 Try using `--help` on the various commands and subcommands to explore functionality. If you run into trouble, feel free
-to open a discussion ticket. There’s no official documentation site yet.
+to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a). There’s no official documentation site yet.
 
 ### ▸ Is this useful for: _my homelab_?
 

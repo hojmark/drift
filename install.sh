@@ -1,8 +1,11 @@
 #!/bin/bash
 
+# Indent
+INDENT="   "
+
 # Colors
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
+YELLOW='\033[0;33m'
 RED='\033[0;31m'
 GRAY='\033[90m'
 BOLD='\033[1m'
@@ -12,45 +15,67 @@ NC='\033[0m' # No Color
 print_error() { echo -e "${RED}❌ $1${NC}"; }
 exit_with_error() { print_error "$1"; exit 1; }
 run_utility() {
+  local exit_code
   "$@" 2>&1 | while IFS= read -r line; do
-    printf "\t${GRAY}%s${NC}\n" "$line"
+    printf "${INDENT}${INDENT}${GRAY}%s${NC}\n" "$line"
   done
+  exit_code=${PIPESTATUS[0]}
+  return $exit_code
 }
 
 # Check installer prerequisites
-for cmd in curl jq tar; do
- if ! command -v "$cmd" &>/dev/null; then
-   exit_with_error "Required command '$cmd' not found. Please install it."
- fi
-done
+REQUIRED_DEPS=("curl" "jq" "tar")
+SUDO_CMD=""
 
-# nmap not required any longer
-# TODO request to install via CLI instead, or additionally?
-# Check if nmap is installed
-if ! command -v nmap &>/dev/null && false; then
-  echo "🔍 Installing prerequisites..."
-  echo "Drift depends on Nmap"
-  #echo -e "${YELLOW}'nmap' not found.${NC}"
-  read -pr "Do you want to install 'nmap' now? [Y/n]: " install_nmap
-  install_nmap=${install_nmap:-Y}
-  if [[ "$install_nmap" =~ ^[Yy]$ ]]; then
-    if command -v apt &>/dev/null; then # Debian, Ubuntu
-      run_utility sudo apt update && sudo apt install -y nmap
-    elif command -v dnf &>/dev/null; then # Fedora, CentOS/Rocky Linux/AlmaLinux, RHEL
-      run_utility sudo dnf install -y nmap
-    elif command -v pacman &>/dev/null; then # Arch, Manjaro
-      run_utility sudo pacman -Sy --noconfirm nmap
-    # TODO support macOS
-    #elif command -v brew &>/dev/null; then # macOS
-    #  run_utility brew install nmap
-    else
-      exit_with_error "'nmap' is required but could not be installed automatically. Please install it manually."
-    fi
-  else
-    exit_with_error "'nmap' is required but was not installed."
-  fi
+if [ "$EUID" -ne 0 ]; then
+  # sudo is required if not running as root
+  REQUIRED_DEPS+=("sudo")
+  SUDO_CMD="sudo"
 fi
 
+MISSING_DEPS=()
+for cmd in "${REQUIRED_DEPS[@]}"; do
+  if ! command -v "$cmd" &>/dev/null; then
+    MISSING_DEPS+=("$cmd")
+  fi
+done
+
+if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
+  echo "🔍 Installing prerequisites..."
+  echo -e "${INDENT}${YELLOW}Missing dependencies: ${MISSING_DEPS[*]}${NC}"
+  read -p "${INDENT}Do you want to install them now? [Y/n]: " INSTALL_DEPS
+  INSTALL_DEPS=${INSTALL_DEPS:-Y}
+
+  if [[ "$INSTALL_DEPS" =~ ^[Yy]$ ]]; then
+    # Convert array to space-separated string for package managers
+    DEPS_STR="${MISSING_DEPS[*]}"
+    
+    if command -v apt &>/dev/null; then # Debian, Ubuntu
+      run_utility $SUDO_CMD apt update && run_utility $SUDO_CMD apt install -y $DEPS_STR
+    elif command -v dnf &>/dev/null; then # Fedora, CentOS/Rocky Linux/AlmaLinux, RHEL
+      run_utility $SUDO_CMD dnf install -y $DEPS_STR
+    elif command -v pacman &>/dev/null; then # Arch, Manjaro
+      run_utility $SUDO_CMD pacman -Sy --noconfirm $DEPS_STR
+    # TODO support macOS
+    #elif command -v brew &>/dev/null; then # macOS
+    #  run_utility brew install "$dep"
+    else
+      exit_with_error "Missing dependencies: ${MISSING_DEPS[*]}. Could not be installed automatically. Please install them manually."
+    fi
+    
+    # Verify all installations
+    for dep in "${MISSING_DEPS[@]}"; do
+      if ! command -v "$dep" &>/dev/null; then
+        exit_with_error "Failed to install '$dep'. Please install it manually."
+      fi
+    done
+
+    echo -e "${INDENT}${GREEN}✅ All dependencies installed successfully${NC}"
+  else
+    exit_with_error "Missing dependencies: ${MISSING_DEPS[*]}. Installation cancelled."
+  fi
+fi
+exit # JUST WHILE TESTING
 # Setup temp dir and cleanup trap
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -152,10 +177,7 @@ if [ -w "$(dirname "$TARGET")" ]; then
   mv "drift" "$TARGET" || exit_with_error "Failed to move drift binary to ${TARGET}"
   #mv "drift.dbg" "$TARGET.dbg" || exit_with_error "Failed to move drift.dbg binary to ${TARGET}"
 else
-  if ! command -v sudo &>/dev/null; then
-    exit_with_error "'sudo' is required but not found. Please install sudo or run this script as root."
-  fi
-  sudo mv "drift" "$TARGET" || exit_with_error "Failed to move drift binary to ${TARGET}"
+  $SUDO_CMD mv "drift" "$TARGET" || exit_with_error "Failed to move drift binary to ${TARGET}"
   #sudo mv "drift.dbg" "$TARGET.dbg" || exit_with_error "Failed to move drift.dbg binary to ${TARGET}"
 fi
 
@@ -175,7 +197,7 @@ if [ -n "$TARGET_ROOT" ]; then # $TARGET_ROOT is specified -> create symlink: ro
     fi
   else
     #echo "  ➕ Creating new symlink: $TARGET_ROOT → $TARGET"
-    sudo ln -s "$TARGET" "$TARGET_ROOT"
+    $SUDO_CMD ln -s "$TARGET" "$TARGET_ROOT" || exit_with_error "Failed to create symlink"
     #sudo ln -s "$TARGET.dbg" "$TARGET_ROOT.dbg"
   fi
   

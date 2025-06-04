@@ -6,9 +6,8 @@
   "type": "object",
   "properties": {
     "version": {
-      "type": "string",
-      "description": "Specification version following Semantic Versioning 2.0.0.",
-      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+      "const": "1.0.0-preview",
+      "description": "Specification version following Semantic Versioning 2.0.0."
     },
     "network": {
       "type": "object",
@@ -167,6 +166,22 @@
           "enum": [
             "allowed",
             "disallowed"
+          ]
+        },
+        "ping_throttling": {
+          "type": "number",
+          "description": "Number of pings a second. Lower values reduce network noise and avoid triggering intrusion detection systems.",
+          "minimum": 0.1,
+          "maximum": 10000,
+          "examples": [
+            0.1,
+            0.5,
+            1,
+            10,
+            50,
+            200,
+            1000,
+            10000
           ]
         }
       },

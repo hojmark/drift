@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/drift-spec-v1-preview-schema.json",
-  "title": "Drift spec YAML specification",
-  "description": "Drift spec YAML specification",
+  "title": "Drift spec YAML schema",
+  "description": "JSON schema for validating Drift network specs",
   "type": "object",
   "properties": {
     "version": {
       "type": "string",
-      "description": "Version of the specification. Follows Semantic Versioning 2.0.0.",
+      "description": "Specification version following Semantic Versioning 2.0.0.",
       "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
     },
     "network": {
@@ -16,11 +16,11 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "ID of the top-level network, potentially covering multiple subnets"
+          "description": "Unique identifier for the top-level network (may span multiple subnets)"
         },
         "subnets": {
           "type": "array",
-          "description": "Array of subnets within the network",
+          "description": "Subnets within the network",
           "items": {
             "type": "object",
             "properties": {
@@ -47,7 +47,7 @@
         },
         "devices": {
           "type": "array",
-          "description": "Array of network devices",
+          "description": "Known network devices with their expected addresses and states",
           "items": {
             "type": "object",
             "properties": {
@@ -57,7 +57,7 @@
               },
               "addresses": {
                 "type": "array",
-                "description": "Addresses assigned to the device",
+                "description": "Addresses associated with this device (IP, MAC, hostname)",
                 "items": {
                   "oneOf": [
                     {
@@ -68,12 +68,12 @@
                         },
                         "value": {
                           "type": "string",
-                          "description": "IPv4 address e.g. 192.168.0.10",
+                          "description": "IPv4 address (e.g., '192.168.0.10')",
                           "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
                         },
                         "is_id": {
                           "type": "boolean",
-                          "description": "Whether the address contributes to the device ID"
+                          "description": "Whether this address is used to uniquely identify the device (default: false)\n"
                         }
                       },
                       "required": [
@@ -90,12 +90,12 @@
                         },
                         "value": {
                           "type": "string",
-                          "description": "MAC address e.g. 00:11:22:33:AA:BB",
+                          "description": "MAC address (e.g., '00:1B:44:11:3A:B7')",
                           "pattern": "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
                         },
                         "is_id": {
                           "type": "boolean",
-                          "description": "Whether the address contributes to the device ID"
+                          "description": "Whether this address is used to uniquely identify the device (default: false)\n"
                         }
                       },
                       "required": [
@@ -112,11 +112,11 @@
                         },
                         "value": {
                           "type": "string",
-                          "description": "Hostname"
+                          "description": "DNS hostname or FQDN (e.g., 'server01', 'printer.local')"
                         },
                         "is_id": {
                           "type": "boolean",
-                          "description": "Whether the address contributes to the device ID"
+                          "description": "Whether this address is used to uniquely identify the device (default: false)\n"
                         }
                       },
                       "required": [
@@ -159,7 +159,7 @@
     },
     "settings": {
       "type": "object",
-      "description": "Configuration settings for drift detection behavior",
+      "description": "Global configuration options",
       "properties": {
         "unknown_devices": {
           "type": "string",

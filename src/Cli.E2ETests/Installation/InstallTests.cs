@@ -6,7 +6,6 @@ namespace Drift.Cli.E2ETests.Installation;
 
 public class InstallTests {
   //TODO split test into at least two parts
-  [Explicit("Disable until there's a release")]
   [Test]
   public async Task InstallLatestVersion() {
     // Arrange: find the install.sh script
@@ -109,6 +108,12 @@ public class InstallTests {
 
   //[Test]
   public Task InstallWithVerbose() {
+    return Task.CompletedTask;
+    // TODO
+  }
+
+  //[Test]
+  public Task InstallWithoutInstallerPrerequisites() {
     return Task.CompletedTask;
     // TODO
   }

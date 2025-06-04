@@ -89,7 +89,9 @@ I'm sure there's quite a bit!
 
 ### ▸ Is this useful for: _a business setting_?
 
-Likely, yes — but your feedback is especially welcome here.
+Probably! But I’d love to hear what you think.
+
+**Heads-up:** make sure it's okay that you scan your company's network — it could trigger intrusion detection systems.
 
 ### ▸ I’d really like feature X!
 

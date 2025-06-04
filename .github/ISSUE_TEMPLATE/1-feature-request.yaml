@@ -1,6 +1,6 @@
 # Adapted from https://github.com/grafana/grafana/blob/main/.github/ISSUE_TEMPLATE/1-feature_requests.md?plain=1
 name: 🌟 Feature Request
-description: "Request a feature"
+description: "Request a feature or enhancement"
 labels: [ "enhancement" ]
 assignees:
   - hojmark

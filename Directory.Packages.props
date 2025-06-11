@@ -7,10 +7,10 @@
     <PackageVersion Include="Humanizer" Version="2.14.1"/>
     <PackageVersion Include="IPNetwork2" Version="3.1.764"/>
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0"/>
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.5"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.5"/>
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.6"/>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/>
     <PackageVersion Include="NaturalSort.Extension" Version="4.3.0"/>
     <PackageVersion Include="NmapXmlParser" Version="1.0.0"/>
@@ -27,7 +27,7 @@
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1"/>
     <PackageVersion Include="System.CommandLine.Hosting" Version="0.4.0-alpha.22272.1"/>
     <PackageVersion Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="16.3.0"/>
-    <PackageVersion Include="Verify.NUnit" Version="30.3.0"/>
+    <PackageVersion Include="Verify.NUnit" Version="30.3.1"/>
     <PackageVersion Include="YamlDotNet" Version="16.3.0"/>
   </ItemGroup>
 </Project>

@@ -4,6 +4,7 @@ using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using Drift.Cli;
 using Drift.Cli.Commands.Init;
+using Drift.Cli.Commands.Preview;
 using Drift.Cli.Commands.Scan;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -20,7 +21,7 @@ Log.Logger = loggerConfig
   .CreateLogger();
 
 var loggerFactory = LoggerFactory.Create( builder => builder.AddSerilog()
-  .SetMinimumLevel( LogLevel.Debug ) // Parse from args?
+    .SetMinimumLevel( LogLevel.Debug ) // Parse from args?
   /*.AddSimpleConsole( config => {
     config.SingleLine = true;
     config.TimestampFormat = "[HH:mm:ss.ffff] ";
@@ -34,6 +35,7 @@ var rootCommand = new RootCommand( "📡\uFE0F Drift CLI — monitor network dri
 
 rootCommand.AddCommand( new InitCommand( loggerFactory ) );
 rootCommand.AddCommand( new ScanCommand( loggerFactory ) );
+rootCommand.AddCommand( new LintCommand( loggerFactory ) );
 
 //return await rootCommand.InvokeAsync( args );
 

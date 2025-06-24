@@ -376,6 +376,7 @@ class NukeBuild : Nuke.Common.NukeBuild {
       result.AssertZeroExitCode();
     } );
 
+  //TODO include spec?
   Target Pack => _ => _
     .DependsOn( Publish, CleanArtifacts )
     .Executes( () => {
@@ -403,6 +404,8 @@ class NukeBuild : Nuke.Common.NukeBuild {
     )
     .DependsOn( Pack, TestAll )
     .Executes( async () => {
+      using var _ = new TargetLifecycle( nameof(ReleaseSpecial) );
+
       Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
 
       await ValidateAllowedReleaseTargetOrThrow( ReleaseSpecial );
@@ -416,6 +419,8 @@ class NukeBuild : Nuke.Common.NukeBuild {
   Target Release => _ => _
     .DependsOn( Pack, TestAll )
     .Executes( async () => {
+      using var _ = new TargetLifecycle( nameof(Release) );
+
       Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
 
       await ValidateAllowedReleaseTargetOrThrow( Release );
@@ -425,6 +430,19 @@ class NukeBuild : Nuke.Common.NukeBuild {
       await RemoveDraftStatus( release );
 
       Log.Information( "⭐ Released {ReleaseName} to GitHub!", release.Name );
+    } );
+
+  //TODO collection of release tasks? [upload_artifacts_to_github, upload_spec_schema_to_githubio, ...]
+  Target UploadSpecSchema => _ => _
+    .DependsOn( Release )
+    .Executes( () => {
+      using var _ = new TargetLifecycle( nameof(UploadSpecSchema) );
+
+      Log.Information( "Uploading spec to hojmark.github.io/drift/********.yaml" );
+
+      Log.Error( "Implement" );
+
+      Log.Information( "" );
     } );
 
   private async Task RemoveDraftStatus( Release release ) {

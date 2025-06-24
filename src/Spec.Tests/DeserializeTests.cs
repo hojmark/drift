@@ -1,27 +1,28 @@
-﻿using Drift.TestUtilities.ResourceProviders;
+﻿using Drift.Spec.Serialization;
+using Drift.TestUtilities.ResourceProviders;
 
-namespace Drift.Parsers.SpecYaml.Tests;
+namespace Drift.Spec.Tests;
 
 [TestFixture]
-public class YamlTests {
+public class DeserializeTests {
   [Test]
-  public void SubnetTest() {
+  public async Task SubnetTest() {
     var stream = LocalTestResourceProvider.GetStream( "network_single_subnet.yaml" );
     var network = YamlConverter.Deserialize( stream );
-    Verify( network );
+    await Verify( network );
   }
 
   [Test]
-  public void DeviceHostTest() {
+  public async Task DeviceHostTest() {
     var stream = LocalTestResourceProvider.GetStream( "network_single_device_host.yaml" );
     var network = YamlConverter.Deserialize( stream );
-    Verify( network );
+    await  Verify( network );
   }
 
   [Test]
-  public void ExampelNetworkTest() {
+  public async Task ExampelNetworkTest() {
     var stream = LocalTestResourceProvider.GetStream( "network1.yaml" );
     var network = YamlConverter.Deserialize( stream );
-    Verify( network );
+    await  Verify( network );
   }
 }

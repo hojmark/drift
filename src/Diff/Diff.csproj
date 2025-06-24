@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <ProjectReference Include="..\Parsers.SpecYaml\Parsers.SpecYaml.csproj"/>
+        <ProjectReference Include="..\Spec.Serialization\Spec.Serialization.csproj" />
         <ProjectReference Include="..\Parsers.EnvironmentJson\Parsers.EnvironmentJson.csproj"/>
     </ItemGroup>
 

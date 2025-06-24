@@ -7,22 +7,22 @@ using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization.NodeDeserializers;
 
-namespace Drift.Parsers.SpecYaml;
+namespace Drift.Spec.Serialization;
 
 //TODO ADD VERSION PROPERTY TO YAML "version: 1" (should it use semver or just an incrementing number?)
 // TODO Split to generic yaml convert and InventoryConverter?
 public static class YamlConverter {
   // Consider Reader/Stream/etc
 
-  public static Network Deserialize( Stream stream ) {
+  public static Inventory Deserialize( Stream stream ) {
     return Deserialize( new StreamReader( stream, Encoding.UTF8 ).ReadToEnd() );
   }
 
-  public static Network Deserialize( FileInfo fileInfo ) {
+  public static Inventory Deserialize( FileInfo fileInfo ) {
     return Deserialize( fileInfo.Open( FileMode.Open, FileAccess.Read, FileShare.Read ) );
   }
 
-  public static Network Deserialize( string yaml ) {
+  public static Inventory Deserialize( string yaml ) {
     var addressTypeMap =
       new Dictionary<string, Func<Dictionary<string, string>, object>>( StringComparer.OrdinalIgnoreCase ) {
         {
@@ -57,14 +57,20 @@ public static class YamlConverter {
       .ConfigureNamingConventions()
       .Build();
 
-    return deserializer.Deserialize<Inventory>( yaml ).Network;
+    return deserializer.Deserialize<Inventory>( yaml );
   }
 
-  public static string Serialize( Inventory network ) {
-    // Add spacing to make it easier to read: https://github.com/aaubry/YamlDotNet/issues/803
-    var serializer = new StaticSerializerBuilder( new YamlStaticContext() )
+  public static string Serialize( Inventory network, bool jsonCompatible = false ) {
+    //TODO Add spacing to make it easier to read: https://github.com/aaubry/YamlDotNet/issues/803
+    var builder = new StaticSerializerBuilder( new YamlStaticContext() )
       .ConfigureNamingConventions()
-      .Build();
+      .ConfigureDefaultValuesHandling( DefaultValuesHandling.OmitNull | DefaultValuesHandling.OmitEmptyCollections );
+
+    if ( jsonCompatible ) {
+      builder.JsonCompatible();
+    }
+
+    var serializer = builder.Build();
 
     return serializer.Serialize( network );
   }

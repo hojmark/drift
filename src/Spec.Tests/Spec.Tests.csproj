@@ -2,7 +2,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\TestUtilities\TestUtilities.csproj"/>
-        <ProjectReference Include="..\Parsers.SpecYaml\Parsers.SpecYaml.csproj"/>
+        <ProjectReference Include="..\Spec.Serialization\Spec.Serialization.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -16,6 +16,10 @@
 
     <ItemGroup>
         <Using Include="NUnit.Framework"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Snapshots\" />
     </ItemGroup>
 
 </Project>

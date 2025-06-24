@@ -1,0 +1,10 @@
+﻿{
+  Network: {
+    Subnets: [
+      {
+        Id: subnet_192_168_1_0,
+        Enabled: true
+      }
+    ]
+  }
+}

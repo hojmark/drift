@@ -1,0 +1,18 @@
+﻿{
+  Network: {
+    Devices: [
+      {
+        Id: client1,
+        Addresses: [
+          {
+            Type: IpV4,
+            Value: 192.168.1.101,
+            IsId: true
+          }
+        ],
+        Enabled: true,
+        State: Up
+      }
+    ]
+  }
+}

@@ -3,7 +3,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Diff\Diff.csproj"/>
         <ProjectReference Include="..\Parsers.EnvironmentJson\Parsers.EnvironmentJson.csproj"/>
-        <ProjectReference Include="..\Parsers.SpecYaml\Parsers.SpecYaml.csproj"/>
+        <ProjectReference Include="..\Spec.Serialization\Spec.Serialization.csproj" />
         <ProjectReference Include="..\TestUtilities\TestUtilities.csproj"/>
     </ItemGroup>
 

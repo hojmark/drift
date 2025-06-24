@@ -45,6 +45,11 @@ internal static class EmbeddedResourceProvider {
 #pragma warning disable RS0030
     Console.Error.WriteLine( "Available resources:" );
 
+    if ( names.Length == 0 ) {
+      Console.Error.WriteLine( "(none)" );
+      return;
+    }
+
     foreach ( var name in names ) {
       Console.Error.WriteLine( name );
     }

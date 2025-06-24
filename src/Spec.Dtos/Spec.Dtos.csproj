@@ -1,7 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <ItemGroup>
-        <PackageReference Include="JsonSchema.Net.Generation"/>
-    </ItemGroup>
-
-</Project>

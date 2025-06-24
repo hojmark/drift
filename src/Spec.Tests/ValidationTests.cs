@@ -1,4 +1,4 @@
-using Drift.Spec.Serialization.Validation;
+using Drift.Spec.Validation;
 using Drift.TestUtilities;
 
 namespace Drift.Spec.Tests;

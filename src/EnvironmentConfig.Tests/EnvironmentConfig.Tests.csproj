@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <ProjectReference Include="..\Parsers.EnvironmentJson\Parsers.EnvironmentJson.csproj"/>
+        <ProjectReference Include="..\EnvironmentConfig\EnvironmentConfig.csproj" />
         <ProjectReference Include="..\TestUtilities\TestUtilities.csproj"/>
     </ItemGroup>
 

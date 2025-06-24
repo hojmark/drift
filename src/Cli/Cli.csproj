@@ -22,7 +22,7 @@
         <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj"/>
         <ProjectReference Include="..\Diff\Diff.csproj"/>
         <ProjectReference Include="..\Domain\Domain.csproj"/>
-        <ProjectReference Include="..\Spec.Serialization\Spec.Serialization.csproj" />
+        <ProjectReference Include="..\Spec\Spec.csproj" />
         <ProjectReference Include="..\Utils\Utils.csproj"/>
     </ItemGroup>
 

@@ -1,7 +1,8 @@
 using System.Text.Json;
+using Drift.Spec.Serialization;
 using Json.Schema;
 
-namespace Drift.Spec.Serialization.Validation;
+namespace Drift.Spec.Validation;
 
 public class YamlValidator {
   public static ValidationResult Validate( string yaml, Spec.Schema.DriftSpecVersion driftSpecVersion ) {

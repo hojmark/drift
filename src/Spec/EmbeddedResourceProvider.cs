@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Text;
 
-namespace Drift.Spec.Schema;
+namespace Drift.Spec;
 
 // TODO DUPLICATE: move to shared project
 internal static class EmbeddedResourceProvider {

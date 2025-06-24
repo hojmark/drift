@@ -2,7 +2,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\TestUtilities\TestUtilities.csproj"/>
-        <ProjectReference Include="..\Spec.Serialization\Spec.Serialization.csproj" />
+        <ProjectReference Include="..\Spec\Spec.csproj" />
     </ItemGroup>
 
     <ItemGroup>

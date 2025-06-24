@@ -1,6 +1,6 @@
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Renderer;
-using Drift.Spec.Serialization.Validation;
+using Drift.Spec.Validation;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Lint.Rendering;

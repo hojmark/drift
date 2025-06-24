@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Spec.Dtos\Spec.Dtos.csproj" />
+      <ProjectReference Include="..\Spec\Spec.csproj" />
     </ItemGroup>
 
     <ItemGroup>

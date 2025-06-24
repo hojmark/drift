@@ -1,7 +1,7 @@
 using Drift.TestUtilities.ResourceProviders;
 using Environment = Drift.Domain.Environment;
 
-namespace Drift.Parsers.EnvironmentJson.Tests;
+namespace Drift.EnvironmentConfig.Tests;
 
 //TODO move out of this project
 public class EnvConfigTest {

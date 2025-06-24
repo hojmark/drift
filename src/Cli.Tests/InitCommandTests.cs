@@ -5,7 +5,7 @@ using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Scan;
-using Drift.Spec.Serialization.Validation;
+using Drift.Spec.Validation;
 using Drift.TestUtilities;
 
 namespace Drift.Cli.Tests;

@@ -1,4 +1,4 @@
-﻿using Drift.Parsers.EnvironmentJson;
+﻿using Drift.EnvironmentConfig;
 
 namespace Drift.Diff;
 

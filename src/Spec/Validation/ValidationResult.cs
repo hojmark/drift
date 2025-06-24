@@ -1,4 +1,4 @@
-namespace Drift.Spec.Serialization.Validation;
+namespace Drift.Spec.Validation;
 
 public class ValidationResult {
   public bool IsValid {

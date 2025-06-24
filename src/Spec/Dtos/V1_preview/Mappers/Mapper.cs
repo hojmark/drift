@@ -1,6 +1,6 @@
 using Dto = Drift.Spec.Dtos.V1_preview;
 
-namespace Drift.Spec.Dtos.Mappers.V1_preview;
+namespace Drift.Spec.Dtos.V1_preview.Mappers;
 
 public class Mapper {
   public static Domain.Inventory ToDomain( Dto.DriftSpec dto ) {

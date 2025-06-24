@@ -80,7 +80,18 @@ known devices.
 ### ▸ Is there any documentation?
 
 Try using `--help` on the various commands and subcommands to explore functionality. If you run into trouble, feel free
-to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a). There’s no official documentation site yet.
+to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a). There’s no official documentation
+site yet.
+
+There’s a JSON Schema available for the network spec file.
+To enable auto-completion and validation in your editor, add the following line at the top of your spec file:
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json
+
+network:
+  ...
+```
 
 ### ▸ Is this useful for: _my homelab_?
 

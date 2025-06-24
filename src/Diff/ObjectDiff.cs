@@ -1,26 +1,26 @@
-﻿using Drift.Parsers.EnvironmentJson;
+﻿using Drift.EnvironmentConfig;
 
 namespace Drift.Diff;
 
 public class ObjectDiff {
-  public string PropertyPath {
+  public required string PropertyPath {
     get;
-    set;
-  } = string.Empty;
+    init;
+  }
 
   public object? Original {
     get;
-    set;
+    init;
   }
 
   public object? Updated {
     get;
-    set;
+    init;
   }
 
-  public DiffType DiffType {
+  public required DiffType DiffType {
     get;
-    set;
+    init;
   }
 
   public override string ToString() {

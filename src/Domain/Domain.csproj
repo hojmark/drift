@@ -1,12 +1,1 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <!-- TODO no-arg constructor for YAML deserialization -> find a better solution -->
-        <NoWarn>$(NoWarn);CS8618</NoWarn>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="YamlDotNet"/>
-    </ItemGroup>
-
-</Project>
+﻿<Project Sdk="Microsoft.NET.Sdk"/>

@@ -403,6 +403,8 @@ class NukeBuild : Nuke.Common.NukeBuild {
     )
     .DependsOn( Pack, TestAll )
     .Executes( async () => {
+      using var _ = new TargetLifecycle( nameof(ReleaseSpecial) );
+
       Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
 
       await ValidateAllowedReleaseTargetOrThrow( ReleaseSpecial );
@@ -416,6 +418,8 @@ class NukeBuild : Nuke.Common.NukeBuild {
   Target Release => _ => _
     .DependsOn( Pack, TestAll )
     .Executes( async () => {
+      using var _ = new TargetLifecycle( nameof(Release) );
+
       Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
 
       await ValidateAllowedReleaseTargetOrThrow( Release );

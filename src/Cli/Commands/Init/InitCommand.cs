@@ -1,6 +1,4 @@
 using System.CommandLine;
-using System.Globalization;
-using System.Text;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Global;
 using Drift.Cli.Commands.Scan;
@@ -10,14 +8,14 @@ using Drift.Cli.Output.Abstractions;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
+using Drift.Domain.Device.Declared;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
-using Drift.Parsers.SpecYaml;
 using Drift.Utils;
-using Humanizer;
 using Microsoft.Extensions.Logging;
 using NaturalSort.Extension;
 using Spectre.Console;
+using ConsoleExtensions = Drift.Cli.Commands.Global.ConsoleExtensions;
 using Environment = System.Environment;
 
 namespace Drift.Cli.Commands.Init;
@@ -97,13 +95,13 @@ internal class InitCommand : Command {
       : RunNonInteractive( output, name?.Name, overwrite, discover );
 
     if ( initOptions == null ) {
-      return ExitCodes.Error;
+      return ExitCodes.GeneralError;
     }
 
     var success = await Initialize( output, initOptions );
 
     if ( !success ) {
-      return ExitCodes.Error;
+      return ExitCodes.GeneralError;
     }
 
     if ( success && isInteractive ) {
@@ -241,11 +239,16 @@ internal class InitCommand : Command {
 
         output.Log.LogInformation( "Scan completed" );
         output.Log.LogDebug( "Found {Count} devices", scanResult.DiscoveredDevices.Count() );
+
+        output.Log.LogInformation( "Writing spec..." );
+
+        CreateSpecWithDiscovery( scanResult, subnetProvider, specPath );
       }
+      else {
+        output.Log.LogInformation( "Writing spec..." );
 
-      output.Log.LogInformation( "Writing spec..." );
-
-      CreateSpec( scanResult, subnetProvider, specPath );
+        CreateSpecWithoutDiscovery( specPath );
+      }
 
       var fullPath = Path.GetFullPath( specPath );
 
@@ -270,39 +273,64 @@ internal class InitCommand : Command {
   }
 
   //TODO move somewhere else
-  public static TimeSpan CalculateScanDuration( int prefixLength, double scansPerSecond ) {
+  internal static TimeSpan CalculateScanDuration( int prefixLength, double scansPerSecond ) {
     double hostCount = IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( prefixLength ) );
     double totalSeconds = hostCount / scansPerSecond;
     return TimeSpan.FromSeconds( totalSeconds );
   }
 
-  private static void CreateSpec( ScanResult? scanResult, ISubnetProvider subnetProvider, string specPath ) {
-    var declaredDevices = scanResult?.DiscoveredDevices.OrderBy( d => d.Get( AddressType.IpV4 ),
-      StringComparison.OrdinalIgnoreCase.WithNaturalSort() ).ToDeclared();
-    var no = 1;
-    foreach ( var declaredDevice in declaredDevices ?? [] ) {
-      declaredDevice.Id = $"device-{no++}";
-      declaredDevice.Enabled = null; // Will then default to true
-    }
-
-    var inventory = new Inventory {
-      Network = new Network {
-        Subnets = subnetProvider.Get().DistinctBy( s => s.NetworkAddress ).Select( s => new DeclaredSubnet {
-          //TODO possible for Network to be Cidr (need to update (de)serialization)
-          Network = s.ToString(), Enabled = null, Id = "subnet-1"
-        } ).ToList(),
-        Devices = declaredDevices ?? []
-      }
-    };
-
-    var yamlContents = YamlConverter.Serialize( inventory );
-    File.WriteAllText( specPath, yamlContents, Encoding.UTF8 );
+  internal static void CreateSpecWithDiscovery(
+    ScanResult? scanResult,
+    ISubnetProvider subnetProvider,
+    string specPath
+  ) {
+    var subnets = subnetProvider.Get().DistinctBy( subnet => subnet.NetworkAddress ).ToList();
+    var devices = scanResult?.DiscoveredDevices.ToDeclared() ?? [];
+    CreateSpec( subnets, devices, specPath );
   }
 
-  internal static class ConsoleExtensions {
-    internal static class Text {
-      internal static string Bold( string text ) => $"\x1b[1m{text}\x1b[0m";
+  internal static void CreateSpecWithoutDiscovery( string specPath ) {
+    var networkBuilder = new NetworkBuilder();
+
+    networkBuilder.AddSubnet( new CidrBlock( "192.168.1.0/24" ), id: "main-lan" );
+    networkBuilder.AddSubnet( new CidrBlock( "192.168.100.0/24" ), id: "iot" );
+    networkBuilder.AddSubnet( new CidrBlock( "192.168.200.0/24" ), id: "guest" );
+
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.10" )], id: "router", enabled: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.20" )], id: "nas", enabled: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.30" )], id: "server", enabled: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.40" )], id: "desktop", enabled: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.50" )], id: "laptop", enabled: null );
+
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.10" )], id: "smart-tv", enabled: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.20" )], id: "security-camera", enabled: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.30" )], id: "smart-switch", enabled: null );
+
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.200.100" )], id: "guest-device", enabled: null );
+
+    networkBuilder.WriteToFile( specPath );
+  }
+
+  private static void CreateSpec(
+    List<CidrBlock> subnets,
+    List<DeclaredDevice> devices,
+    string specPath
+  ) {
+    var networkBuilder = new NetworkBuilder();
+
+    foreach ( var subnet in subnets ) {
+      networkBuilder.AddSubnet( subnet );
     }
+
+    var declaredDevices = devices
+      .OrderBy( d => d.Get( AddressType.IpV4 ), StringComparison.OrdinalIgnoreCase.WithNaturalSort() );
+
+    var no = 1;
+    foreach ( var device in declaredDevices ) {
+      networkBuilder.AddDevice( addresses: [..device.Addresses], id: $"device-{no++}", enabled: null );
+    }
+
+    networkBuilder.WriteToFile( specPath );
   }
 
   private class InitOptions {

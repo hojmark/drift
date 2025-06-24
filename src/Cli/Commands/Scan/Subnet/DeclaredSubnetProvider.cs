@@ -6,7 +6,7 @@ internal class DeclaredSubnetProvider( IEnumerable<DeclaredSubnet> subnets ) : I
   public List<CidrBlock> Get() {
     return subnets
       .Where( s => s.Enabled ?? true )
-      .Select( s => new CidrBlock( s.Network ) )
+      .Select( s => new CidrBlock( s.Address ) )
       .ToList();
   }
 }

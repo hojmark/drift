@@ -1,0 +1,64 @@
+﻿{
+  Network: {
+    Subnets: [
+      {
+        Id: subnet_192_168_1_0,
+        Enabled: true
+      },
+      {
+        Id: subnet_172_16_0_0,
+        Enabled: true
+      }
+    ],
+    Devices: [
+      {
+        Id: switch1,
+        Addresses: [
+          {
+            Value: 192.168.1.1,
+            IsId: true,
+            Type: IpV4
+          }
+        ],
+        Enabled: true,
+        State: Up
+      },
+      {
+        Id: switch2,
+        Addresses: [
+          {
+            Value: 192.168.1.2,
+            IsId: true,
+            Type: IpV4
+          }
+        ],
+        Enabled: true,
+        State: Up
+      },
+      {
+        Id: client1,
+        Addresses: [
+          {
+            Value: 192.168.1.101,
+            IsId: true,
+            Type: IpV4
+          }
+        ],
+        Enabled: true,
+        State: Up
+      },
+      {
+        Id: client2,
+        Addresses: [
+          {
+            Value: 192.168.3.1,
+            IsId: true,
+            Type: IpV4
+          }
+        ],
+        Enabled: true,
+        State: Up
+      }
+    ]
+  }
+}

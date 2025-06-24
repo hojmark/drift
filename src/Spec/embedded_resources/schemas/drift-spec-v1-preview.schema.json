@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hojmark.github.io/drift/schemas/drift-spec-v1-preview.schema.json",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "v1-preview"
+    },
+    "network": {
+      "type": "object",
+      "properties": {
+        "subnets": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "address": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "address"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "devices": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "addresses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "is_id": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "value"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "state": {
+                "enum": [
+                  "up",
+                  "dynamic",
+                  "down",
+                  null
+                ]
+              },
+              "enabled": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "addresses"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "network"
+  ],
+  "title": "Drift spec schema",
+  "description": "JSON schema for validating Drift specs",
+  "additionalProperties": false
+}

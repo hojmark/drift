@@ -53,6 +53,9 @@ internal class SpecFileResolver {
       throw new ArgumentException( "Cannot be null or empty.", nameof(name) );
     }
 
+    // Expand
+    var expandedName = Path.GetFullPath( name );
+
     // Priority 1: Exact filename
     var exactPath = Path.Combine( _baseDirectory, name );
     if ( File.Exists( exactPath ) ) {

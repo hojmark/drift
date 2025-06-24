@@ -6,11 +6,11 @@ public class GlobalOptionsTests : DriftBinaryFixture {
   [Test]
   public async Task VersionOptionTest() {
     var result = await DriftBinary.ExecuteAsync( "--version" );
-    Assert.Multiple( () => {
+    using ( Assert.EnterMultipleScope() ) {
       Assert.That( result.ExitCode, Is.EqualTo( ExitCodes.Success ) );
       Assert.That( result.StdOut, Is.Not.Empty );
       Assert.That( result.ErrOut, Is.Empty );
-    } );
+    }
   }
 
   [Test]
@@ -20,13 +20,13 @@ public class GlobalOptionsTests : DriftBinaryFixture {
     var resultHelp = await DriftBinary.ExecuteAsync( "--help" );
 
     // Exit code
-    Assert.Multiple( () => {
+    using ( Assert.EnterMultipleScope() ) {
       Assert.That( resultQuestionMark.ExitCode, Is.EqualTo( ExitCodes.Success ) );
       Assert.That( resultH.ExitCode, Is.EqualTo( ExitCodes.Success ) );
       Assert.That( resultHelp.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-    } );
+    }
 
-    Assert.Multiple( () => {
+    using ( Assert.EnterMultipleScope() ) {
       // StdOut
       Assert.That( resultQuestionMark.StdOut, Is.Not.Empty );
       Assert.That( resultH.StdOut, Is.Not.Empty );
@@ -36,6 +36,6 @@ public class GlobalOptionsTests : DriftBinaryFixture {
       Assert.That( resultQuestionMark.ErrOut, Is.Empty );
       Assert.That( resultH.ErrOut, Is.Empty );
       Assert.That( resultHelp.ErrOut, Is.Empty );
-    } );
+    }
   }
 }

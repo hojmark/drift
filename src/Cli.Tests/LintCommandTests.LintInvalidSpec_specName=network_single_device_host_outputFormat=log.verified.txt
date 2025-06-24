@@ -1,0 +1,7 @@
+﻿[DateTime_1 DBG] Output format is 'Log' using log level 'Information'
+[DateTime_1 DBG] Running lint command
+[DateTime_1 DBG] Resolved using exact filename: {SolutionDirectory}src/Spec.Tests/resources/network_single_device_host.yaml
+[DateTime_1 INF] Validating network spec: {SolutionDirectory}src/Spec.Tests/resources/network_single_device_host.yaml
+[DateTime_1 WRN] Spec is invalid
+[DateTime_1 ERR] /: Required properties ["version"] are not present
+[DateTime_1 ERR] /network/subnets/0: Required properties ["address"] are not present

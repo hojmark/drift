@@ -2,9 +2,9 @@ using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
-using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Scan;
+using Drift.Spec.Schema;
 using Drift.Spec.Validation;
 using Drift.TestUtilities;
 
@@ -37,7 +37,7 @@ public class InitCommandTests {
     var yaml = File.ReadAllText( path );
 
     //Assert
-    var validationResult = YamlValidator.Validate( yaml, Spec.Schema.DriftSpecVersion.V1_preview );
+    var validationResult = SpecValidator.Validate( yaml, SpecVersion.V1_preview );
 
     await Assert.MultipleAsync( async () => {
       Assert.That( validationResult.IsValid, validationResult.ToUnitTestMessage() );
@@ -45,22 +45,9 @@ public class InitCommandTests {
     } );
   }
 
-  /*
-   * Priority:
-   * - Subnet from interface
-   * - Dummy subnet
-   * plus
-   * - Dummy device
-   */
   [Test]
   public async Task GeneratedSpecWithoutDiscoveryIsValid() {
     // Arrange
-    var subnets = new List<CidrBlock> {
-      /* None */
-    };
-    var devices = new List<DeclaredDevice> {
-      /* None */
-    };
     var path = Path.GetTempFileName();
 
     // Act
@@ -68,7 +55,7 @@ public class InitCommandTests {
     var yaml = File.ReadAllText( path );
 
     //Assert
-    var validationResult = YamlValidator.Validate( yaml, Spec.Schema.DriftSpecVersion.V1_preview );
+    var validationResult = SpecValidator.Validate( yaml, SpecVersion.V1_preview );
 
     await Assert.MultipleAsync( async () => {
       Assert.That( validationResult.IsValid, validationResult.ToUnitTestMessage() );

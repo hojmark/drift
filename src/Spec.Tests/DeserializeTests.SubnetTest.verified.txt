@@ -3,6 +3,7 @@
     Subnets: [
       {
         Id: subnet_192_168_1_0,
+        Address: 192.168.1.0/24,
         Enabled: true
       }
     ]

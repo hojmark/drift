@@ -63,7 +63,7 @@ public class ValidationTests {
                 """, "Invalid version" )]*/
   public void YamlIsInvalidTest( int caseNo, string yaml, params string[] errors ) {
     // Arrange / Act
-    var result = YamlValidator.Validate( yaml, Spec.Schema.DriftSpecVersion.V1_preview );
+    var result = SpecValidator.Validate( yaml, Spec.Schema.SpecVersion.V1_preview );
 
     // Assert
     Assert.Multiple( () => {
@@ -114,7 +114,7 @@ public class ValidationTests {
     """ )]
   public void YamlIsValidTest( int caseNo, string yaml ) {
     // Arrange / Act
-    var result = YamlValidator.Validate( yaml, Spec.Schema.DriftSpecVersion.V1_preview );
+    var result = SpecValidator.Validate( yaml, Spec.Schema.SpecVersion.V1_preview );
 
     // Assert
     Assert.Multiple( () => {

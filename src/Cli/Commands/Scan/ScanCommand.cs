@@ -83,7 +83,7 @@ internal class ScanCommand : Command {
       network = SpecFileDeserializer.Deserialize( specFile, output ).Network;
     }
     catch ( FileNotFoundException ) {
-      return ExitCodes.Error;
+      return ExitCodes.GeneralError;
     }
 
     //TODO use both declared and discovered subnets

@@ -1,5 +1,5 @@
 namespace Drift.Spec.Schema;
 
-public enum DriftSpecVersion {
+public enum SpecVersion {
   V1_preview
 }

@@ -36,23 +36,17 @@ public class NetworkBuilder {
     return this;
   }
 
-  /*public string ToYaml() {
-    return _yamlSerializer.Serialize( _network );
-  }*/
-
   public Network Build() {
     //TODO check if valid using JSON schema
     return _network;
   }
 
-  /*public void SaveToFile( string filePath ) {
-    var yaml = ToYaml();
-    File.WriteAllText( filePath, yaml );
-  }*/
-  public void WriteYaml( string specPath ) {
+  public string ToYaml() {
     var inventory = new Inventory { Network = _network };
+    return YamlConverter.Serialize( inventory );
+  }
 
-    var yamlContents = YamlConverter.Serialize( inventory );
-    File.WriteAllText( specPath, yamlContents, Encoding.UTF8 );
+  public void WriteToFile( string specPath ) {
+    File.WriteAllText( specPath, ToYaml(), Encoding.UTF8 );
   }
 }

@@ -4,11 +4,6 @@
         <EmbeddedResource Include="embedded_resources\**\*"/>
     </ItemGroup>
 
-    <Target Name="GenerateJsonSchema" AfterTargets="Build">
-        <Exec Command="dotnet run --project $(MSBuildProjectDirectory)\..\Spec.SchemaGenerator.Cli\Spec.SchemaGenerator.Cli.csproj -- &quot;$(OutputPath)$(AssemblyName).dll&quot; &quot;$(SchemaOutputPath)&quot;"/>
-        <Message Text="JSON schemas generated in: $(SchemaOutputPath)" Importance="high"/>
-    </Target>
-
     <ItemGroup>
         <ProjectReference Include="..\Domain\Domain.csproj"/>
     </ItemGroup>

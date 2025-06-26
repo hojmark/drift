@@ -41,7 +41,7 @@ internal class LintCommand : Command {
     catch ( FileNotFoundException exception ) {
       output.Log.LogError( exception, "Network spec not found: {SpecPath}", specFile?.FullName );
       output.Normal.WriteLineError( exception.Message );
-      throw;
+      throw; // TODO exit code?
     }
 
     output.Log.LogDebug( "Validating network spec: {Spec}", filePath );
@@ -49,7 +49,7 @@ internal class LintCommand : Command {
 
     var yamlContent = await File.ReadAllTextAsync( filePath.FullName );
 
-    var result = YamlValidator.Validate( yamlContent, Spec.Schema.DriftSpecVersion.V1_preview );
+    var result = SpecValidator.Validate( yamlContent, Spec.Schema.SpecVersion.V1_preview );
 
     IRenderer<ValidationResult> renderer =
       outputFormat switch {
@@ -62,6 +62,6 @@ internal class LintCommand : Command {
 
     renderer.Render( result );
 
-    return result.IsValid ? ExitCodes.Success : ExitCodes.Error;
+    return result.IsValid ? ExitCodes.Success : ExitCodes.ValidationError;
   }
 }

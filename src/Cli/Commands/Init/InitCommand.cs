@@ -95,13 +95,13 @@ internal class InitCommand : Command {
       : RunNonInteractive( output, name?.Name, overwrite, discover );
 
     if ( initOptions == null ) {
-      return ExitCodes.Error;
+      return ExitCodes.GeneralError;
     }
 
     var success = await Initialize( output, initOptions );
 
     if ( !success ) {
-      return ExitCodes.Error;
+      return ExitCodes.GeneralError;
     }
 
     if ( success && isInteractive ) {
@@ -309,7 +309,7 @@ internal class InitCommand : Command {
 
     networkBuilder.AddDevice( [new IpV4Address( "192.168.200.100" )], id: "guest-device", enabled: null );
 
-    networkBuilder.WriteYaml( specPath );
+    networkBuilder.WriteToFile( specPath );
   }
 
   private static void CreateSpec(
@@ -332,7 +332,7 @@ internal class InitCommand : Command {
       networkBuilder.AddDevice( addresses: [..device.Addresses], id: $"device-{no++}", enabled: null );
     }
 
-    networkBuilder.WriteYaml( specPath );
+    networkBuilder.WriteToFile( specPath );
   }
 
   private class InitOptions {

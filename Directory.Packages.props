@@ -25,7 +25,6 @@
     <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.2"/>
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0"/>
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0"/>
-    <PackageVersion Include="Serilog.Sinks.TextWriter" Version="3.0.0"/>
     <PackageVersion Include="Spectre.Console.Cli" Version="0.50.0"/>
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1"/>
     <PackageVersion Include="System.CommandLine.Hosting" Version="0.4.0-alpha.22272.1"/>

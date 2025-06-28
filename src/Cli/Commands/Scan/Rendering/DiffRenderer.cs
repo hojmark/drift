@@ -9,7 +9,7 @@ using NaturalSort.Extension;
 namespace Drift.Cli.Commands.Scan.Rendering;
 
 internal abstract class DiffRenderer : IRenderer<ScanRenderData> {
-  public void Render( ScanRenderData data, ILogger? logger = null ) {
+  public void Render( ScanRenderData data ) {
     var differences = ObjectDiffEngine.Compare(
       original: data.DevicesDeclared.Where( d => d.Enabled ?? true ).ToDiffDevices(),
       updated: data.DevicesDiscovered.ToDiffDevices(),
@@ -17,8 +17,8 @@ internal abstract class DiffRenderer : IRenderer<ScanRenderData> {
       new DiffOptions()
         .ConfigureDiffDeviceKeySelectors()
         // Includes Unchanged, which makes for an easier table population
-        .SetDiffTypesAll(),
-      logger
+        .SetDiffTypesAll()
+      //, logger //TODO support ioutputmanager or create ilogger adapter?
     );
 
     Render( differences, data.DevicesDeclared );

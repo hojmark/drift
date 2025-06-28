@@ -1,0 +1,3 @@
+﻿Validating network spec {SolutionDirectory}src/Spec.Tests/resources/network_single_device_host.yaml
+❌ Spec is invalid
+• /network: Required properties ["subnets"] are not present

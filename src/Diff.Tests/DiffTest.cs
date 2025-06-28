@@ -5,7 +5,7 @@ using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
-using Drift.Parsers.EnvironmentJson;
+using Drift.EnvironmentConfig;
 using Drift.TestUtilities;
 
 namespace Drift.Diff.Tests;

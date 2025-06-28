@@ -1,9 +1,8 @@
 using Drift.Cli.Renderer;
-using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan.Rendering;
 
 internal abstract class ScanRendererBase : IRenderer<ScanRenderData> {
   // TODO make differences available, so sub classes only need to render
-  public abstract void Render( ScanRenderData renderResult, ILogger? logger = null );
+  public abstract void Render( ScanRenderData renderResult );
 }

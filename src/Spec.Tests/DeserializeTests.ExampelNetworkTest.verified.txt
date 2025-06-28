@@ -1,0 +1,36 @@
+﻿{
+  Network: {
+    Subnets: [
+      {
+        Id: subnet_192_168_1_0,
+        Enabled: true
+      },
+      {
+        Id: subnet_172_16_0_0,
+        Enabled: true
+      }
+    ],
+    Devices: [
+      {
+        Id: switch1,
+        Enabled: true,
+        State: Up
+      },
+      {
+        Id: switch2,
+        Enabled: true,
+        State: Up
+      },
+      {
+        Id: client1,
+        Enabled: true,
+        State: Up
+      },
+      {
+        Id: client2,
+        Enabled: true,
+        State: Up
+      }
+    ]
+  }
+}

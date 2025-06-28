@@ -9,11 +9,8 @@ namespace Drift.Diff.Domain;
 public static class DeviceExtensions {
   //TODO doesn't belong in diffengine assembly
   public static DeclaredDevice ToDeclared( this DiscoveredDevice d ) => new() {
-    Addresses = d.Addresses,
-    Id = null,
-    Type = null,
-    State = DeclaredDeviceState.Up,
-    Ports = null
+    Id = null, Addresses = d.Addresses, State = DeclaredDeviceState.Up,
+    // Ports = null
   };
 
   public static List<DeclaredDevice> ToDeclared( this IEnumerable<DiscoveredDevice> devices ) =>

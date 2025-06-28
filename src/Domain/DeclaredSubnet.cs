@@ -13,7 +13,7 @@ public record DeclaredSubnet {
   /// Network address in CIDR notation.
   /// </summary>
   /// TODO change string -> Cidr
-  public string Network {
+  public string Address {
     get;
     set;
   } // e.g., "10.0.0.0/24"

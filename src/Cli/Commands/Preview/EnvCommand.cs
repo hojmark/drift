@@ -1,6 +1,6 @@
 using System.CommandLine;
 using Drift.Domain;
-using Drift.Parsers.EnvironmentJson;
+using Drift.EnvironmentConfig;
 using Spectre.Console;
 using Environment = Drift.Domain.Environment;
 

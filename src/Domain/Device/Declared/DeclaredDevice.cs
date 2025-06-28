@@ -11,10 +11,15 @@ public record DeclaredDevice : IAddressableDevice {
     set;
   } = null;
 
-  public string? Type {
+  /*public string? Type {
     get;
     set;
-  } = default!; // e.g., "host", "switch"
+  } = default!; // e.g., "host", "switch"*/
+
+  public List<IDeviceAddress> Addresses {
+    get;
+    set;
+  } = [];
 
   public bool? Enabled {
     get;
@@ -26,10 +31,6 @@ public record DeclaredDevice : IAddressableDevice {
     set;
   } = DeclaredDeviceState.Up;
 
-  public List<IDeviceAddress> Addresses {
-    get;
-    set;
-  } = [];
 
   public List<Port>? Ports {
     get;

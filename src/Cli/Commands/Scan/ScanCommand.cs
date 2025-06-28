@@ -10,7 +10,6 @@ using Drift.Cli.Renderer;
 using Drift.Domain;
 using Drift.Domain.Progress;
 using Drift.Domain.Scan;
-using Drift.Parsers.SpecYaml;
 using Drift.Utils;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
@@ -78,37 +77,19 @@ internal class ScanCommand : Command {
   ) {
     output.Log.LogDebug( "Running scan command" );
 
-    Network? spec = null;
+    Network? network;
 
-    if ( specFile == null ) {
-      output.Log.LogDebug( "No network spec provided" );
-      output.Normal.WriteLineVerbose( "No network spec provided" );
-    }
-
-    FileInfo? filePath;
     try {
-      filePath = new SpecFileResolver( output, specFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
-        .Resolve( specFile?.Name, throwsOnNotFound: specFile != null );
+      network = SpecFileDeserializer.Deserialize( specFile, output )?.Network;
     }
-    catch ( FileNotFoundException exception ) {
-      output.Log.LogError( exception, "Network spec not found: {SpecPath}", specFile?.FullName );
-      output.Normal.WriteLineError( exception.Message );
-      return ExitCodes.Error;
-    }
-
-    if ( filePath != null ) {
-      output.Log.LogDebug( "Using network spec: {Spec}", filePath );
-      output.Normal.WriteLine( "Using network spec" );
-      output.Normal.WriteLine( 1, $"{filePath}", ConsoleColor.Cyan );
-      output.Normal.WriteLine();
-
-      spec = YamlConverter.Deserialize( filePath! );
+    catch ( FileNotFoundException ) {
+      return ExitCodes.GeneralError;
     }
 
     //TODO use both declared and discovered subnets
-    ISubnetProvider subnetProvider = spec == null
+    ISubnetProvider subnetProvider = network == null
       ? new InterfaceSubnetProvider( output )
-      : new DeclaredSubnetProvider( spec.Subnets.Where( s => s.Enabled ?? true ) );
+      : new DeclaredSubnetProvider( network.Subnets.Where( s => s.Enabled ?? true ) );
 
     output.Log.LogDebug( "Using subnet provider: {SubnetProviderType}", subnetProvider.GetType().Name );
 
@@ -175,12 +156,11 @@ internal class ScanCommand : Command {
 
     output.Log.LogInformation( "Scan completed" );
 
-    //TODO LogRenderer, JsonRenderer
     IRenderer<ScanRenderData> renderer =
       outputFormat switch {
         GlobalParameters.OutputFormat.Normal => new TableRenderer( output.Normal ),
         GlobalParameters.OutputFormat.Log => new LogRenderer( output.Log ),
-        _ => new NullRenderer()
+        _ => new NullRenderer<ScanRenderData>()
       };
 
     output.Log.LogDebug( "Render scan result using {RendererType}", renderer.GetType().Name );
@@ -190,8 +170,8 @@ internal class ScanCommand : Command {
     renderer.Render(
       new ScanRenderData {
         DevicesDiscovered = scanResult.DiscoveredDevices,
-        DevicesDeclared = spec == null ? [] : spec.Devices.Where( d => d.Enabled ?? true )
-      }, output.Log
+        DevicesDeclared = network == null ? [] : network.Devices.Where( d => d.Enabled ?? true )
+      }/*, output.Log*/
     );
 
     output.Log.LogDebug( "Scan command completed" );

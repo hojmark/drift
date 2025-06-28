@@ -1,16 +1,47 @@
 using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Help;
 using System.CommandLine.Parsing;
+using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Scan;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Spectre.Console;
 
 namespace Drift.Cli;
 
 internal static class RootCommandFactory {
   internal static Parser CreateParser() {
-    return new Parser( Create() );
+    var rootCommand = Create();
+
+    //return await rootCommand.InvokeAsync( args );
+
+    var parser = new CommandLineBuilder( rootCommand )
+      .UseHelp( ctx => ctx.HelpBuilder.CustomizeLayout( _ => {
+            if ( ctx.Command == rootCommand ) {
+              return HelpBuilder.Default
+                .GetLayout()
+                // .Skip( 1 ) // Skip description section
+                .Prepend( _ => {
+                  AnsiConsole.Write(
+                    new FigletText( FigletFont.Load( EmbeddedResourceProvider.GetStream( "small.flf" ) ), "Drift" ) );
+                  //  Console.WriteLine( "Monitor network drift against your declared state." );
+                } );
+            }
+
+            return HelpBuilder.Default.GetLayout();
+          }
+        )
+      )
+      // TODO support examples in help
+      //.UseHelpBuilder( ctx => new CustomHelpBuilder() )
+      .UseDefaults()
+      .UseExceptionHandler( errorExitCode: ExitCodes.UnknownError )
+      .Build();
+
+    return parser;
   }
 
   internal static RootCommand Create() {

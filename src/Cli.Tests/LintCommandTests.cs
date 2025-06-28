@@ -30,7 +30,6 @@ public class LintCommandTests {
       Assert.That( result, Is.EqualTo( ExitCodes.Success ) );
       await Verify( console.Out.ToString() + console.Error )
         .ScrubInlineDateTimes( "HH:mm:ss", CultureInfo.InvariantCulture );
-      //.ScrubLinesWithReplace( line => Regex.Replace( line, @"\d{2}:\d{2}:\d{2}", "" ) );
     }
     finally {
       Console.SetOut( originalOut );

@@ -41,7 +41,7 @@ internal class LintCommand : Command {
     catch ( FileNotFoundException exception ) {
       output.Log.LogError( exception, "Network spec not found: {SpecPath}", specFile?.FullName );
       output.Normal.WriteLineError( exception.Message );
-      throw; // TODO exit code?
+      return ExitCodes.GeneralError;
     }
 
     output.Log.LogInformation( "Validating network spec: {Spec}", filePath );

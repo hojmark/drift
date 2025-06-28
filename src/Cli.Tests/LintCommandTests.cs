@@ -38,7 +38,8 @@ public class LintCommandTests {
 
   [Test, Combinatorial]
   public async Task LintInvalidSpec(
-    [Values( "network_single_device_host" )] string specName,
+    [Values( "network_single_device_host" )]
+    string specName,
     [Values( "", "normal", "log" )] string outputFormat
   ) {
     var originalOut = Console.Out;
@@ -68,11 +69,14 @@ public class LintCommandTests {
   }
 
   [Test]
-  public void LintMissingSpec() {
+  public async Task LintMissingSpec() {
     // Arrange
     var parser = RootCommandFactory.CreateParser();
 
-    // Act / Assert
-    Assert.ThrowsAsync<FileNotFoundException>( () => parser.InvokeAsync( "lint" ) );
+    // Act
+    var result = await parser.InvokeAsync( "lint" );
+
+    // Assert
+    Assert.That( result, Is.EqualTo( ExitCodes.GeneralError ) );
   }
 }

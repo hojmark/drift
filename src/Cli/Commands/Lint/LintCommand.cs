@@ -44,7 +44,7 @@ internal class LintCommand : Command {
       throw; // TODO exit code?
     }
 
-    output.Log.LogDebug( "Validating network spec: {Spec}", filePath );
+    output.Log.LogInformation( "Validating network spec: {Spec}", filePath );
     output.Normal.WriteLine( $"Validating network spec {filePath}" );
 
     var yamlContent = await File.ReadAllTextAsync( filePath.FullName );

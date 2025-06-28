@@ -1,0 +1,5 @@
+﻿[DateTime_1 DBG] Output format is 'Log' using log level 'Information'
+[DateTime_1 DBG] Running lint command
+[DateTime_1 DBG] Resolved using exact filename: {SolutionDirectory}src/Spec.Tests/resources/network_single_subnet.yaml
+[DateTime_1 INF] Validating network spec: {SolutionDirectory}src/Spec.Tests/resources/network_single_subnet.yaml
+[DateTime_1 INF] Spec is valid

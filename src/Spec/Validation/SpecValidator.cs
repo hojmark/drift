@@ -6,7 +6,7 @@ using Json.Schema;
 namespace Drift.Spec.Validation;
 
 public class SpecValidator {
-  public static ValidationResult Validate( string yaml, Spec.Schema.SpecVersion specVersion ) {
+  public static ValidationResult Validate( string yaml, Schema.SpecVersion specVersion ) {
     var schema = SpecSchemaProvider.AsText( specVersion );
     return Validate( yaml, schema );
   }

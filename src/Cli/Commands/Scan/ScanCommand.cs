@@ -80,7 +80,7 @@ internal class ScanCommand : Command {
     Network? network;
 
     try {
-      network = SpecFileDeserializer.Deserialize( specFile, output ).Network;
+      network = SpecFileDeserializer.Deserialize( specFile, output )?.Network;
     }
     catch ( FileNotFoundException ) {
       return ExitCodes.GeneralError;

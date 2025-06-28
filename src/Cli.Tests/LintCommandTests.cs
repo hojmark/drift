@@ -1,84 +1,79 @@
-using System.CommandLine;
 using System.CommandLine.IO;
 using System.CommandLine.Parsing;
+using System.Globalization;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Lint;
-using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace Drift.Cli.Tests;
 
 public class LintCommandTests {
-  [TestCase( "network_single_subnet" )]
-  public async Task LintValidSpec( string specName ) {
-    // Arrange
-    var outputConsole = new TestConsole();
-    var parser = CreateParser( outputConsole );
+  [Test, Combinatorial]
+  public async Task LintValidSpec(
+    [Values( "network_single_subnet" )] string specName,
+    [Values( "", "normal", "log" )] string outputFormat
+  ) {
+    var originalOut = Console.Out;
 
-    // Act
-    var result = await parser.InvokeAsync(
-      //TODO test -o log
-      $"lint ../../../../Spec.Tests/resources/{specName}.yaml",
-      outputConsole
-    );
+    try {
+      // Arrange
+      var console = new TestConsole();
+      Console.SetOut( console.Out.CreateTextWriter() );
+      var parser = RootCommandFactory.CreateParser();
+      var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? "" : $" -o {outputFormat}";
 
-    // Assert
-    Assert.That( result, Is.EqualTo( ExitCodes.Success ) );
-    await Verify( outputConsole.Out.ToString() + outputConsole.Error );
+      // Act
+      var result = await parser.InvokeAsync(
+        $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption,
+        console
+      );
+
+      // Assert
+      Assert.That( result, Is.EqualTo( ExitCodes.Success ) );
+      await Verify( console.Out.ToString() + console.Error )
+        .ScrubInlineDateTimes( "HH:mm:ss", CultureInfo.InvariantCulture );
+      //.ScrubLinesWithReplace( line => Regex.Replace( line, @"\d{2}:\d{2}:\d{2}", "" ) );
+    }
+    finally {
+      Console.SetOut( originalOut );
+    }
   }
 
-  [TestCase( "network_single_device_host" )]
-  [Test]
-  public async Task LintInvalidSpec( string specName ) {
-    // Arrange
-    var outputConsole = new TestConsole();
-    var parser = CreateParser( outputConsole );
+  [Test, Combinatorial]
+  public async Task LintInvalidSpec(
+    [Values( "network_single_device_host" )] string specName,
+    [Values( "", "normal", "log" )] string outputFormat
+  ) {
+    var originalOut = Console.Out;
 
-    // Act
-    var result = await parser.InvokeAsync(
-      //TODO test -o log
-      $"lint ../../../../Spec.Tests/resources/{specName}.yaml",
-      outputConsole
-    );
+    try {
+      // Arrange
+      var console = new TestConsole();
+      Console.SetOut( console.Out.CreateTextWriter() );
+      var parser = RootCommandFactory.CreateParser();
+      var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? "" : $" -o {outputFormat}";
 
-    // Assert
-    Assert.That( result, Is.EqualTo( ExitCodes.ValidationError ) );
-    await Verify( outputConsole.Out.ToString() + outputConsole.Error );
+      // Act
+      var result = await parser.InvokeAsync(
+        //TODO test -o log
+        $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption,
+        console
+      );
+
+      // Assert
+      Assert.That( result, Is.EqualTo( ExitCodes.ValidationError ) );
+      await Verify( console.Out.ToString() + console.Error )
+        .ScrubInlineDateTimes( "HH:mm:ss", CultureInfo.InvariantCulture );
+    }
+    finally {
+      Console.SetOut( originalOut );
+    }
   }
 
   [Test]
   public void LintMissingSpec() {
     // Arrange
-    var parser = CreateParser( new TestConsole() );
+    var parser = RootCommandFactory.CreateParser();
 
     // Act / Assert
     Assert.ThrowsAsync<FileNotFoundException>( () => parser.InvokeAsync( "lint" ) );
-  }
-
-  private static Parser CreateParser( TestConsole console ) {
-    var loggerConfig = new LoggerConfiguration()
-      .MinimumLevel.Debug()
-      .Enrich.FromLogContext()
-      .WriteTo.Console();
-    //.WriteTo.TextWriter( console.Out.CreateTextWriter() );
-
-    Log.Logger = loggerConfig
-      .CreateLogger();
-
-    var loggerFactory = LoggerFactory.Create( builder => builder.AddSerilog()
-        .SetMinimumLevel( LogLevel.Debug ) // Parse from args?
-      /*.AddSimpleConsole( config => {
-        config.SingleLine = true;
-        config.TimestampFormat = "[HH:mm:ss.ffff] ";
-      } )*/
-    );
-
-    //TODO 'from' or 'against'?
-    var rootCommand = new RootCommand( "📡\uFE0F Drift CLI — monitor network drift against your declared state" );
-    rootCommand.AddCommand( new LintCommand( loggerFactory ) );
-
-    var parser = new Parser( rootCommand );
-
-    return parser;
   }
 }

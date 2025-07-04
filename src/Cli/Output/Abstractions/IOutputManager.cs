@@ -1,22 +1,23 @@
 namespace Drift.Cli.Output.Abstractions;
 
-internal interface IOutputManager {
-  ILogOutput Log {
+// Internal?
+public interface IOutputManager {
+  internal ILogOutput Log {
     get;
   }
 
-  INormalOutput Normal {
+  internal INormalOutput Normal {
     get;
   }
 
-  IJsonOutput Json {
+  internal IJsonOutput Json {
     get;
   }
 
-  void WithNormalOutput( Action<INormalOutput> output );
-  void WithLogOutput( Action<ILogOutput> output );
-  void WithJsonOutput( Action<IJsonOutput> output );
+  internal void WithNormalOutput( Action<INormalOutput> output );
+  internal void WithLogOutput( Action<ILogOutput> output );
+  internal void WithJsonOutput( Action<IJsonOutput> output );
 
   //TODO hack
-  bool Is( OutputFormat outputFormat );
+  internal bool Is( OutputFormat outputFormat );
 }

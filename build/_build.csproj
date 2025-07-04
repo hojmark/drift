@@ -13,10 +13,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Humanizer"/>
-        <PackageReference Include="Octokit"/>
-        <PackageReference Include="Semver"/>
-        <PackageReference Include="Nuke.Common"/>
+        <PackageReference Include="Humanizer" />
+        <PackageReference Include="Microsoft.Build.Tasks.Core" />
+        <PackageReference Include="Octokit" />
+        <PackageReference Include="Semver" />
+        <PackageReference Include="Nuke.Common" />
     </ItemGroup>
 
 </Project>

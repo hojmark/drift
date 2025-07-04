@@ -1,11 +1,8 @@
-using YamlDotNet.Serialization;
-
 namespace Drift.Domain;
 
-[YamlSerializable]
 public record Inventory {
-  public Network Network {
+  public required Network Network {
     get;
-    set;
+    init;
   }
 }

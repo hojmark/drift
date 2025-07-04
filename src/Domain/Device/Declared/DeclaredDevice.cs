@@ -1,20 +1,17 @@
 using Drift.Domain.Device.Addresses;
-using YamlDotNet.Serialization;
 
 namespace Drift.Domain.Device.Declared;
 
-[YamlSerializable]
 public record DeclaredDevice : IAddressableDevice {
   public string? Id {
     get;
-    //TODO should be init
     set;
   } = null;
 
-  public string? Type {
+  public required List<IDeviceAddress> Addresses {
     get;
-    set;
-  } = default!; // e.g., "host", "switch"
+    init;
+  } = [];
 
   public bool? Enabled {
     get;
@@ -26,10 +23,6 @@ public record DeclaredDevice : IAddressableDevice {
     set;
   } = DeclaredDeviceState.Up;
 
-  public List<IDeviceAddress> Addresses {
-    get;
-    set;
-  } = [];
 
   public List<Port>? Ports {
     get;

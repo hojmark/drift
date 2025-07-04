@@ -1,0 +1,24 @@
+﻿{
+  Network: {
+    Subnets: [
+      {
+        Id: a_subnet,
+        Enabled: true
+      }
+    ],
+    Devices: [
+      {
+        Id: client1,
+        Addresses: [
+          {
+            Value: 192.168.1.101,
+            IsId: true,
+            Type: IpV4
+          }
+        ],
+        Enabled: true,
+        State: Up
+      }
+    ]
+  }
+}

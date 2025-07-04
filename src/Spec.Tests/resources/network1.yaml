@@ -1,0 +1,95 @@
+version: "v1-preview"
+network:
+  subnets:
+    - id: subnet_192_168_1_0
+      network: "192.168.1.0/24"
+      gateway: "192.168.1.1"
+      vlan: 20
+      description: "Subnet for office network"
+      devices:
+        - "switch1"
+        - "client3"
+        - "client4"
+
+    - id: subnet_172_16_0_0
+      network: "172.16.0.0/24"
+      gateway: "172.16.0.1"
+      vlan: 30
+      description: "Subnet for test network"
+      devices:
+        - "switch2"
+        - "client5"
+
+  devices:
+    - id: switch1
+      type: switch
+      addresses:
+        - type: "ip-v4"
+          value: 192.168.1.1
+      interfaces:
+        - id: eth0
+          vlan: 10
+          connected_to: switch2-eth0
+        - id: eth1
+          vlan: 20
+          connected_to: client1
+
+    - id: switch2
+      type: switch
+      addresses:
+        - type: "ip-v4"
+          value: 192.168.1.2
+      interfaces:
+        - id: eth0
+          vlan: 10
+          connected_to: switch1-eth0
+        - id: eth1
+          vlan: 20
+          connected_to: client2
+
+    - id: client1
+      type: host
+      addresses:
+        - type: "ip-v4"
+          value: 192.168.1.101
+      vlan: 20
+      connected_to: switch1-eth1
+      tests:
+        - "connectivity"
+        - "gateway_access"
+        - "ping_test"
+
+    - id: client2
+      type: host
+      addresses:
+        - type: "ip-v4"
+          value: 192.168.3.1
+      vlan: 20
+      connected_to: switch2-eth1
+      tests:
+        - "connectivity"
+        - "gateway_access"
+        - "ping_test"
+
+  tests:
+    # Predefined test templates
+    - id: "connectivity"
+      test_type: connectivity
+      description: "Test general connectivity to other devices on the same VLAN"
+      capture_snapshot: true
+
+    - id: "gateway_access"
+      test_type: gateway_access
+      description: "Test if the client can access the gateway"
+      capture_snapshot: true
+
+    - id: "ping_test"
+      test_type: ping
+      destination: gateway # gateway|[ip]|iprange|subnet
+      description: "Ping test between two clients"
+      capture_snapshot: true
+
+    - id: "traceroute"
+      test_type: traceroute
+      description: "Traceroute to the gateway or external device"
+      capture_snapshot: true

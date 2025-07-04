@@ -7,7 +7,7 @@ internal class TargetLifecycle( string targetName ) : IDisposable {
 
   private void Complete() {
     var elapsed = ( DateTime.Now - StartTime ).Humanize( 2 );
-    Log.Information( "✅ {Target} completed in {Time}", targetName, elapsed );
+    Log.Information( "🏁 {Target} completed in {Time}", targetName, elapsed );
   }
 
   public void Dispose() {

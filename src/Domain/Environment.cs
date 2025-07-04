@@ -8,9 +8,9 @@ public partial class EnvironmentContext : JsonSerializerContext {
 }*/
 
 public record Environment {
-  public string Name {
+  public required string Name {
     get;
-    set;
+    init;
   }
 
 

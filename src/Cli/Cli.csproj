@@ -22,7 +22,7 @@
         <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj"/>
         <ProjectReference Include="..\Diff\Diff.csproj"/>
         <ProjectReference Include="..\Domain\Domain.csproj"/>
-        <ProjectReference Include="..\Parsers.SpecYaml\Parsers.SpecYaml.csproj"/>
+        <ProjectReference Include="..\Spec\Spec.csproj"/>
         <ProjectReference Include="..\Utils\Utils.csproj"/>
     </ItemGroup>
 
@@ -40,7 +40,6 @@
         <PackageReference Include="NaturalSort.Extension"/>
         <PackageReference Include="Serilog.Extensions.Logging"/>
         <PackageReference Include="Serilog.Sinks.Console"/>
-        <PackageReference Include="Serilog.Sinks.File"/>
         <PackageReference Include="Spectre.Console.Cli"/>
         <PackageReference Include="System.CommandLine"/>
         <PackageReference Include="System.CommandLine.Hosting"/>

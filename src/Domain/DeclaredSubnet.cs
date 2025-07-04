@@ -1,8 +1,5 @@
-using YamlDotNet.Serialization;
-
 namespace Drift.Domain;
 
-[YamlSerializable]
 public record DeclaredSubnet {
   public string? Id {
     get;
@@ -13,9 +10,9 @@ public record DeclaredSubnet {
   /// Network address in CIDR notation.
   /// </summary>
   /// TODO change string -> Cidr
-  public string Network {
+  public required string Address {
     get;
-    set;
+    init;
   } // e.g., "10.0.0.0/24"
 
   /*public string? Gateway {

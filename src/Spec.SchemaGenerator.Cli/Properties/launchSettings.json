@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SchemaGeneration": {
+      "commandName": "Project",
+      "commandLineArgs": "../../../../Spec/embedded_resources/schemas/",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    }
+  }
+}

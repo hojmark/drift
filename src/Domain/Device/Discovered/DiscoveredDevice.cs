@@ -5,7 +5,7 @@ namespace Drift.Domain.Device.Discovered;
 public record DiscoveredDevice : IAddressableDevice {
   public List<IDeviceAddress> Addresses {
     get;
-    set;
+    init;
   } = [];
 
   public List<Port> Ports {

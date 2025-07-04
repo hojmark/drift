@@ -1,4 +1,5 @@
 using System.CommandLine.Binding;
+using System.CommandLine.IO;
 using System.Diagnostics.CodeAnalysis;
 using Drift.Cli.Commands.Global;
 using Drift.Cli.Output.Abstractions;
@@ -39,10 +40,13 @@ internal class ConsoleOutputManagerBinder( ILoggerFactory loggerFactory ) : Bind
       return ( TextWriter.Null, TextWriter.Null, false, outputFormatValue );
     }
 
+    var consoleOut = bindingContext.Console.Out.CreateTextWriter();
+    var consoleErr = bindingContext.Console.Error.CreateTextWriter();
+
     var tempOutputManager = new ConsoleOutputManager(
       NullLogger.Instance,
-      Console.Out,
-      Console.Error,
+      consoleOut,
+      consoleErr,
       verboseValue /*|| veryVerboseValue*/,
       outputFormatValue
     );
@@ -50,7 +54,7 @@ internal class ConsoleOutputManagerBinder( ILoggerFactory loggerFactory ) : Bind
     tempOutputManager.Normal.WriteLineVerbose(
       $"Output format is 'Normal' using '{( /*veryVerboseValue ? "Very Verbose" :*/ "Verbose" )}' output" );
 
-    return ( Console.Out, Console.Error, verboseValue /*|| veryVerboseValue*/, outputFormatValue );
+    return ( consoleOut, consoleErr, verboseValue /*|| veryVerboseValue*/, outputFormatValue );
   }
 
   private static ILogger GetLogger( BindingContext bindingContext, ILoggerFactory loggerFactory2 ) {

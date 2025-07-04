@@ -23,11 +23,10 @@ public class CliTests {
 
     // Assert
     var outputText = console.Out.ToString().Trim();
-
-    Assert.Multiple( () => {
+    using ( Assert.EnterMultipleScope() ) {
       Assert.That( outputText, Is.Not.Empty );
       Assert.That( result, Is.EqualTo( ExitCodes.Success ) );
-    } );
+    }
 
     await Verify( outputText );
   }

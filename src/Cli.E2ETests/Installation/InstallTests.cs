@@ -69,18 +69,18 @@ public class InstallTests {
         );
 
       // Assert: binary exists
-      Assert.Multiple( () => {
+      using ( Assert.EnterMultipleScope() ) {
         Assert.That( installProcess.ExitCode, Is.EqualTo( 0 ), $"install.sh failed: {installProcess.ErrOut}" );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
-      } );
+      }
 
       // Assert: drift output
-      Assert.Multiple( () => {
+      using ( Assert.EnterMultipleScope() ) {
         Assert.That( driftProcess.ExitCode, Is.EqualTo( ExitCodes.Success ) );
         Assert.That( driftProcess.StdOut, Is.Not.Null );
         Assert.That( driftProcess.StdOut, Contains.Substring( "-?, -h, --help  Show help and usage information" ) );
         Assert.That( driftProcess.ErrOut, Is.Empty );
-      } );
+      }
     }
 
     finally {

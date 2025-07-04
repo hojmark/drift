@@ -4,7 +4,7 @@ using Drift.Utils;
 namespace Drift.Cli.E2ETests;
 
 [TestFixture]
-public class DriftBinaryFixture {
+public abstract class DriftBinaryFixture {
   protected static ToolWrapper DriftBinary;
   private static string DriftPath;
 

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Spec\Spec.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="JsonSchema.Net.Generation"/>
+    </ItemGroup>
+
+</Project>

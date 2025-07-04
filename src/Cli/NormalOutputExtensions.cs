@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using Drift.Cli.Commands.Init;
+using Drift.Cli.Commands.Global;
 using Drift.Cli.Output.Abstractions;
 
 namespace Drift.Cli;
@@ -32,7 +32,7 @@ internal static class NormalOutputExtensions {
         return value;
       }
 
-      console.Write( InitCommand.ConsoleExtensions.Text.Bold( value ), ConsoleColor.Cyan );
+      console.Write( ConsoleExtensions.Text.Bold( value ), ConsoleColor.Cyan );
       console.WriteLine( $"{value} is not a valid value" );
     }
 
@@ -53,8 +53,7 @@ internal static class NormalOutputExtensions {
       if ( string.IsNullOrWhiteSpace( value ) ) {
         DeletePreviousLine();
         WritePrompt();
-        console.WriteValue(
-          InitCommand.ConsoleExtensions.Text.Bold( defaultOption == PromptOption.Yes ? "yes" : "no" ) );
+        console.WriteValue( ConsoleExtensions.Text.Bold( defaultOption == PromptOption.Yes ? "yes" : "no" ) );
 
         return defaultOption == PromptOption.Yes;
       }
@@ -64,13 +63,13 @@ internal static class NormalOutputExtensions {
 
       switch ( value ) {
         case "y" or "yes":
-          console.WriteValue( InitCommand.ConsoleExtensions.Text.Bold( "yes" ) );
+          console.WriteValue( ConsoleExtensions.Text.Bold( "yes" ) );
           return true;
         case "n" or "no":
-          console.WriteValue( InitCommand.ConsoleExtensions.Text.Bold( "no" ) );
+          console.WriteValue( ConsoleExtensions.Text.Bold( "no" ) );
           return false;
         default:
-          console.Write( InitCommand.ConsoleExtensions.Text.Bold( value ), ConsoleColor.Cyan );
+          console.Write( ConsoleExtensions.Text.Bold( value ), ConsoleColor.Cyan );
           console.WriteLine( " Try again!", ConsoleColor.Red );
           continue;
       }
@@ -87,7 +86,7 @@ internal static class NormalOutputExtensions {
   }
 
   private static void WriteValue( this INormalOutput console, string value ) {
-    console.WriteLine( InitCommand.ConsoleExtensions.Text.Bold( value ), ConsoleColor.Cyan );
+    console.WriteLine( ConsoleExtensions.Text.Bold( value ), ConsoleColor.Cyan );
   }
 
   internal enum PromptOption {

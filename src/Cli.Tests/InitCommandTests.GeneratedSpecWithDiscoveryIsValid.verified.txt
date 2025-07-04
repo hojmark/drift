@@ -1,0 +1,17 @@
+﻿version: v1-preview
+network:
+  subnets:
+  - address: 192.168.0.0/24
+  devices:
+  - id: device-1
+    addresses:
+    - type: ip-v4
+      value: 192.168.0.10
+  - id: device-2
+    addresses:
+    - type: ip-v4
+      value: 192.168.0.11
+  - id: device-3
+    addresses:
+    - type: ip-v4
+      value: 192.168.0.12

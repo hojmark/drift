@@ -1,5 +1,3 @@
-using System.CommandLine.IO;
-using System.CommandLine.Parsing;
 using System.Globalization;
 using Drift.Cli.Abstractions;
 
@@ -16,14 +14,14 @@ public class LintCommandTests {
     try {
       // Arrange
       var console = new TestConsole();
-      Console.SetOut( console.Out.CreateTextWriter() );
+      Console.SetOut( console.Out );
+      Console.SetError( console.Error );
       var parser = RootCommandFactory.CreateParser();
       var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? "" : $" -o {outputFormat}";
 
       // Act
       var result = await parser.InvokeAsync(
-        $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption,
-        console
+        $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption
       );
 
       // Assert
@@ -49,14 +47,14 @@ public class LintCommandTests {
     try {
       // Arrange
       var console = new TestConsole();
-      Console.SetOut( console.Out.CreateTextWriter() );
+      Console.SetOut( console.Out );
+      Console.SetError( console.Error );
       var parser = RootCommandFactory.CreateParser();
       var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? "" : $" -o {outputFormat}";
 
       // Act
       var result = await parser.InvokeAsync(
-        $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption,
-        console
+        $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption
       );
 
       // Assert

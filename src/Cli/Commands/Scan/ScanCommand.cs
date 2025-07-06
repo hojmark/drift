@@ -48,26 +48,33 @@ internal class ScanCommand : Command {
     // Combine with option to change the default
     // Alternative: --changed [all|skip|only]
 
-    var changed = new Option<ShowMode>(
+    /*var changed = new Option<ShowMode>(
       "--show",
       () => ShowMode.All,
       "Select which devices to show: all (show all), changed (only changed devices), unchanged (only unchanged devices)"
-    );
+    );*/
 
     //TODO re-intro when fixed
-    AddOption( GlobalParameters.Options.Verbose );
+    Options.Add( GlobalParameters.Options.Verbose );
     //AddOption( GlobalParameters.Options.VeryVerbose );
 
-    AddOption( GlobalParameters.Options.OutputFormatOption );
+    Options.Add( GlobalParameters.Options.OutputFormatOption );
 
-    AddArgument( GlobalParameters.Arguments.SpecOptional );
+    Arguments.Add( GlobalParameters.Arguments.SpecOptional );
 
-    this.SetHandler(
+    this.SetAction( result =>
+      CommandHandler( ( new ConsoleOutputManagerBinder( loggerFactory ) ).GetBoundValue( result ),
+        result.GetValue( GlobalParameters.Arguments.SpecOptional ),
+        result.GetValue( GlobalParameters.Options.OutputFormatOption )
+      )
+    );
+
+    /*this.SetHandler(
       CommandHandler,
       new ConsoleOutputManagerBinder( loggerFactory ),
       GlobalParameters.Arguments.SpecOptional,
       GlobalParameters.Options.OutputFormatOption
-    );
+    );*/
   }
 
   private static async Task<int> CommandHandler(
@@ -171,7 +178,7 @@ internal class ScanCommand : Command {
       new ScanRenderData {
         DevicesDiscovered = scanResult.DiscoveredDevices,
         DevicesDeclared = network == null ? [] : network.Devices.Where( d => d.Enabled ?? true )
-      }/*, output.Log*/
+      } /*, output.Log*/
     );
 
     output.Log.LogDebug( "Scan command completed" );

@@ -20,40 +20,39 @@ namespace Drift.Cli.Commands.Preview;
 internal class EnvCommand : Command {
   internal EnvCommand() : base( "env", "Manage agent clusters environments" ) {
     var tokenCmd = new Command( "token", "Create a short-lived JWT that allows an agent to join an environment." );
-    tokenCmd.AddArgument( new Argument<string>( "cluster-name", "The cluster name" ) );
-    AddCommand( tokenCmd );
-    
+    tokenCmd.Arguments.Add( new Argument<string>( "cluster-name" ) { Description = "The cluster name" } );
+    Subcommands.Add( tokenCmd );
+
     var statusCmd = new Command( "status", "Real-time status of environments (heartbeat-like check)" );
-    statusCmd.AddArgument( new Argument<string>( "cluster-name", "The cluster name" ) );
-    AddCommand( statusCmd );
+    statusCmd.Arguments.Add( new Argument<string>( "cluster-name" ) { Description = "The cluster name" } );
+    Subcommands.Add( statusCmd );
 
     var listEnvs = new Command( "list", "List environments." ); // env list my-agent-cluster
-    listEnvs.AddArgument( new Argument<string>( "cluster-name", "The cluster name" ) );
-    listEnvs.SetHandler( context => {
-        var envConfigPath = "............ drift-env.json";
-        var json = File.ReadAllText( envConfigPath );
-        var environment = JsonConverter.Deserialize<Environment>( json );
+    listEnvs.Arguments.Add( new Argument<string>( "cluster-name" ) { Description = "The cluster name" } );
+    listEnvs.SetAction( r => {
+      var envConfigPath = "............ drift-env.json";
+      var json = File.ReadAllText( envConfigPath );
+      var environment = JsonConverter.Deserialize<Environment>( json );
 
-        // Print
-        var table = new Table().ShowRowSeparators();
+      // Print
+      var table = new Table().ShowRowSeparators();
 
-        table.AddColumn( new TableColumn( nameof(Environment.Name) ).Centered() );
-        table.AddColumn( new TableColumn( "Agents" ).Centered() );
-        //table.AddColumn( new TableColumn( "" ).Centered() );
+      table.AddColumn( new TableColumn( nameof(Environment.Name) ).Centered() );
+      table.AddColumn( new TableColumn( "Agents" ).Centered() );
+      //table.AddColumn( new TableColumn( "" ).Centered() );
 
-        table.AddRow( environment.Name + ( environment.Active ? "\u26a1 [green]Active[/]" : "" ),
-          string.Join( "\n", environment.Agents.Select( a =>
-              a.Address + " " + ( a.Authentication.Type == AuthType.None
-                ? "[red]No auth[/]"
-                : "\ud83d\udd12" )
-            )
+      table.AddRow( environment.Name + ( environment.Active ? "\u26a1 [green]Active[/]" : "" ),
+        string.Join( "\n", environment.Agents.Select( a =>
+            a.Address + " " + ( a.Authentication.Type == AuthType.None
+              ? "[red]No auth[/]"
+              : "\ud83d\udd12" )
           )
-        );
+        )
+      );
 
-        AnsiConsole.Write( table );
-        //Ui.WriteLine("config: "+ envConfigPath,ConsoleColor.DarkGray);
-      }
-    );
-    AddCommand( listEnvs );
+      AnsiConsole.Write( table );
+      //Ui.WriteLine("config: "+ envConfigPath,ConsoleColor.DarkGray);
+    } );
+    Subcommands.Add( listEnvs );
   }
 }

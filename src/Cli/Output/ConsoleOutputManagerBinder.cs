@@ -1,5 +1,4 @@
-using System.CommandLine.Binding;
-using System.CommandLine.IO;
+using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using Drift.Cli.Commands.Global;
 using Drift.Cli.Output.Abstractions;
@@ -8,13 +7,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Drift.Cli.Output;
 
+//TODO temporary migration away from BinderBase
 // Justification: this class is part of providing the alternative to the banned APIs
 [SuppressMessage( "ApiDesign", "RS0030:Do not use banned APIs" )]
-internal class ConsoleOutputManagerBinder( ILoggerFactory loggerFactory ) : BinderBase<IOutputManager> {
-  protected override IOutputManager GetBoundValue( BindingContext bindingContext ) {
-    var consoleOuts = GetConsoleOuts( bindingContext );
+internal class ConsoleOutputManagerBinder( ILoggerFactory loggerFactory ) {
+  internal IOutputManager GetBoundValue( ParseResult parseResult ) {
+    var consoleOuts = GetConsoleOuts( parseResult );
     return new ConsoleOutputManager(
-      GetLogger( bindingContext, loggerFactory ),
+      GetLogger( parseResult, loggerFactory ),
       consoleOuts.StdOut,
       consoleOuts.ErrOut,
       consoleOuts.Verbose,
@@ -23,9 +23,9 @@ internal class ConsoleOutputManagerBinder( ILoggerFactory loggerFactory ) : Bind
   }
 
   private static (TextWriter StdOut, TextWriter ErrOut, bool Verbose, GlobalParameters.OutputFormat OutputFormat)
-    GetConsoleOuts( BindingContext bindingContext ) {
-    var outputFormatValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.OutputFormatOption );
-    var verboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.Verbose );
+    GetConsoleOuts( ParseResult parseResult ) {
+    var outputFormatValue = parseResult.GetValue( GlobalParameters.Options.OutputFormatOption );
+    var verboseValue = parseResult.GetValue( GlobalParameters.Options.Verbose );
     //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
 
     // Even though the option has a default value, it is not set when the option is not added to a command.
@@ -40,8 +40,8 @@ internal class ConsoleOutputManagerBinder( ILoggerFactory loggerFactory ) : Bind
       return ( TextWriter.Null, TextWriter.Null, false, outputFormatValue );
     }
 
-    var consoleOut = bindingContext.Console.Out.CreateTextWriter();
-    var consoleErr = bindingContext.Console.Error.CreateTextWriter();
+    var consoleOut = parseResult.Configuration.Output;
+    var consoleErr = parseResult.Configuration.Error;
 
     var tempOutputManager = new ConsoleOutputManager(
       NullLogger.Instance,
@@ -57,9 +57,9 @@ internal class ConsoleOutputManagerBinder( ILoggerFactory loggerFactory ) : Bind
     return ( consoleOut, consoleErr, verboseValue /*|| veryVerboseValue*/, outputFormatValue );
   }
 
-  private static ILogger GetLogger( BindingContext bindingContext, ILoggerFactory loggerFactory2 ) {
-    var outputFormatValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.OutputFormatOption );
-    var verboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.Verbose );
+  private static ILogger GetLogger( ParseResult parseResult, ILoggerFactory loggerFactory2 ) {
+    var outputFormatValue = parseResult.GetValue( GlobalParameters.Options.OutputFormatOption );
+    var verboseValue = parseResult.GetValue( GlobalParameters.Options.Verbose );
     //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
 
     if ( outputFormatValue is not GlobalParameters.OutputFormat.Log ) {

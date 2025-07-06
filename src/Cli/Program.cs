@@ -1,8 +1,7 @@
-﻿using System.CommandLine.Parsing;
-using Drift.Cli;
+﻿using Drift.Cli;
 
 await Bootstrapper.BootstrapAsync();
 
-var parser = RootCommandFactory.CreateParser();
+var parser = RootCommandFactory.Create().Parse( args );
 
-return await parser.InvokeAsync( args );
+return await parser.InvokeAsync();

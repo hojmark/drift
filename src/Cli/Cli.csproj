@@ -42,7 +42,6 @@
         <PackageReference Include="Serilog.Sinks.Console"/>
         <PackageReference Include="Spectre.Console.Cli"/>
         <PackageReference Include="System.CommandLine"/>
-        <PackageReference Include="System.CommandLine.Hosting"/>
     </ItemGroup>
 
 </Project>

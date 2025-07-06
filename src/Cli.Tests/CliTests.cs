@@ -1,5 +1,5 @@
 using System.CommandLine;
-using System.CommandLine.IO;
+using System.CommandLine.Parsing;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Scan;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -13,13 +13,17 @@ public class CliTests {
   public async Task HostTest() {
     // Arrange
     var rootCommand = new RootCommand();
-    rootCommand.AddCommand( new ScanCommand( new NullLoggerFactory() ) );
+    rootCommand.Subcommands.Add( new ScanCommand( new NullLoggerFactory() ) );
     //TODO rootCommand.AddScanCommand();
 
     var console = new TestConsole();
 
     // Act
-    var result = await rootCommand.InvokeAsync( "scan", console );
+    var result = await CommandLineParser.Parse(
+      rootCommand,
+      "scan",
+      new CommandLineConfiguration( rootCommand ) { Output = console.Out, Error = console.Error }
+    ).InvokeAsync();
 
     // Assert
     var outputText = console.Out.ToString().Trim();

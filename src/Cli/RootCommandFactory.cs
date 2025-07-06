@@ -1,8 +1,6 @@
 using System.CommandLine;
-using System.CommandLine.Builder;
 using System.CommandLine.Help;
-using System.CommandLine.Parsing;
-using Drift.Cli.Abstractions;
+using System.CommandLine.Invocation;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Scan;
@@ -13,35 +11,14 @@ using Spectre.Console;
 namespace Drift.Cli;
 
 internal static class RootCommandFactory {
-  internal static Parser CreateParser() {
+  internal static CommandLineConfiguration CreateParser() {
     var rootCommand = Create();
 
     //return await rootCommand.InvokeAsync( args );
 
-    var parser = new CommandLineBuilder( rootCommand )
-      .UseHelp( ctx => ctx.HelpBuilder.CustomizeLayout( _ => {
-            if ( ctx.Command == rootCommand ) {
-              return HelpBuilder.Default
-                .GetLayout()
-                // .Skip( 1 ) // Skip description section
-                .Prepend( _ => {
-                  AnsiConsole.Write(
-                    new FigletText( FigletFont.Load( EmbeddedResourceProvider.GetStream( "small.flf" ) ), "Drift" ) );
-                  //  Console.WriteLine( "Monitor network drift against your declared state." );
-                } );
-            }
+    var p = new CommandLineConfiguration( rootCommand );
 
-            return HelpBuilder.Default.GetLayout();
-          }
-        )
-      )
-      // TODO support examples in help
-      //.UseHelpBuilder( ctx => new CustomHelpBuilder() )
-      .UseDefaults()
-      .UseExceptionHandler( errorExitCode: ExitCodes.UnknownError )
-      .Build();
-
-    return parser;
+    return p;
   }
 
   internal static RootCommand Create() {
@@ -66,10 +43,33 @@ internal static class RootCommandFactory {
     //TODO 'from' or 'against'?
     var rootCommand = new RootCommand( "📡\uFE0F Drift CLI — monitor network drift against your declared state" );
 
-    rootCommand.AddCommand( new InitCommand( loggerFactory ) );
-    rootCommand.AddCommand( new ScanCommand( loggerFactory ) );
-    rootCommand.AddCommand( new LintCommand( loggerFactory ) );
+    rootCommand.Subcommands.Add( new InitCommand( loggerFactory ) );
+    rootCommand.Subcommands.Add( new ScanCommand( loggerFactory ) );
+    rootCommand.Subcommands.Add( new LintCommand( loggerFactory ) );
+
+    for ( int i = 0; i < rootCommand.Options.Count; i++ ) {
+      // RootCommand has a default HelpOption, we need to update its Action.
+      if ( rootCommand.Options[i] is HelpOption defaultHelpOption ) {
+        defaultHelpOption.Action = new CustomHelpAction( (HelpAction) defaultHelpOption.Action! );
+        break;
+      }
+    }
 
     return rootCommand;
+  }
+}
+
+internal class CustomHelpAction : SynchronousCommandLineAction {
+  private readonly HelpAction _defaultHelp;
+
+  public CustomHelpAction( HelpAction action ) => _defaultHelp = action;
+
+  public override int Invoke( ParseResult parseResult ) {
+    AnsiConsole.Write(
+      new FigletText( FigletFont.Load( EmbeddedResourceProvider.GetStream( "small.flf" ) ), "Drift" ) );
+
+    int result = _defaultHelp.Invoke( parseResult );
+
+    return result;
   }
 }

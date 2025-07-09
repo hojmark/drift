@@ -11,19 +11,7 @@ using Spectre.Console;
 namespace Drift.Cli;
 
 internal static class RootCommandFactory {
-  internal static CommandLineConfiguration CreateParser() {
-    var rootCommand = Create();
-
-    //return await rootCommand.InvokeAsync( args );
-
-    var p = new CommandLineConfiguration( rootCommand );
-
-    return p;
-  }
-
   internal static RootCommand Create() {
-    //TODO consider host pattern
-
     var loggerConfig = new LoggerConfiguration()
       .MinimumLevel.Debug()
       .Enrich.FromLogContext()

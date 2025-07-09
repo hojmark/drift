@@ -9,30 +9,21 @@ using Drift.Spec.Schema;
 using Drift.Spec.Validation;
 using Drift.TestUtilities;
 
-namespace Drift.Cli.Tests;
+namespace Drift.Cli.Tests.Commands;
 
 public class InitCommandTests {
   [Test]
   public async Task MissingNameOption() {
-    var originalOut = Console.Out;
-    try {
-      // Arrange
-      var console = new TestConsole();
-      Console.SetOut( console.Out );
-      Console.SetError( console.Error );
-      var parser = RootCommandFactory.CreateParser();
+    // Arrange
+    var config = TestCommandLineConfiguration.Create();
 
-      // Act
-      var result = await parser.InvokeAsync( "init" );
+    // Act
+    var result = await config.InvokeAsync( "init" );
 
-      // Assert
-      using ( Assert.EnterMultipleScope() ) {
-        Assert.That( result, Is.EqualTo( ExitCodes.GeneralError ) );
-        await Verify( console.Out.ToString() + console.Error );
-      }
-    }
-    finally {
-      Console.SetOut( originalOut );
+    // Assert
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( result, Is.EqualTo( ExitCodes.GeneralError ) );
+      await Verify( config.Output.ToString() + config.Error );
     }
   }
 

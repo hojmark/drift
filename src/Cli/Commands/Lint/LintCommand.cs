@@ -12,13 +12,13 @@ namespace Drift.Cli.Commands.Lint;
 
 internal class LintCommand : Command {
   internal LintCommand( ILoggerFactory loggerFactory ) : base( "lint", "Validate a network spec" ) {
-    Options.Add( GlobalParameters.Options.Verbose );
+    Add( GlobalParameters.Options.Verbose );
 
-    Options.Add( GlobalParameters.Options.OutputFormatOption );
+    Add( GlobalParameters.Options.OutputFormatOption );
 
-    Arguments.Add( GlobalParameters.Arguments.SpecOptional );
+    Add( GlobalParameters.Arguments.SpecOptional );
 
-    this.SetAction( ( result, cancellationToken )  =>
+    SetAction( ( result, cancellationToken ) =>
       CommandHandler( ( new ConsoleOutputManagerBinder( loggerFactory ) ).GetBoundValue( result ),
         result.GetValue( GlobalParameters.Arguments.SpecOptional ),
         result.GetValue( GlobalParameters.Options.OutputFormatOption )

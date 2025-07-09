@@ -55,26 +55,19 @@ internal class ScanCommand : Command {
     );*/
 
     //TODO re-intro when fixed
-    Options.Add( GlobalParameters.Options.Verbose );
+    Add( GlobalParameters.Options.Verbose );
     //AddOption( GlobalParameters.Options.VeryVerbose );
 
-    Options.Add( GlobalParameters.Options.OutputFormatOption );
+    Add( GlobalParameters.Options.OutputFormatOption );
 
-    Arguments.Add( GlobalParameters.Arguments.SpecOptional );
+    Add( GlobalParameters.Arguments.SpecOptional );
 
-    this.SetAction( ( result, cancellationToken )  =>
+    SetAction( ( result, cancellationToken ) =>
       CommandHandler( ( new ConsoleOutputManagerBinder( loggerFactory ) ).GetBoundValue( result ),
         result.GetValue( GlobalParameters.Arguments.SpecOptional ),
         result.GetValue( GlobalParameters.Options.OutputFormatOption )
       )
     );
-
-    /*this.SetHandler(
-      CommandHandler,
-      new ConsoleOutputManagerBinder( loggerFactory ),
-      GlobalParameters.Arguments.SpecOptional,
-      GlobalParameters.Options.OutputFormatOption
-    );*/
   }
 
   private static async Task<int> CommandHandler(

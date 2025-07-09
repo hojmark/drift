@@ -2,6 +2,6 @@
 
 await Bootstrapper.BootstrapAsync();
 
-var parser = RootCommandFactory.Create().Parse( args );
+var parsed = RootCommandFactory.Create().Parse( args );
 
-return await parser.InvokeAsync();
+return await parsed.InvokeAsync();

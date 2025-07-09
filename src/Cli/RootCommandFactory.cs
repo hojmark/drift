@@ -34,6 +34,7 @@ internal static class RootCommandFactory {
     rootCommand.Subcommands.Add( new InitCommand( loggerFactory ) );
     rootCommand.Subcommands.Add( new ScanCommand( loggerFactory ) );
     rootCommand.Subcommands.Add( new LintCommand( loggerFactory ) );
+    rootCommand.TreatUnmatchedTokensAsErrors = true;
 
     for ( int i = 0; i < rootCommand.Options.Count; i++ ) {
       // RootCommand has a default HelpOption, we need to update its Action.

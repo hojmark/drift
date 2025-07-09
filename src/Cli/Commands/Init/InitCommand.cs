@@ -26,7 +26,7 @@ internal class InitCommand : Command {
     var forceModeOption = new Option<ForceMode?>( "--force-mode" ) {
       Description = "(HIDDEN) Force mode", Arity = ArgumentArity.ZeroOrOne, Hidden = true
     };
-    Options.Add( forceModeOption );
+    Add( forceModeOption );
 
     /*var withEnvOption = new Option<bool>(
       "--with-env",
@@ -38,17 +38,17 @@ internal class InitCommand : Command {
     var discoverOption = new Option<bool?>( "--discover" ) {
       Description = "Populate with devices and subnets discovered in a network scan", Arity = ArgumentArity.ZeroOrOne
     };
-    Options.Add( discoverOption );
+    Add( discoverOption );
 
     var overwriteOption = new Option<bool?>( "--overwrite" ) {
       Description = "Overwrite existing file", Arity = ArgumentArity.ZeroOrOne
     };
-    Options.Add( overwriteOption );
+    Add( overwriteOption );
 
-    Options.Add( GlobalParameters.Options.Verbose );
+    Add( GlobalParameters.Options.Verbose );
     //AddOption( GlobalParameters.Options.VeryVerbose );
 
-    Options.Add( GlobalParameters.Options.OutputFormatOption );
+    Add( GlobalParameters.Options.OutputFormatOption );
 
     //TODO support examples
     /*initCommand.WithExamples(
@@ -57,19 +57,9 @@ internal class InitCommand : Command {
       "drift init main-site --discover --with-env"
     );*/
 
-    Arguments.Add( GlobalParameters.Arguments.SpecOptional );
+    Add( GlobalParameters.Arguments.SpecOptional );
 
-    /*this.SetHandler(
-      CommandHandler,
-      new ConsoleOutputManagerBinder( loggerFactory ),
-      GlobalParameters.Arguments.SpecOptional,
-      GlobalParameters.Options.OutputFormatOption,
-      overwriteOption,
-      discoverOption,
-      forceModeOption
-    );*/
-
-    this.SetAction( ( result, cancellationToken ) =>
+    SetAction( ( result, cancellationToken ) =>
       CommandHandler( ( new ConsoleOutputManagerBinder( loggerFactory ) ).GetBoundValue( result ),
         result.GetValue( GlobalParameters.Arguments.SpecOptional ),
         result.GetValue( GlobalParameters.Options.OutputFormatOption ),

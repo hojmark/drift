@@ -69,7 +69,7 @@ internal class InitCommand : Command {
       forceModeOption
     );*/
 
-    this.SetAction( result =>
+    this.SetAction( ( result, cancellationToken ) =>
       CommandHandler( ( new ConsoleOutputManagerBinder( loggerFactory ) ).GetBoundValue( result ),
         result.GetValue( GlobalParameters.Arguments.SpecOptional ),
         result.GetValue( GlobalParameters.Options.OutputFormatOption ),

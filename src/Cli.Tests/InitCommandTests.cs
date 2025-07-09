@@ -1,3 +1,4 @@
+using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Domain;
@@ -11,6 +12,30 @@ using Drift.TestUtilities;
 namespace Drift.Cli.Tests;
 
 public class InitCommandTests {
+  [Test]
+  public async Task MissingNameOption() {
+    var originalOut = Console.Out;
+    try {
+      // Arrange
+      var console = new TestConsole();
+      Console.SetOut( console.Out );
+      Console.SetError( console.Error );
+      var parser = RootCommandFactory.CreateParser();
+
+      // Act
+      var result = await parser.InvokeAsync( "init" );
+
+      // Assert
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( result, Is.EqualTo( ExitCodes.GeneralError ) );
+        await Verify( console.Out.ToString() + console.Error );
+      }
+    }
+    finally {
+      Console.SetOut( originalOut );
+    }
+  }
+
   [Test]
   public async Task GeneratedSpecWithDiscoveryIsValid() {
     // Arrange

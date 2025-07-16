@@ -3,34 +3,36 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="coverlet.collector" Version="6.0.4"/>
-    <PackageVersion Include="Humanizer" Version="2.14.1"/>
-    <PackageVersion Include="IPNetwork2" Version="3.1.764"/>
-    <PackageVersion Include="JsonSchema.Net" Version="7.3.4"/>
-    <PackageVersion Include="JsonSchema.Net.Generation" Version="5.0.4"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0"/>
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.7"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.7"/>
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.7"/>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/>
-    <PackageVersion Include="NaturalSort.Extension" Version="4.3.0"/>
-    <PackageVersion Include="NmapXmlParser" Version="1.0.0"/>
-    <PackageVersion Include="Nuke.Common" Version="9.0.4"/>
-    <PackageVersion Include="NUnit" Version="4.3.2"/>
-    <PackageVersion Include="NUnit.Analyzers" Version="4.9.2"/>
-    <PackageVersion Include="NUnit3TestAdapter" Version="5.0.0"/>
-    <PackageVersion Include="Octokit" Version="14.0.0"/>
-    <PackageVersion Include="Semver" Version="3.0.0"/>
-    <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.2"/>
-    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0"/>
-    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0"/>
-    <PackageVersion Include="Spectre.Console.Cli" Version="0.50.0"/>
-    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1"/>
-    <PackageVersion Include="System.CommandLine.Hosting" Version="0.4.0-alpha.22272.1"/>
-    <PackageVersion Include="System.Text.Json" Version="9.0.6"/>
-    <PackageVersion Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="16.3.0"/>
-    <PackageVersion Include="Verify.NUnit" Version="30.4.0"/>
-    <PackageVersion Include="YamlDotNet" Version="16.3.0"/>
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Humanizer" Version="2.14.1" />
+    <PackageVersion Include="IPNetwork2" Version="3.1.764" />
+    <PackageVersion Include="JsonSchema.Net" Version="7.3.4" />
+    <PackageVersion Include="JsonSchema.Net.Generation" Version="5.0.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0" />
+    <PackageVersion Include="Microsoft.DotNet.ILCompiler" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.NET.ILLink.Tasks" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="NaturalSort.Extension" Version="4.3.0" />
+    <PackageVersion Include="NmapXmlParser" Version="1.0.0" />
+    <PackageVersion Include="Nuke.Common" Version="9.0.4" />
+    <PackageVersion Include="NUnit" Version="4.3.2" />
+    <PackageVersion Include="NUnit.Analyzers" Version="4.9.2" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="5.0.0" />
+    <PackageVersion Include="Octokit" Version="14.0.0" />
+    <PackageVersion Include="Semver" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.2" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageVersion Include="Spectre.Console.Cli" Version="0.50.0" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageVersion Include="System.CommandLine.Hosting" Version="0.4.0-alpha.22272.1" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.6" />
+    <PackageVersion Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="16.3.0" />
+    <PackageVersion Include="Verify.NUnit" Version="30.4.0" />
+    <PackageVersion Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 </Project>

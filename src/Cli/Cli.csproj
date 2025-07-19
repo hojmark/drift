@@ -40,6 +40,7 @@
         <PackageReference Include="NaturalSort.Extension"/>
         <PackageReference Include="Serilog.Extensions.Logging"/>
         <PackageReference Include="Serilog.Sinks.Console"/>
+        <PackageReference Include="Serilog.Sinks.TextWriter" />
         <PackageReference Include="Spectre.Console.Cli"/>
         <PackageReference Include="System.CommandLine"/>
     </ItemGroup>

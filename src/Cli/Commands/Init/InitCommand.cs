@@ -21,7 +21,7 @@ using Environment = System.Environment;
 namespace Drift.Cli.Commands.Init;
 
 internal class InitCommand : Command {
-  internal InitCommand( ILoggerFactory loggerFactory ) : base( "init", "Create a network spec" ) {
+  internal InitCommand( OutputManagerFactory outputManagerFactory ) : base( "init", "Create a network spec" ) {
     // Intended for testing (although I should maybe look into a better way to do this e.g. Linux expect)
     var forceModeOption = new Option<ForceMode?>( "--force-mode" ) {
       Description = "(HIDDEN) Force mode", Arity = ArgumentArity.ZeroOrOne, Hidden = true
@@ -60,7 +60,7 @@ internal class InitCommand : Command {
     Add( GlobalParameters.Arguments.SpecOptional );
 
     SetAction( ( result, cancellationToken ) =>
-      CommandHandler( ( new ConsoleOutputManagerBinder( loggerFactory ) ).GetBoundValue( result ),
+      CommandHandler( outputManagerFactory.Create( result ),
         result.GetValue( GlobalParameters.Arguments.SpecOptional ),
         result.GetValue( GlobalParameters.Options.OutputFormatOption ),
         result.GetValue( overwriteOption ),

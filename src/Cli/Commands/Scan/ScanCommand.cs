@@ -33,7 +33,8 @@ internal class ScanCommand : Command {
     Unchanged = 3
   }
 
-  internal ScanCommand( ILoggerFactory loggerFactory ) : base( "scan", "Scan the network and detect drift" ) {
+  internal ScanCommand( OutputManagerFactory outputManagerFactory ) : base( "scan",
+    "Scan the network and detect drift" ) {
     //var monitorOption = new Option<bool>( "--monitor", "Continually scan network(s) until manually stopped." );
     //AddOption( monitorOption );
 
@@ -63,7 +64,7 @@ internal class ScanCommand : Command {
     Add( GlobalParameters.Arguments.SpecOptional );
 
     SetAction( ( result, cancellationToken ) =>
-      CommandHandler( ( new ConsoleOutputManagerBinder( loggerFactory ) ).GetBoundValue( result ),
+      CommandHandler( outputManagerFactory.Create( result ),
         result.GetValue( GlobalParameters.Arguments.SpecOptional ),
         result.GetValue( GlobalParameters.Options.OutputFormatOption )
       )

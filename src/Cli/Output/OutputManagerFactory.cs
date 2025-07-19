@@ -4,17 +4,26 @@ using Drift.Cli.Commands.Global;
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Display;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Drift.Cli.Output;
 
 //TODO temporary migration away from BinderBase
 // Justification: this class is part of providing the alternative to the banned APIs
 [SuppressMessage( "ApiDesign", "RS0030:Do not use banned APIs" )]
-internal class ConsoleOutputManagerBinder( ILoggerFactory loggerFactory ) {
-  internal IOutputManager GetBoundValue( ParseResult parseResult ) {
+internal class OutputManagerFactory(
+  //TODO Inject config instead
+  bool toConsole = true
+) {
+  internal IOutputManager Create(
+    ParseResult parseResult
+  ) {
     var consoleOuts = GetConsoleOuts( parseResult );
     return new ConsoleOutputManager(
-      GetLogger( parseResult, loggerFactory ),
+      GetLogger( parseResult, toConsole ),
       consoleOuts.StdOut,
       consoleOuts.ErrOut,
       consoleOuts.Verbose,
@@ -57,7 +66,43 @@ internal class ConsoleOutputManagerBinder( ILoggerFactory loggerFactory ) {
     return ( consoleOut, consoleErr, verboseValue /*|| veryVerboseValue*/, outputFormatValue );
   }
 
-  private static ILogger GetLogger( ParseResult parseResult, ILoggerFactory loggerFactory2 ) {
+  private static ILogger GetLogger( ParseResult parseResult, bool toConsole ) {
+    // Default console rneder uses `OutputTemplateRenderer`, which is internal. Only differnece detected is that MessageTemplateTextFormatter auto single quotes  non strings e.g. enum values.
+    // Fix is to call myEnum.ToString()
+    var formatter = new MessageTemplateTextFormatter(
+      "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+    );
+
+    var loggerConfig = new LoggerConfiguration()
+      .MinimumLevel.Debug()
+      .Enrich.FromLogContext();
+
+    if ( toConsole ) {
+      loggerConfig.WriteTo.Console();
+    }
+    else {
+      loggerConfig.WriteTo.Logger( lc => lc
+          .Filter.ByIncludingOnly( le => le.Level < LogEventLevel.Error )
+          .WriteTo.TextWriter(
+            textWriter: parseResult.Configuration.Output,
+            formatter: formatter
+            //outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+          )
+        )
+        .WriteTo.Logger( lc => lc
+          .Filter.ByIncludingOnly( le => le.Level >= LogEventLevel.Error )
+          .WriteTo.TextWriter(
+            textWriter: parseResult.Configuration.Error,
+            formatter: formatter
+            //outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+          )
+        );
+    }
+
+    var loggerFactory = LoggerFactory.Create( builder => builder.AddSerilog( loggerConfig.CreateLogger() )
+        .SetMinimumLevel( LogLevel.Debug ) // Parse from args?
+    );
+
     var outputFormatValue = parseResult.GetValue( GlobalParameters.Options.OutputFormatOption );
     var verboseValue = parseResult.GetValue( GlobalParameters.Options.Verbose );
     //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
@@ -71,17 +116,11 @@ internal class ConsoleOutputManagerBinder( ILoggerFactory loggerFactory ) {
       //veryVerboseValue ? LogLevel.Trace :
       verboseValue ? LogLevel.Debug : LogLevel.Information;
 
-    /*using var loggerFactory = LoggerFactory.Create( builder => builder
-      .SetMinimumLevel( loglevel )
-      .AddSimpleConsole( config => {
-        config.SingleLine = true;
-        config.TimestampFormat = "[HH:mm:ss.ffff] ";
-      } ) );*/
-
     //TODO still getting '[0]' in the output. Should probably create custom logger.
-    var logger = loggerFactory2.CreateLogger( "" );
+    var logger = loggerFactory.CreateLogger( "" );
 
-    logger.LogDebug( "Output format is '{OutputFormat}' using log level '{LogLevel}'", outputFormatValue, loglevel );
+    logger.LogDebug( "Output format is '{OutputFormat}' using log level '{LogLevel}'", outputFormatValue.ToString(),
+      loglevel.ToString() );
 
     return logger;
   }

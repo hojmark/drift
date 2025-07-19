@@ -33,7 +33,8 @@ internal class ScanCommand : Command {
     Unchanged = 3
   }
 
-  internal ScanCommand( ILoggerFactory loggerFactory ) : base( "scan", "Scan the network and detect drift" ) {
+  internal ScanCommand( OutputManagerFactory outputManagerFactory ) : base( "scan",
+    "Scan the network and detect drift" ) {
     //var monitorOption = new Option<bool>( "--monitor", "Continually scan network(s) until manually stopped." );
     //AddOption( monitorOption );
 
@@ -48,25 +49,25 @@ internal class ScanCommand : Command {
     // Combine with option to change the default
     // Alternative: --changed [all|skip|only]
 
-    var changed = new Option<ShowMode>(
+    /*var changed = new Option<ShowMode>(
       "--show",
       () => ShowMode.All,
       "Select which devices to show: all (show all), changed (only changed devices), unchanged (only unchanged devices)"
-    );
+    );*/
 
     //TODO re-intro when fixed
-    AddOption( GlobalParameters.Options.Verbose );
+    Add( GlobalParameters.Options.Verbose );
     //AddOption( GlobalParameters.Options.VeryVerbose );
 
-    AddOption( GlobalParameters.Options.OutputFormatOption );
+    Add( GlobalParameters.Options.OutputFormatOption );
 
-    AddArgument( GlobalParameters.Arguments.SpecOptional );
+    Add( GlobalParameters.Arguments.SpecOptional );
 
-    this.SetHandler(
-      CommandHandler,
-      new ConsoleOutputManagerBinder( loggerFactory ),
-      GlobalParameters.Arguments.SpecOptional,
-      GlobalParameters.Options.OutputFormatOption
+    SetAction( ( result, cancellationToken ) =>
+      CommandHandler( outputManagerFactory.Create( result ),
+        result.GetValue( GlobalParameters.Arguments.SpecOptional ),
+        result.GetValue( GlobalParameters.Options.OutputFormatOption )
+      )
     );
   }
 
@@ -171,7 +172,7 @@ internal class ScanCommand : Command {
       new ScanRenderData {
         DevicesDiscovered = scanResult.DiscoveredDevices,
         DevicesDeclared = network == null ? [] : network.Devices.Where( d => d.Enabled ?? true )
-      }/*, output.Log*/
+      } /*, output.Log*/
     );
 
     output.Log.LogDebug( "Scan command completed" );

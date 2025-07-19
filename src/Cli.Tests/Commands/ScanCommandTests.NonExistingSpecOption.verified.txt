@@ -1,0 +1,1 @@
+﻿Could not resolve a file for 'blah_spec.yaml' in directory '{CurrentDirectory}' using conventions: exact filename → {name}.spec.yaml → drift.spec.yaml → *.spec.yaml

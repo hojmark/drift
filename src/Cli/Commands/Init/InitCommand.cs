@@ -21,13 +21,12 @@ using Environment = System.Environment;
 namespace Drift.Cli.Commands.Init;
 
 internal class InitCommand : Command {
-  internal InitCommand( ILoggerFactory loggerFactory ) : base( "init", "Create a network spec" ) {
+  internal InitCommand( OutputManagerFactory outputManagerFactory ) : base( "init", "Create a network spec" ) {
     // Intended for testing (although I should maybe look into a better way to do this e.g. Linux expect)
-    var forceModeOption = new Option<ForceMode?>(
-      "--force-mode",
-      "(HIDDEN) Force mode"
-    ) { Arity = ArgumentArity.ZeroOrOne, IsHidden = true };
-    AddOption( forceModeOption );
+    var forceModeOption = new Option<ForceMode?>( "--force-mode" ) {
+      Description = "(HIDDEN) Force mode", Arity = ArgumentArity.ZeroOrOne, Hidden = true
+    };
+    Add( forceModeOption );
 
     /*var withEnvOption = new Option<bool>(
       "--with-env",
@@ -36,22 +35,20 @@ internal class InitCommand : Command {
 
     // Should perform the same default scan as the scan command to give a good first impression
     // TODO structure code so this always happens
-    var discoverOption = new Option<bool?>(
-      "--discover",
-      "Populate with devices and subnets discovered in a network scan"
-    ) { Arity = ArgumentArity.ZeroOrOne };
-    AddOption( discoverOption );
+    var discoverOption = new Option<bool?>( "--discover" ) {
+      Description = "Populate with devices and subnets discovered in a network scan", Arity = ArgumentArity.ZeroOrOne
+    };
+    Add( discoverOption );
 
-    var overwriteOption = new Option<bool?>(
-      "--overwrite",
-      "Overwrite existing file"
-    ) { Arity = ArgumentArity.ZeroOrOne };
-    AddOption( overwriteOption );
+    var overwriteOption = new Option<bool?>( "--overwrite" ) {
+      Description = "Overwrite existing file", Arity = ArgumentArity.ZeroOrOne
+    };
+    Add( overwriteOption );
 
-    AddOption( GlobalParameters.Options.Verbose );
+    Add( GlobalParameters.Options.Verbose );
     //AddOption( GlobalParameters.Options.VeryVerbose );
 
-    AddOption( GlobalParameters.Options.OutputFormatOption );
+    Add( GlobalParameters.Options.OutputFormatOption );
 
     //TODO support examples
     /*initCommand.WithExamples(
@@ -60,16 +57,16 @@ internal class InitCommand : Command {
       "drift init main-site --discover --with-env"
     );*/
 
-    AddArgument( GlobalParameters.Arguments.SpecOptional );
+    Add( GlobalParameters.Arguments.SpecOptional );
 
-    this.SetHandler(
-      CommandHandler,
-      new ConsoleOutputManagerBinder( loggerFactory ),
-      GlobalParameters.Arguments.SpecOptional,
-      GlobalParameters.Options.OutputFormatOption,
-      overwriteOption,
-      discoverOption,
-      forceModeOption
+    SetAction( ( result, cancellationToken ) =>
+      CommandHandler( outputManagerFactory.Create( result ),
+        result.GetValue( GlobalParameters.Arguments.SpecOptional ),
+        result.GetValue( GlobalParameters.Options.OutputFormatOption ),
+        result.GetValue( overwriteOption ),
+        result.GetValue( discoverOption ),
+        result.GetValue( forceModeOption )
+      )
     );
   }
 

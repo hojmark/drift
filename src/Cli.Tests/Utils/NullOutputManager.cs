@@ -2,7 +2,7 @@ using Drift.Cli.Commands.Global;
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Tests;
+namespace Drift.Cli.Tests.Utils;
 
 internal class NullOutputManager : IOutputManager {
   public ILogOutput Log {

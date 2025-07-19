@@ -11,18 +11,18 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Cli.Commands.Lint;
 
 internal class LintCommand : Command {
-  internal LintCommand( ILoggerFactory loggerFactory ) : base( "lint", "Validate network spec" ) {
-    AddOption( GlobalParameters.Options.Verbose );
+  internal LintCommand( OutputManagerFactory outputManagerFactory ) : base( "lint", "Validate a network spec" ) {
+    Add( GlobalParameters.Options.Verbose );
 
-    AddOption( GlobalParameters.Options.OutputFormatOption );
+    Add( GlobalParameters.Options.OutputFormatOption );
 
-    AddArgument( GlobalParameters.Arguments.SpecOptional );
+    Add( GlobalParameters.Arguments.SpecOptional );
 
-    this.SetHandler(
-      CommandHandler,
-      new ConsoleOutputManagerBinder( loggerFactory ),
-      GlobalParameters.Arguments.SpecOptional,
-      GlobalParameters.Options.OutputFormatOption
+    SetAction( ( result, cancellationToken ) =>
+      CommandHandler( outputManagerFactory.Create( result ),
+        result.GetValue( GlobalParameters.Arguments.SpecOptional ),
+        result.GetValue( GlobalParameters.Options.OutputFormatOption )
+      )
     );
   }
 

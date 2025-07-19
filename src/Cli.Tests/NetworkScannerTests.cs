@@ -1,4 +1,5 @@
 using Drift.Cli.Commands.Scan;
+using Drift.Cli.Tests.Utils;
 using Drift.Domain;
 using Drift.Domain.Scan;
 using Drift.TestUtilities.NetworkProviders;

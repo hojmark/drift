@@ -5,9 +5,9 @@ using Drift.Spec.Serialization;
 using Drift.Spec.Validation;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Commands.Global;
+namespace Drift.Cli.Commands.Common;
 
-public static class SpecFileDeserializer {
+internal static class SpecFileDeserializer {
   /// <summary>
   /// 
   /// </summary>

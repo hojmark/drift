@@ -1,4 +1,4 @@
-using Drift.Cli.Commands.Global;
+using Drift.Cli.Commands.Common;
 
 namespace Drift.Cli.Output.Abstractions;
 
@@ -20,5 +20,5 @@ internal interface IOutputManager {
   void WithJsonOutput( Action<IJsonOutput> output );
 
   //TODO hack
-  bool Is( GlobalParameters.OutputFormat outputFormat );
+  bool Is( OutputFormat outputFormat );
 }

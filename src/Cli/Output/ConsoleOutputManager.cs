@@ -1,4 +1,4 @@
-using Drift.Cli.Commands.Global;
+using Drift.Cli.Commands.Common;
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
 
@@ -10,7 +10,7 @@ internal class ConsoleOutputManager(
   TextWriter stdOut,
   TextWriter errOut,
   bool consoleOutsVerbose,
-  GlobalParameters.OutputFormat outputFormat
+  OutputFormat outputFormat
 ) : IOutputManager {
   public ILogOutput Log {
     get;
@@ -26,14 +26,14 @@ internal class ConsoleOutputManager(
 
   // Could work, but need async option
   public void WithNormalOutput( Action<INormalOutput> action ) {
-    if ( outputFormat == GlobalParameters.OutputFormat.Normal ) {
+    if ( outputFormat == OutputFormat.Normal ) {
       action( Normal );
     }
   }
 
   // Could work, but need async option
   public void WithLogOutput( Action<ILogOutput> action ) {
-    if ( outputFormat == GlobalParameters.OutputFormat.Log ) {
+    if ( outputFormat == OutputFormat.Log ) {
       action( Log );
     }
   }
@@ -46,7 +46,7 @@ internal class ConsoleOutputManager(
     }*/
   }
 
-  public bool Is( GlobalParameters.OutputFormat format ) {
+  public bool Is( OutputFormat format ) {
     return outputFormat == format;
   }
 }

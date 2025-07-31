@@ -1,4 +1,4 @@
-namespace Drift.Cli.Commands.Global;
+namespace Drift.Cli.Commands.Common;
 
 internal static class ConsoleExtensions {
   internal static class Text {

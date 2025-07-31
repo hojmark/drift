@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using Drift.Cli.Commands.Global;
+using Drift.Cli.Commands.Common;
 using Drift.Cli.Output.Abstractions;
 
 namespace Drift.Cli;

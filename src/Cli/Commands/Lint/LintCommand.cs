@@ -1,64 +1,51 @@
-using System.CommandLine;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Global;
+using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Lint.Rendering;
 using Drift.Cli.Output;
-using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Renderer;
 using Drift.Spec.Validation;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Lint;
 
-internal class LintCommand : Command {
-  internal LintCommand( OutputManagerFactory outputManagerFactory ) : base( "lint", "Validate a network spec" ) {
-    Add( GlobalParameters.Options.Verbose );
-
-    Add( GlobalParameters.Options.OutputFormatOption );
-
-    Add( GlobalParameters.Arguments.SpecOptional );
-
-    SetAction( ( result, cancellationToken ) =>
-      CommandHandler( outputManagerFactory.Create( result ),
-        result.GetValue( GlobalParameters.Arguments.SpecOptional ),
-        result.GetValue( GlobalParameters.Options.OutputFormatOption )
-      )
-    );
+internal class LintCommand : CommandBase<LintParameters> {
+  internal LintCommand( OutputManagerFactory outputManagerFactory ) : base(
+    "lint",
+    "Validate a network spec",
+    outputManagerFactory.Create,
+    r => new LintParameters( r )
+  ) {
   }
 
-  private static async Task<int> CommandHandler(
-    IOutputManager output,
-    FileInfo? specFile,
-    GlobalParameters.OutputFormat outputFormat
-  ) {
-    output.Log.LogDebug( "Running lint command" );
+  protected override async Task<int> Invoke( CancellationToken cancellationToken, LintParameters parameters ) {
+    Output.Log.LogDebug( "Running lint command" );
 
     FileInfo? filePath;
     try {
-      filePath = new SpecFileResolver( output, specFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
-        .Resolve( specFile?.Name, throwsOnNotFound: true );
+      filePath = new SpecFileResolver( Output, parameters.SpecFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
+        .Resolve( parameters.SpecFile?.Name, throwsOnNotFound: true );
     }
     catch ( FileNotFoundException exception ) {
-      output.Log.LogError( exception, "Network spec not found: {SpecPath}", specFile?.FullName );
-      output.Normal.WriteLineError( exception.Message );
+      Output.Log.LogError( exception, "Network spec not found: {SpecPath}", parameters.SpecFile?.FullName );
+      Output.Normal.WriteLineError( exception.Message );
       return ExitCodes.GeneralError;
     }
 
-    output.Log.LogInformation( "Validating network spec: {Spec}", filePath );
-    output.Normal.WriteLine( $"Validating network spec {filePath}" );
+    Output.Log.LogInformation( "Validating network spec: {Spec}", filePath );
+    Output.Normal.WriteLine( $"Validating network spec {filePath}" );
 
     var yamlContent = await File.ReadAllTextAsync( filePath.FullName );
 
     var result = SpecValidator.Validate( yamlContent, Spec.Schema.SpecVersion.V1_preview );
 
     IRenderer<ValidationResult> renderer =
-      outputFormat switch {
-        GlobalParameters.OutputFormat.Normal => new NormalRenderer( output.Normal ),
-        GlobalParameters.OutputFormat.Log => new LogRenderer( output.Log ),
+      parameters.OutputFormat switch {
+        OutputFormat.Normal => new NormalRenderer( Output.Normal ),
+        OutputFormat.Log => new LogRenderer( Output.Log ),
         _ => new NullRenderer<ValidationResult>()
       };
 
-    output.Log.LogTrace( "Render scan result using {RendererType}", renderer.GetType().Name );
+    Output.Log.LogTrace( "Render scan result using {RendererType}", renderer.GetType().Name );
 
     renderer.Render( result );
 

@@ -1,4 +1,4 @@
-using Drift.Cli.Commands.Global;
+using Drift.Cli.Commands.Common;
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
 
@@ -26,8 +26,8 @@ internal class NullOutputManager : IOutputManager {
   public void WithJsonOutput( Action<IJsonOutput> output ) {
   }
 
-  public bool Is( GlobalParameters.OutputFormat outputFormat ) {
-    return outputFormat == GlobalParameters.OutputFormat.Normal;
+  public bool Is( OutputFormat outputFormat ) {
+    return outputFormat == OutputFormat.Normal;
   }
 }
 

@@ -1,6 +1,6 @@
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
-using Drift.Cli.Commands.Global;
+using Drift.Cli.Commands.Common;
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -31,10 +31,10 @@ internal class OutputManagerFactory(
     );
   }
 
-  private static (TextWriter StdOut, TextWriter ErrOut, bool Verbose, GlobalParameters.OutputFormat OutputFormat)
+  private static (TextWriter StdOut, TextWriter ErrOut, bool Verbose, OutputFormat OutputFormat)
     GetConsoleOuts( ParseResult parseResult ) {
-    var outputFormatValue = parseResult.GetValue( GlobalParameters.Options.OutputFormatOption );
-    var verboseValue = parseResult.GetValue( GlobalParameters.Options.Verbose );
+    var outputFormatValue = parseResult.GetValue( CommonParameters.Options.OutputFormatOption );
+    var verboseValue = parseResult.GetValue( CommonParameters.Options.Verbose );
     //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
 
     // Even though the option has a default value, it is not set when the option is not added to a command.
@@ -42,10 +42,10 @@ internal class OutputManagerFactory(
     if ( outputFormatValue == 0 ) {
       // throw new Exception( "Output format not specified" );
       // Be graceful for now...
-      outputFormatValue = GlobalParameters.OutputFormat.Normal;
+      outputFormatValue = OutputFormat.Normal;
     }
 
-    if ( outputFormatValue is not GlobalParameters.OutputFormat.Normal ) {
+    if ( outputFormatValue is not OutputFormat.Normal ) {
       return ( TextWriter.Null, TextWriter.Null, false, outputFormatValue );
     }
 
@@ -103,11 +103,11 @@ internal class OutputManagerFactory(
         .SetMinimumLevel( LogLevel.Debug ) // Parse from args?
     );
 
-    var outputFormatValue = parseResult.GetValue( GlobalParameters.Options.OutputFormatOption );
-    var verboseValue = parseResult.GetValue( GlobalParameters.Options.Verbose );
+    var outputFormatValue = parseResult.GetValue( CommonParameters.Options.OutputFormatOption );
+    var verboseValue = parseResult.GetValue( CommonParameters.Options.Verbose );
     //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
 
-    if ( outputFormatValue is not GlobalParameters.OutputFormat.Log ) {
+    if ( outputFormatValue is not OutputFormat.Log ) {
       return NullLogger.Instance;
     }
 

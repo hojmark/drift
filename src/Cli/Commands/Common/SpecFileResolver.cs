@@ -40,7 +40,7 @@ internal class SpecFileResolver {
 
     if ( throwsOnNotFound.HasValue && throwsOnNotFound.Value ) {
       throw new FileNotFoundException(
-        $"Could not resolve a file for '{name}' in directory '{_baseDirectory}' using conventions: {{exact filename}} → {{name}}.spec.yaml → drift.spec.yaml → *.spec.yaml"
+        $"Could not resolve a file for '{name}' in directory '{_baseDirectory}' using conventions: [exact filename] → <name>.spec.yaml → drift.spec.yaml → *.spec.yaml"
       );
     }
 

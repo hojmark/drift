@@ -18,9 +18,27 @@
       "dotnetRunMessages": true,
       "environmentVariables": {}
     },
-    "scan (Log)": {
+    "scan (home)": {
+      "commandName": "Project",
+      "commandLineArgs": "scan ~",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    },
+    "scan (o=log)": {
       "commandName": "Project",
       "commandLineArgs": "scan -o log",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    },
+    "lint": {
+      "commandName": "Project",
+      "commandLineArgs": "lint",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    },
+    "lint (home)": {
+      "commandName": "Project",
+      "commandLineArgs": "lint ~",
       "dotnetRunMessages": true,
       "environmentVariables": {}
     }

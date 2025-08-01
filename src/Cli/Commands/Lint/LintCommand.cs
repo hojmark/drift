@@ -32,7 +32,8 @@ internal class LintCommand : CommandBase<LintParameters> {
     }
 
     Output.Log.LogInformation( "Validating network spec: {Spec}", filePath );
-    Output.Normal.WriteLine( $"Validating network spec {filePath}" );
+    Output.Normal.Write( $"Validating " );
+    Output.Normal.WriteLine( $"{filePath}  ", ConsoleColor.Cyan );
 
     var yamlContent = await File.ReadAllTextAsync( filePath.FullName );
 

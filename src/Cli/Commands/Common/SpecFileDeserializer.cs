@@ -1,4 +1,5 @@
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Normal;
 using Drift.Domain;
 using Drift.Spec.Schema;
 using Drift.Spec.Serialization;
@@ -36,19 +37,15 @@ internal static class SpecFileDeserializer {
 
     if ( filePath != null ) {
       output.Log.LogDebug( "Using network spec: {Spec}", filePath );
-      output.Normal.WriteLine( "Using network spec" );
-      output.Normal.Write( 1, $"{filePath}  ", ConsoleColor.Cyan );
+      output.Normal.Write( "Using network spec " );
+      output.Normal.Write( $"{filePath}  ", ConsoleColor.Cyan );
 
       var specFileContents = new StreamReader( filePath.Open( FileMode.Open, FileAccess.Read, FileShare.Read ) );
       var valid = SpecValidator.Validate( specFileContents.ReadToEnd(), SpecVersion.V1_preview ).IsValid;
 
-      output.Normal.WriteLineVerbose();
-      output.Normal.WriteLine(
-        valid ? "✔ Valid" : "✖ Validation errors",
-        valid ? ConsoleColor.Green : ConsoleColor.Red
-      );
+      output.Normal.WriteLineValidity( valid );
 
-      output.Normal.WriteLine();
+      //output.Normal.WriteLine();
 
       spec = YamlConverter.Deserialize( filePath! );
     }

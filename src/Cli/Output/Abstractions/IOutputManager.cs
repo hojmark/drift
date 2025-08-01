@@ -1,5 +1,3 @@
-using Drift.Cli.Commands.Common;
-
 namespace Drift.Cli.Output.Abstractions;
 
 internal interface IOutputManager {

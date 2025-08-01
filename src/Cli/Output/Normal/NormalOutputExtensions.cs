@@ -1,8 +1,7 @@
 using System.Text.RegularExpressions;
-using Drift.Cli.Commands.Common;
 using Drift.Cli.Output.Abstractions;
 
-namespace Drift.Cli;
+namespace Drift.Cli.Output.Normal;
 
 internal static class NormalOutputExtensions {
   internal static string PromptString(
@@ -19,7 +18,7 @@ internal static class NormalOutputExtensions {
       if ( string.IsNullOrWhiteSpace( value ) ) {
         DeletePreviousLine();
         WritePrompt();
-        console.WriteValue( defaultValue );
+        console.WritePromptValue( defaultValue );
 
         return defaultValue;
       }
@@ -28,11 +27,11 @@ internal static class NormalOutputExtensions {
       WritePrompt();
 
       if ( regex == null || regex.IsMatch( value ) ) {
-        console.WriteValue( "✔ " + value );
+        console.WritePromptValue( "✔ " + value );
         return value;
       }
 
-      console.Write( ConsoleExtensions.Text.Bold( value ), ConsoleColor.Cyan );
+      console.Write( TextHelper.Bold( value ), ConsoleColor.Cyan );
       console.WriteLine( $"{value} is not a valid value" );
     }
 
@@ -53,7 +52,7 @@ internal static class NormalOutputExtensions {
       if ( string.IsNullOrWhiteSpace( value ) ) {
         DeletePreviousLine();
         WritePrompt();
-        console.WriteValue( ConsoleExtensions.Text.Bold( defaultOption == PromptOption.Yes ? "yes" : "no" ) );
+        console.WritePromptValue( TextHelper.Bold( defaultOption == PromptOption.Yes ? "yes" : "no" ) );
 
         return defaultOption == PromptOption.Yes;
       }
@@ -63,13 +62,13 @@ internal static class NormalOutputExtensions {
 
       switch ( value ) {
         case "y" or "yes":
-          console.WriteValue( ConsoleExtensions.Text.Bold( "yes" ) );
+          console.WritePromptValue( TextHelper.Bold( "yes" ) );
           return true;
         case "n" or "no":
-          console.WriteValue( ConsoleExtensions.Text.Bold( "no" ) );
+          console.WritePromptValue( TextHelper.Bold( "no" ) );
           return false;
         default:
-          console.Write( ConsoleExtensions.Text.Bold( value ), ConsoleColor.Cyan );
+          console.Write( TextHelper.Bold( value ), ConsoleColor.Cyan );
           console.WriteLine( " Try again!", ConsoleColor.Red );
           continue;
       }
@@ -85,12 +84,27 @@ internal static class NormalOutputExtensions {
     Console.SetCursorPosition( 0, Console.CursorTop - 1 );
   }
 
-  private static void WriteValue( this INormalOutput console, string value ) {
-    console.WriteLine( ConsoleExtensions.Text.Bold( value ), ConsoleColor.Cyan );
+  private static void WritePromptValue( this INormalOutput console, string value ) {
+    console.WriteLine( TextHelper.Bold( value ), ConsoleColor.Cyan );
   }
 
   internal enum PromptOption {
     Yes = 1,
     No = 2
   }
+
+  internal static void WriteLineValidity( this INormalOutput output, bool isValid ) {
+    output.WriteLine(
+      isValid ? "✔ Valid" : "✖ Validation errors",
+      isValid ? ConsoleColor.Green : ConsoleColor.Red
+    );
+  }
+/*
+  /// <summary>
+  /// Writes a formatted line to the output, interpolating values into the template (using {0}, {1}, ...).
+  /// </summary>
+  internal static void WriteLineWithVariable( this INormalOutput output, string template, params string[] values ) {
+    var formattedText = string.Format( template, values );
+    output.WriteLine( formattedText );
+  }*/
 }

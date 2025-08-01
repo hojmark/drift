@@ -1,10 +1,10 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Normal;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -15,13 +15,12 @@ using Drift.Utils;
 using Microsoft.Extensions.Logging;
 using NaturalSort.Extension;
 using Spectre.Console;
-using ConsoleExtensions = Drift.Cli.Commands.Common.ConsoleExtensions;
 using Environment = System.Environment;
 
 namespace Drift.Cli.Commands.Init;
 
 internal class InitCommand : CommandBase<InitParameters> {
-  // Intended for testing (although I should maybe look into a better way to do this e.g. Linux expect)
+  /// Intended for testing (although I should maybe look into a better way to do this e.g. Linux expect)
   internal static readonly Option<ForceMode?> ForceModeOption = new("--force-mode") {
     Description = "(HIDDEN) Force mode", Arity = ArgumentArity.ZeroOrOne, Hidden = true
   };
@@ -58,7 +57,6 @@ internal class InitCommand : CommandBase<InitParameters> {
       "drift init main-site --discover --with-env"
     );*/
   }
-
 
   protected override async Task<int> Invoke( CancellationToken cancellationToken, InitParameters parameters ) {
     var isInteractive = IsInteractiveMode(
@@ -98,7 +96,6 @@ internal class InitCommand : CommandBase<InitParameters> {
 
     return ExitCodes.Success;
   }
-
 
   // Detects if all inputs are unset or empty — if so, assume interactive mode.
   // Intended for optional string and bool? args.
@@ -160,11 +157,10 @@ internal class InitCommand : CommandBase<InitParameters> {
     return new InitOptions { Name = name, Overwrite = overwrite ?? false, Discover = discover ?? false };
   }
 
-
   private static async Task<bool> Initialize( IOutputManager output, InitOptions options ) {
     try {
-      var specPath = Path.Combine( ".", $"{options.Name}.spec.yaml" );
-      var envPath = Path.Combine( ".", $"{options.Name}.env.yaml" );
+      var specPath = Path.GetFullPath( Path.Combine( ".", $"{options.Name}.spec.yaml" ) );
+      var envPath = Path.GetFullPath( Path.Combine( ".", $"{options.Name}.env.yaml" ) );
 
       if ( File.Exists( specPath ) ) {
         switch ( options.Overwrite ) {
@@ -174,7 +170,7 @@ internal class InitCommand : CommandBase<InitParameters> {
             break;
           case false:
             output.Normal.WriteError( "❌\uFE0F Spec file already exists: " );
-            output.Normal.WriteLineError( ConsoleExtensions.Text.Bold( $"{specPath}" ) );
+            output.Normal.WriteLineError( TextHelper.Bold( $"{specPath}" ) );
             output.Log.LogError( "Spec file already exists: {SpecPath}", specPath );
             return false;
         }
@@ -244,7 +240,7 @@ internal class InitCommand : CommandBase<InitParameters> {
 
       if ( output.Is( OutputFormat.Normal ) ) {
         output.Normal.Write( "✅\uFE0F Created spec: " );
-        output.Normal.WriteLine( ConsoleExtensions.Text.Bold( $"{fullPath}" ) );
+        output.Normal.WriteLine( TextHelper.Bold( $"{fullPath}" ) );
       }
 
       if ( output.Is( OutputFormat.Log ) ) {
@@ -262,7 +258,7 @@ internal class InitCommand : CommandBase<InitParameters> {
     }
   }
 
-//TODO move somewhere else
+  //TODO move somewhere else
   internal static TimeSpan CalculateScanDuration( int prefixLength, double scansPerSecond ) {
     double hostCount = IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( prefixLength ) );
     double totalSeconds = hostCount / scansPerSecond;

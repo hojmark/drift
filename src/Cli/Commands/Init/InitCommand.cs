@@ -239,7 +239,8 @@ internal class InitCommand : CommandBase<InitParameters> {
       var fullPath = Path.GetFullPath( specPath );
 
       if ( output.Is( OutputFormat.Normal ) ) {
-        output.Normal.Write( "✅\uFE0F Created spec: " );
+        output.Normal.Write( "✔", ConsoleColor.Green );
+        output.Normal.Write( " Created spec " );
         output.Normal.WriteLine( TextHelper.Bold( $"{fullPath}" ) );
       }
 

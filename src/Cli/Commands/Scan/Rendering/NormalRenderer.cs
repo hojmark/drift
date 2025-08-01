@@ -12,7 +12,7 @@ using Spectre.Console;
 namespace Drift.Cli.Commands.Scan.Rendering;
 
 //TODO use NormalOutput instead of Spectre directly
-internal class TableRenderer( INormalOutput console ) : DiffRenderer {
+internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
   // Anonymising MACs e.g. for GitHub screenshot
   //TODO replace with more generic data simulation
   private const bool FakeMac = false;

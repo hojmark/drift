@@ -5,5 +5,4 @@ public static class ExitCodes {
   public const int UnknownError = 1;
   public const int GeneralError = 2;
   public const int ValidationError = 3;
-
 }

@@ -1,2 +1,0 @@
-﻿Validating network spec {SolutionDirectory}src/Spec.Tests/resources/network_single_subnet.yaml
-✅ Spec is valid

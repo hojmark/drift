@@ -1,7 +1,7 @@
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Commands.Global;
+namespace Drift.Cli.Commands.Common;
 
 internal class SpecFileResolver {
   private readonly string _baseDirectory;
@@ -40,7 +40,7 @@ internal class SpecFileResolver {
 
     if ( throwsOnNotFound.HasValue && throwsOnNotFound.Value ) {
       throw new FileNotFoundException(
-        $"Could not resolve a file for '{name}' in directory '{_baseDirectory}' using conventions: exact filename → {{name}}.spec.yaml → drift.spec.yaml → *.spec.yaml"
+        $"Could not resolve a file for '{name}' in directory '{_baseDirectory}' using conventions: [exact filename] → <name>.spec.yaml → drift.spec.yaml → *.spec.yaml"
       );
     }
 
@@ -87,6 +87,7 @@ internal class SpecFileResolver {
   }
 
   private FileInfo? ResolveByDefaults() {
+    // TODO consider usefulness of this default?
     // Priority 3: "drift.spec.yaml"
     var driftSpecPath = Path.Combine( _baseDirectory, "drift.spec.yaml" );
     if ( File.Exists( driftSpecPath ) ) {

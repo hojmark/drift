@@ -1,10 +1,10 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Global;
 using Drift.Cli.Commands.Scan;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Normal;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -15,43 +15,40 @@ using Drift.Utils;
 using Microsoft.Extensions.Logging;
 using NaturalSort.Extension;
 using Spectre.Console;
-using ConsoleExtensions = Drift.Cli.Commands.Global.ConsoleExtensions;
 using Environment = System.Environment;
 
 namespace Drift.Cli.Commands.Init;
 
-internal class InitCommand : Command {
-  internal InitCommand( ILoggerFactory loggerFactory ) : base( "init", "Create a network spec" ) {
-    // Intended for testing (although I should maybe look into a better way to do this e.g. Linux expect)
-    var forceModeOption = new Option<ForceMode?>(
-      "--force-mode",
-      "(HIDDEN) Force mode"
-    ) { Arity = ArgumentArity.ZeroOrOne, IsHidden = true };
-    AddOption( forceModeOption );
+internal class InitCommand : CommandBase<InitParameters> {
+  /// Intended for testing (although I should maybe look into a better way to do this e.g. Linux expect)
+  internal static readonly Option<ForceMode?> ForceModeOption = new("--force-mode") {
+    Description = "(HIDDEN) Force mode", Arity = ArgumentArity.ZeroOrOne, Hidden = true
+  };
+
+  // Should perform the same default scan as the scan command to give a good first impression
+  // TODO structure code so this always happens
+  internal static readonly Option<bool?> DiscoverOption = new("--discover") {
+    Description = "Populate with devices and subnets discovered in a network scan", Arity = ArgumentArity.ZeroOrOne
+  };
+
+  internal static readonly Option<bool?> OverwriteOption = new("--overwrite") {
+    Description = "Overwrite existing file", Arity = ArgumentArity.ZeroOrOne
+  };
+
+  internal InitCommand( OutputManagerFactory outputManagerFactory ) : base(
+    "init",
+    "Create a network spec",
+    outputManagerFactory.Create,
+    result => new InitParameters( result )
+  ) {
+    Add( ForceModeOption );
+    Add( DiscoverOption );
+    Add( OverwriteOption );
 
     /*var withEnvOption = new Option<bool>(
       "--with-env",
       "Also create an environment config alongside the spec"
     ) { Arity = ArgumentArity.ZeroOrOne };*/
-
-    // Should perform the same default scan as the scan command to give a good first impression
-    // TODO structure code so this always happens
-    var discoverOption = new Option<bool?>(
-      "--discover",
-      "Populate with devices and subnets discovered in a network scan"
-    ) { Arity = ArgumentArity.ZeroOrOne };
-    AddOption( discoverOption );
-
-    var overwriteOption = new Option<bool?>(
-      "--overwrite",
-      "Overwrite existing file"
-    ) { Arity = ArgumentArity.ZeroOrOne };
-    AddOption( overwriteOption );
-
-    AddOption( GlobalParameters.Options.Verbose );
-    //AddOption( GlobalParameters.Options.VeryVerbose );
-
-    AddOption( GlobalParameters.Options.OutputFormatOption );
 
     //TODO support examples
     /*initCommand.WithExamples(
@@ -59,46 +56,32 @@ internal class InitCommand : Command {
       "drift init main-site",
       "drift init main-site --discover --with-env"
     );*/
-
-    AddArgument( GlobalParameters.Arguments.SpecOptional );
-
-    this.SetHandler(
-      CommandHandler,
-      new ConsoleOutputManagerBinder( loggerFactory ),
-      GlobalParameters.Arguments.SpecOptional,
-      GlobalParameters.Options.OutputFormatOption,
-      overwriteOption,
-      discoverOption,
-      forceModeOption
-    );
   }
 
-  private static async Task<int> CommandHandler(
-    IOutputManager output,
-    FileInfo? name,
-    GlobalParameters.OutputFormat outputFormat,
-    bool? overwrite,
-    bool? discover,
-    ForceMode? forceMode
-  ) {
-    var isInteractive = IsInteractiveMode( forceMode, name, overwrite, discover );
+  protected override async Task<int> Invoke( CancellationToken cancellationToken, InitParameters parameters ) {
+    var isInteractive = IsInteractiveMode(
+      parameters.ForceMode,
+      parameters.SpecFile,
+      parameters.Overwrite,
+      parameters.Discover
+    );
 
-    if ( isInteractive && outputFormat != GlobalParameters.OutputFormat.Normal ) {
+    if ( isInteractive && parameters.OutputFormat != OutputFormat.Normal ) {
       throw new ArgumentException( "Interactive mode is not supported with non-normal output format" );
     }
 
-    output.Log.LogDebug( "Running init command" );
+    Output.Log.LogDebug( "Running init command" );
     // TODO skip emojis in output if redirected?
 
     var initOptions = isInteractive
-      ? RunInteractive( output.Normal )
-      : RunNonInteractive( output, name?.Name, overwrite, discover );
+      ? RunInteractive( Output.Normal )
+      : RunNonInteractive( Output, parameters.SpecFile?.Name, parameters.Overwrite, parameters.Discover );
 
     if ( initOptions == null ) {
       return ExitCodes.GeneralError;
     }
 
-    var success = await Initialize( output, initOptions );
+    var success = await Initialize( Output, initOptions );
 
     if ( !success ) {
       return ExitCodes.GeneralError;
@@ -109,11 +92,10 @@ internal class InitCommand : Command {
       AnsiConsole.MarkupLine( $"💡\uFE0F Next: Try [bold][green]drift scan {initOptions.Name}[/][/]" );
     }
 
-    output.Log.LogDebug( "Init command completed" );
+    Output.Log.LogDebug( "Init command completed" );
 
     return ExitCodes.Success;
   }
-
 
   // Detects if all inputs are unset or empty — if so, assume interactive mode.
   // Intended for optional string and bool? args.
@@ -175,19 +157,23 @@ internal class InitCommand : Command {
     return new InitOptions { Name = name, Overwrite = overwrite ?? false, Discover = discover ?? false };
   }
 
-
   private static async Task<bool> Initialize( IOutputManager output, InitOptions options ) {
     try {
-      var specPath = Path.Combine( ".", $"{options.Name}.spec.yaml" );
-      var envPath = Path.Combine( ".", $"{options.Name}.env.yaml" );
+      var specPath = Path.GetFullPath( Path.Combine( ".", $"{options.Name}.spec.yaml" ) );
+      var envPath = Path.GetFullPath( Path.Combine( ".", $"{options.Name}.env.yaml" ) );
 
-      if ( !options.Overwrite && File.Exists( specPath ) ) {
-        output.Normal.WriteError( "❌\uFE0F Spec file already exists: " );
-        output.Normal.WriteLineError( ConsoleExtensions.Text.Bold( $"{specPath}" ) );
-
-        output.Log.LogError( "Spec file already exists: {SpecPath}", specPath );
-
-        return false;
+      if ( File.Exists( specPath ) ) {
+        switch ( options.Overwrite ) {
+          case true:
+            output.Normal.WriteLineVerbose( $"Spec file already exists: {specPath} (overwriting)" );
+            output.Log.LogDebug( "Spec file already exists: {SpecPath} (overwriting)", specPath );
+            break;
+          case false:
+            output.Normal.WriteError( "❌\uFE0F Spec file already exists: " );
+            output.Normal.WriteLineError( TextHelper.Bold( $"{specPath}" ) );
+            output.Log.LogError( "Spec file already exists: {SpecPath}", specPath );
+            return false;
+        }
       }
 
       // SCAN
@@ -212,7 +198,7 @@ internal class InitCommand : Command {
       );
 
       if ( options.Discover ) {
-        if ( output.Is( GlobalParameters.OutputFormat.Normal ) ) {
+        if ( output.Is( OutputFormat.Normal ) ) {
           await AnsiConsole
             .Status()
             .StartAsync( "Scanning network ...", async ctx => {
@@ -221,7 +207,7 @@ internal class InitCommand : Command {
             } );
         }
 
-        if ( output.Is( GlobalParameters.OutputFormat.Log ) ) {
+        if ( output.Is( OutputFormat.Log ) ) {
           var lastLogTime = DateTime.MinValue;
           var completedTasks = new HashSet<string>();
 
@@ -252,12 +238,13 @@ internal class InitCommand : Command {
 
       var fullPath = Path.GetFullPath( specPath );
 
-      if ( output.Is( GlobalParameters.OutputFormat.Normal ) ) {
-        output.Normal.Write( "✅\uFE0F Created spec: " );
-        output.Normal.WriteLine( ConsoleExtensions.Text.Bold( $"{fullPath}" ) );
+      if ( output.Is( OutputFormat.Normal ) ) {
+        output.Normal.Write( "✔", ConsoleColor.Green );
+        output.Normal.Write( " Created spec " );
+        output.Normal.WriteLine( TextHelper.Bold( $"{fullPath}" ) );
       }
 
-      if ( output.Is( GlobalParameters.OutputFormat.Log ) ) {
+      if ( output.Is( OutputFormat.Log ) ) {
         output.Log.LogInformation( "Created spec: {SpecPath}", specPath );
       }
 

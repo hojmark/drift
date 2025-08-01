@@ -1,6 +1,5 @@
-using System.CommandLine;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Global;
+using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Cli.Commands.Scan.Subnet;
@@ -26,14 +25,19 @@ namespace Drift.Cli.Commands.Scan;
  *   Monitor mode:
  *     drift monitor --reference declared.yaml --interval 10m --notify slack,email,log,webhook
  */
-internal class ScanCommand : Command {
+internal class ScanCommand : CommandBase<ScanParameters> {
   private enum ShowMode {
     All = 1,
     Changed = 2,
     Unchanged = 3
   }
 
-  internal ScanCommand( ILoggerFactory loggerFactory ) : base( "scan", "Scan the network and detect drift" ) {
+  internal ScanCommand( OutputManagerFactory outputManagerFactory ) : base(
+    "scan",
+    "Scan the network and detect drift",
+    outputManagerFactory.Create,
+    result => new ScanParameters( result )
+  ) {
     //var monitorOption = new Option<bool>( "--monitor", "Continually scan network(s) until manually stopped." );
     //AddOption( monitorOption );
 
@@ -48,39 +52,20 @@ internal class ScanCommand : Command {
     // Combine with option to change the default
     // Alternative: --changed [all|skip|only]
 
-    var changed = new Option<ShowMode>(
+    /*var changed = new Option<ShowMode>(
       "--show",
       () => ShowMode.All,
       "Select which devices to show: all (show all), changed (only changed devices), unchanged (only unchanged devices)"
-    );
-
-    //TODO re-intro when fixed
-    AddOption( GlobalParameters.Options.Verbose );
-    //AddOption( GlobalParameters.Options.VeryVerbose );
-
-    AddOption( GlobalParameters.Options.OutputFormatOption );
-
-    AddArgument( GlobalParameters.Arguments.SpecOptional );
-
-    this.SetHandler(
-      CommandHandler,
-      new ConsoleOutputManagerBinder( loggerFactory ),
-      GlobalParameters.Arguments.SpecOptional,
-      GlobalParameters.Options.OutputFormatOption
-    );
+    );*/
   }
 
-  private static async Task<int> CommandHandler(
-    IOutputManager output,
-    FileInfo? specFile,
-    GlobalParameters.OutputFormat outputFormat
-  ) {
-    output.Log.LogDebug( "Running scan command" );
+  protected override async Task<int> Invoke( CancellationToken cancellationToken, ScanParameters parameters ) {
+    Output.Log.LogDebug( "Running scan command" );
 
     Network? network;
 
     try {
-      network = SpecFileDeserializer.Deserialize( specFile, output )?.Network;
+      network = SpecFileDeserializer.Deserialize( parameters.SpecFile, Output )?.Network;
     }
     catch ( FileNotFoundException ) {
       return ExitCodes.GeneralError;
@@ -88,21 +73,21 @@ internal class ScanCommand : Command {
 
     //TODO use both declared and discovered subnets
     ISubnetProvider subnetProvider = network == null
-      ? new InterfaceSubnetProvider( output )
+      ? new InterfaceSubnetProvider( Output )
       : new DeclaredSubnetProvider( network.Subnets.Where( s => s.Enabled ?? true ) );
 
-    output.Log.LogDebug( "Using subnet provider: {SubnetProviderType}", subnetProvider.GetType().Name );
+    Output.Log.LogDebug( "Using subnet provider: {SubnetProviderType}", subnetProvider.GetType().Name );
 
     var subnets = subnetProvider.Get();
 
-    //var scanner = new NmapNetworkScanner( output ); // TODO DI
-    var scanner = new PingNetworkScanner( output );
+    //var scanner = new NmapNetworkScanner( Output ); // TODO DI
+    var scanner = new PingNetworkScanner( Output );
 
-    output.Normal.WriteLine( 0, $"Scanning {subnets.Count} subnet(s)" ); // TODO many more varieties
+    Output.Normal.WriteLine( 0, $"Scanning {subnets.Count} subnet(s)" ); // TODO many more varieties
     foreach ( var subnet in subnets ) {
       //TODO write name if from spec: Ui.WriteLine( 1, $"{subnet.Id}: {subnet.Network}" );
-      output.Normal.Write( 1, $"{subnet}", ConsoleColor.Cyan );
-      output.Normal.WriteLine(
+      Output.Normal.Write( 1, $"{subnet}", ConsoleColor.Cyan );
+      Output.Normal.WriteLine(
         " (" + IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( subnet.PrefixLength ) ) +
         " addresses, " +
         InitCommand.CalculateScanDuration( subnet.PrefixLength,
@@ -111,14 +96,14 @@ internal class ScanCommand : Command {
         ")", ConsoleColor.DarkGray );
     }
 
-    output.Log.LogInformation(
+    Output.Log.LogInformation(
       "Scanning {SubnetCount} subnet(s): {SubnetList}", subnets.Count,
       string.Join( ", ", subnets )
     );
 
     ScanResult? scanResult = null;
 
-    if ( output.Is( GlobalParameters.OutputFormat.Normal ) ) {
+    if ( Output.Is( OutputFormat.Normal ) ) {
       var dCol = new TaskDescriptionColumn();
       dCol.Alignment = Justify.Right;
       var pCol = new PercentageColumn();
@@ -140,13 +125,13 @@ internal class ScanCommand : Command {
         } );
     }
 
-    if ( output.Is( GlobalParameters.OutputFormat.Log ) ) {
+    if ( Output.Is( OutputFormat.Log ) ) {
       var lastLogTime = DateTime.MinValue;
       var completedTasks = new HashSet<string>();
 
       //TODO note: subnets.FIRST() !!! support multiple subnets !!!
       scanResult = await scanner.ScanAsync( subnets.First(), onProgress: progressReport => {
-        UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
+        UpdateProgressLog( progressReport, Output, ref lastLogTime, ref completedTasks );
       }, cancellationToken: CancellationToken.None );
     }
 
@@ -154,27 +139,27 @@ internal class ScanCommand : Command {
       throw new Exception( "Scan result is null" );
     }
 
-    output.Log.LogInformation( "Scan completed" );
+    Output.Log.LogInformation( "Scan completed" );
 
     IRenderer<ScanRenderData> renderer =
-      outputFormat switch {
-        GlobalParameters.OutputFormat.Normal => new TableRenderer( output.Normal ),
-        GlobalParameters.OutputFormat.Log => new LogRenderer( output.Log ),
+      parameters.OutputFormat switch {
+        OutputFormat.Normal => new NormalRenderer( Output.Normal ),
+        OutputFormat.Log => new LogRenderer( Output.Log ),
         _ => new NullRenderer<ScanRenderData>()
       };
 
-    output.Log.LogDebug( "Render scan result using {RendererType}", renderer.GetType().Name );
+    Output.Log.LogDebug( "Render scan result using {RendererType}", renderer.GetType().Name );
 
-    output.Normal.WriteLine();
+    Output.Normal.WriteLine();
 
     renderer.Render(
       new ScanRenderData {
         DevicesDiscovered = scanResult.DiscoveredDevices,
         DevicesDeclared = network == null ? [] : network.Devices.Where( d => d.Enabled ?? true )
-      }/*, output.Log*/
+      } /*, output.Log*/
     );
 
-    output.Log.LogDebug( "Scan command completed" );
+    Output.Log.LogDebug( "Scan command completed" );
 
     return ExitCodes.Success;
 
@@ -199,6 +184,7 @@ internal class ScanCommand : Command {
       }
     }
   }
+
 
   //TODO make private
   internal static void UpdateProgressLog(

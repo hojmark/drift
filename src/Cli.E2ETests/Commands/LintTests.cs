@@ -14,7 +14,7 @@ public class LintTests : DriftBinaryFixture {
 
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( initResult.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-        Assert.That( initResult.StdOut, Contains.Substring( "✅️ Created spec: " ) );
+        Assert.That( initResult.StdOut, Contains.Substring( "✔ Created spec " ) );
         Assert.That( initResult.ErrOut, Is.Empty );
       }
 
@@ -27,9 +27,8 @@ public class LintTests : DriftBinaryFixture {
       // Assert
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( lintResult.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-        Assert.That( lintResult.StdOut, Contains.Substring( "✅️ Spec is valid" ) );
-        Assert.That( lintResult.ErrOut, Is.Empty );
         await Verify( lintResult.StdOut );
+        Assert.That( lintResult.ErrOut, Is.Empty );
       }
     }
     catch ( Exception ex ) {

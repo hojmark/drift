@@ -15,14 +15,14 @@ namespace Drift.Cli.Commands.Preview;
 internal class ConfigCommand : Command {
   internal ConfigCommand() : base( "config", "View or change user preferences" ) {
     var showCommand = new Command( "list", "Display all current user settings" );
-    showCommand.SetHandler( () => {
+    showCommand.SetAction( r => {
       var settings = UserSettings.Load();
       //Console.WriteLine(YamlSerializer.Serialize(settings));
     } );
-    AddCommand( showCommand );
+    Subcommands.Add( showCommand );
 
     var getCommand = new Command( "get", "Get a specific setting" );
-    getCommand.AddArgument( new Argument<string>( "key" ) );
+    getCommand.Arguments.Add( new Argument<string>( "key" ) );
     /*  getCommand.SetHandler( ( string key ) => {
         var settings = UserSettings.Load();
         var value = key.ToLower() switch {
@@ -35,11 +35,11 @@ internal class ConfigCommand : Command {
         };
         Console.WriteLine( value );
       } );*/
-    AddCommand( getCommand );
+    Subcommands.Add( getCommand );
 
     var setCommand = new Command( "set", "Set a specific setting" );
-    setCommand.AddArgument( new Argument<string>( "key" ) );
-    setCommand.AddArgument( new Argument<string>( "value" ) );
+    setCommand.Arguments.Add( new Argument<string>( "key" ) );
+    setCommand.Arguments.Add( new Argument<string>( "value" ) );
     /* setCommand.SetHandler( ( string key, string value ) => {
        var settings = UserSettings.Load();
        switch ( key.ToLower() ) {
@@ -56,13 +56,13 @@ internal class ConfigCommand : Command {
        settings.Save();
        Console.WriteLine( "✅ Setting updated." );
      } );*/
-    AddCommand( setCommand );
+    Subcommands.Add( setCommand );
 
     var resetCommand = new Command( "reset", "Clear all user settings" );
-    resetCommand.SetHandler( () => {
+    resetCommand.SetAction( r => {
       new UserSettings().Reset();
       //Console.WriteLine( "✅ Settings cleared." );
     } );
-    AddCommand( resetCommand );
+    Subcommands.Add( resetCommand );
   }
 }

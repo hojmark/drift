@@ -1,7 +1,7 @@
 namespace Drift.Cli.Commands.Init;
 
 // Preferrably not needed...
-public enum ForceMode {
+internal enum ForceMode {
   Interactive,
   NonInteractive
 }

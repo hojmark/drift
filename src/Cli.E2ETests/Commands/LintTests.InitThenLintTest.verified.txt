@@ -1,2 +1,2 @@
-﻿Validating network spec {CurrentDirectory}unittest.spec.yaml
-✅ Spec is valid
+﻿Validating {CurrentDirectory}unittest.spec.yaml  
+✔ Valid

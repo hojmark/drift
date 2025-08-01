@@ -94,10 +94,12 @@ internal static class NormalOutputExtensions {
   }
 
   internal static void WriteLineValidity( this INormalOutput output, bool isValid ) {
-    output.WriteLine(
-      isValid ? "✔ Valid" : "✖ Validation errors",
-      isValid ? ConsoleColor.Green : ConsoleColor.Red
-    );
+    if ( isValid ) {
+      output.WriteLine( "✔ Valid", ConsoleColor.Green );
+    }
+    else {
+      output.WriteLineError( "✖ Validation failed" );
+    }
   }
 /*
   /// <summary>

@@ -14,13 +14,25 @@
     },
     "scan": {
       "commandName": "Project",
-      "commandLineArgs": "scan ~/git/drift/main-site.spec.yaml",
+      "commandLineArgs": "scan",
       "dotnetRunMessages": true,
       "environmentVariables": {}
     },
-    "scan (Log)": {
+    "scan (home)": {
+      "commandName": "Project",
+      "commandLineArgs": "scan ~",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    },
+    "scan (o=log)": {
       "commandName": "Project",
       "commandLineArgs": "scan -o log",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    },
+    "lint": {
+      "commandName": "Project",
+      "commandLineArgs": "lint",
       "dotnetRunMessages": true,
       "environmentVariables": {}
     },

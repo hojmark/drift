@@ -3,10 +3,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Tools;
 
-internal static class Ping {
+internal class OsPingTool : IPingTool {
   private static string ToolPath => "ping";
 
-  internal static Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> RunAsync(
+  public Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> RunAsync(
     string arguments,
     bool? logCommand = false,
     ILogger? logger = null

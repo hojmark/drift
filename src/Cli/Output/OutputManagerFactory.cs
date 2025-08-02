@@ -11,16 +11,18 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Drift.Cli.Output;
 
+public interface IOutputManagerFactory {
+  IOutputManager Create( ParseResult result );
+}
+
 //TODO temporary migration away from BinderBase
 // Justification: this class is part of providing the alternative to the banned APIs
 [SuppressMessage( "ApiDesign", "RS0030:Do not use banned APIs" )]
 internal class OutputManagerFactory(
   //TODO Inject config instead
   bool toConsole = true
-) {
-  internal IOutputManager Create(
-    ParseResult parseResult
-  ) {
+) : IOutputManagerFactory {
+  public IOutputManager Create( ParseResult parseResult ) {
     var consoleOuts = GetConsoleOuts( parseResult );
     return new ConsoleOutputManager(
       GetLogger( parseResult, toConsole ),

@@ -1,10 +1,12 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
+using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Normal;
+using Drift.Cli.Scan;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -19,7 +21,7 @@ using Environment = System.Environment;
 
 namespace Drift.Cli.Commands.Init;
 
-internal class InitCommand : CommandBase<InitParameters> {
+internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
   /// Intended for testing (although I should maybe look into a better way to do this e.g. Linux expect)
   internal static readonly Option<ForceMode?> ForceModeOption = new("--force-mode") {
     Description = "(HIDDEN) Force mode", Arity = ArgumentArity.ZeroOrOne, Hidden = true
@@ -35,11 +37,10 @@ internal class InitCommand : CommandBase<InitParameters> {
     Description = "Overwrite existing file", Arity = ArgumentArity.ZeroOrOne
   };
 
-  internal InitCommand( OutputManagerFactory outputManagerFactory ) : base(
+  internal InitCommand( IServiceProvider provider ) : base(
     "init",
     "Create a network spec",
-    outputManagerFactory.Create,
-    result => new InitParameters( result )
+    provider
   ) {
     Add( ForceModeOption );
     Add( DiscoverOption );
@@ -58,7 +59,13 @@ internal class InitCommand : CommandBase<InitParameters> {
     );*/
   }
 
-  protected override async Task<int> Invoke( CancellationToken cancellationToken, InitParameters parameters ) {
+  protected override InitParameters CreateParameters( ParseResult result ) {
+    return new InitParameters( result );
+  }
+}
+
+public class InitCommandHandler( IOutputManager output, INetworkScanner scanner ) : ICommandHandler<InitParameters> {
+  public async Task<int> Invoke( InitParameters parameters, CancellationToken cancellationToken ) {
     var isInteractive = IsInteractiveMode(
       parameters.ForceMode,
       parameters.SpecFile,
@@ -70,18 +77,18 @@ internal class InitCommand : CommandBase<InitParameters> {
       throw new ArgumentException( "Interactive mode is not supported with non-normal output format" );
     }
 
-    Output.Log.LogDebug( "Running init command" );
+    output.Log.LogDebug( "Running init command" );
     // TODO skip emojis in output if redirected?
 
     var initOptions = isInteractive
-      ? RunInteractive( Output.Normal )
-      : RunNonInteractive( Output, parameters.SpecFile?.Name, parameters.Overwrite, parameters.Discover );
+      ? RunInteractive( output.Normal )
+      : RunNonInteractive( output, parameters.SpecFile?.Name, parameters.Overwrite, parameters.Discover );
 
     if ( initOptions == null ) {
       return ExitCodes.GeneralError;
     }
 
-    var success = await Initialize( Output, initOptions );
+    var success = await Initialize( initOptions );
 
     if ( !success ) {
       return ExitCodes.GeneralError;
@@ -92,7 +99,7 @@ internal class InitCommand : CommandBase<InitParameters> {
       AnsiConsole.MarkupLine( $"💡\uFE0F Next: Try [bold][green]drift scan {initOptions.Name}[/][/]" );
     }
 
-    Output.Log.LogDebug( "Init command completed" );
+    output.Log.LogDebug( "Init command completed" );
 
     return ExitCodes.Success;
   }
@@ -157,7 +164,7 @@ internal class InitCommand : CommandBase<InitParameters> {
     return new InitOptions { Name = name, Overwrite = overwrite ?? false, Discover = discover ?? false };
   }
 
-  private static async Task<bool> Initialize( IOutputManager output, InitOptions options ) {
+  private async Task<bool> Initialize( InitOptions options ) {
     try {
       var specPath = Path.GetFullPath( Path.Combine( ".", $"{options.Name}.spec.yaml" ) );
       var envPath = Path.GetFullPath( Path.Combine( ".", $"{options.Name}.env.yaml" ) );
@@ -180,7 +187,6 @@ internal class InitCommand : CommandBase<InitParameters> {
       // TODO centralize logic between scancommand and this
       ISubnetProvider subnetProvider = new InterfaceSubnetProvider( output );
       var subnets = subnetProvider.Get();
-      var scanner = new PingNetworkScanner( output ); // Or inject via DI
 
       ScanResult? scanResult = null;
 
@@ -188,7 +194,8 @@ internal class InitCommand : CommandBase<InitParameters> {
       output.Normal.WriteLineVerbose(
         "Found subnets: " + string.Join( ", ",
           subnets.Select( s =>
-            s + " (" + IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( s.PrefixLength ) ) + " addresses, " +
+            s + " (" + IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( s.PrefixLength ) ) +
+            " addresses, " +
             CalculateScanDuration( s.PrefixLength,
               PingNetworkScanner.MaxPingsPerSecond ) /*.Humanize( 2, CultureInfo.InvariantCulture )*/ +
             " estimated scan time" +
@@ -213,7 +220,7 @@ internal class InitCommand : CommandBase<InitParameters> {
 
           //TODO note: subnets.FIRST() !!! support multiple subnets !!!
           scanResult = await scanner.ScanAsync( subnets.First(), onProgress: progressReport => {
-            ScanCommand.UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
+            ScanCommandHandler.UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
           }, cancellationToken: CancellationToken.None );
         }
 

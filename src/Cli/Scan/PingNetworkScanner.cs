@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Tools;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
@@ -9,9 +10,9 @@ using Drift.Domain.Progress;
 using Drift.Domain.Scan;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Commands.Scan;
+namespace Drift.Cli.Scan;
 
-internal class PingNetworkScanner( IOutputManager output ) : INetworkScanner {
+internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) : INetworkScanner {
   //TODO make private or configurable
   internal const int MaxPingsPerSecond = 50;
 
@@ -57,30 +58,7 @@ internal class PingNetworkScanner( IOutputManager output ) : INetworkScanner {
     };
   }
 
-  private static IEnumerable<DiscoveredDevice> ToDiscoveredDevices(
-    ConcurrentBag<(string Ip, bool Success, string? Hostname)> pingReplies, Dictionary<string, string> ipToMac ) {
-    return pingReplies
-      .Where( r => r.Success )
-      .Select( pingReply =>
-        new DiscoveredDevice { Addresses = CreateAddresses( pingReply ) }
-      );
-
-    List<IDeviceAddress> CreateAddresses( (string Ip, bool Success, string? Hostname) pingReply ) {
-      var list = new List<IDeviceAddress> { new IpV4Address( pingReply.Ip ), };
-
-      if ( !string.IsNullOrWhiteSpace( pingReply.Hostname ) ) {
-        list.Add( new HostnameAddress( pingReply.Hostname ) );
-      }
-
-      if ( ipToMac.TryGetValue( pingReply.Ip, out var macStr ) ) {
-        list.Add( new MacAddress( macStr ) );
-      }
-
-      return list;
-    }
-  }
-
-  private static async Task<ConcurrentBag<(string Ip, bool Success, string? Hostname)>> PingScanAsync(
+  private async Task<ConcurrentBag<(string Ip, bool Success, string? Hostname)>> PingScanAsync(
     CidrBlock cidr,
     IOutputManager output,
     Action<ProgressReport>? onProgress = null,
@@ -105,7 +83,7 @@ internal class PingNetworkScanner( IOutputManager output ) : INetworkScanner {
       await throttler.WaitAsync( cancellationToken );
 
       try {
-        var success = ( await Tools.Ping.RunAsync( $"-c 1 -W 1 {ip}" ) ).ExitCode == 0;
+        var success = ( await pingTool.RunAsync( $"-c 1 -W 1 {ip}" ) ).ExitCode == 0;
         string? hostname = "";
         if ( success ) {
           hostname = await GetHostNameAsync( ip, 15 );
@@ -131,7 +109,7 @@ internal class PingNetworkScanner( IOutputManager output ) : INetworkScanner {
               throttler.Release();
             }
             catch ( Exception ex ) {
-              //Console.WriteLine(ex.StackTrace);
+              //Console.WriteLine(ex);
               //TODO throttler not working!!!
             }
           }, cancellationToken );
@@ -143,6 +121,29 @@ internal class PingNetworkScanner( IOutputManager output ) : INetworkScanner {
     output.Normal.WriteLineVerbose( $"Finished ping scan for CIDR block: {cidr}" );
 
     return results;
+  }
+
+  private static IEnumerable<DiscoveredDevice> ToDiscoveredDevices(
+    ConcurrentBag<(string Ip, bool Success, string? Hostname)> pingReplies, Dictionary<string, string> ipToMac ) {
+    return pingReplies
+      .Where( r => r.Success )
+      .Select( pingReply =>
+        new DiscoveredDevice { Addresses = CreateAddresses( pingReply ) }
+      );
+
+    List<IDeviceAddress> CreateAddresses( (string Ip, bool Success, string? Hostname) pingReply ) {
+      var list = new List<IDeviceAddress> { new IpV4Address( pingReply.Ip ), };
+
+      if ( !string.IsNullOrWhiteSpace( pingReply.Hostname ) ) {
+        list.Add( new HostnameAddress( pingReply.Hostname ) );
+      }
+
+      if ( ipToMac.TryGetValue( pingReply.Ip, out var macStr ) ) {
+        list.Add( new MacAddress( macStr ) );
+      }
+
+      return list;
+    }
   }
 
   private static async Task<string?> GetHostNameAsync( string ip, int timeoutMs = 1000 ) {

@@ -49,7 +49,7 @@ public class InitCommandTests {
     var path = Path.GetTempFileName();
 
     // Act
-    InitCommand.CreateSpecWithDiscovery( scanResult, subnetProvider, path );
+    InitCommandHandler.CreateSpecWithDiscovery( scanResult, subnetProvider, path );
     var yaml = File.ReadAllText( path );
 
     //Assert
@@ -67,7 +67,7 @@ public class InitCommandTests {
     var path = Path.GetTempFileName();
 
     // Act
-    InitCommand.CreateSpecWithoutDiscovery( path );
+    InitCommandHandler.CreateSpecWithoutDiscovery( path );
     var yaml = File.ReadAllText( path );
 
     //Assert

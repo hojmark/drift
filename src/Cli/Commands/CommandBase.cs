@@ -1,21 +1,13 @@
 using System.CommandLine;
 using Drift.Cli.Commands.Common;
-using Drift.Cli.Output.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli.Commands;
 
-internal abstract class CommandBase<TParameters> : Command where TParameters : DefaultParameters {
-  protected IOutputManager Output {
-    get;
-    private set;
-  } = null!;
-
-  protected CommandBase(
-    string name,
-    string description,
-    Func<ParseResult, IOutputManager> outputManagerFactory,
-    Func<ParseResult, TParameters> parametersFactory
-  ) : base( name, description ) {
+internal abstract class CommandBase<TParameters, THandler> : Command
+  where TParameters : DefaultParameters
+  where THandler : ICommandHandler<TParameters> {
+  protected CommandBase( string name, string description, IServiceProvider provider ) : base( name, description ) {
     Add( CommonParameters.Options.Verbose );
     // TODO re-intro when fixed
     // AddOption( GlobalParameters.Options.VeryVerbose );
@@ -23,12 +15,17 @@ internal abstract class CommandBase<TParameters> : Command where TParameters : D
     Add( CommonParameters.Arguments.SpecOptional );
 
     SetAction( ( parseResult, cancellationToken ) => {
-        Output ??= outputManagerFactory( parseResult ); // Only null if not set in this class
+      using var scope = provider.CreateScope();
+      var serviceProvider = scope.ServiceProvider;
 
-        return Invoke( cancellationToken, parametersFactory( parseResult ) );
-      }
-    );
+      serviceProvider.GetRequiredService<ParseResultHolder>().ParseResult = parseResult;
+
+      var handler = serviceProvider.GetRequiredService<THandler>();
+      var parameters = CreateParameters( parseResult );
+
+      return handler.Invoke( parameters, cancellationToken );
+    } );
   }
 
-  protected abstract Task<int> Invoke( CancellationToken cancellationToken, TParameters parameters );
+  protected abstract TParameters CreateParameters( ParseResult result );
 }

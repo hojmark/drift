@@ -5,7 +5,6 @@ using NSubstitute;
 
 namespace Drift.Cli.Tests;
 
-[TestFixture]
 public class SpecFileResolverTests {
   private string? _originalHome;
   private string _tempHome;

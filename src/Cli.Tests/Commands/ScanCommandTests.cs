@@ -1,23 +1,58 @@
 using Drift.Cli.Abstractions;
+using Drift.Domain.Device.Addresses;
+using Drift.Domain.Device.Discovered;
+using Drift.Domain.Scan;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli.Tests.Commands;
 
 public class ScanCommandTests {
-  //TODO implement tests for scan command
+  private static IEnumerable<TestCaseData> DiscoveredDeviceLists {
+    get {
+      yield return new TestCaseData( new List<DiscoveredDevice>() )
+        .SetName( "No devices" );
 
-  [Explicit]
-  [Test]
-  public async Task HostTest() {
+      yield return new TestCaseData( new List<DiscoveredDevice> {
+          new() { Addresses = [new IpV4Address( "192.168.0.5" )] }
+        } )
+        .SetName( "Single device" );
+
+      yield return new TestCaseData( new List<DiscoveredDevice> {
+          new() { Addresses = [new IpV4Address( "192.168.0.10" )] },
+          new() { Addresses = [new IpV4Address( "192.168.0.20" ), new MacAddress( "7d:fb:d0:e6:80:ae" )] },
+          new() { Addresses = [new IpV4Address( "192.168.0.30" )] }
+        } )
+        .SetName( "Multiple devices" );
+    }
+  }
+
+  //[Combinatorial]
+  [TestCaseSource( nameof(DiscoveredDeviceLists) )]
+  public async Task SuccessTest(
+    List<DiscoveredDevice> devices /*, [Values( "", "normal", "log" )] string outputFormat */
+  ) {
     // Arrange
-    var config = TestCommandLineConfiguration.Create();
+    var config = TestCommandLineConfiguration.Create( services => {
+        services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
+            new ScanResult {
+              Metadata = new Metadata { StartedAt = default, EndedAt = default },
+              Status = ScanResultStatus.Success,
+              DiscoveredDevices = devices
+            }
+          )
+        );
+      }
+    );
 
     // Act
-    var result = await config.InvokeAsync( "scan blah_spec.yaml" );
+    var exitCode = await config.InvokeAsync( "scan" );
+    //var exitCode = await config.InvokeAsync( $"scan -o {outputFormat}" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      //await Verify( config.Output.ToString() + config.Error );
-      Assert.That( result, Is.EqualTo( ExitCodes.Success ) );
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
+      await Verify( config.Output.ToString() + config.Error )
+        .UseFileName( $"{nameof(ScanCommandTests)}.{nameof(SuccessTest)}.{TestContext.CurrentContext.Test.Name}" );
     }
   }
 
@@ -27,11 +62,11 @@ public class ScanCommandTests {
     var config = TestCommandLineConfiguration.Create();
 
     // Act
-    var result = await config.InvokeAsync( "scan blah_spec.yaml" );
+    var exitCode = await config.InvokeAsync( "scan blah_spec.yaml" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( result, Is.EqualTo( ExitCodes.GeneralError ) );
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
       await Verify( config.Output.ToString() + config.Error );
     }
   }

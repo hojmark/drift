@@ -1,6 +1,7 @@
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace Drift.Cli.Tests.Utils;
 
@@ -86,6 +87,11 @@ internal class NullOutput : INormalOutput, ILogOutput, IJsonOutput {
 
   public void WriteLineError( string text, ConsoleColor? foreground, ConsoleColor? background = null ) {
     // No-op
+  }
+
+  public IAnsiConsole GetAnsiConsole() {
+    var settings = new AnsiConsoleSettings { Out = new AnsiConsoleOutput( TextWriter.Null ) };
+    return AnsiConsole.Create( settings );
   }
 
   public void Log<TState>( LogLevel logLevel, EventId eventId, TState state, Exception? exception,

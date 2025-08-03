@@ -35,7 +35,7 @@ internal class OutputManagerFactory(
 
   private static (TextWriter StdOut, TextWriter ErrOut, bool Verbose, OutputFormat OutputFormat)
     GetConsoleOuts( ParseResult parseResult ) {
-    var outputFormatValue = parseResult.GetValue( CommonParameters.Options.OutputFormatOption );
+    var outputFormatValue = parseResult.GetValue( CommonParameters.Options.OutputFormat );
     var verboseValue = parseResult.GetValue( CommonParameters.Options.Verbose );
     //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
 
@@ -105,7 +105,7 @@ internal class OutputManagerFactory(
         .SetMinimumLevel( LogLevel.Debug ) // Parse from args?
     );
 
-    var outputFormatValue = parseResult.GetValue( CommonParameters.Options.OutputFormatOption );
+    var outputFormatValue = parseResult.GetValue( CommonParameters.Options.OutputFormat );
     var verboseValue = parseResult.GetValue( CommonParameters.Options.Verbose );
     //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
 

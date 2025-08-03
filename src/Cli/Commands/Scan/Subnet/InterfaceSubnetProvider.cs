@@ -7,16 +7,32 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan.Subnet;
 
-internal class InterfaceSubnetProvider( IOutputManager output ) : ISubnetProvider {
-  public List<CidrBlock> Get() {
-    var interfaces = NetworkInterface.GetAllNetworkInterfaces();
+public class InterfaceSubnetProvider( IOutputManager output ) : IInterfaceSubnetProvider {
+  public List<System.Net.NetworkInformation.NetworkInterface> GetInterfacesRaw() {
+    return System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces().ToList();
+  }
 
+  public virtual List<INetworkInterface> GetInterfaces() {
+    return GetInterfacesRaw().Select( Map ).ToList();
+  }
+
+  private static INetworkInterface Map( System.Net.NetworkInformation.NetworkInterface networkInterface ) {
+    var unicastAddress = GetIpV4UnicastAddress( networkInterface );
+    return new NetworkInterface {
+      Description = networkInterface.Description,
+      OperationalStatus = networkInterface.OperationalStatus,
+      UnicastAddress = unicastAddress == null ? null : GetCidrBlock( unicastAddress )
+    };
+  }
+
+  public List<CidrBlock> Get() {
+    var interfaces = GetInterfaces();
     var interfaceDescriptions =
       string.Join( ", ",
         interfaces.Select( i =>
-          $"[{i.Description}, {( IsUp( i ) ? "up" : "down" )}, {( ( GetIpV4UnicastAddress( i ) == null )
+          $"[{i.Description}, {( IsUp( i ) ? "up" : "down" )}, {( ( i.UnicastAddress == null )
             ? "-"
-            : GetCidrBlock( GetIpV4UnicastAddress( i )! ) )}]"
+            : i.UnicastAddress )}]"
         )
       );
     output.Normal.WriteLineVerbose( $"Found interfaces: {interfaceDescriptions}" );
@@ -24,10 +40,10 @@ internal class InterfaceSubnetProvider( IOutputManager output ) : ISubnetProvide
 
     var cidrs = interfaces
       .Where( IsUp )
-      .Where( i => GetIpV4UnicastAddress( i ) != null )
-      .Select( GetIpV4UnicastAddress )
-      .Select( GetCidrBlock! )
-      .Where( a => IpNetworkUtils.IsPrivateIpV4( a.NetworkAddress ) ) //TODO log if non-private networks were filtered
+      .Where( i => i.UnicastAddress != null )
+      .Select( i => i.UnicastAddress.Value )
+      .Where( cidrBlock =>
+        IpNetworkUtils.IsPrivateIpV4( cidrBlock.NetworkAddress ) ) //TODO log if non-private networks were filtered
       .Distinct() // Maybe return <interface, cidr> tuple?
       .ToList();
 
@@ -47,13 +63,14 @@ internal class InterfaceSubnetProvider( IOutputManager output ) : ISubnetProvide
                           IpNetworkUtils.GetCidrPrefixLength( a.IPv4Mask ) );
   }
 
-  private static UnicastIPAddressInformation? GetIpV4UnicastAddress( NetworkInterface i ) {
+  private static UnicastIPAddressInformation?
+    GetIpV4UnicastAddress( System.Net.NetworkInformation.NetworkInterface i ) {
     return i.GetIPProperties()
       .UnicastAddresses
       .SingleOrDefault( a => a.Address.AddressFamily == AddressFamily.InterNetwork );
   }
 
-  private static bool IsUp( NetworkInterface i ) {
+  private static bool IsUp( INetworkInterface i ) {
     return i.OperationalStatus == OperationalStatus.Up;
   }
 }

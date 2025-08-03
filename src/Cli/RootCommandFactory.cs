@@ -3,6 +3,7 @@ using System.CommandLine.Help;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Scan;
+using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Scan;
@@ -29,10 +30,10 @@ internal static class RootCommandFactory {
   private static void ConfigureDefaults( ServiceCollection services, bool toConsole ) {
     services.AddScoped<ParseResultHolder>();
     ConfigureOutput( services, toConsole );
+    ConfigureSubnetProvider( services );
     ConfigureNetworkScanner( services );
     ConfigureCommandHandlers( services );
   }
-
 
   private static RootCommand CreateRootCommand( IServiceProvider provider ) {
     //TODO 'from' or 'against'?
@@ -57,6 +58,11 @@ internal static class RootCommandFactory {
       var factory = sp.GetRequiredService<IOutputManagerFactory>();
       return factory.Create( parseResult );
     } );
+  }
+
+
+  private static void ConfigureSubnetProvider( ServiceCollection services ) {
+    services.AddScoped<IInterfaceSubnetProvider, InterfaceSubnetProvider>();
   }
 
   private static void ConfigureNetworkScanner( ServiceCollection services ) {

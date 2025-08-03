@@ -1,0 +1,1 @@
+﻿✔ Created spec [1m{CurrentDirectory}myNetworkWithoutDiscovery.spec.yaml[0m

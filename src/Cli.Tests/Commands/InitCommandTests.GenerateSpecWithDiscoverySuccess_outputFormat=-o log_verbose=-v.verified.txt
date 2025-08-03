@@ -1,0 +1,10 @@
+﻿[DateTime_1 DBG] Output format is 'Log' using log level 'Debug'
+[DateTime_1 DBG] Running init command
+[DateTime_1 DBG] Found interfaces: [lo, up, 127.0.0.0/8], [enp0xxxxx, down, -], [enp8xxxxx, up, 192.168.0.0/24], [wlp, up, 192.168.0.0/24], [tun0, up, 100.100.1.9/32]
+[DateTime_1 DBG] Discovered subnet(s): 192.168.0.0/24 (RFC1918 addresses only)
+[DateTime_1 INF] Scanning network...
+[DateTime_1 INF] Scan completed
+[DateTime_1 DBG] Found 3 devices
+[DateTime_1 INF] Writing spec...
+[DateTime_1 INF] Created spec: {CurrentDirectory}myNetworkWithDiscovery.spec.yaml
+[DateTime_1 DBG] Init command completed

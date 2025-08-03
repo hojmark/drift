@@ -69,6 +69,18 @@ internal class OutputManagerFactory(
   }
 
   private static ILogger GetLogger( ParseResult parseResult, bool toConsole ) {
+    var outputFormatValue = parseResult.GetValue( CommonParameters.Options.OutputFormat );
+    var verboseValue = parseResult.GetValue( CommonParameters.Options.Verbose );
+    //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
+
+    if ( outputFormatValue is not OutputFormat.Log ) {
+      return NullLogger.Instance;
+    }
+
+    var loglevel =
+      //veryVerboseValue ? LogLevel.Trace :
+      verboseValue ? LogLevel.Debug : LogLevel.Information;
+
     // Default console rneder uses `OutputTemplateRenderer`, which is internal. Only differnece detected is that MessageTemplateTextFormatter auto single quotes  non strings e.g. enum values.
     // Fix is to call myEnum.ToString()
     var formatter = new MessageTemplateTextFormatter(
@@ -76,8 +88,14 @@ internal class OutputManagerFactory(
     );
 
     var loggerConfig = new LoggerConfiguration()
-      .MinimumLevel.Debug()
       .Enrich.FromLogContext();
+
+    if ( verboseValue ) {
+      loggerConfig.MinimumLevel.Debug();
+    }
+    else {
+      loggerConfig.MinimumLevel.Information();
+    }
 
     if ( toConsole ) {
       loggerConfig.WriteTo.Console();
@@ -104,19 +122,6 @@ internal class OutputManagerFactory(
     var loggerFactory = LoggerFactory.Create( builder => builder.AddSerilog( loggerConfig.CreateLogger() )
         .SetMinimumLevel( LogLevel.Debug ) // Parse from args?
     );
-
-    var outputFormatValue = parseResult.GetValue( CommonParameters.Options.OutputFormat );
-    var verboseValue = parseResult.GetValue( CommonParameters.Options.Verbose );
-    //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
-
-    if ( outputFormatValue is not OutputFormat.Log ) {
-      return NullLogger.Instance;
-    }
-
-    //TODO log level currently broken!
-    var loglevel =
-      //veryVerboseValue ? LogLevel.Trace :
-      verboseValue ? LogLevel.Debug : LogLevel.Information;
 
     //TODO still getting '[0]' in the output. Should probably create custom logger.
     var logger = loggerFactory.CreateLogger( "" );

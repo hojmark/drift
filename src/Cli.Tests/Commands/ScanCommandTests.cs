@@ -1,4 +1,5 @@
 using Drift.Cli.Abstractions;
+using Drift.Cli.Tests.Utils;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Scan;

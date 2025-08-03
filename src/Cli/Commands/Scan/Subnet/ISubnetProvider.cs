@@ -2,6 +2,6 @@ using Drift.Domain;
 
 namespace Drift.Cli.Commands.Scan.Subnet;
 
-internal interface ISubnetProvider {
+public interface ISubnetProvider {
   List<CidrBlock> Get();
 }

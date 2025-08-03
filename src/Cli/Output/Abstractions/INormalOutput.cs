@@ -1,3 +1,5 @@
+using Spectre.Console;
+
 namespace Drift.Cli.Output.Abstractions;
 
 internal interface INormalOutput {
@@ -90,6 +92,12 @@ internal interface INormalOutput {
     ConsoleColor? foreground = ConsoleColor.Red,
     ConsoleColor? background = null
   );
+
+  #endregion
+
+  #region AnsiConsole
+
+  IAnsiConsole GetAnsiConsole();
 
   #endregion
 }

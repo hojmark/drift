@@ -17,6 +17,11 @@ internal class LogRenderer( ILogOutput log ) : DiffRendererBase {
   ) {
     var directDeviceDifferences = GetDirectDeviceDifferences( differences );
 
+    if ( !differences.Any() ) {
+      log.LogInformation( "No devices found" );
+      return;
+    }
+
     foreach ( var diff in directDeviceDifferences ) {
       logger?.LogTrace( "Device diff: {Action} {Path}", diff.DiffType, diff.PropertyPath );
       // Console.WriteLine( $"{diff.DiffType + ":",-10} {diff.PropertyPath}" );

@@ -22,7 +22,7 @@ using Environment = System.Environment;
 namespace Drift.Cli.Commands.Init;
 
 internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
-  /// Intended for testing (although I should maybe look into a better way to do this e.g. Linux expect)
+  /// Intended for testing (although I should maybe look into a better way to do this e.g., Linux 'expect')
   internal static readonly Option<ForceMode?> ForceModeOption = new("--force-mode") {
     Description = "(HIDDEN) Force mode", Arity = ArgumentArity.ZeroOrOne, Hidden = true
   };
@@ -95,8 +95,9 @@ public class InitCommandHandler( IOutputManager output, INetworkScanner scanner 
     }
 
     if ( success && isInteractive ) {
-      AnsiConsole.WriteLine();
-      AnsiConsole.MarkupLine( $"💡\uFE0F Next: Try [bold][green]drift scan {initOptions.Name}[/][/]" );
+      output.Normal.WriteLine();
+      output.Normal.GetAnsiConsole()
+        .MarkupLine( $"💡\uFE0F Next: Try [bold][green]drift scan {initOptions.Name}[/][/]" );
     }
 
     output.Log.LogDebug( "Init command completed" );

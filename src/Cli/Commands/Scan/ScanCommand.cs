@@ -58,8 +58,7 @@ internal class ScanCommand( IServiceProvider provider ) : CommandBase<ScanParame
   }
 }
 
-public class ScanCommandHandler( IOutputManager output, INetworkScanner scanner )
-  : ICommandHandler<ScanParameters> {
+public class ScanCommandHandler( IOutputManager output, INetworkScanner scanner ) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running scan command" );
 
@@ -77,11 +76,13 @@ public class ScanCommandHandler( IOutputManager output, INetworkScanner scanner 
       ? new InterfaceSubnetProvider( output )
       : new DeclaredSubnetProvider( network.Subnets.Where( s => s.Enabled ?? true ) );
 
+    output.Normal.WriteLineVerbose( $"Using subnet provider: {subnetProvider.GetType().Name}" );
     output.Log.LogDebug( "Using subnet provider: {SubnetProviderType}", subnetProvider.GetType().Name );
 
     var subnets = subnetProvider.Get();
 
-    output.Normal.WriteLine( 0, $"Scanning {subnets.Count} subnet(s)" ); // TODO many more varieties
+    output.Normal.WriteLine( 0,
+      $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : "" )}" ); // TODO many more varieties
     foreach ( var subnet in subnets ) {
       //TODO write name if from spec: Ui.WriteLine( 1, $"{subnet.Id}: {subnet.Network}" );
       output.Normal.Write( 1, $"{subnet}", ConsoleColor.Cyan );
@@ -146,7 +147,7 @@ public class ScanCommandHandler( IOutputManager output, INetworkScanner scanner 
         _ => new NullRenderer<ScanRenderData>()
       };
 
-    output.Log.LogDebug( "Render scan result using {RendererType}", renderer.GetType().Name );
+    output.Log.LogDebug( "Render result using {RendererType}", renderer.GetType().Name );
 
     output.Normal.WriteLine();
 

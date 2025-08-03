@@ -40,5 +40,7 @@ internal abstract class DiffRendererBase : IRenderer<ScanRenderData> {
   }
 
   protected abstract void Render( List<ObjectDiff> differences, IEnumerable<DeclaredDevice> declaredDevices,
-    ILogger? logger = null );
+    // TODO Delete ILogger parameter
+    ILogger? logger = null
+  );
 }

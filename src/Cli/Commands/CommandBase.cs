@@ -11,8 +11,8 @@ internal abstract class CommandBase<TParameters, THandler> : Command
     Add( CommonParameters.Options.Verbose );
     // TODO re-intro when fixed
     // AddOption( GlobalParameters.Options.VeryVerbose );
-    Add( CommonParameters.Options.OutputFormatOption );
-    Add( CommonParameters.Arguments.SpecOptional );
+    Add( CommonParameters.Options.OutputFormat );
+    Add( CommonParameters.Arguments.Spec );
 
     SetAction( ( parseResult, cancellationToken ) => {
       using var scope = provider.CreateScope();

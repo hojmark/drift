@@ -1,4 +1,5 @@
 using Drift.Cli.Output.Abstractions;
+using Spectre.Console;
 
 namespace Drift.Cli.Output;
 
@@ -126,6 +127,17 @@ internal class NormalOutput( TextWriter stdOut, TextWriter errOut, bool verbose 
     ConsoleColor? background = null
   ) {
     WriteLineInternal( errOut, 0, text, foreground, background );
+  }
+
+  #endregion
+
+  #region AnsiConsole
+
+  public IAnsiConsole GetAnsiConsole() {
+    var settings = new AnsiConsoleSettings { Out = new AnsiConsoleOutput( stdOut ) };
+
+    var customAnsiConsole = AnsiConsole.Create( settings );
+    return customAnsiConsole;
   }
 
   #endregion

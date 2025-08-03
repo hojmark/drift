@@ -17,14 +17,22 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
   //TODO replace with more generic data simulation
   private const bool FakeMac = false;
 
-  protected override void Render( List<ObjectDiff> differences, IEnumerable<DeclaredDevice> declaredDevices,
-    ILogger? logger = null ) {
+  protected override void Render(
+    List<ObjectDiff> differences,
+    IEnumerable<DeclaredDevice> declaredDevices,
+    ILogger? logger = null
+  ) {
+    if ( !differences.Any() ) {
+      console.GetAnsiConsole().WriteLine( "No devices found" );
+      return;
+    }
+
     var showCustomIdColumn = declaredDevices.Any( d => d.Id != null );
     var table = CreateTable( showCustomIdColumn );
 
     AddDevices( table, differences, declaredDevices, showCustomIdColumn, logger );
 
-    AnsiConsole.Write( table );
+    console.GetAnsiConsole().Write( table );
 
     //console.WriteLine( $"Total declared devices: {data.DevicesDeclared.Count()}" ); //TODO host vs device terminology
     //console.WriteLine( $"Total discovered devices: {data.DevicesDiscovered.Count()}" );

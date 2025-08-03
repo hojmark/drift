@@ -3,7 +3,6 @@ using Drift.TestUtilities.ResourceProviders;
 
 namespace Drift.Spec.Tests;
 
-[TestFixture]
 public class DeserializeTests {
   [Test]
   public async Task SubnetTest() {

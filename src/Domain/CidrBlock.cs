@@ -9,7 +9,7 @@ namespace Drift.Domain;
 /// </summary>
 //TODO make obsolete
 //[Obsolete( "Use .NET's IPNetwork instead" )]
-public readonly struct CidrBlock {
+public readonly record struct CidrBlock {
   /// <summary>
   /// Gets the network address portion of the CIDR block.
   /// </summary>

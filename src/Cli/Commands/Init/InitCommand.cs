@@ -187,7 +187,7 @@ public class InitCommandHandler( IOutputManager output, INetworkScanner scanner 
       // SCAN
       // TODO centralize logic between scancommand and this
       ISubnetProvider subnetProvider = new InterfaceSubnetProvider( output );
-      var subnets = subnetProvider.Get();
+      var subnets = subnetProvider.Get().ToList();
 
       ScanResult? scanResult = null;
 
@@ -216,6 +216,7 @@ public class InitCommandHandler( IOutputManager output, INetworkScanner scanner 
         }
 
         if ( output.Is( OutputFormat.Log ) ) {
+          output.Log.LogInformation( "Scanning network..." );
           var lastLogTime = DateTime.MinValue;
           var completedTasks = new HashSet<string>();
 
@@ -236,9 +237,12 @@ public class InitCommandHandler( IOutputManager output, INetworkScanner scanner 
 
         output.Log.LogInformation( "Writing spec..." );
 
-        CreateSpecWithDiscovery( scanResult, subnetProvider, specPath );
+        CreateSpecWithDiscovery( scanResult, subnets, specPath );
       }
       else {
+        output.Log.LogDebug( "No discovery, writing template spec" );
+        output.Normal.WriteLineVerbose( "No discovery, writing template spec" );
+
         output.Log.LogInformation( "Writing spec..." );
 
         CreateSpecWithoutDiscovery( specPath );
@@ -276,10 +280,9 @@ public class InitCommandHandler( IOutputManager output, INetworkScanner scanner 
 
   internal static void CreateSpecWithDiscovery(
     ScanResult? scanResult,
-    ISubnetProvider subnetProvider,
+    List<CidrBlock> subnets,
     string specPath
   ) {
-    var subnets = subnetProvider.Get().DistinctBy( subnet => subnet.NetworkAddress ).ToList();
     var devices = scanResult?.DiscoveredDevices.ToDeclared() ?? [];
     CreateSpec( subnets, devices, specPath );
   }

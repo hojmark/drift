@@ -58,7 +58,11 @@ internal class ScanCommand( IServiceProvider provider ) : CommandBase<ScanParame
   }
 }
 
-public class ScanCommandHandler( IOutputManager output, INetworkScanner scanner ) : ICommandHandler<ScanParameters> {
+public class ScanCommandHandler(
+  IOutputManager output,
+  INetworkScanner scanner,
+  IInterfaceSubnetProvider interfaceSubnetProvider
+) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running scan command" );
 
@@ -73,7 +77,7 @@ public class ScanCommandHandler( IOutputManager output, INetworkScanner scanner 
 
     //TODO use both declared and discovered subnets
     ISubnetProvider subnetProvider = network == null
-      ? new InterfaceSubnetProvider( output )
+      ? interfaceSubnetProvider
       : new DeclaredSubnetProvider( network.Subnets.Where( s => s.Enabled ?? true ) );
 
     output.Normal.WriteLineVerbose( $"Using subnet provider: {subnetProvider.GetType().Name}" );

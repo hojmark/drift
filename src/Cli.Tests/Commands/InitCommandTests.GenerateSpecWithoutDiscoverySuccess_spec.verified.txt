@@ -1,0 +1,46 @@
+﻿version: v1-preview
+network:
+  subnets:
+  - id: main-lan
+    address: 192.168.1.0/24
+  - id: iot
+    address: 192.168.100.0/24
+  - id: guest
+    address: 192.168.200.0/24
+  devices:
+  - id: router
+    addresses:
+    - type: ip-v4
+      value: 192.168.1.10
+  - id: nas
+    addresses:
+    - type: ip-v4
+      value: 192.168.1.20
+  - id: server
+    addresses:
+    - type: ip-v4
+      value: 192.168.1.30
+  - id: desktop
+    addresses:
+    - type: ip-v4
+      value: 192.168.1.40
+  - id: laptop
+    addresses:
+    - type: ip-v4
+      value: 192.168.1.50
+  - id: smart-tv
+    addresses:
+    - type: ip-v4
+      value: 192.168.100.10
+  - id: security-camera
+    addresses:
+    - type: ip-v4
+      value: 192.168.100.20
+  - id: smart-switch
+    addresses:
+    - type: ip-v4
+      value: 192.168.100.30
+  - id: guest-device
+    addresses:
+    - type: ip-v4
+      value: 192.168.200.100

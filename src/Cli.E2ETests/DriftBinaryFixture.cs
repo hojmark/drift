@@ -14,6 +14,10 @@ public abstract class DriftBinaryFixture {
       DriftPath = EnvironmentVariable.GetOrThrow( EnvVar.DRIFT_BINARY_PATH );
     }
     catch ( Exception e ) {
+      if ( !EnvironmentVariable.IsCi() ) {
+        Assert.Inconclusive( $"{EnvVar.DRIFT_BINARY_PATH} not set" );
+      }
+
       Console.Error.WriteLine( e.StackTrace );
       TestContext.Out.WriteLine( e.StackTrace );
       throw;

@@ -1,6 +1,8 @@
+using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Subnet;
+using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Tests.Utils;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -10,11 +12,16 @@ using Drift.Spec.Schema;
 using Drift.Spec.Validation;
 using Drift.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using NetworkInterface = Drift.Cli.Commands.Scan.Subnet.NetworkInterface;
+using PredefinedInterfaceSubnetProvider = Drift.Cli.Tests.Utils.PredefinedInterfaceSubnetProvider;
 
 namespace Drift.Cli.Tests.Commands;
 
 public class InitCommandTests {
-  private static readonly ScanResult ScanResult = new ScanResult {
+  const string SpecNameWithDiscovery = "myNetworkWithDiscovery";
+  const string SpecNameWithoutDiscovery = "myNetworkWithoutDiscovery";
+
+  private static readonly ScanResult ScanResult = new() {
     Metadata =
       new Metadata {
         StartedAt = DateTime.Parse( "2025-06-11T12:20:08.4219405+02:00" ).ToUniversalTime(),
@@ -27,6 +34,32 @@ public class InitCommandTests {
       new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.12" )] }
     ]
   };
+
+  private static readonly List<INetworkInterface> Interfaces = [
+    new NetworkInterface {
+      Description = "lo", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "127.0.0.0/8" )
+    },
+    new NetworkInterface {
+      Description = "enp0xxxxx", OperationalStatus = OperationalStatus.Down, UnicastAddress = null
+    },
+    new NetworkInterface {
+      Description = "enp8xxxxx",
+      OperationalStatus = OperationalStatus.Up,
+      UnicastAddress = new CidrBlock( "192.168.0.0/24" )
+    },
+    new NetworkInterface {
+      Description = "wlp", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "192.168.0.0/24" )
+    },
+    new NetworkInterface {
+      Description = "tun0", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "100.100.1.9/32" )
+    }
+  ];
+
+  [TearDown]
+  public void TearDown() {
+    DeleteSpec( SpecNameWithDiscovery );
+    DeleteSpec( SpecNameWithoutDiscovery );
+  }
 
   [Test]
   public async Task MissingNameOption() {
@@ -50,15 +83,16 @@ public class InitCommandTests {
     [Values( "", "-v" )] string verbose
   ) {
     // Arrange
-    const string specName = "myNetworkWithDiscovery";
-    DeleteSpec( specName );
     var config = TestCommandLineConfiguration.Create( services => {
         services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
+        services.AddScoped<IInterfaceSubnetProvider>( sp =>
+          new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), Interfaces )
+        );
       }
     );
 
     // Act
-    var result = await config.InvokeAsync( $"init {specName} --discover {outputFormat} {verbose}" );
+    var result = await config.InvokeAsync( $"init {SpecNameWithDiscovery} --discover {outputFormat} {verbose}" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -77,21 +111,20 @@ public class InitCommandTests {
   [Test]
   public async Task GenerateSpecWithoutDiscoverySuccess() {
     // Arrange
-    const string specName = "myNetworkWithoutDiscovery";
-    DeleteSpec( specName );
     var config = TestCommandLineConfiguration.Create( services => {
         services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
       }
     );
 
     // Act
-    var result = await config.InvokeAsync( $"init {specName}" );
+    var result = await config.InvokeAsync( $"init {SpecNameWithoutDiscovery}" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( result, Is.EqualTo( ExitCodes.Success ) );
       await Verify( config.Output.ToString() + config.Error );
-      await Verify( await File.ReadAllTextAsync( $"{specName}.spec.yaml" ) ).UseTextForParameters( "spec" );
+      await Verify( await File.ReadAllTextAsync( $"{SpecNameWithoutDiscovery}.spec.yaml" ) )
+        .UseTextForParameters( "spec" );
     }
   }
 
@@ -105,7 +138,7 @@ public class InitCommandTests {
 
     // Act
     InitCommandHandler.CreateSpecWithDiscovery( ScanResult, subnetProvider.Get(), path );
-    var yaml = File.ReadAllText( path );
+    var yaml = await File.ReadAllTextAsync( path );
 
     //Assert
     var validationResult = SpecValidator.Validate( yaml, SpecVersion.V1_preview );
@@ -123,7 +156,7 @@ public class InitCommandTests {
 
     // Act
     InitCommandHandler.CreateSpecWithoutDiscovery( path );
-    var yaml = File.ReadAllText( path );
+    var yaml = await File.ReadAllTextAsync( path );
 
     //Assert
     var validationResult = SpecValidator.Validate( yaml, SpecVersion.V1_preview );

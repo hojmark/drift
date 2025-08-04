@@ -64,7 +64,11 @@ internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
   }
 }
 
-public class InitCommandHandler( IOutputManager output, INetworkScanner scanner ) : ICommandHandler<InitParameters> {
+public class InitCommandHandler(
+  IOutputManager output,
+  INetworkScanner scanner,
+  IInterfaceSubnetProvider interfaceSubnetProvider
+) : ICommandHandler<InitParameters> {
   public async Task<int> Invoke( InitParameters parameters, CancellationToken cancellationToken ) {
     var isInteractive = IsInteractiveMode(
       parameters.ForceMode,
@@ -185,9 +189,7 @@ public class InitCommandHandler( IOutputManager output, INetworkScanner scanner 
       }
 
       // SCAN
-      // TODO centralize logic between scancommand and this
-      ISubnetProvider subnetProvider = new InterfaceSubnetProvider( output );
-      var subnets = subnetProvider.Get().ToList();
+      var subnets = interfaceSubnetProvider.Get().ToList();
 
       ScanResult? scanResult = null;
 

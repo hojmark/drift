@@ -13,7 +13,6 @@ using Drift.Spec.Validation;
 using Drift.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using NetworkInterface = Drift.Cli.Commands.Scan.Subnet.NetworkInterface;
-using PredefinedInterfaceSubnetProvider = Drift.Cli.Tests.Utils.PredefinedInterfaceSubnetProvider;
 
 namespace Drift.Cli.Tests.Commands;
 

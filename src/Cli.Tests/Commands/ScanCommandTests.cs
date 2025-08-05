@@ -1,13 +1,24 @@
+using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
+using Drift.Cli.Commands.Scan.Subnet;
+using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Tests.Utils;
+using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Scan;
 using Microsoft.Extensions.DependencyInjection;
+using NetworkInterface = Drift.Cli.Commands.Scan.Subnet.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 
 public class ScanCommandTests {
+  private static readonly List<INetworkInterface> Interfaces = [
+    new NetworkInterface {
+      Description = "eth", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "192.168.0.0/24" )
+    }
+  ];
+
   private static IEnumerable<TestCaseData> DiscoveredDeviceLists {
     get {
       yield return new TestCaseData( new List<DiscoveredDevice>() )
@@ -34,6 +45,9 @@ public class ScanCommandTests {
   ) {
     // Arrange
     var config = TestCommandLineConfiguration.Create( services => {
+        services.AddScoped<IInterfaceSubnetProvider>( sp =>
+          new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), Interfaces )
+        );
         services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
             new ScanResult {
               Metadata = new Metadata { StartedAt = default, EndedAt = default },

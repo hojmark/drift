@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using Drift.Domain;
 
 namespace Drift.Utils;
 
@@ -80,9 +81,10 @@ public static class IpNetworkUtils {
   /// <returns>
   /// The total number of IP addresses in the subnet, adjusted for usability if specified.
   /// </returns>
-  public static long GetIpRangeCount( IPAddress mask, bool usable = true ) {
-    var count = 1L <<
-                ( 32 - GetCidrPrefixLength( mask ) ); // Long because for mask 0.0.0.0: 2^32 (4,294,967,296) addresses
-    return usable ? count - 2 : count; // Subtract 2 for broadcast and network addresses
+  public static long GetIpRangeCount( CidrBlock cidr, bool usable = true ) {
+    return IPNetwork2
+      .Parse( cidr.ToString() )
+      .ListIPAddress( usable ? FilterEnum.Usable : FilterEnum.All )
+      .Count();
   }
 }

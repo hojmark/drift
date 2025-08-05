@@ -196,11 +196,13 @@ public class InitCommandHandler(
       //TODO create unit test for this
       output.Normal.WriteLineVerbose(
         "Found subnets: " + string.Join( ", ",
-          subnets.Select( s =>
-            s + " (" + IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( s.PrefixLength ) ) +
+          subnets.Select( cidr =>
+            cidr + " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
             " addresses, " +
-            CalculateScanDuration( s.PrefixLength,
-              PingNetworkScanner.MaxPingsPerSecond ) /*.Humanize( 2, CultureInfo.InvariantCulture )*/ +
+            CalculateScanDuration(
+              cidr,
+              PingNetworkScanner.MaxPingsPerSecond
+            ) /*.Humanize( 2, CultureInfo.InvariantCulture )*/ +
             " estimated scan time" +
             ")"
           )
@@ -273,8 +275,8 @@ public class InitCommandHandler(
   }
 
   //TODO move somewhere else
-  internal static TimeSpan CalculateScanDuration( int prefixLength, double scansPerSecond ) {
-    double hostCount = IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( prefixLength ) );
+  internal static TimeSpan CalculateScanDuration( CidrBlock cidr, double scansPerSecond ) {
+    double hostCount = IpNetworkUtils.GetIpRangeCount( cidr );
     double totalSeconds = hostCount / scansPerSecond;
     return TimeSpan.FromSeconds( totalSeconds );
   }

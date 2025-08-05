@@ -40,25 +40,26 @@ public class ScanCommandTests {
 
       yield return new TestCaseData(
           new List<DiscoveredDevice> {
-            new() { Addresses = [new IpV4Address( "192.168.0.10" )] },
-            new() { Addresses = [new IpV4Address( "192.168.0.20" ), new MacAddress( "7d:fb:d0:e6:80:ae" )] },
-            new() { Addresses = [new IpV4Address( "192.168.0.30" )] },
-            new() { Addresses = [new IpV4Address( "192.168.100.5" )] }
+            new() { Addresses = [new IpV4Address( "192.168.32.10" )] },
+            new() { Addresses = [new IpV4Address( "192.168.32.20" ), new MacAddress( "7d:fb:d0:e6:80:ae" )] },
+            new() { Addresses = [new IpV4Address( "192.168.34.4" )] },
+            new() { Addresses = [new IpV4Address( "172.19.0.10" )] }
           },
           new List<INetworkInterface> {
-            DefaultInterface,
             new NetworkInterface {
               Description = "eth1",
               OperationalStatus = OperationalStatus.Up,
-              UnicastAddress = new CidrBlock( "192.168.100.0/24" )
+              UnicastAddress = new CidrBlock( "10.255.255.254/32" )
             },
             new NetworkInterface {
               Description = "eth2",
               OperationalStatus = OperationalStatus.Up,
-              UnicastAddress = new CidrBlock( "192.168.200.0/24" )
+              UnicastAddress = new CidrBlock( "192.168.32.0/20" )
             },
             new NetworkInterface {
-              Description = "eth3", OperationalStatus = OperationalStatus.Down, UnicastAddress = null
+              Description = "eth3",
+              OperationalStatus = OperationalStatus.Up,
+              UnicastAddress = new CidrBlock( "172.19.0.0/16" )
             }
           }
         )

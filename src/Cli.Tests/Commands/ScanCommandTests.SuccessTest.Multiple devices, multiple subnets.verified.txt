@@ -1,13 +1,13 @@
 ﻿Scanning 3 subnets
-  192.168.0.0/24 (254 addresses, 00:00:05.0800000 estimated scan time)
-  192.168.100.0/24 (254 addresses, 00:00:05.0800000 estimated scan time)
-  192.168.200.0/24 (254 addresses, 00:00:05.0800000 estimated scan time)
+  10.255.255.254/32 (0 addresses, estimated scan time is 0 seconds)
+  192.168.32.0/20 (4094 addresses, estimated scan time is 1 minute, 21 seconds)
+  172.19.0.0/16 (65534 addresses, estimated scan time is 21 minutes, 50 seconds)
 
 ┌───┬───────────────┬───────────────────┬────────────────┐
 │   │ IP            │ MAC               │                │
 ├───┼───────────────┼───────────────────┼────────────────┤
-│ ? │ 192.168.0.10  │                   │ Unknown device │
-│ ? │ 192.168.0.20  │ 7D:FB:D0:E6:80:AE │ Unknown device │
-│ ? │ 192.168.0.30  │                   │ Unknown device │
-│ ? │ 192.168.100.5 │                   │ Unknown device │
+│ ? │ 172.19.0.10   │                   │ Unknown device │
+│ ? │ 192.168.32.10 │                   │ Unknown device │
+│ ? │ 192.168.32.20 │ 7D:FB:D0:E6:80:AE │ Unknown device │
+│ ? │ 192.168.34.4  │                   │ Unknown device │
 └───┴───────────────┴───────────────────┴────────────────┘

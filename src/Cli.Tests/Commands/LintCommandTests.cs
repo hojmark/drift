@@ -43,7 +43,7 @@ public class LintCommandTests {
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( exitCode, Is.EqualTo( ExitCodes.ValidationError ) );
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.SpecValidationError ) );
       await Verify( config.Output.ToString() + config.Error )
         .ScrubInlineDateTimes( "HH:mm:ss", CultureInfo.InvariantCulture );
     }

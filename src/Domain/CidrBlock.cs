@@ -24,6 +24,7 @@ public readonly record struct CidrBlock {
     get;
   }
 
+  //TODO check that a base address e.g. 192.168.0.0/24 is used and not another IP e.g. 192.168.0.1. Technically the same, but using the base address is convention.
   public CidrBlock( string cidrNotation ) {
     if ( string.IsNullOrWhiteSpace( cidrNotation ) )
       throw new ArgumentException( "CIDR notation cannot be null or empty.", nameof(cidrNotation) );

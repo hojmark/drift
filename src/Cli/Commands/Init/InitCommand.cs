@@ -212,7 +212,7 @@ public class InitCommandHandler(
           await AnsiConsole
             .Status()
             .StartAsync( "Scanning network ...", async ctx => {
-              scanResult = await scanner.ScanAsync( subnets.First() );
+              scanResult = await scanner.ScanAsync( subnets );
               await Task.Delay( 1500 );
             } );
         }
@@ -222,8 +222,7 @@ public class InitCommandHandler(
           var lastLogTime = DateTime.MinValue;
           var completedTasks = new HashSet<string>();
 
-          //TODO note: subnets.FIRST() !!! support multiple subnets !!!
-          scanResult = await scanner.ScanAsync( subnets.First(), onProgress: progressReport => {
+          scanResult = await scanner.ScanAsync( subnets, onProgress: progressReport => {
             ScanCommandHandler.UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
           }, cancellationToken: CancellationToken.None );
         }

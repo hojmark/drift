@@ -1,5 +1,6 @@
 using System.CommandLine;
 using Drift.Cli.Output;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
 
@@ -20,12 +21,19 @@ internal static class CommonParameters {
   /// Options shared across commands.
   /// </summary>
   internal static class Options {
-    internal static readonly Option<bool>
-      Verbose = new("--verbose", "-v") { Description = "Verbose output", Arity = ArgumentArity.Zero }; // == debug?
+    /// <summary>
+    /// Enable detailed output, corresponding to <see cref="LogLevel.Debug"/> log level.
+    /// </summary>
+    internal static readonly Option<bool> Verbose = new("--verbose", "-v") {
+      Description = "Verbose output", Arity = ArgumentArity.Zero
+    };
 
-    // == trace?
-    //internal static readonly Option<bool> VeryVerbose =
-    //  new(["--very-verbose", "-vv"], "Very verbose output.");
+    /// <summary>
+    /// Enable the most detailed output available, corresponding to <see cref="LogLevel.Trace"/> log level.
+    /// </summary>
+    internal static readonly Option<bool> VeryVerbose = new("--very-verbose", "-vv") {
+      Description = "Very verbose output", Arity = ArgumentArity.Zero, Hidden = true
+    };
 
     internal static readonly Option<OutputFormat> OutputFormat =
       new("--output", "-o") {

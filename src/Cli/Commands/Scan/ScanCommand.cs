@@ -121,8 +121,7 @@ public class ScanCommandHandler(
           //progressBars["DNS resolution"] = ctx.AddTask( "DNS resolution" );
           //progressBars["Connect Scan"] = ctx.AddTask( "Connect Scan" );
 
-          //TODO note: subnets.FIRST() !!! support multiple subnets !!!
-          return await scanner.ScanAsync( subnets.First(), onProgress: progressReport => {
+          return await scanner.ScanAsync( subnets, onProgress: progressReport => {
             UpdateProgressBar( progressReport, ctx, progressBars );
           }, cancellationToken: CancellationToken.None );
         } );
@@ -132,8 +131,7 @@ public class ScanCommandHandler(
       var lastLogTime = DateTime.MinValue;
       var completedTasks = new HashSet<string>();
 
-      //TODO note: subnets.FIRST() !!! support multiple subnets !!!
-      scanResult = await scanner.ScanAsync( subnets.First(), onProgress: progressReport => {
+      scanResult = await scanner.ScanAsync( subnets, onProgress: progressReport => {
         UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
       }, cancellationToken: CancellationToken.None );
     }

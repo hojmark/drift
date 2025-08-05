@@ -23,56 +23,75 @@ internal class OutputManagerFactory(
   bool toConsole = true
 ) : IOutputManagerFactory {
   public IOutputManager Create( ParseResult parseResult ) {
-    var consoleOuts = GetConsoleOuts( parseResult );
-    return new ConsoleOutputManager(
-      GetLogger( parseResult, toConsole ),
-      consoleOuts.StdOut,
-      consoleOuts.ErrOut,
-      consoleOuts.Verbose,
-      consoleOuts.OutputFormat
-    );
-  }
-
-  private static (TextWriter StdOut, TextWriter ErrOut, bool Verbose, OutputFormat OutputFormat)
-    GetConsoleOuts( ParseResult parseResult ) {
-    var outputFormatValue = parseResult.GetValue( CommonParameters.Options.OutputFormat );
-    var verboseValue = parseResult.GetValue( CommonParameters.Options.Verbose );
+    var outputFormat = parseResult.GetValue( CommonParameters.Options.OutputFormat );
+    var verbose = parseResult.GetValue( CommonParameters.Options.Verbose );
     //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
 
     // Even though the option has a default value, it is not set when the option is not added to a command.
-    // Instead, we get 0. It indicates a developer mistake.
-    if ( outputFormatValue == 0 ) {
-      // throw new Exception( "Output format not specified" );
-      // Be graceful for now...
-      outputFormatValue = OutputFormat.Normal;
-    }
-
-    if ( outputFormatValue is not OutputFormat.Normal ) {
-      return ( TextWriter.Null, TextWriter.Null, false, outputFormatValue );
+    // Instead, we get 0, which indicates a developer mistake.
+    if ( outputFormat == 0 ) {
+      throw new Exception( "Output format not specified" );
+      // // Be graceful for now...
+      // outputFormat = OutputFormat.Normal;
     }
 
     var consoleOut = parseResult.Configuration.Output;
     var consoleErr = parseResult.Configuration.Error;
+
+    return Create( outputFormat, verbose, consoleOut, consoleErr );
+  }
+
+  public IOutputManager Create(
+    OutputFormat outputFormat,
+    bool verbose,
+    TextWriter consoleOut,
+    TextWriter consoleErr
+  ) {
+    var consoleOuts = GetConsoleOuts( outputFormat, verbose, consoleOut, consoleErr );
+
+    return new ConsoleOutputManager(
+      GetLogger( outputFormat, verbose, consoleOut, consoleErr, toConsole ),
+      consoleOuts.StdOut,
+      consoleOuts.ErrOut,
+      verbose,
+      outputFormat
+    );
+  }
+
+
+  private static (TextWriter StdOut, TextWriter ErrOut) GetConsoleOuts(
+    OutputFormat outputFormat,
+    bool verboseValue,
+    TextWriter consoleOut,
+    TextWriter consoleErr
+  ) {
+    if ( outputFormat is not OutputFormat.Normal ) {
+      return ( TextWriter.Null, TextWriter.Null );
+    }
 
     var tempOutputManager = new ConsoleOutputManager(
       NullLogger.Instance,
       consoleOut,
       consoleErr,
       verboseValue /*|| veryVerboseValue*/,
-      outputFormatValue
+      outputFormat
     );
 
     tempOutputManager.Normal.WriteLineVerbose(
-      $"Output format is 'Normal' using '{( /*veryVerboseValue ? "Very Verbose" :*/ "Verbose" )}' output" );
+      $"Output format is 'Normal' using '{( /*veryVerboseValue ? "Very Verbose" :*/ "Verbose" )}' output"
+    );
 
-    return ( consoleOut, consoleErr, verboseValue /*|| veryVerboseValue*/, outputFormatValue );
+    return ( consoleOut, consoleErr );
   }
 
-  private static ILogger GetLogger( ParseResult parseResult, bool toConsole ) {
-    var outputFormatValue = parseResult.GetValue( CommonParameters.Options.OutputFormat );
-    var verboseValue = parseResult.GetValue( CommonParameters.Options.Verbose );
-    //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
-
+  private static ILogger GetLogger(
+    OutputFormat outputFormatValue,
+    bool verboseValue,
+    TextWriter consoleOut,
+    TextWriter consoleErr,
+    // TODO try to remove
+    bool toDefaultConsole
+  ) {
     if ( outputFormatValue is not OutputFormat.Log ) {
       return NullLogger.Instance;
     }
@@ -97,14 +116,14 @@ internal class OutputManagerFactory(
       loggerConfig.MinimumLevel.Information();
     }
 
-    if ( toConsole ) {
+    if ( toDefaultConsole ) {
       loggerConfig.WriteTo.Console();
     }
     else {
       loggerConfig.WriteTo.Logger( lc => lc
           .Filter.ByIncludingOnly( le => le.Level < LogEventLevel.Error )
           .WriteTo.TextWriter(
-            textWriter: parseResult.Configuration.Output,
+            textWriter: consoleOut,
             formatter: formatter
             //outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
           )
@@ -112,7 +131,7 @@ internal class OutputManagerFactory(
         .WriteTo.Logger( lc => lc
           .Filter.ByIncludingOnly( le => le.Level >= LogEventLevel.Error )
           .WriteTo.TextWriter(
-            textWriter: parseResult.Configuration.Error,
+            textWriter: consoleErr,
             formatter: formatter
             //outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
           )

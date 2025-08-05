@@ -6,9 +6,10 @@ namespace Drift.Cli.Tests.Utils;
 
 public class PredefinedResultNetworkScanner( ScanResult scanResult ) : INetworkScanner {
   public Task<ScanResult> ScanAsync(
-    CidrBlock cidr,
+    List<CidrBlock> cidrs,
     Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default
+    CancellationToken cancellationToken = default,
+    int maxPingsPerSecond = 50
   ) {
     return Task.FromResult( scanResult );
   }

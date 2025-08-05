@@ -13,40 +13,70 @@ using NetworkInterface = Drift.Cli.Commands.Scan.Subnet.NetworkInterface;
 namespace Drift.Cli.Tests.Commands;
 
 public class ScanCommandTests {
-  private static readonly List<INetworkInterface> Interfaces = [
-    new NetworkInterface {
-      Description = "eth", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "192.168.0.0/24" )
-    }
-  ];
+  private static readonly INetworkInterface DefaultInterface = new NetworkInterface {
+    Description = "eth0", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "192.168.0.0/24" )
+  };
 
   private static IEnumerable<TestCaseData> DiscoveredDeviceLists {
     get {
-      yield return new TestCaseData( new List<DiscoveredDevice>() )
+      yield return new TestCaseData( new List<DiscoveredDevice>(), new List<INetworkInterface> { DefaultInterface } )
         .SetName( "No devices" );
 
-      yield return new TestCaseData( new List<DiscoveredDevice> {
-          new() { Addresses = [new IpV4Address( "192.168.0.5" )] }
-        } )
+      yield return new TestCaseData(
+          new List<DiscoveredDevice> { new() { Addresses = [new IpV4Address( "192.168.0.5" )] } },
+          new List<INetworkInterface> { DefaultInterface }
+        )
         .SetName( "Single device" );
 
-      yield return new TestCaseData( new List<DiscoveredDevice> {
-          new() { Addresses = [new IpV4Address( "192.168.0.10" )] },
-          new() { Addresses = [new IpV4Address( "192.168.0.20" ), new MacAddress( "7d:fb:d0:e6:80:ae" )] },
-          new() { Addresses = [new IpV4Address( "192.168.0.30" )] }
-        } )
+      yield return new TestCaseData(
+          new List<DiscoveredDevice> {
+            new() { Addresses = [new IpV4Address( "192.168.0.10" )] },
+            new() { Addresses = [new IpV4Address( "192.168.0.20" ), new MacAddress( "7d:fb:d0:e6:80:ae" )] },
+            new() { Addresses = [new IpV4Address( "192.168.0.30" )] }
+          },
+          new List<INetworkInterface> { DefaultInterface }
+        )
         .SetName( "Multiple devices" );
+
+      yield return new TestCaseData(
+          new List<DiscoveredDevice> {
+            new() { Addresses = [new IpV4Address( "192.168.0.10" )] },
+            new() { Addresses = [new IpV4Address( "192.168.0.20" ), new MacAddress( "7d:fb:d0:e6:80:ae" )] },
+            new() { Addresses = [new IpV4Address( "192.168.0.30" )] },
+            new() { Addresses = [new IpV4Address( "192.168.100.5" )] }
+          },
+          new List<INetworkInterface> {
+            DefaultInterface,
+            new NetworkInterface {
+              Description = "eth1",
+              OperationalStatus = OperationalStatus.Up,
+              UnicastAddress = new CidrBlock( "192.168.100.0/24" )
+            },
+            new NetworkInterface {
+              Description = "eth2",
+              OperationalStatus = OperationalStatus.Up,
+              UnicastAddress = new CidrBlock( "192.168.200.0/24" )
+            },
+            new NetworkInterface {
+              Description = "eth3", OperationalStatus = OperationalStatus.Down, UnicastAddress = null
+            }
+          }
+        )
+        .SetName( "Multiple devices, multiple subnets" );
     }
   }
 
   //[Combinatorial]
   [TestCaseSource( nameof(DiscoveredDeviceLists) )]
   public async Task SuccessTest(
-    List<DiscoveredDevice> devices /*, [Values( "", "normal", "log" )] string outputFormat */
+    List<DiscoveredDevice> devices,
+    List<INetworkInterface> interfaces
+    /*, [Values( "", "normal", "log" )] string outputFormat */
   ) {
     // Arrange
     var config = TestCommandLineConfiguration.Create( services => {
         services.AddScoped<IInterfaceSubnetProvider>( sp =>
-          new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), Interfaces )
+          new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), interfaces )
         );
         services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
             new ScanResult {

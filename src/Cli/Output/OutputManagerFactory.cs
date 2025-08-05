@@ -77,7 +77,6 @@ internal class OutputManagerFactory(
       return NullLogger.Instance;
     }
 
-    //TODO log level currently broken!
     var loglevel =
       //veryVerboseValue ? LogLevel.Trace :
       verboseValue ? LogLevel.Debug : LogLevel.Information;

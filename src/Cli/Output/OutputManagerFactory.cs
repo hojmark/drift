@@ -12,7 +12,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace Drift.Cli.Output;
 
 public interface IOutputManagerFactory {
-  IOutputManager Create( ParseResult result );
+  IOutputManager Create( ParseResult result, bool plainConsole );
 }
 
 //TODO temporary migration away from BinderBase
@@ -22,7 +22,7 @@ internal class OutputManagerFactory(
   //TODO Inject config instead
   bool toConsole = true
 ) : IOutputManagerFactory {
-  public IOutputManager Create( ParseResult parseResult ) {
+  public IOutputManager Create( ParseResult parseResult, bool plainConsole ) {
     var outputFormat = parseResult.GetValue( CommonParameters.Options.OutputFormat );
     var verbose = parseResult.GetValue( CommonParameters.Options.Verbose );
     //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
@@ -38,23 +38,25 @@ internal class OutputManagerFactory(
     var consoleOut = parseResult.Configuration.Output;
     var consoleErr = parseResult.Configuration.Error;
 
-    return Create( outputFormat, verbose, consoleOut, consoleErr );
+    return Create( outputFormat, verbose, consoleOut, consoleErr, plainConsole );
   }
 
   public IOutputManager Create(
     OutputFormat outputFormat,
     bool verbose,
     TextWriter consoleOut,
-    TextWriter consoleErr
+    TextWriter consoleErr,
+    bool plainConsole
   ) {
-    var consoleOuts = GetConsoleOuts( outputFormat, verbose, consoleOut, consoleErr );
+    var consoleOuts = GetConsoleOuts( outputFormat, verbose, consoleOut, consoleErr, plainConsole );
 
     return new ConsoleOutputManager(
       GetLogger( outputFormat, verbose, consoleOut, consoleErr, toConsole ),
       consoleOuts.StdOut,
       consoleOuts.ErrOut,
       verbose,
-      outputFormat
+      outputFormat,
+      plainConsole
     );
   }
 
@@ -63,7 +65,8 @@ internal class OutputManagerFactory(
     OutputFormat outputFormat,
     bool verboseValue,
     TextWriter consoleOut,
-    TextWriter consoleErr
+    TextWriter consoleErr,
+    bool plainConsole
   ) {
     if ( outputFormat is not OutputFormat.Normal ) {
       return ( TextWriter.Null, TextWriter.Null );
@@ -74,7 +77,8 @@ internal class OutputManagerFactory(
       consoleOut,
       consoleErr,
       verboseValue /*|| veryVerboseValue*/,
-      outputFormat
+      outputFormat,
+      plainConsole
     );
 
     tempOutputManager.Normal.WriteLineVerbose(

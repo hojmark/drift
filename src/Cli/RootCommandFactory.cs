@@ -14,10 +14,14 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Drift.Cli;
 
 internal static class RootCommandFactory {
-  internal static RootCommand Create( bool toConsole, Action<IServiceCollection>? configureServices = null ) {
+  internal static RootCommand Create(
+    bool toConsole,
+    bool plainConsole = false,
+    Action<IServiceCollection>? configureServices = null
+  ) {
     var services = new ServiceCollection();
 
-    ConfigureDefaults( services, toConsole );
+    ConfigureDefaults( services, toConsole, plainConsole );
 
     // Custom overrides e.g. for testing
     configureServices?.Invoke( services );
@@ -27,9 +31,9 @@ internal static class RootCommandFactory {
     return CreateRootCommand( provider );
   }
 
-  private static void ConfigureDefaults( ServiceCollection services, bool toConsole ) {
+  private static void ConfigureDefaults( ServiceCollection services, bool toConsole, bool plainConsole ) {
     services.AddScoped<ParseResultHolder>();
-    ConfigureOutput( services, toConsole );
+    ConfigureOutput( services, toConsole, plainConsole );
     ConfigureSubnetProvider( services );
     ConfigureNetworkScanner( services );
     ConfigureCommandHandlers( services );
@@ -49,14 +53,14 @@ internal static class RootCommandFactory {
     return rootCommand;
   }
 
-  private static void ConfigureOutput( ServiceCollection services, bool toConsole ) {
+  private static void ConfigureOutput( ServiceCollection services, bool toConsole, bool plainConsole ) {
     services.AddSingleton<IOutputManagerFactory>( new OutputManagerFactory( toConsole ) );
     services.AddScoped<IOutputManager>( sp => {
       var holder = sp.GetRequiredService<ParseResultHolder>();
       var parseResult = holder.ParseResult ??
                         throw new InvalidOperationException( $"{nameof(ParseResultHolder.ParseResult)} not set" );
       var factory = sp.GetRequiredService<IOutputManagerFactory>();
-      return factory.Create( parseResult );
+      return factory.Create( parseResult, plainConsole );
     } );
   }
 

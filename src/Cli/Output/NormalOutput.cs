@@ -3,7 +3,12 @@ using Spectre.Console;
 
 namespace Drift.Cli.Output;
 
-internal class NormalOutput( TextWriter stdOut, TextWriter errOut, bool verbose = false ) : INormalOutput {
+internal class NormalOutput(
+  TextWriter stdOut,
+  TextWriter errOut,
+  bool plainOutput = false,
+  bool verbose = false
+) : INormalOutput {
   // Use of banned Console APIs is OK. Main point is to centralize usage to this class.
 #pragma warning disable RS0030
 
@@ -135,6 +140,12 @@ internal class NormalOutput( TextWriter stdOut, TextWriter errOut, bool verbose 
 
   public IAnsiConsole GetAnsiConsole() {
     var settings = new AnsiConsoleSettings { Out = new AnsiConsoleOutput( stdOut ) };
+
+    if ( plainOutput ) {
+      settings.Ansi = AnsiSupport.No;
+      settings.ColorSystem = ColorSystemSupport.NoColors;
+      settings.Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false };
+    }
 
     var customAnsiConsole = AnsiConsole.Create( settings );
     return customAnsiConsole;

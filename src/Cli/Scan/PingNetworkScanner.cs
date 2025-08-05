@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Tools;
@@ -25,8 +26,8 @@ internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) :
   ) {
     var logger = output.Log;
     var startedAt = DateTime.Now;
-    logger.LogDebug( "Starting network scan at {StartedAt}", startedAt );
-    output.Normal.WriteLineVerbose( $"Starting network scan at {startedAt}" );
+    logger.LogDebug( "Starting network scan at {StartedAt}", startedAt.ToString( CultureInfo.InvariantCulture ) );
+    output.Normal.WriteLineVerbose( $"Starting network scan at {startedAt.ToString( CultureInfo.InvariantCulture )}" );
 
     onProgress?.Invoke( new ProgressReport {
       Tasks = [
@@ -53,9 +54,14 @@ internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) :
     } );
 
     var finishedAt = DateTime.Now;
-    var elapsed = finishedAt - startedAt; //TODO humanize
-    logger.LogDebug( "Finished network scan at {StartedAt} in {Elapsed}", finishedAt, elapsed.Humanize( 2 ) );
-    output.Normal.WriteLineVerbose( $"Finished network scan at {finishedAt} in {elapsed.Humanize( 2 )}" );
+    var elapsed = finishedAt - startedAt; // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
+    logger.LogDebug( "Finished network scan at {StartedAt} in {Elapsed}",
+      finishedAt.ToString( CultureInfo.InvariantCulture ),
+      elapsed
+    );
+    output.Normal.WriteLineVerbose(
+      $"Finished network scan at {finishedAt.ToString( CultureInfo.InvariantCulture )} in {elapsed}"
+    );
 
     return new ScanResult {
       DiscoveredDevices = ToDiscoveredDevices( pingReplies, ipToMac ),

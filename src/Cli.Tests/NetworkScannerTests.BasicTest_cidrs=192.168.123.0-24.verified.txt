@@ -1,8 +1,8 @@
 ﻿Output format is 'Normal' using 'Verbose' output
-Starting network scan at DateTime_ANY
+Starting network scan at <time>
 Starting ping scan for CIDR block 192.168.123.0/24 (254 addresses)
 Got reply from 192.168.123.1
 Got reply from 192.168.123.2
 Got reply from 192.168.123.3
 Finished ping scan for CIDR block 192.168.123.0/24
-Finished network scan at DateTime_ANY in <elapsed>
+Finished network scan at <time> in <elapsed>

@@ -56,6 +56,6 @@ public class LintCommandHandler( IOutputManager output ) : ICommandHandler<LintP
 
     renderer.Render( result );
 
-    return result.IsValid ? ExitCodes.Success : ExitCodes.ValidationError;
+    return result.IsValid ? ExitCodes.Success : ExitCodes.SpecValidationError;
   }
 }

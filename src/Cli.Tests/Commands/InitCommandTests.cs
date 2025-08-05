@@ -13,7 +13,6 @@ using Drift.Spec.Validation;
 using Drift.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using NetworkInterface = Drift.Cli.Commands.Scan.Subnet.NetworkInterface;
-using PredefinedInterfaceSubnetProvider = Drift.Cli.Tests.Utils.PredefinedInterfaceSubnetProvider;
 
 namespace Drift.Cli.Tests.Commands;
 
@@ -99,10 +98,12 @@ public class InitCommandTests {
       Assert.That( result, Is.EqualTo( ExitCodes.Success ) );
       var verifyOutputTask = Verify( config.Output.ToString() + config.Error );
       if ( outputFormat == "-o log" ) {
-        verifyOutputTask.ScrubInlineDateTimes( "HH:mm:ss" );
+        await verifyOutputTask.ScrubLogOutputTime();
+      }
+      else {
+        await verifyOutputTask;
       }
 
-      await verifyOutputTask;
       //await Verify( await File.ReadAllTextAsync( $"{specName}.spec.yaml" ) ).UseTextForParameters( "spec" );
     }
   }

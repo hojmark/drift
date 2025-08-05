@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Globalization;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
@@ -12,6 +13,8 @@ using Drift.Domain;
 using Drift.Domain.Progress;
 using Drift.Domain.Scan;
 using Drift.Utils;
+using Humanizer;
+using Humanizer.Localisation;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
@@ -87,15 +90,16 @@ public class ScanCommandHandler(
 
     output.Normal.WriteLine( 0,
       $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : "" )}" ); // TODO many more varieties
-    foreach ( var subnet in subnets ) {
+    foreach ( var cidr in subnets ) {
       //TODO write name if from spec: Ui.WriteLine( 1, $"{subnet.Id}: {subnet.Network}" );
-      output.Normal.Write( 1, $"{subnet}", ConsoleColor.Cyan );
+      output.Normal.Write( 1, $"{cidr}", ConsoleColor.Cyan );
       output.Normal.WriteLine(
-        " (" + IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( subnet.PrefixLength ) ) +
-        " addresses, " +
-        InitCommandHandler.CalculateScanDuration( subnet.PrefixLength,
-          PingNetworkScanner.MaxPingsPerSecond ) /*.Humanize( 2, CultureInfo.InvariantCulture )*/ +
-        " estimated scan time" +
+        " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
+        " addresses, estimated scan time is " +
+        InitCommandHandler.CalculateScanDuration(
+          cidr,
+          PingNetworkScanner.MaxPingsPerSecond
+        ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
         ")", ConsoleColor.DarkGray );
     }
 

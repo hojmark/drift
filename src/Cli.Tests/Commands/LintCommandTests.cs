@@ -1,5 +1,5 @@
-using System.Globalization;
 using Drift.Cli.Abstractions;
+using Drift.TestUtilities;
 
 namespace Drift.Cli.Tests.Commands;
 
@@ -22,7 +22,7 @@ public class LintCommandTests {
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
       await Verify( config.Output.ToString() + config.Error )
-        .ScrubInlineDateTimes( "HH:mm:ss", CultureInfo.InvariantCulture );
+        .ScrubLogOutputTime();
     }
   }
 
@@ -43,9 +43,9 @@ public class LintCommandTests {
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( exitCode, Is.EqualTo( ExitCodes.ValidationError ) );
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.SpecValidationError ) );
       await Verify( config.Output.ToString() + config.Error )
-        .ScrubInlineDateTimes( "HH:mm:ss", CultureInfo.InvariantCulture );
+        .ScrubLogOutputTime();
     }
   }
 

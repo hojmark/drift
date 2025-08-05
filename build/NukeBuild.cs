@@ -65,7 +65,8 @@ class NukeBuild : Nuke.Common.NukeBuild {
 
   private static readonly string[] FilesToDistribute = ["drift", "drift.dbg"];
 
-  private const string BinaryLogName = "build.binlog";
+  private const string BinaryBuildLogName = "build.binlog";
+  private const string BinaryPublishLogName = "publish.binlog";
 
   internal static GitHubClient GitHubClient {
     get {
@@ -255,7 +256,7 @@ class NukeBuild : Nuke.Common.NukeBuild {
           .SetProjectFile( Solution )
           .SetConfiguration( Configuration )
           .SetVersionProperties( SemVer )
-          .SetBinaryLog( BinaryLogName )
+          .SetBinaryLog( BinaryBuildLogName )
           .EnableNoLogo()
           .EnableNoRestore()
         );
@@ -268,15 +269,7 @@ class NukeBuild : Nuke.Common.NukeBuild {
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(CheckBuildWarnings) );
 
-        const string warningsLogName = "build-warnings.log";
-
-        DotNetMSBuild( s => s
-          .SetTargetPath( BinaryLogName )
-          .SetNoConsoleLogger( true )
-          .AddProcessAdditionalArguments( "-fl", $"-flp:logfile={warningsLogName};warningsonly" )
-        );
-
-        var warnings = File.ReadAllLines( warningsLogName );
+        var warnings = BinaryLog.GetWarnings( BinaryBuildLogName );
 
         foreach ( var warning in warnings ) {
           Log.Information( warning );
@@ -288,9 +281,40 @@ class NukeBuild : Nuke.Common.NukeBuild {
           Log.Error( "Found {Count} build warnings", warnings.Length );
           throw new Exception( $"Found {warnings.Length} build warnings" );
         }
-        else {
-          Log.Information( "🟢 No build warnings found" );
+
+        Log.Information( "🟢 No build warnings found" );
+      }
+    );
+
+
+  Target CheckPublishWarnings => _ => _
+    .After( CheckBuildWarnings, Publish )
+    //.TriggeredBy( Build )
+    .Executes( () => {
+        using var _ = new TargetLifecycle( nameof(CheckPublishWarnings) );
+
+        var warnings = BinaryLog.GetWarnings( BinaryPublishLogName );
+
+        foreach ( var warning in warnings ) {
+          Log.Information( warning );
         }
+
+        var hasWarnings = warnings.Length != 0;
+
+        if ( hasWarnings ) {
+          Log.Error( "Found {Count} publish warnings", warnings.Length );
+          throw new Exception( $"Found {warnings.Length} publish warnings" );
+        }
+
+        Log.Information( "🟢 No publish warnings found" );
+      }
+    );
+
+  Target CheckWarnings => _ => _
+    .DependsOn( CheckBuildWarnings, CheckPublishWarnings )
+    //.TriggeredBy( Publish )
+    .Executes( () => {
+        //using var _ = new TargetLifecycle( nameof(CheckWarnings) );
       }
     );
 
@@ -328,6 +352,7 @@ class NukeBuild : Nuke.Common.NukeBuild {
             .SetVersionProperties( SemVer )
             //TODO if not specifying a RID, apparently only x64 gets built on x64 host
             .SetRuntime( runtime )
+            .SetProcessAdditionalArguments( $"-bl:{BinaryPublishLogName}" )
             .EnableNoLogo()
             .EnableNoRestore()
             .EnableNoBuild()

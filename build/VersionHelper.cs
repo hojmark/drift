@@ -9,7 +9,7 @@ using Nuke.Common.Tools.GitHub;
 using Semver;
 using Serilog;
 
-public class VersionHelper {
+public static class VersionHelper {
   internal static async Task<SemVersion> GetNextReleaseVersion( NukeBuild build, GitRepository repository ) {
     if ( build.CustomVersion != null ) {
       throw new InvalidOperationException( "Cannot specify a custom version when releasing" );

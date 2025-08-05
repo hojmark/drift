@@ -1,1 +1,1 @@
-﻿✔ Created spec [1m{CurrentDirectory}myNetworkWithDiscovery.spec.yaml[0m
+﻿✔  Created spec [1m{CurrentDirectory}myNetworkWithDiscovery.spec.yaml[0m

@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Drift.Cli.Output.Abstractions;
+using Spectre.Console;
 
 namespace Drift.Cli.Output.Normal;
 
@@ -100,6 +101,13 @@ internal static class NormalOutputExtensions {
     else {
       output.WriteLineError( "✖ Validation failed" );
     }
+  }
+
+  /// <summary>
+  /// Action here meaning a command.
+  /// </summary>
+  internal static void WriteLineCTA( this INormalOutput output, string description, string command ) {
+    output.GetAnsiConsole().MarkupLine( $"{description} [bold][green]{command}[/][/]" );
   }
 /*
   /// <summary>

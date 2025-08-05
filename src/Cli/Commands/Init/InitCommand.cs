@@ -100,11 +100,10 @@ public class InitCommandHandler(
 
     if ( success && isInteractive ) {
       output.Normal.WriteLine();
-      output.Normal.GetAnsiConsole()
-        .MarkupLine( $"💡\uFE0F Next: Try [bold][green]drift scan {initOptions.Name}[/][/]" );
+      output.Normal.WriteLineCTA( "💡\uFE0F Next: Try", $"drift scan {initOptions.Name}" );
     }
 
-    output.Log.LogDebug( "Init command completed" );
+    output.Log.LogDebug( "init command completed" );
 
     return ExitCodes.Success;
   }
@@ -128,7 +127,7 @@ public class InitCommandHandler(
 
     console.WriteLine();
 
-    AnsiConsole.MarkupLine( "[bold]📡\uFE0F Welcome to Drift! Let's set up a new spec.[/]" );
+    console.GetAnsiConsole().MarkupLine( "[bold]📡\uFE0F Welcome to Drift! Let's set up a new spec.[/]" );
 
     console.WriteLine();
 
@@ -196,11 +195,13 @@ public class InitCommandHandler(
       //TODO create unit test for this
       output.Normal.WriteLineVerbose(
         "Found subnets: " + string.Join( ", ",
-          subnets.Select( s =>
-            s + " (" + IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( s.PrefixLength ) ) +
+          subnets.Select( cidr =>
+            cidr + " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
             " addresses, " +
-            CalculateScanDuration( s.PrefixLength,
-              PingNetworkScanner.MaxPingsPerSecond ) /*.Humanize( 2, CultureInfo.InvariantCulture )*/ +
+            CalculateScanDuration(
+              cidr,
+              PingNetworkScanner.MaxPingsPerSecond
+            ) /* TODO .Humanize( 2, CultureInfo.InvariantCulture )*/ +
             " estimated scan time" +
             ")"
           )
@@ -253,7 +254,7 @@ public class InitCommandHandler(
 
       if ( output.Is( OutputFormat.Normal ) ) {
         output.Normal.Write( "✔", ConsoleColor.Green );
-        output.Normal.Write( " Created spec " );
+        output.Normal.Write( "  Created spec " );
         output.Normal.WriteLine( TextHelper.Bold( $"{fullPath}" ) );
       }
 
@@ -273,8 +274,8 @@ public class InitCommandHandler(
   }
 
   //TODO move somewhere else
-  internal static TimeSpan CalculateScanDuration( int prefixLength, double scansPerSecond ) {
-    double hostCount = IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( prefixLength ) );
+  internal static TimeSpan CalculateScanDuration( CidrBlock cidr, double scansPerSecond ) {
+    double hostCount = IpNetworkUtils.GetIpRangeCount( cidr );
     double totalSeconds = hostCount / scansPerSecond;
     return TimeSpan.FromSeconds( totalSeconds );
   }

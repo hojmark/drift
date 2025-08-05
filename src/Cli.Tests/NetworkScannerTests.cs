@@ -28,7 +28,8 @@ public class NetworkScannerTests {
 
     var stdOut = new StringWriter();
     var errOut = new StringWriter();
-    var testOutputManager = new OutputManagerFactory( false ).Create( OutputFormat.Normal, true, stdOut, errOut );
+    var testOutputManager =
+      new OutputManagerFactory( false ).Create( OutputFormat.Normal, true, stdOut, errOut, true );
 
     var scanner = new PingNetworkScanner( testOutputManager, pingTool );
 
@@ -43,8 +44,8 @@ public class NetworkScannerTests {
         Regex.Replace(
           Regex.Replace(
             line,
-            @"\d{2}/\d{2}/\d{4} \d{2}\.\d{2}\.\d{2}",
-            "DateTime_ANY"
+            @"\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}",
+            "<time>"
           ),
           "in .+",
           "in <elapsed>"

@@ -5,8 +5,9 @@ namespace Drift.Domain.Scan;
 //TODO belongs to domain?
 public interface INetworkScanner {
   public Task<ScanResult> ScanAsync(
-    CidrBlock cidr,
+    List<CidrBlock> cidrs,
     Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default
+    CancellationToken cancellationToken = default,
+    int maxPingsPerSecond = 50
   );
 }

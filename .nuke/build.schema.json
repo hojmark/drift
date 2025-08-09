@@ -27,6 +27,8 @@
         "Build",
         "BuildInfo",
         "CheckBuildWarnings",
+        "CheckPublishWarnings",
+        "CheckWarnings",
         "CleanArtifacts",
         "CleanProjects",
         "E2ETest",

@@ -5,7 +5,6 @@ using NSubstitute;
 
 namespace Drift.Cli.Tests;
 
-[TestFixture]
 public class SpecFileResolverTests {
   private string? _originalHome;
   private string _tempHome;
@@ -215,7 +214,7 @@ public class SpecFileResolverTests {
     Directory.CreateDirectory( tempDir );
 
     var one = CreateTempFile( tempDir, "first.spec.yaml" );
-    var two = CreateTempFile( tempDir, "second.spec.yaml" );
+    //var two = CreateTempFile( tempDir, "second.spec.yaml" );
 
     var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( null );

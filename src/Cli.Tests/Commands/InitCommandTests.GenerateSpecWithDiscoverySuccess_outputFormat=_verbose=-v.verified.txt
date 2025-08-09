@@ -1,0 +1,5 @@
+﻿Output format is 'Normal' using 'Verbose' output
+Found interfaces: [lo, up, 127.0.0.0/8], [enp0xxxxx, down, -], [enp8xxxxx, up, 192.168.0.0/24], [wlp, up, 192.168.0.0/24], [tun0, up, 100.100.1.9/32]
+Discovered subnet(s): 192.168.0.0/24 (RFC1918 addresses only)
+Found subnets: 192.168.0.0/24 (254 addresses, 00:00:05.0800000 estimated scan time)
+✔  Created spec [1m{CurrentDirectory}myNetworkWithDiscovery.spec.yaml[0m

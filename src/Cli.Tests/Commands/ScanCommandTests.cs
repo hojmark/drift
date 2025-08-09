@@ -1,23 +1,104 @@
+using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
+using Drift.Cli.Commands.Scan.Subnet;
+using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Tests.Utils;
+using Drift.Domain;
+using Drift.Domain.Device.Addresses;
+using Drift.Domain.Device.Discovered;
+using Drift.Domain.Scan;
+using Microsoft.Extensions.DependencyInjection;
+using NetworkInterface = Drift.Cli.Commands.Scan.Subnet.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 
 public class ScanCommandTests {
-  //TODO implement tests for scan command
+  private static readonly INetworkInterface DefaultInterface = new NetworkInterface {
+    Description = "eth0", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "192.168.0.0/24" )
+  };
 
-  [Explicit]
-  [Test]
-  public async Task HostTest() {
+  private static IEnumerable<TestCaseData> DiscoveredDeviceLists {
+    get {
+      yield return new TestCaseData( new List<DiscoveredDevice>(), new List<INetworkInterface> { DefaultInterface } )
+        .SetName( "No devices" );
+
+      yield return new TestCaseData(
+          new List<DiscoveredDevice> { new() { Addresses = [new IpV4Address( "192.168.0.5" )] } },
+          new List<INetworkInterface> { DefaultInterface }
+        )
+        .SetName( "Single device" );
+
+      yield return new TestCaseData(
+          new List<DiscoveredDevice> {
+            new() { Addresses = [new IpV4Address( "192.168.0.10" )] },
+            new() { Addresses = [new IpV4Address( "192.168.0.20" ), new MacAddress( "7d:fb:d0:e6:80:ae" )] },
+            new() { Addresses = [new IpV4Address( "192.168.0.30" )] }
+          },
+          new List<INetworkInterface> { DefaultInterface }
+        )
+        .SetName( "Multiple devices" );
+
+      yield return new TestCaseData(
+          new List<DiscoveredDevice> {
+            new() { Addresses = [new IpV4Address( "192.168.32.10" )] },
+            new() { Addresses = [new IpV4Address( "192.168.32.20" ), new MacAddress( "7d:fb:d0:e6:80:ae" )] },
+            new() { Addresses = [new IpV4Address( "192.168.34.4" )] },
+            new() { Addresses = [new IpV4Address( "172.19.0.10" )] }
+          },
+          new List<INetworkInterface> {
+            new NetworkInterface {
+              Description = "eth1",
+              OperationalStatus = OperationalStatus.Up,
+              UnicastAddress = new CidrBlock( "10.255.255.254/32" )
+            },
+            new NetworkInterface {
+              Description = "eth2",
+              OperationalStatus = OperationalStatus.Up,
+              UnicastAddress = new CidrBlock( "192.168.32.0/20" )
+            },
+            new NetworkInterface {
+              Description = "eth3",
+              OperationalStatus = OperationalStatus.Up,
+              UnicastAddress = new CidrBlock( "172.19.0.0/16" )
+            }
+          }
+        )
+        .SetName( "Multiple devices, multiple subnets" );
+    }
+  }
+
+  //[Combinatorial]
+  [TestCaseSource( nameof(DiscoveredDeviceLists) )]
+  public async Task SuccessTest(
+    List<DiscoveredDevice> devices,
+    List<INetworkInterface> interfaces
+    /*, [Values( "", "normal", "log" )] string outputFormat */
+  ) {
     // Arrange
-    var config = TestCommandLineConfiguration.Create();
+    var config = TestCommandLineConfiguration.Create( services => {
+        services.AddScoped<IInterfaceSubnetProvider>( sp =>
+          new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), interfaces )
+        );
+        services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
+            new ScanResult {
+              Metadata = new Metadata { StartedAt = default, EndedAt = default },
+              Status = ScanResultStatus.Success,
+              DiscoveredDevices = devices
+            }
+          )
+        );
+      }
+    );
 
     // Act
-    var result = await config.InvokeAsync( "scan blah_spec.yaml" );
+    var exitCode = await config.InvokeAsync( "scan" );
+    //var exitCode = await config.InvokeAsync( $"scan -o {outputFormat}" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      await Verify( config.Output.ToString() + config.Error );
-      Assert.That( result, Is.EqualTo( ExitCodes.Success ) );
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
+      await Verify( config.Output.ToString() + config.Error )
+        .UseFileName( $"{nameof(ScanCommandTests)}.{nameof(SuccessTest)}.{TestContext.CurrentContext.Test.Name}" );
     }
   }
 
@@ -27,11 +108,11 @@ public class ScanCommandTests {
     var config = TestCommandLineConfiguration.Create();
 
     // Act
-    var result = await config.InvokeAsync( "scan blah_spec.yaml" );
+    var exitCode = await config.InvokeAsync( "scan blah_spec.yaml" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( result, Is.EqualTo( ExitCodes.GeneralError ) );
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
       await Verify( config.Output.ToString() + config.Error );
     }
   }

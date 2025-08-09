@@ -10,4 +10,6 @@ artifacts/
 publish/
 TestResults/
 build.binlog
-build-warnings.log
+build.binlog-warnings-only.log
+publish.binlog
+publish.binlog-warnings-only.log

@@ -1,29 +1,33 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Tools;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Progress;
 using Drift.Domain.Scan;
+using Humanizer;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Commands.Scan;
+namespace Drift.Cli.Scan;
 
-internal class PingNetworkScanner( IOutputManager output ) : INetworkScanner {
+internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) : INetworkScanner {
   //TODO make private or configurable
   internal const int MaxPingsPerSecond = 50;
 
   public async Task<ScanResult> ScanAsync(
-    CidrBlock cidr,
+    List<CidrBlock> cidrs,
     Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default
+    CancellationToken cancellationToken = default,
+    int maxPingsPerSecond = MaxPingsPerSecond
   ) {
     var logger = output.Log;
     var startedAt = DateTime.Now;
-    logger.LogDebug( "Starting scan at {StartedAt}", startedAt );
-    output.Normal.WriteLineVerbose( $"Starting scan at {startedAt}" );
+    logger.LogDebug( "Starting network scan at {StartedAt}", startedAt.ToString( CultureInfo.InvariantCulture ) );
+    output.Normal.WriteLineVerbose( $"Starting network scan at {startedAt.ToString( CultureInfo.InvariantCulture )}" );
 
     onProgress?.Invoke( new ProgressReport {
       Tasks = [
@@ -32,7 +36,11 @@ internal class PingNetworkScanner( IOutputManager output ) : INetworkScanner {
       ]
     } );
 
-    var pingReplies = await PingScanAsync( cidr, output, onProgress, cancellationToken );
+    var pingReplies = new ConcurrentBag<(string Ip, bool Success, string? Hostname)>();
+
+    foreach ( var cidr in cidrs ) {
+      await PingScanAsync( pingReplies, cidr, output, maxPingsPerSecond, onProgress, cancellationToken );
+    }
 
     logger.LogDebug( "Reading ARP cache" );
 
@@ -46,15 +54,91 @@ internal class PingNetworkScanner( IOutputManager output ) : INetworkScanner {
     } );
 
     var finishedAt = DateTime.Now;
-    var elapsed = finishedAt - startedAt; //TODO humanize
-    logger.LogDebug( "Starting scan at {StartedAt} ({Elapsed})", finishedAt, elapsed );
-    output.Normal.WriteLineVerbose( $"Finished scan at {finishedAt} ({elapsed})" );
+    var elapsed = finishedAt - startedAt; // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
+    logger.LogDebug( "Finished network scan at {StartedAt} in {Elapsed}",
+      finishedAt.ToString( CultureInfo.InvariantCulture ),
+      elapsed
+    );
+    output.Normal.WriteLineVerbose(
+      $"Finished network scan at {finishedAt.ToString( CultureInfo.InvariantCulture )} in {elapsed}"
+    );
 
     return new ScanResult {
       DiscoveredDevices = ToDiscoveredDevices( pingReplies, ipToMac ),
       Metadata = new Metadata { StartedAt = startedAt, EndedAt = DateTime.Now },
       Status = ScanResultStatus.Success
     };
+  }
+
+  private async Task PingScanAsync( ConcurrentBag<(string Ip, bool Success, string? Hostname)> results,
+    CidrBlock cidr,
+    IOutputManager output,
+    int maxPingsPerSecond,
+    Action<ProgressReport>? onProgress = null,
+    CancellationToken cancellationToken = default
+  ) {
+    var ipRange = IPNetwork2
+      .Parse( cidr.ToString() )
+      .ListIPAddress( FilterEnum.Usable )
+      .Select( ip => ip.ToString() )
+      .ToList();
+
+    var total = ipRange.Count;
+    var completed = 0;
+
+    if ( total == 0 ) {
+      output.Normal.WriteLineWarning(
+        $"Skipping ping scan for CIDR block {cidr} as it has no usable IP addresses"
+      );
+
+      return;
+    }
+
+    output.Normal.WriteLineVerbose( $"Starting ping scan for CIDR block {cidr} ({total} addresses)" );
+
+    using var throttler = new SemaphoreSlim( maxPingsPerSecond );
+
+    var pingTasks = ipRange.Select( async ip => {
+      await throttler.WaitAsync( cancellationToken );
+
+      try {
+        var success = ( await pingTool.RunAsync( $"-c 1 -W 1 {ip}" ) ).ExitCode == 0;
+        string? hostname = "";
+        if ( success ) {
+          output.Normal.WriteLineVerbose( $"Got reply from {ip}" );
+          hostname = await GetHostNameAsync( ip, 15 );
+          //Console.WriteLine( hostname );
+        }
+
+        results.Add( ( ip, success, hostname ) );
+
+        Interlocked.Increment( ref completed );
+
+        onProgress?.Invoke( new ProgressReport {
+          Tasks = [
+            new TaskProgress {
+              TaskName = "Ping Scan", CompletionPct = (int) Math.Ceiling( ( (double) completed / total ) * 100 )
+            }
+          ]
+        } );
+      }
+      finally {
+        _ = Task.Delay( 1000 / maxPingsPerSecond, cancellationToken )
+          .ContinueWith( _ => {
+            try {
+              throttler.Release();
+            }
+            catch ( Exception ex ) {
+              //Console.WriteLine(ex);
+              //TODO throttler not working!!!
+            }
+          }, cancellationToken );
+      }
+    } ).ToList();
+
+    await Task.WhenAll( pingTasks );
+
+    output.Normal.WriteLineVerbose( $"Finished ping scan for CIDR block {cidr}" );
   }
 
   private static IEnumerable<DiscoveredDevice> ToDiscoveredDevices(
@@ -78,71 +162,6 @@ internal class PingNetworkScanner( IOutputManager output ) : INetworkScanner {
 
       return list;
     }
-  }
-
-  private static async Task<ConcurrentBag<(string Ip, bool Success, string? Hostname)>> PingScanAsync(
-    CidrBlock cidr,
-    IOutputManager output,
-    Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default
-  ) {
-    var results = new ConcurrentBag<(string Ip, bool Success, string? Hostname)>();
-
-    output.Normal.WriteLineVerbose( $"Starting ping scan for CIDR block: {cidr}" );
-
-    var ipRange = IPNetwork2
-      .Parse( cidr.ToString() )
-      .ListIPAddress( FilterEnum.Usable )
-      .Select( ip => ip.ToString() )
-      .ToList();
-
-    var total = ipRange.Count;
-    var completed = 0;
-
-    using var throttler = new SemaphoreSlim( MaxPingsPerSecond );
-
-    var pingTasks = ipRange.Select( async ip => {
-      await throttler.WaitAsync( cancellationToken );
-
-      try {
-        var success = ( await Tools.Ping.RunAsync( $"-c 1 -W 1 {ip}" ) ).ExitCode == 0;
-        string? hostname = "";
-        if ( success ) {
-          hostname = await GetHostNameAsync( ip, 15 );
-          //Console.WriteLine( hostname );
-        }
-
-        results.Add( ( ip, success, hostname ) );
-
-        Interlocked.Increment( ref completed );
-
-        onProgress?.Invoke( new ProgressReport {
-          Tasks = [
-            new TaskProgress {
-              TaskName = "Ping Scan", CompletionPct = (int) Math.Ceiling( ( (double) completed / total ) * 100 )
-            }
-          ]
-        } );
-      }
-      finally {
-        _ = Task.Delay( 1000 / MaxPingsPerSecond, cancellationToken )
-          .ContinueWith( _ => {
-            try {
-              throttler.Release();
-            }
-            catch ( Exception ex ) {
-              //Console.WriteLine(ex.StackTrace);
-              //TODO throttler not working!!!
-            }
-          }, cancellationToken );
-      }
-    } ).ToList();
-
-    await Task.WhenAll( pingTasks );
-
-    output.Normal.WriteLineVerbose( $"Finished ping scan for CIDR block: {cidr}" );
-
-    return results;
   }
 
   private static async Task<string?> GetHostNameAsync( string ip, int timeoutMs = 1000 ) {

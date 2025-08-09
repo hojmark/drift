@@ -1,5 +1,6 @@
 using System.CommandLine;
 using Drift.Cli.Output;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
 
@@ -11,7 +12,7 @@ internal static class CommonParameters {
   /// Arguments shared across commands.
   /// </summary>
   internal static class Arguments {
-    internal static readonly Argument<FileInfo?> SpecOptional = new("spec") {
+    internal static readonly Argument<FileInfo?> Spec = new("spec") {
       Description = "The network spec file to process.", Arity = ArgumentArity.ZeroOrOne
     };
   }
@@ -20,19 +21,26 @@ internal static class CommonParameters {
   /// Options shared across commands.
   /// </summary>
   internal static class Options {
-    internal static readonly Option<bool>
-      Verbose = new("--verbose", "-v") { Description = "Verbose output" }; // == debug?
+    /// <summary>
+    /// Enable detailed output, corresponding to <see cref="LogLevel.Debug"/> log level.
+    /// </summary>
+    internal static readonly Option<bool> Verbose = new("--verbose", "-v") {
+      Description = "Verbose output", Arity = ArgumentArity.Zero
+    };
 
-    // == trace?
-    //internal static readonly Option<bool> VeryVerbose =
-    //  new(["--very-verbose", "-vv"], "Very verbose output.");
+    /// <summary>
+    /// Enable the most detailed output available, corresponding to <see cref="LogLevel.Trace"/> log level.
+    /// </summary>
+    internal static readonly Option<bool> VeryVerbose = new("--very-verbose", "-vv") {
+      Description = "Very verbose output", Arity = ArgumentArity.Zero, Hidden = true
+    };
 
-    internal static readonly Option<OutputFormat> OutputFormatOption =
+    internal static readonly Option<OutputFormat> OutputFormat =
       new("--output", "-o") {
-        DefaultValueFactory = _ => OutputFormat.Normal,
+        DefaultValueFactory = _ => Output.OutputFormat.Normal,
         Description = "Output format",
         Required = false,
-        Arity = ArgumentArity.ExactlyOne,
+        Arity = ArgumentArity.ExactlyOne
       };
   }
 }

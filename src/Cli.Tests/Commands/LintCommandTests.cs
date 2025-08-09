@@ -1,5 +1,5 @@
-using System.Globalization;
 using Drift.Cli.Abstractions;
+using Drift.TestUtilities;
 
 namespace Drift.Cli.Tests.Commands;
 
@@ -14,15 +14,15 @@ public class LintCommandTests {
     var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? "" : $" -o {outputFormat}";
 
     // Act
-    var result = await config.InvokeAsync(
+    var exitCode = await config.InvokeAsync(
       $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption
     );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( result, Is.EqualTo( ExitCodes.Success ) );
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
       await Verify( config.Output.ToString() + config.Error )
-        .ScrubInlineDateTimes( "HH:mm:ss", CultureInfo.InvariantCulture );
+        .ScrubLogOutputTime();
     }
   }
 
@@ -37,15 +37,15 @@ public class LintCommandTests {
     var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? "" : $" -o {outputFormat}";
 
     // Act
-    var result = await config.InvokeAsync(
+    var exitCode = await config.InvokeAsync(
       $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption
     );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( result, Is.EqualTo( ExitCodes.ValidationError ) );
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.SpecValidationError ) );
       await Verify( config.Output.ToString() + config.Error )
-        .ScrubInlineDateTimes( "HH:mm:ss", CultureInfo.InvariantCulture );
+        .ScrubLogOutputTime();
     }
   }
 
@@ -55,9 +55,9 @@ public class LintCommandTests {
     var config = TestCommandLineConfiguration.Create();
 
     // Act
-    var result = await config.InvokeAsync( "lint" );
+    var exitCode = await config.InvokeAsync( "lint" );
 
     // Assert
-    Assert.That( result, Is.EqualTo( ExitCodes.GeneralError ) );
+    Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
   }
 }

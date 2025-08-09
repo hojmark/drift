@@ -6,10 +6,11 @@ namespace Drift.Cli.Output;
 internal class ConsoleOutputManager(
   //TODO mixed parameter levels
   ILogger consoleLogger,
-  TextWriter stdOut,
-  TextWriter errOut,
-  bool consoleOutsVerbose,
-  OutputFormat outputFormat
+  TextWriter normalStdOut,
+  TextWriter normalErrOut,
+  bool normalVerbose,
+  OutputFormat outputFormat,
+  bool plainConsole
 ) : IOutputManager {
   public ILogOutput Log {
     get;
@@ -17,7 +18,7 @@ internal class ConsoleOutputManager(
 
   public INormalOutput Normal {
     get;
-  } = new NormalOutput( stdOut, errOut, consoleOutsVerbose );
+  } = new NormalOutput( normalStdOut, normalErrOut, plainConsole, normalVerbose );
 
   public IJsonOutput Json {
     get;

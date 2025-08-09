@@ -1,0 +1,14 @@
+﻿Output format is 'Normal' using 'Verbose' output
+Starting network scan at <time>
+Skipping ping scan for CIDR block 10.255.255.254/32 as it has no usable IP addresses
+Starting ping scan for CIDR block 192.168.32.0/20 (4094 addresses)
+Got reply from 192.168.32.1
+Got reply from 192.168.32.2
+Got reply from 192.168.32.3
+Finished ping scan for CIDR block 192.168.32.0/20
+Starting ping scan for CIDR block 172.19.0.0/16 (65534 addresses)
+Got reply from 172.19.0.1
+Got reply from 172.19.0.2
+Got reply from 172.19.0.3
+Finished ping scan for CIDR block 172.19.0.0/16
+Finished network scan at <time> in <elapsed>

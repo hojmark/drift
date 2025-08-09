@@ -1,3 +1,5 @@
+using System.CommandLine;
+using System.Globalization;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
@@ -6,10 +8,13 @@ using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Renderer;
+using Drift.Cli.Scan;
 using Drift.Domain;
 using Drift.Domain.Progress;
 using Drift.Domain.Scan;
 using Drift.Utils;
+using Humanizer;
+using Humanizer.Localisation;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
@@ -25,47 +30,49 @@ namespace Drift.Cli.Commands.Scan;
  *   Monitor mode:
  *     drift monitor --reference declared.yaml --interval 10m --notify slack,email,log,webhook
  */
-internal class ScanCommand : CommandBase<ScanParameters> {
+internal class ScanCommand( IServiceProvider provider ) : CommandBase<ScanParameters, ScanCommandHandler>(
+  "scan",
+  "Scan the network and detect drift",
+  provider
+) {
   private enum ShowMode {
     All = 1,
     Changed = 2,
     Unchanged = 3
   }
 
-  internal ScanCommand( OutputManagerFactory outputManagerFactory ) : base(
-    "scan",
-    "Scan the network and detect drift",
-    outputManagerFactory.Create,
-    result => new ScanParameters( result )
-  ) {
-    //var monitorOption = new Option<bool>( "--monitor", "Continually scan network(s) until manually stopped." );
-    //AddOption( monitorOption );
-
-    //var monitorIntervalOption = new Option<TimeSpan>( "--interval", "Scan interval when in monitor mode." );
-    //AddOption( monitorIntervalOption );
-
-    //var monitorNotifyOption = new Option<string>( "--notify", "Notification channels when in monitor mode." );
-
-    // "save" or "update" instead?
-    //AddOption( new Option<bool>( "--write", "Create or update reference with discovered resources (devices, subnets etc.)." ) );
-
-    // Combine with option to change the default
-    // Alternative: --changed [all|skip|only]
-
-    /*var changed = new Option<ShowMode>(
+  //var monitorOption = new Option<bool>( "--monitor", "Continually scan network(s) until manually stopped." );
+  //AddOption( monitorOption );
+  //var monitorIntervalOption = new Option<TimeSpan>( "--interval", "Scan interval when in monitor mode." );
+  //AddOption( monitorIntervalOption );
+  //var monitorNotifyOption = new Option<string>( "--notify", "Notification channels when in monitor mode." );
+  // "save" or "update" instead?
+  //AddOption( new Option<bool>( "--write", "Create or update reference with discovered resources (devices, subnets etc.)." ) );
+  // Combine with option to change the default
+  // Alternative: --changed [all|skip|only]
+  /*var changed = new Option<ShowMode>(
       "--show",
       () => ShowMode.All,
       "Select which devices to show: all (show all), changed (only changed devices), unchanged (only unchanged devices)"
     );*/
-  }
 
-  protected override async Task<int> Invoke( CancellationToken cancellationToken, ScanParameters parameters ) {
-    Output.Log.LogDebug( "Running scan command" );
+  protected override ScanParameters CreateParameters( ParseResult result ) {
+    return new ScanParameters( result );
+  }
+}
+
+public class ScanCommandHandler(
+  IOutputManager output,
+  INetworkScanner scanner,
+  IInterfaceSubnetProvider interfaceSubnetProvider
+) : ICommandHandler<ScanParameters> {
+  public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
+    output.Log.LogDebug( "Running scan command" );
 
     Network? network;
 
     try {
-      network = SpecFileDeserializer.Deserialize( parameters.SpecFile, Output )?.Network;
+      network = SpecFileDeserializer.Deserialize( parameters.SpecFile, output )?.Network;
     }
     catch ( FileNotFoundException ) {
       return ExitCodes.GeneralError;
@@ -73,37 +80,37 @@ internal class ScanCommand : CommandBase<ScanParameters> {
 
     //TODO use both declared and discovered subnets
     ISubnetProvider subnetProvider = network == null
-      ? new InterfaceSubnetProvider( Output )
+      ? interfaceSubnetProvider
       : new DeclaredSubnetProvider( network.Subnets.Where( s => s.Enabled ?? true ) );
 
-    Output.Log.LogDebug( "Using subnet provider: {SubnetProviderType}", subnetProvider.GetType().Name );
+    output.Normal.WriteLineVerbose( $"Using subnet provider: {subnetProvider.GetType().Name}" );
+    output.Log.LogDebug( "Using subnet provider: {SubnetProviderType}", subnetProvider.GetType().Name );
 
     var subnets = subnetProvider.Get();
 
-    //var scanner = new NmapNetworkScanner( Output ); // TODO DI
-    var scanner = new PingNetworkScanner( Output );
-
-    Output.Normal.WriteLine( 0, $"Scanning {subnets.Count} subnet(s)" ); // TODO many more varieties
-    foreach ( var subnet in subnets ) {
+    output.Normal.WriteLine( 0,
+      $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : "" )}" ); // TODO many more varieties
+    foreach ( var cidr in subnets ) {
       //TODO write name if from spec: Ui.WriteLine( 1, $"{subnet.Id}: {subnet.Network}" );
-      Output.Normal.Write( 1, $"{subnet}", ConsoleColor.Cyan );
-      Output.Normal.WriteLine(
-        " (" + IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( subnet.PrefixLength ) ) +
-        " addresses, " +
-        InitCommand.CalculateScanDuration( subnet.PrefixLength,
-          PingNetworkScanner.MaxPingsPerSecond ) /*.Humanize( 2, CultureInfo.InvariantCulture )*/ +
-        " estimated scan time" +
+      output.Normal.Write( 1, $"{cidr}", ConsoleColor.Cyan );
+      output.Normal.WriteLine(
+        " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
+        " addresses, estimated scan time is " +
+        InitCommandHandler.CalculateScanDuration(
+          cidr,
+          PingNetworkScanner.MaxPingsPerSecond
+        ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
         ")", ConsoleColor.DarkGray );
     }
 
-    Output.Log.LogInformation(
+    output.Log.LogInformation(
       "Scanning {SubnetCount} subnet(s): {SubnetList}", subnets.Count,
       string.Join( ", ", subnets )
     );
 
     ScanResult? scanResult = null;
 
-    if ( Output.Is( OutputFormat.Normal ) ) {
+    if ( output.Is( OutputFormat.Normal ) ) {
       var dCol = new TaskDescriptionColumn();
       dCol.Alignment = Justify.Right;
       var pCol = new PercentageColumn();
@@ -118,20 +125,18 @@ internal class ScanCommand : CommandBase<ScanParameters> {
           //progressBars["DNS resolution"] = ctx.AddTask( "DNS resolution" );
           //progressBars["Connect Scan"] = ctx.AddTask( "Connect Scan" );
 
-          //TODO note: subnets.FIRST() !!! support multiple subnets !!!
-          return await scanner.ScanAsync( subnets.First(), onProgress: progressReport => {
+          return await scanner.ScanAsync( subnets, onProgress: progressReport => {
             UpdateProgressBar( progressReport, ctx, progressBars );
           }, cancellationToken: CancellationToken.None );
         } );
     }
 
-    if ( Output.Is( OutputFormat.Log ) ) {
+    if ( output.Is( OutputFormat.Log ) ) {
       var lastLogTime = DateTime.MinValue;
       var completedTasks = new HashSet<string>();
 
-      //TODO note: subnets.FIRST() !!! support multiple subnets !!!
-      scanResult = await scanner.ScanAsync( subnets.First(), onProgress: progressReport => {
-        UpdateProgressLog( progressReport, Output, ref lastLogTime, ref completedTasks );
+      scanResult = await scanner.ScanAsync( subnets, onProgress: progressReport => {
+        UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
       }, cancellationToken: CancellationToken.None );
     }
 
@@ -139,18 +144,18 @@ internal class ScanCommand : CommandBase<ScanParameters> {
       throw new Exception( "Scan result is null" );
     }
 
-    Output.Log.LogInformation( "Scan completed" );
+    output.Log.LogInformation( "Scan completed" );
 
     IRenderer<ScanRenderData> renderer =
       parameters.OutputFormat switch {
-        OutputFormat.Normal => new NormalRenderer( Output.Normal ),
-        OutputFormat.Log => new LogRenderer( Output.Log ),
+        OutputFormat.Normal => new NormalRenderer( output.Normal ),
+        OutputFormat.Log => new LogRenderer( output.Log ),
         _ => new NullRenderer<ScanRenderData>()
       };
 
-    Output.Log.LogDebug( "Render scan result using {RendererType}", renderer.GetType().Name );
+    output.Log.LogDebug( "Render result using {RendererType}", renderer.GetType().Name );
 
-    Output.Normal.WriteLine();
+    output.Normal.WriteLine();
 
     renderer.Render(
       new ScanRenderData {
@@ -159,7 +164,7 @@ internal class ScanCommand : CommandBase<ScanParameters> {
       } /*, output.Log*/
     );
 
-    Output.Log.LogDebug( "Scan command completed" );
+    output.Log.LogDebug( "Scan command completed" );
 
     return ExitCodes.Success;
 

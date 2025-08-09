@@ -1,10 +1,12 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
+using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Normal;
+using Drift.Cli.Scan;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -19,8 +21,8 @@ using Environment = System.Environment;
 
 namespace Drift.Cli.Commands.Init;
 
-internal class InitCommand : CommandBase<InitParameters> {
-  /// Intended for testing (although I should maybe look into a better way to do this e.g. Linux expect)
+internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
+  /// Intended for testing (although I should maybe look into a better way to do this e.g., Linux 'expect')
   internal static readonly Option<ForceMode?> ForceModeOption = new("--force-mode") {
     Description = "(HIDDEN) Force mode", Arity = ArgumentArity.ZeroOrOne, Hidden = true
   };
@@ -35,11 +37,10 @@ internal class InitCommand : CommandBase<InitParameters> {
     Description = "Overwrite existing file", Arity = ArgumentArity.ZeroOrOne
   };
 
-  internal InitCommand( OutputManagerFactory outputManagerFactory ) : base(
+  internal InitCommand( IServiceProvider provider ) : base(
     "init",
     "Create a network spec",
-    outputManagerFactory.Create,
-    result => new InitParameters( result )
+    provider
   ) {
     Add( ForceModeOption );
     Add( DiscoverOption );
@@ -58,7 +59,17 @@ internal class InitCommand : CommandBase<InitParameters> {
     );*/
   }
 
-  protected override async Task<int> Invoke( CancellationToken cancellationToken, InitParameters parameters ) {
+  protected override InitParameters CreateParameters( ParseResult result ) {
+    return new InitParameters( result );
+  }
+}
+
+public class InitCommandHandler(
+  IOutputManager output,
+  INetworkScanner scanner,
+  IInterfaceSubnetProvider interfaceSubnetProvider
+) : ICommandHandler<InitParameters> {
+  public async Task<int> Invoke( InitParameters parameters, CancellationToken cancellationToken ) {
     var isInteractive = IsInteractiveMode(
       parameters.ForceMode,
       parameters.SpecFile,
@@ -70,29 +81,29 @@ internal class InitCommand : CommandBase<InitParameters> {
       throw new ArgumentException( "Interactive mode is not supported with non-normal output format" );
     }
 
-    Output.Log.LogDebug( "Running init command" );
+    output.Log.LogDebug( "Running init command" );
     // TODO skip emojis in output if redirected?
 
     var initOptions = isInteractive
-      ? RunInteractive( Output.Normal )
-      : RunNonInteractive( Output, parameters.SpecFile?.Name, parameters.Overwrite, parameters.Discover );
+      ? RunInteractive( output.Normal )
+      : RunNonInteractive( output, parameters.SpecFile?.Name, parameters.Overwrite, parameters.Discover );
 
     if ( initOptions == null ) {
       return ExitCodes.GeneralError;
     }
 
-    var success = await Initialize( Output, initOptions );
+    var success = await Initialize( initOptions );
 
     if ( !success ) {
       return ExitCodes.GeneralError;
     }
 
     if ( success && isInteractive ) {
-      AnsiConsole.WriteLine();
-      AnsiConsole.MarkupLine( $"💡\uFE0F Next: Try [bold][green]drift scan {initOptions.Name}[/][/]" );
+      output.Normal.WriteLine();
+      output.Normal.WriteLineCTA( "💡\uFE0F Next: Try", $"drift scan {initOptions.Name}" );
     }
 
-    Output.Log.LogDebug( "Init command completed" );
+    output.Log.LogDebug( "init command completed" );
 
     return ExitCodes.Success;
   }
@@ -116,7 +127,7 @@ internal class InitCommand : CommandBase<InitParameters> {
 
     console.WriteLine();
 
-    AnsiConsole.MarkupLine( "[bold]📡\uFE0F Welcome to Drift! Let's set up a new spec.[/]" );
+    console.GetAnsiConsole().MarkupLine( "[bold]📡\uFE0F Welcome to Drift! Let's set up a new spec.[/]" );
 
     console.WriteLine();
 
@@ -157,7 +168,7 @@ internal class InitCommand : CommandBase<InitParameters> {
     return new InitOptions { Name = name, Overwrite = overwrite ?? false, Discover = discover ?? false };
   }
 
-  private static async Task<bool> Initialize( IOutputManager output, InitOptions options ) {
+  private async Task<bool> Initialize( InitOptions options ) {
     try {
       var specPath = Path.GetFullPath( Path.Combine( ".", $"{options.Name}.spec.yaml" ) );
       var envPath = Path.GetFullPath( Path.Combine( ".", $"{options.Name}.env.yaml" ) );
@@ -177,20 +188,20 @@ internal class InitCommand : CommandBase<InitParameters> {
       }
 
       // SCAN
-      // TODO centralize logic between scancommand and this
-      ISubnetProvider subnetProvider = new InterfaceSubnetProvider( output );
-      var subnets = subnetProvider.Get();
-      var scanner = new PingNetworkScanner( output ); // Or inject via DI
+      var subnets = interfaceSubnetProvider.Get().ToList();
 
       ScanResult? scanResult = null;
 
       //TODO create unit test for this
       output.Normal.WriteLineVerbose(
         "Found subnets: " + string.Join( ", ",
-          subnets.Select( s =>
-            s + " (" + IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( s.PrefixLength ) ) + " addresses, " +
-            CalculateScanDuration( s.PrefixLength,
-              PingNetworkScanner.MaxPingsPerSecond ) /*.Humanize( 2, CultureInfo.InvariantCulture )*/ +
+          subnets.Select( cidr =>
+            cidr + " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
+            " addresses, " +
+            CalculateScanDuration(
+              cidr,
+              PingNetworkScanner.MaxPingsPerSecond
+            ) /* TODO .Humanize( 2, CultureInfo.InvariantCulture )*/ +
             " estimated scan time" +
             ")"
           )
@@ -202,18 +213,18 @@ internal class InitCommand : CommandBase<InitParameters> {
           await AnsiConsole
             .Status()
             .StartAsync( "Scanning network ...", async ctx => {
-              scanResult = await scanner.ScanAsync( subnets.First() );
+              scanResult = await scanner.ScanAsync( subnets );
               await Task.Delay( 1500 );
             } );
         }
 
         if ( output.Is( OutputFormat.Log ) ) {
+          output.Log.LogInformation( "Scanning network..." );
           var lastLogTime = DateTime.MinValue;
           var completedTasks = new HashSet<string>();
 
-          //TODO note: subnets.FIRST() !!! support multiple subnets !!!
-          scanResult = await scanner.ScanAsync( subnets.First(), onProgress: progressReport => {
-            ScanCommand.UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
+          scanResult = await scanner.ScanAsync( subnets, onProgress: progressReport => {
+            ScanCommandHandler.UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
           }, cancellationToken: CancellationToken.None );
         }
 
@@ -228,9 +239,12 @@ internal class InitCommand : CommandBase<InitParameters> {
 
         output.Log.LogInformation( "Writing spec..." );
 
-        CreateSpecWithDiscovery( scanResult, subnetProvider, specPath );
+        CreateSpecWithDiscovery( scanResult, subnets, specPath );
       }
       else {
+        output.Log.LogDebug( "No discovery, writing template spec" );
+        output.Normal.WriteLineVerbose( "No discovery, writing template spec" );
+
         output.Log.LogInformation( "Writing spec..." );
 
         CreateSpecWithoutDiscovery( specPath );
@@ -240,7 +254,7 @@ internal class InitCommand : CommandBase<InitParameters> {
 
       if ( output.Is( OutputFormat.Normal ) ) {
         output.Normal.Write( "✔", ConsoleColor.Green );
-        output.Normal.Write( " Created spec " );
+        output.Normal.Write( "  Created spec " );
         output.Normal.WriteLine( TextHelper.Bold( $"{fullPath}" ) );
       }
 
@@ -260,18 +274,17 @@ internal class InitCommand : CommandBase<InitParameters> {
   }
 
   //TODO move somewhere else
-  internal static TimeSpan CalculateScanDuration( int prefixLength, double scansPerSecond ) {
-    double hostCount = IpNetworkUtils.GetIpRangeCount( IpNetworkUtils.GetNetmask( prefixLength ) );
+  internal static TimeSpan CalculateScanDuration( CidrBlock cidr, double scansPerSecond ) {
+    double hostCount = IpNetworkUtils.GetIpRangeCount( cidr );
     double totalSeconds = hostCount / scansPerSecond;
     return TimeSpan.FromSeconds( totalSeconds );
   }
 
   internal static void CreateSpecWithDiscovery(
     ScanResult? scanResult,
-    ISubnetProvider subnetProvider,
+    List<CidrBlock> subnets,
     string specPath
   ) {
-    var subnets = subnetProvider.Get().DistinctBy( subnet => subnet.NetworkAddress ).ToList();
     var devices = scanResult?.DiscoveredDevices.ToDeclared() ?? [];
     CreateSpec( subnets, devices, specPath );
   }

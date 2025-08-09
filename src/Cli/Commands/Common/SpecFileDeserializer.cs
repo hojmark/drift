@@ -26,7 +26,7 @@ internal static class SpecFileDeserializer {
 
     FileInfo? filePath;
     try {
-      filePath = new SpecFileResolver( output, specFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
+      filePath = new SpecFilePathResolver( output, specFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
         .Resolve( specFile?.Name, throwsOnNotFound: specFile != null );
     }
     catch ( FileNotFoundException exception ) {

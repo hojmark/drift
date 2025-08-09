@@ -1,5 +1,6 @@
 using System.CommandLine;
 using System.CommandLine.Help;
+using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Scan;
@@ -34,6 +35,7 @@ internal static class RootCommandFactory {
   private static void ConfigureDefaults( ServiceCollection services, bool toConsole, bool plainConsole ) {
     services.AddScoped<ParseResultHolder>();
     ConfigureOutput( services, toConsole, plainConsole );
+    ConfigureSpecProvider( services );
     ConfigureSubnetProvider( services );
     ConfigureNetworkScanner( services );
     ConfigureCommandHandlers( services );
@@ -65,8 +67,12 @@ internal static class RootCommandFactory {
   }
 
 
+  private static void ConfigureSpecProvider( ServiceCollection services ) {
+    services.AddScoped<ISpecFileProvider, FileSystemSpecProvider>();
+  }
+
   private static void ConfigureSubnetProvider( ServiceCollection services ) {
-    services.AddScoped<IInterfaceSubnetProvider, InterfaceSubnetProvider>();
+    services.AddScoped<IInterfaceSubnetProvider, PhysicalInterfaceSubnetProvider>();
   }
 
   private static void ConfigureNetworkScanner( ServiceCollection services ) {

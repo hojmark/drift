@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan.Subnet;
 
-public class InterfaceSubnetProvider( IOutputManager output ) : IInterfaceSubnetProvider {
+public class PhysicalInterfaceSubnetProvider( IOutputManager output ) : IInterfaceSubnetProvider {
   public static List<System.Net.NetworkInformation.NetworkInterface> GetInterfacesRaw() {
     return System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces().ToList();
   }

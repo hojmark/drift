@@ -64,7 +64,8 @@ internal class ScanCommand( IServiceProvider provider ) : CommandBase<ScanParame
 public class ScanCommandHandler(
   IOutputManager output,
   INetworkScanner scanner,
-  IInterfaceSubnetProvider interfaceSubnetProvider
+  IInterfaceSubnetProvider interfaceSubnetProvider,
+  ISpecFileProvider specProvider
 ) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running scan command" );
@@ -72,7 +73,7 @@ public class ScanCommandHandler(
     Network? network;
 
     try {
-      network = SpecFileDeserializer.Deserialize( parameters.SpecFile, output )?.Network;
+      network = ( await specProvider.GetDeserializedAsync( parameters.SpecFile ) )?.Network;
     }
     catch ( FileNotFoundException ) {
       return ExitCodes.GeneralError;

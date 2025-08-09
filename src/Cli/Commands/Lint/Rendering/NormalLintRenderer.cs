@@ -5,7 +5,7 @@ using Drift.Spec.Validation;
 
 namespace Drift.Cli.Commands.Lint.Rendering;
 
-internal class NormalRenderer( INormalOutput output ) : IRenderer<ValidationResult> {
+internal class NormalLintRenderer( INormalOutput output ) : IRenderer<ValidationResult> {
   public void Render( ValidationResult result ) {
     output.WriteLineValidity( result.IsValid );
 

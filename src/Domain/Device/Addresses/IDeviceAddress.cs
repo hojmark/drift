@@ -11,9 +11,6 @@ Layer	Name	Purpose / Function	Examples
 2	Data Link	Frames, MAC addressing, switching	Ethernet, Wi-Fi (802.11), PPP, VLAN
 1	Physical	Raw bits, hardware transmission	Cables, NICs, hubs, electrical signals
  */
-/// <summary>
-/// So far just a marker interface
-/// </summary>
 public interface IDeviceAddress {
   AddressType Type {
     get;
@@ -25,10 +22,5 @@ public interface IDeviceAddress {
 
   bool? IsId {
     get;
-  }
-
-  // TODO introduce required
-  /*public bool Required {
-    get;
-  }*/
+  } // = true;
 }

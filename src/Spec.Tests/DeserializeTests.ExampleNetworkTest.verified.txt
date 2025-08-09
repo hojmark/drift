@@ -15,9 +15,9 @@
         Id: switch1,
         Addresses: [
           {
+            Type: IpV4,
             Value: 192.168.1.1,
-            IsId: true,
-            Type: IpV4
+            IsId: true
           }
         ],
         Enabled: true,
@@ -27,9 +27,9 @@
         Id: switch2,
         Addresses: [
           {
+            Type: IpV4,
             Value: 192.168.1.2,
-            IsId: true,
-            Type: IpV4
+            IsId: true
           }
         ],
         Enabled: true,
@@ -39,9 +39,9 @@
         Id: client1,
         Addresses: [
           {
+            Type: IpV4,
             Value: 192.168.1.101,
-            IsId: true,
-            Type: IpV4
+            IsId: true
           }
         ],
         Enabled: true,
@@ -51,9 +51,9 @@
         Id: client2,
         Addresses: [
           {
+            Type: IpV4,
             Value: 192.168.3.1,
-            IsId: true,
-            Type: IpV4
+            IsId: true
           }
         ],
         Enabled: true,

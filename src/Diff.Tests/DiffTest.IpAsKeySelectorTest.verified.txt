@@ -12,20 +12,6 @@
     "DiffType": "unchanged"
   },
   {
-    "PropertyPath": "ScanResult.DiscoveredDevices[DiscoveredDevice_192.168.0.10].Addresses[0]",
-    "Original": {
-      "Value": "192.168.0.10",
-      "IsId": null,
-      "Type": "ipV4"
-    },
-    "Updated": {
-      "Value": "192.168.0.10",
-      "IsId": null,
-      "Type": "ipV4"
-    },
-    "DiffType": "unchanged"
-  },
-  {
     "PropertyPath": "ScanResult.DiscoveredDevices[DiscoveredDevice_192.168.0.10]",
     "Original": {
       "Addresses": [
@@ -52,101 +38,6 @@
     "DiffType": "unchanged"
   },
   {
-    "PropertyPath": "ScanResult.DiscoveredDevices[DiscoveredDevice_192.168.0.21].Addresses[0]",
-    "Original": {
-      "Value": "192.168.0.21",
-      "IsId": null,
-      "Type": "ipV4"
-    },
-    "Updated": {
-      "Value": "192.168.0.21",
-      "IsId": null,
-      "Type": "ipV4"
-    },
-    "DiffType": "unchanged"
-  },
-  {
-    "PropertyPath": "ScanResult.DiscoveredDevices[DiscoveredDevice_192.168.0.21].Addresses[1].Value",
-    "Original": "ABC",
-    "Updated": "DEF",
-    "DiffType": "changed"
-  },
-  {
-    "PropertyPath": "ScanResult.DiscoveredDevices[DiscoveredDevice_192.168.0.21].Addresses[1]",
-    "Original": {
-      "Value": "ABC",
-      "IsId": null,
-      "Type": "mac"
-    },
-    "Updated": {
-      "Value": "DEF",
-      "IsId": null,
-      "Type": "mac"
-    },
-    "DiffType": "unchanged"
-  },
-  {
-    "PropertyPath": "ScanResult.DiscoveredDevices[DiscoveredDevice_192.168.0.21].Ports[Port_22]",
-    "Original": null,
-    "Updated": {
-      "Value": 22
-    },
-    "DiffType": "added"
-  },
-  {
-    "PropertyPath": "ScanResult.DiscoveredDevices[DiscoveredDevice_192.168.0.21]",
-    "Original": {
-      "Addresses": [
-        {
-          "Type": "ipV4",
-          "Value": "192.168.0.21",
-          "IsId": null
-        },
-        {
-          "Type": "mac",
-          "Value": "ABC",
-          "IsId": null
-        }
-      ],
-      "Ports": [
-        {
-          "Value": 443
-        },
-        {
-          "Value": 80
-        }
-      ],
-      "Timestamp": "0001-01-01T00:00:00"
-    },
-    "Updated": {
-      "Addresses": [
-        {
-          "Type": "ipV4",
-          "Value": "192.168.0.21",
-          "IsId": null
-        },
-        {
-          "Type": "mac",
-          "Value": "DEF",
-          "IsId": null
-        }
-      ],
-      "Ports": [
-        {
-          "Value": 22
-        },
-        {
-          "Value": 443
-        },
-        {
-          "Value": 80
-        }
-      ],
-      "Timestamp": "0001-01-01T00:00:00"
-    },
-    "DiffType": "unchanged"
-  },
-  {
     "PropertyPath": "ScanResult.DiscoveredDevices[DiscoveredDevice_192.168.0.22]",
     "Original": {
       "Addresses": [
@@ -157,7 +48,7 @@
         },
         {
           "Type": "mac",
-          "Value": "abcdefghijklmnopqrstu",
+          "Value": "22-22-22-22-22-22",
           "IsId": null
         }
       ],
@@ -207,35 +98,12 @@
           "Addresses": [
             {
               "Type": "ipV4",
-              "Value": "192.168.0.21",
-              "IsId": null
-            },
-            {
-              "Type": "mac",
-              "Value": "ABC",
-              "IsId": null
-            }
-          ],
-          "Ports": [
-            {
-              "Value": 443
-            },
-            {
-              "Value": 80
-            }
-          ],
-          "Timestamp": "0001-01-01T00:00:00"
-        },
-        {
-          "Addresses": [
-            {
-              "Type": "ipV4",
               "Value": "192.168.0.22",
               "IsId": null
             },
             {
               "Type": "mac",
-              "Value": "abcdefghijklmnopqrstu",
+              "Value": "22-22-22-22-22-22",
               "IsId": null
             }
           ],
@@ -260,32 +128,6 @@
             }
           ],
           "Ports": [],
-          "Timestamp": "0001-01-01T00:00:00"
-        },
-        {
-          "Addresses": [
-            {
-              "Type": "ipV4",
-              "Value": "192.168.0.21",
-              "IsId": null
-            },
-            {
-              "Type": "mac",
-              "Value": "DEF",
-              "IsId": null
-            }
-          ],
-          "Ports": [
-            {
-              "Value": 22
-            },
-            {
-              "Value": 443
-            },
-            {
-              "Value": 80
-            }
-          ],
           "Timestamp": "0001-01-01T00:00:00"
         },
         {

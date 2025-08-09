@@ -19,7 +19,7 @@ public class DeserializeTests {
   }
 
   [Test]
-  public async Task ExampelNetworkTest() {
+  public async Task ExampleNetworkTest() {
     var stream = LocalTestResourceProvider.GetStream( "network1.yaml" );
     var network = YamlConverter.Deserialize( stream );
     await Verify( network );

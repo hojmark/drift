@@ -10,18 +10,17 @@ public class LintCommandTests {
     [Values( "", "normal", "log" )] string outputFormat
   ) {
     // Arrange
-    var config = TestCommandLineConfiguration.Create();
     var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? "" : $" -o {outputFormat}";
 
     // Act
-    var exitCode = await config.InvokeAsync(
+    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
       $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption
     );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-      await Verify( config.Output.ToString() + config.Error )
+      await Verify( output.ToString() + error )
         .ScrubLogOutputTime();
     }
   }
@@ -33,29 +32,25 @@ public class LintCommandTests {
     [Values( "", "normal", "log" )] string outputFormat
   ) {
     // Arrange
-    var config = TestCommandLineConfiguration.Create();
     var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? "" : $" -o {outputFormat}";
 
     // Act
-    var exitCode = await config.InvokeAsync(
+    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
       $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption
     );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.SpecValidationError ) );
-      await Verify( config.Output.ToString() + config.Error )
+      await Verify( output.ToString() + error )
         .ScrubLogOutputTime();
     }
   }
 
   [Test]
   public async Task LintMissingSpec() {
-    // Arrange
-    var config = TestCommandLineConfiguration.Create();
-
-    // Act
-    var exitCode = await config.InvokeAsync( "lint" );
+    // Arrange / Act
+    var (exitCode, _, _) = await DriftTestCli.InvokeFromTestAsync( "lint" );
 
     // Assert
     Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );

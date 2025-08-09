@@ -12,7 +12,12 @@ public static class ExitCodes {
   /// <summary>
   /// Indicates that an unknown error occurred.
   /// </summary>
-  public const int UnknownError = 1;
+  public const int UnknownError = -1;
+
+  /// <summary>
+  /// The default error code returned from System.CommandLine actions.
+  /// </summary>
+  public const int SystemCommandLineDefaultError = 1;
 
   /// <summary>
   /// Indicates that a general (non-specific) error occurred.

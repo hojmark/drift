@@ -5,7 +5,7 @@ using NSubstitute;
 
 namespace Drift.Cli.Tests;
 
-public class SpecFileResolverTests {
+public class SpecFilePathResolverTests {
   private string? _originalHome;
   private string _tempHome;
   private const string _homeEnvVar = "HOME";
@@ -46,7 +46,7 @@ public class SpecFileResolverTests {
     var fileName = "mytest.yaml";
     var filePath = CreateTempFile( tempDir, fileName );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( fileName );
 
     Assert.That( result, Is.Not.Null );
@@ -61,7 +61,7 @@ public class SpecFileResolverTests {
     var fileName = "sample.yaml";
     var filePath = CreateTempFile( home, fileName );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), Directory.GetCurrentDirectory() );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), Directory.GetCurrentDirectory() );
     var result = resolver.Resolve( "~" + Path.DirectorySeparatorChar + fileName );
 
     Assert.That( result, Is.Not.Null );
@@ -76,7 +76,7 @@ public class SpecFileResolverTests {
     var specName = "drift.spec.yaml";
     var filePath = CreateTempFile( home, specName );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), Directory.GetCurrentDirectory() );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), Directory.GetCurrentDirectory() );
     var result = resolver.Resolve( "~" );
 
     Assert.That( result, Is.Not.Null );
@@ -93,7 +93,7 @@ public class SpecFileResolverTests {
     var specYaml = baseName + ".spec.yaml";
     var filePath = CreateTempFile( tempDir, specYaml );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( baseName );
 
     Assert.That( result, Is.Not.Null );
@@ -109,7 +109,7 @@ public class SpecFileResolverTests {
     var specName = "drift.spec.yaml";
     var filePath = CreateTempFile( tempDir, specName );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( null );
 
     Assert.That( result, Is.Not.Null );
@@ -123,7 +123,7 @@ public class SpecFileResolverTests {
     var tempDir = Path.Combine( Path.GetTempPath(), Guid.NewGuid().ToString() );
     Directory.CreateDirectory( tempDir );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( "notfound.yaml" );
 
     Assert.That( result, Is.Null );
@@ -136,7 +136,7 @@ public class SpecFileResolverTests {
     var tempDir = Path.Combine( Path.GetTempPath(), Guid.NewGuid().ToString() );
     Directory.CreateDirectory( tempDir );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
 
     Assert.Throws<FileNotFoundException>( () => resolver.Resolve( "notfound.yaml", true ) );
 
@@ -152,7 +152,7 @@ public class SpecFileResolverTests {
     var exact = CreateTempFile( tempDir, name );
     var spec = CreateTempFile( tempDir, name + ".spec.yaml" );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( name );
 
     Assert.That( result, Is.Not.Null );
@@ -168,7 +168,7 @@ public class SpecFileResolverTests {
     var name = "someproject";
     var spec = CreateTempFile( tempDir, name + ".spec.yaml" );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( name );
 
     Assert.That( result, Is.Not.Null );
@@ -184,7 +184,7 @@ public class SpecFileResolverTests {
     var name = "otherproject";
     var spec = CreateTempFile( tempDir, name + ".spec.yml" );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( name );
 
     Assert.That( result, Is.Not.Null );
@@ -200,7 +200,7 @@ public class SpecFileResolverTests {
     var drift = CreateTempFile( tempDir, "drift.spec.yaml" );
     var other = CreateTempFile( tempDir, "other.spec.yaml" );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( null );
 
     Assert.That( result, Is.Not.Null );
@@ -216,7 +216,7 @@ public class SpecFileResolverTests {
     var one = CreateTempFile( tempDir, "first.spec.yaml" );
     //var two = CreateTempFile( tempDir, "second.spec.yaml" );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( null );
 
     // Should be first discovered
@@ -233,7 +233,7 @@ public class SpecFileResolverTests {
     var yml = CreateTempFile( tempDir, "file.spec.yml" );
     var yaml = CreateTempFile( tempDir, "file.spec.yaml" );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), tempDir );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( null );
 
     // Should pick the first one (yml)
@@ -244,7 +244,7 @@ public class SpecFileResolverTests {
 
   [Test]
   public void EmptyName_ThrowsArgumentException() {
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), Directory.GetCurrentDirectory() );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), Directory.GetCurrentDirectory() );
     var ex = Assert.Throws<ArgumentException>( () => resolver.Resolve( "" ) );
     Assert.That( ex.ParamName, Is.EqualTo( "name" ) );
   }
@@ -255,7 +255,7 @@ public class SpecFileResolverTests {
     var fname = "myhome.yaml";
     var fpath = CreateTempFile( home, fname );
 
-    var resolver = new SpecFileResolver( CreateOutputSubstitute(), Directory.GetCurrentDirectory() );
+    var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), Directory.GetCurrentDirectory() );
     var result = resolver.Resolve( "~" + Path.DirectorySeparatorChar + fname );
 
     Assert.That( result, Is.Not.Null );
@@ -272,7 +272,7 @@ public class SpecFileResolverTests {
     var yml = CreateTempFile( tempDir, "two.spec.yml" );
 
     var output = CreateOutputSubstitute();
-    var resolver = new SpecFileResolver( output, tempDir );
+    var resolver = new SpecFilePathResolver( output, tempDir );
     var result = resolver.Resolve( null );
 
     // Should still pick first

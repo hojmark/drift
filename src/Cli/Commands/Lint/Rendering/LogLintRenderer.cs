@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Lint.Rendering;
 
-internal class LogRenderer( ILogOutput output ) : IRenderer<ValidationResult> {
+internal class LogLintRenderer( ILogOutput output ) : IRenderer<ValidationResult> {
   public void Render( ValidationResult result ) {
     if ( result.IsValid ) {
       output.LogInformation( "Spec is valid" );

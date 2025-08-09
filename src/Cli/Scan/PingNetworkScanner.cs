@@ -9,7 +9,6 @@ using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Progress;
 using Drift.Domain.Scan;
-using Humanizer;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Scan;

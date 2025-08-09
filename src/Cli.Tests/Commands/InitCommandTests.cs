@@ -62,16 +62,13 @@ public class InitCommandTests {
 
   [Test]
   public async Task MissingNameOption() {
-    // Arrange
-    var config = TestCommandLineConfiguration.Create();
-
-    // Act
-    var result = await config.InvokeAsync( "init" );
+    // Arrange / Act
+    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "init" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( result, Is.EqualTo( ExitCodes.GeneralError ) );
-      await Verify( config.Output.ToString() + config.Error );
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
+      await Verify( output.ToString() + error );
     }
   }
 
@@ -82,21 +79,23 @@ public class InitCommandTests {
     [Values( "", "-v" )] string verbose
   ) {
     // Arrange
-    var config = TestCommandLineConfiguration.Create( services => {
-        services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
-        services.AddScoped<IInterfaceSubnetProvider>( sp =>
-          new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), Interfaces )
-        );
-      }
-    );
+    var serviceConfig = ( IServiceCollection services ) => {
+      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
+      services.AddScoped<IInterfaceSubnetProvider>( sp =>
+        new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), Interfaces )
+      );
+    };
 
     // Act
-    var result = await config.InvokeAsync( $"init {SpecNameWithDiscovery} --discover {outputFormat} {verbose}" );
+    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
+      $"init {SpecNameWithDiscovery} --discover {outputFormat} {verbose}",
+      serviceConfig
+    );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( result, Is.EqualTo( ExitCodes.Success ) );
-      var verifyOutputTask = Verify( config.Output.ToString() + config.Error );
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
+      var verifyOutputTask = Verify( output.ToString() + error );
       if ( outputFormat == "-o log" ) {
         await verifyOutputTask.ScrubLogOutputTime();
       }
@@ -112,18 +111,20 @@ public class InitCommandTests {
   [Test]
   public async Task GenerateSpecWithoutDiscoverySuccess() {
     // Arrange
-    var config = TestCommandLineConfiguration.Create( services => {
-        services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
-      }
-    );
+    var serviceConfig = ( IServiceCollection services ) => {
+      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
+    };
 
     // Act
-    var result = await config.InvokeAsync( $"init {SpecNameWithoutDiscovery}" );
+    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
+      $"init {SpecNameWithoutDiscovery}",
+      serviceConfig
+    );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( result, Is.EqualTo( ExitCodes.Success ) );
-      await Verify( config.Output.ToString() + config.Error );
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
+      await Verify( output.ToString() + error );
       await Verify( await File.ReadAllTextAsync( $"{SpecNameWithoutDiscovery}.spec.yaml" ) )
         .UseTextForParameters( "spec" );
     }

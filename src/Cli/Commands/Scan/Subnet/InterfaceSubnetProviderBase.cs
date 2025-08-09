@@ -1,5 +1,4 @@
 using System.Net.NetworkInformation;
-using System.Net.Sockets;
 using Drift.Cli.Output.Abstractions;
 using Drift.Domain;
 using Drift.Utils;
@@ -7,23 +6,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan.Subnet;
 
-public class InterfaceSubnetProvider( IOutputManager output ) : IInterfaceSubnetProvider {
-  public static List<System.Net.NetworkInformation.NetworkInterface> GetInterfacesRaw() {
-    return System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces().ToList();
-  }
-
-  public virtual List<INetworkInterface> GetInterfaces() {
-    return GetInterfacesRaw().Select( Map ).ToList();
-  }
-
-  private static INetworkInterface Map( System.Net.NetworkInformation.NetworkInterface networkInterface ) {
-    var unicastAddress = GetIpV4UnicastAddress( networkInterface );
-    return new NetworkInterface {
-      Description = networkInterface.Description,
-      OperationalStatus = networkInterface.OperationalStatus,
-      UnicastAddress = unicastAddress == null ? null : GetCidrBlock( unicastAddress )
-    };
-  }
+public abstract class InterfaceSubnetProviderBase( IOutputManager output ) : IInterfaceSubnetProvider {
+  public abstract List<INetworkInterface> GetInterfaces();
 
   public List<CidrBlock> Get() {
     var interfaces = GetInterfaces();
@@ -56,18 +40,6 @@ public class InterfaceSubnetProvider( IOutputManager output ) : IInterfaceSubnet
       string.Join( ", ", cidrs ) );
 
     return cidrs;
-  }
-
-  private static CidrBlock GetCidrBlock( UnicastIPAddressInformation a ) {
-    return new CidrBlock( IpNetworkUtils.GetNetworkAddress( a.Address, a.IPv4Mask ) + "/" +
-                          IpNetworkUtils.GetCidrPrefixLength( a.IPv4Mask ) );
-  }
-
-  private static UnicastIPAddressInformation?
-    GetIpV4UnicastAddress( System.Net.NetworkInformation.NetworkInterface i ) {
-    return i.GetIPProperties()
-      .UnicastAddresses
-      .SingleOrDefault( a => a.Address.AddressFamily == AddressFamily.InterNetwork );
   }
 
   private static bool IsUp( INetworkInterface i ) {

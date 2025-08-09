@@ -1,0 +1,24 @@
+﻿
+  ___          _    __   _   
+ |   \   _ _  (_)  / _| | |_ 
+ | |) | | '_| | | |  _| |  _|
+ |___/  |_|   |_| |_|    \__|
+                             
+Description:
+  📡️ Drift CLI — monitor network drift against your declared state
+
+Usage:
+  <usage>
+
+Options:
+  -?, -h, --help  Show help and usage information
+  --version       Show version information
+
+Commands:
+  init <spec>  Create a network spec
+  scan <spec>  Scan the network and detect drift
+  lint <spec>  Validate a network spec
+
+Required command was not provided.
+Unrecognized command or argument 'nonexisting'.
+

@@ -2,20 +2,23 @@ using Drift.Cli.Output.Abstractions;
 using Drift.Diff;
 using Drift.Diff.Domain;
 using Drift.Domain;
+using Drift.Domain.Device;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Microsoft.Extensions.Logging;
+using NaturalSort.Extension;
 using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Rendering;
 
 //TODO use NormalOutput instead of Spectre directly
-internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
+internal class NormalScanRenderer( INormalOutput console ) : DiffRendererBase {
   // Anonymising MACs e.g. for GitHub screenshot
   //TODO replace with more generic data simulation
   private const bool FakeMac = false;
+  internal static IdMarkingStyle IdMarkingStyle = IdMarkingStyle.Text;
 
   protected override void Render(
     List<ObjectDiff> differences,
@@ -28,11 +31,14 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
     }
 
     var showCustomIdColumn = declaredDevices.Any( d => d.Id != null );
-    var table = CreateTable( showCustomIdColumn );
+    var showHostnameColumn = declaredDevices.Any( d => d.Addresses.Any( a => a.Type == AddressType.Hostname ) );
+    var table = CreateTable( showCustomIdColumn, showHostnameColumn );
 
-    AddDevices( table, differences, declaredDevices, showCustomIdColumn, logger );
+    AddDevices( table, differences, declaredDevices, showCustomIdColumn, showHostnameColumn, logger );
 
     console.GetAnsiConsole().Write( table );
+
+    //console.WriteLine( "Discovered: 12 devices • Online: 2 • Offline: 8 • Unknown: 2");
 
     //console.WriteLine( $"Total declared devices: {data.DevicesDeclared.Count()}" ); //TODO host vs device terminology
     //console.WriteLine( $"Total discovered devices: {data.DevicesDiscovered.Count()}" );
@@ -42,9 +48,12 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
     List<ObjectDiff> differences,
     IEnumerable<DeclaredDevice> declaredDevices,
     bool? showCustomIdColumn = false,
+    bool? showHostnameColumn = false,
     ILogger? logger = null
   ) {
     var directDeviceDifferences = GetDirectDeviceDifferences( differences );
+
+    var rows = new List<string[]>();
 
     foreach ( var diff in directDeviceDifferences ) {
       logger?.LogTrace( "Device diff: {Action} {Path}", diff.DiffType, diff.PropertyPath );
@@ -52,8 +61,9 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
 
       var state = diff.DiffType;
 
-      var device = state switch {
-        DiffType.Unchanged => ( (DiffDevice) diff.Original! ),
+      IAddressableDevice device = state switch {
+        // Note: may be unchanged based on device id, but other value may be updated in which case we'd like to show the updated values... but this is debatable... maybe both or a merge should be shown
+        DiffType.Unchanged => ( (DiffDevice) diff.Updated! ),
         DiffType.Removed => ( (DiffDevice) diff.Original! ),
         DiffType.Added => ( (DiffDevice) diff.Updated! ),
         _ => throw new Exception( "øv" )
@@ -76,8 +86,18 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
        *
        */
 
-      var declaredDevice = declaredDevices
-        .SingleOrDefault( d => d.Get( AddressType.IpV4 ) == device.Get( AddressType.IpV4 ) );
+      var declaredDeviceMultiple = declaredDevices.Where( d =>
+        ( (IAddressableDevice) d ).GetDeviceId() == device.GetDeviceId()
+      ).ToList();
+
+      if ( declaredDeviceMultiple.Count > 1 ) {
+        // TODO review error message
+        throw new Exception( "Multiple declared devices have the same ID: " +
+                             string.Join( ", ", declaredDeviceMultiple.Select( d => d.Id ) )
+        );
+      }
+
+      var declaredDevice = declaredDeviceMultiple.SingleOrDefault();
       var declaredDeviceState = declaredDevice?.State;
       var discoveredDeviceState =
         state == DiffType.Removed ? DiscoveredDeviceState.Offline : DiscoveredDeviceState.Online;
@@ -103,30 +123,50 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
         };
       } ).ToList();
 
-      var ids = device.Addresses.Where( a => a.IsId.HasValue && a.IsId.Value ).Select( a => a.Type ).ToList();
-
-      var hostname = device.Get( AddressType.Hostname );
       var mac = device.Get( AddressType.Mac );
+
+      var deviceId = device.GetDeviceId();
+      var deviceIdDeclared = ( declaredDevice as IAddressableDevice )?.GetDeviceId();
 
       string[] row = [
         status,
-        // Blue dot = part of device ID
-        // ... or use bold? maybe plus small color difference?
-        MarkId( ( false ? "[darkblue]•[/] " : "" ) + device.Get( AddressType.IpV4 ), AddressType.IpV4, ids ),
-        //MarkId( ( hostname != null ? "[gray]" + hostname.ToLowerInvariant() + "[/]" : "" ), AddressType.Hostname, ids ),
-        //TODO analyzer rule for culture variance
-        MarkId( ( mac != null ? "[gray]" + ( FakeMac ? GenerateMacAddress() : mac.ToUpperInvariant() ) + "[/]" : "" ),
-          AddressType.Mac, ids ),
+        MarkId( device.Get( AddressType.IpV4 ) ?? "", AddressType.IpV4, deviceIdDeclared ),
+        MarkId(
+          (
+            mac != null
+              ? ( FakeMac ? GenerateMacAddress() : mac.ToUpperInvariant() )
+              : ""
+          ), AddressType.Mac, deviceIdDeclared
+        ),
         textStatus
         //string.Join( " ", ports.Select( x => x.Value ) )
       ];
 
-      if ( showCustomIdColumn.HasValue && showCustomIdColumn.Value ) {
+      if ( showHostnameColumn.HasValue && showHostnameColumn.Value ) {
+        var hostnameAsString = device.Get( AddressType.Hostname )?.ToLowerInvariant();
         var modified = row.ToList();
-        modified.Insert( 2, "[gray]" + ( declaredDevice?.Id ?? "" ) + "[/]" );
+        //TODO enable analyzer rule for culture variance
+        modified.Insert( 2, MarkId( hostnameAsString ?? "", AddressType.Hostname, deviceIdDeclared ) );
         row = modified.ToArray();
       }
 
+      if ( showCustomIdColumn.HasValue && showCustomIdColumn.Value ) {
+        var modified = row.ToList();
+        modified.Insert( 2, "[gray]" + ( declaredDevice?.Id ?? "" ) + "[/]" );
+        //modified.Insert( 2, "[gray]" + ( ( declaredDevice as IAddressableDevice )?.GetDeviceId() ) + "[/]" );
+        row = modified.ToArray();
+      }
+
+      rows.Add( row );
+    }
+
+    // Order by IP
+    // TODO hack, make dynamic
+    foreach ( var row in rows.OrderBy( row =>
+                 row[1]
+                   .RemoveMarkup()
+                   .Replace( ".", "" ),
+               StringComparer.OrdinalIgnoreCase.WithNaturalSort() ) ) {
       table.AddRow( row );
     }
   }
@@ -220,19 +260,23 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
   }
 
 
-  private static string MarkId( string text, AddressType type, List<AddressType> ids ) {
-    //TODO only mark if marked in spec
-    if ( ids.Contains( type ) ) {
+  private static string MarkId( string text, AddressType type, DeviceId? idDeclared ) {
+    if ( idDeclared != null && idDeclared.Contributes( type ) ) {
       //return "[bold]" + text + "[/]";
-      return text;
+      return IdMarkingStyle switch {
+        IdMarkingStyle.Text => text,
+        IdMarkingStyle.Dot => $"{text} [blue]•[/]", // ◦•
+        _ => throw new ArgumentOutOfRangeException()
+      };
     }
 
-    //return text;
-    return $"[italic][dim]{text}[/][/]";
+    return idDeclared == null
+      ? $"[gray]{text}[/]" // TODO use yellow?
+      : $"[gray]{text}[/]";
   }
 
 
-  private static Table CreateTable( bool showCustomIdColumn = false ) {
+  private static Table CreateTable( bool showCustomIdColumn = false, bool showHostnameColumn = true ) {
     const int padding = 1; //2 if no border
     var table = new Table();
     table.SquareBorder();
@@ -240,7 +284,8 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
     table.AddColumn( new TableColumn( "IP" ).LeftAligned().PadRight( padding ) );
     if ( showCustomIdColumn )
       table.AddColumn( new TableColumn( "ID" ).LeftAligned().PadRight( padding ) );
-    //table.AddColumn( new TableColumn( "Hostname" ).LeftAligned().PadRight( padding ) );
+    if ( showHostnameColumn )
+      table.AddColumn( new TableColumn( "Hostname" ).LeftAligned().PadRight( padding ) );
     table.AddColumn( new TableColumn( "MAC" ).LeftAligned().PadRight( padding ) );
     table.AddColumn( new TableColumn( "" ).LeftAligned() );
     //table.AddColumn( new TableColumn( "Ports" ).LeftAligned() );

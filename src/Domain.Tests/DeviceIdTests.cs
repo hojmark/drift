@@ -83,7 +83,7 @@ public class DeviceIdTests {
   }
 
   [TestCaseSource( nameof(DeviceIds) )]
-  public void ContainsTest( IAddressableDevice device1, IAddressableDevice device2, bool isContained, bool isSame ) {
+  public void ComparisonTest( IAddressableDevice device1, IAddressableDevice device2, bool isContained, bool isSame ) {
     using ( Assert.EnterMultipleScope() ) {
       Assert.That(
         device1.GetDeviceId().Contains( device2.GetDeviceId() ), Is.EqualTo( isContained ),

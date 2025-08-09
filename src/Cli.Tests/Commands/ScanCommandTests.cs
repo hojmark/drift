@@ -73,12 +73,12 @@ public class ScanCommandTests {
   //[Combinatorial]
   [TestCaseSource( nameof(DiscoveredDeviceLists) )]
   public async Task WithoutSpec_Success_Test(
-    List<DiscoveredDevice> devices,
+    List<DiscoveredDevice> discoveredDevices,
     List<INetworkInterface> interfaces
     /*, [Values( "", "normal", "log" )] string outputFormat */
   ) {
     // Arrange
-    var config = GetCommandLineConfiguration( interfaces, devices );
+    var config = GetCommandLineConfiguration( interfaces, discoveredDevices );
 
     // Act
     var exitCode = await config.InvokeAsync( "scan" );
@@ -104,7 +104,7 @@ public class ScanCommandTests {
         .Build()
     };
 
-    var devices = new List<DiscoveredDevice> {
+    var discoveredDevices = new List<DiscoveredDevice> {
       new() { Addresses = [new MacAddress( "52:55:18:e9:6e:28" ), new IpV4Address( "192.168.0.10" )] }
     };
 
@@ -116,7 +116,7 @@ public class ScanCommandTests {
       }
     };
 
-    var config = GetCommandLineConfiguration( interfaces, devices, inventory );
+    var config = GetCommandLineConfiguration( interfaces, discoveredDevices, inventory );
 
     // Act
     var exitCode = await config.InvokeAsync( "scan unittest" );
@@ -156,7 +156,9 @@ public class ScanCommandTests {
         );
 
         if ( inventory != null ) {
-          services.AddScoped<ISpecFileProvider>( _ => new PredefinedSpecProvider( inventory ) );
+          services.AddScoped<ISpecFileProvider>( _ =>
+            new PredefinedSpecProvider( new Dictionary<string, Inventory> { { "unittest", inventory } } )
+          );
         }
 
         services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(

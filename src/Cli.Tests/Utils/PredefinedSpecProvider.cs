@@ -3,8 +3,10 @@ using Drift.Domain;
 
 namespace Drift.Cli.Tests.Utils;
 
-public class PredefinedSpecProvider( Inventory inventory ) : ISpecFileProvider {
+public class PredefinedSpecProvider( Dictionary<string, Inventory> inventories ) : ISpecFileProvider {
   public Task<Inventory?> GetDeserializedAsync( FileInfo? specFile ) {
-    return Task.FromResult( inventory );
+    return specFile == null
+      ? Task.FromResult<Inventory?>( null )
+      : Task.FromResult( inventories.GetValueOrDefault( specFile.Name ) );
   }
 }

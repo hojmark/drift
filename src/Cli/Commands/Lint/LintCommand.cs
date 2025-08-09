@@ -28,7 +28,7 @@ public class LintCommandHandler( IOutputManager output ) : ICommandHandler<LintP
 
     FileInfo? filePath;
     try {
-      filePath = new SpecFileResolver( output, parameters.SpecFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
+      filePath = new SpecFilePathResolver( output, parameters.SpecFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
         .Resolve( parameters.SpecFile?.Name, throwsOnNotFound: true );
     }
     catch ( FileNotFoundException exception ) {

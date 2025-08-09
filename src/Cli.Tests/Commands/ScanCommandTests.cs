@@ -1,5 +1,7 @@
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
+using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Tests.Utils;
@@ -69,7 +71,7 @@ public class ScanCommandTests {
 
   //[Combinatorial]
   [TestCaseSource( nameof(DiscoveredDeviceLists) )]
-  public async Task SuccessTest(
+  public async Task WithoutSpec_Success_Test(
     List<DiscoveredDevice> devices,
     List<INetworkInterface> interfaces
     /*, [Values( "", "normal", "log" )] string outputFormat */
@@ -98,7 +100,9 @@ public class ScanCommandTests {
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
       await Verify( config.Output.ToString() + config.Error )
-        .UseFileName( $"{nameof(ScanCommandTests)}.{nameof(SuccessTest)}.{TestContext.CurrentContext.Test.Name}" );
+        .UseFileName(
+          $"{nameof(ScanCommandTests)}.{nameof(WithoutSpec_Success_Test)}.{TestContext.CurrentContext.Test.Name}"
+        );
     }
   }
 

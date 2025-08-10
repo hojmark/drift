@@ -6,6 +6,6 @@ internal class CompositeSubnetProvider( IEnumerable<ISubnetProvider> providers )
   private readonly List<ISubnetProvider> _providers = providers.ToList();
 
   public List<CidrBlock> Get() {
-    return _providers.SelectMany( p => p.Get() ).ToList();
+    return _providers.SelectMany( p => p.Get() ).Distinct().ToList();
   }
 }

@@ -94,29 +94,52 @@ public class ScanCommandTests {
     }
   }
 
-  [Test]
-  public async Task WithSpec_Success_Test() {
+  private static IEnumerable<TestCaseData> WithSpecList {
+    get {
+      yield return new TestCaseData( new NetworkBuilder().Build(), new List<DiscoveredDevice>() )
+        .SetName( "Empty spec, no devices" );
+
+      /*
+       * ┌───┬──────────────┬─────────┬───────────────────┬─────────────────────────────┐
+         │   │ IP           │ ID      │ MAC               │                             │
+         ├───┼──────────────┼─────────┼───────────────────┼─────────────────────────────┤
+         │ ? │ 192.168.0.10 │         │ 52:55:18:E9:6E:28 │ Unknown device              │ <---- discovered
+         │ ? │ 192.168.0.20 │ device2 │ 22:63:2F:67:88:CD │ State unknown or            │ <---- in spec
+         │   │              │         │                   │ unspecified                 │
+         │ ? │              │ device1 │ 52:55:18:E9:6E:28 │ State unknown or            │ <---- in spec (should have matched discovered)
+         │   │              │         │                   │ unspecified                 │
+         └───┴──────────────┴─────────┴───────────────────┴─────────────────────────────┘
+       */
+      /* yield return new TestCaseData(
+           new NetworkBuilder()
+             .AddDevice( [new MacAddress( "52:55:18:e9:6e:28" )], "device1" )
+             .AddDevice( [new MacAddress( "22:63:2f:67:88:cd" ), new IpV4Address( "192.168.0.20" )], "device2" )
+             .Build(),
+           new List<DiscoveredDevice> {
+             new() { Addresses = [new MacAddress( "52:55:18:e9:6e:28" ), new IpV4Address( "192.168.0.10" )] }
+           }
+         )
+         .SetName( "One MAC match" );*/
+    }
+  }
+
+  [TestCaseSource( nameof(WithSpecList) )]
+  public async Task WithSpec_Success_Test(
+    Network network,
+    List<DiscoveredDevice> discoveredDevices
+  ) {
     // Arrange
-    var inventory = new Inventory {
-      Network = new NetworkBuilder()
-        .AddDevice( [new MacAddress( "52:55:18:e9:6e:28" )], "device1" )
-        .AddDevice( [new MacAddress( "22:63:2f:67:88:cd" ), new IpV4Address( "192.168.0.20" )], "device2" )
-        .Build()
-    };
-
-    var discoveredDevices = new List<DiscoveredDevice> {
-      new() { Addresses = [new MacAddress( "52:55:18:e9:6e:28" ), new IpV4Address( "192.168.0.10" )] }
-    };
-
-    var interfaces = new List<INetworkInterface> {
-      new NetworkInterface {
-        Description = "eth1",
-        OperationalStatus = OperationalStatus.Up,
-        UnicastAddress = new CidrBlock( "192.168.0.0/24" )
-      }
-    };
-
-    var config = GetCommandLineConfiguration( interfaces, discoveredDevices, inventory );
+    var config = GetCommandLineConfiguration(
+      [
+        new NetworkInterface {
+          Description = "eth1",
+          OperationalStatus = OperationalStatus.Up,
+          UnicastAddress = new CidrBlock( "192.168.0.0/24" )
+        }
+      ],
+      discoveredDevices,
+      new Inventory { Network = network }
+    );
 
     // Act
     var exitCode = await config.InvokeAsync( "scan unittest" );

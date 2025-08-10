@@ -79,10 +79,12 @@ public class ScanCommandHandler(
       return ExitCodes.GeneralError;
     }
 
-    //TODO use both declared and discovered subnets
-    ISubnetProvider subnetProvider = network == null
-      ? interfaceSubnetProvider
-      : new DeclaredSubnetProvider( network.Subnets.Where( s => s.Enabled ?? true ) );
+    var subnetProviders = new List<ISubnetProvider> { interfaceSubnetProvider };
+    if ( network != null ) {
+      subnetProviders.Add( new DeclaredSubnetProvider( network.Subnets ) );
+    }
+
+    var subnetProvider = new CompositeSubnetProvider( subnetProviders );
 
     output.Normal.WriteLineVerbose( $"Using subnet provider: {subnetProvider.GetType().Name}" );
     output.Log.LogDebug( "Using subnet provider: {SubnetProviderType}", subnetProvider.GetType().Name );

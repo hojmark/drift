@@ -11,13 +11,6 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
     //if ( other is null ) return false;
     if ( ReferenceEquals( this, other ) ) return true;
 
-    // Local normalization to compare addresses reliably
-    static string Normalize( string value ) {
-      return string.IsNullOrWhiteSpace( value )
-        ? string.Empty
-        : value.ToUpperInvariant();
-    }
-
     var set = new HashSet<(AddressType Type, string Normalized)>();
     foreach ( var a in Addresses ) {
       set.Add( ( a.Type, Normalize( a.Value ) ) );
@@ -34,6 +27,13 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
     }
 
     return true;
+
+    // Local normalization to compare addresses reliably
+    static string Normalize( string value ) {
+      return string.IsNullOrWhiteSpace( value )
+        ? string.Empty
+        : value.ToUpperInvariant();
+    }
   }
 
   /// <summary>
@@ -48,13 +48,6 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
 
     if ( ReferenceEquals( this, other ) ) {
       return true;
-    }
-
-    // Local normalization to compare addresses reliably
-    static string Normalize( string value ) {
-      return string.IsNullOrWhiteSpace( value )
-        ? string.Empty
-        : value.ToUpperInvariant();
     }
 
     var thisLookup = Addresses.ToLookup( a => a.Type, a => Normalize( a.Value ) );
@@ -75,5 +68,19 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
       var otherValues = new HashSet<string>( otherLookup[type] );
       return thisValues.SetEquals( otherValues );
     } );
+
+    // Local normalization to compare addresses reliably
+    static string Normalize( string value ) {
+      return string.IsNullOrWhiteSpace( value )
+        ? string.Empty
+        : value.ToUpperInvariant();
+    }
+  }
+
+  public override string ToString() {
+    var idAddresses = Addresses.Where( a => a.IsId == true ).ToList();
+    var addressesToUse = idAddresses.Any() ? idAddresses : Addresses;
+
+    return string.Join( "|", addressesToUse.OrderBy( a => a.Type ).Select( a => $"{a.Type}:{a.Value}" ) );
   }
 }

@@ -1,4 +1,5 @@
 using Drift.Domain;
+using Drift.Domain.Device;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
@@ -38,6 +39,27 @@ public static class DeviceExtensions {
     .SetKeySelector<DiffDevice>( obj => obj.GetSelector() )
     .SetKeySelector<DeclaredDevice>( obj => obj.GetSelector() )
     .SetKeySelector<DiscoveredDevice>( obj => obj.GetSelector() )
+    .SetKeySelector<Port>( obj => obj.Value.ToString() )
+    //.SetKeySelector<IDeviceAddress>( obj => obj.Value.ToString() );
+    .SetKeySelector<IDeviceAddress>(
+      // Using 'Type' because the scope is the device (IDeviceAddress) and only one address of each type is allowed per device
+      obj => obj.Type.ToString()
+    );
+
+  public static DiffOptions ConfigureDiffDeviceKeySelectors2(
+    this DiffOptions diffOptions,
+    List<DeclaredDevice> originalDevices
+  ) => diffOptions
+    // TODO maybe the key selectors themselves should not be defined here
+    .SetKeySelector<DiffDevice>( obj => {
+      var updatedDeviceId = ( (IAddressableDevice) obj ).GetDeviceId();
+      var matchingOriginal = originalDevices.FirstOrDefault( originalDevice =>
+        ( (IAddressableDevice) originalDevice ).GetDeviceId().IsSame( updatedDeviceId ) );
+
+      return matchingOriginal?.GetSelector() ?? obj.GetSelector();
+    } )
+    //.SetKeySelector<DeclaredDevice>( obj => obj.GetSelector() )
+    //.SetKeySelector<DiscoveredDevice>( obj => obj.GetSelector() )
     .SetKeySelector<Port>( obj => obj.Value.ToString() )
     //.SetKeySelector<IDeviceAddress>( obj => obj.Value.ToString() );
     .SetKeySelector<IDeviceAddress>(

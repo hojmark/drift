@@ -110,16 +110,39 @@ public class ScanCommandTests {
          │   │              │         │                   │ unspecified                 │
          └───┴──────────────┴─────────┴───────────────────┴─────────────────────────────┘
        */
-      /* yield return new TestCaseData(
-           new NetworkBuilder()
-             .AddDevice( [new MacAddress( "52:55:18:e9:6e:28" )], "device1" )
-             .AddDevice( [new MacAddress( "22:63:2f:67:88:cd" ), new IpV4Address( "192.168.0.20" )], "device2" )
-             .Build(),
-           new List<DiscoveredDevice> {
-             new() { Addresses = [new MacAddress( "52:55:18:e9:6e:28" ), new IpV4Address( "192.168.0.10" )] }
-           }
-         )
-         .SetName( "One MAC match" );*/
+      yield return new TestCaseData(
+          new NetworkBuilder()
+            .AddDevice( [new MacAddress( "52:55:18:e9:6e:28" )], "device1" )
+            .AddDevice( [new MacAddress( "22:63:2f:67:88:cd" ), new IpV4Address( "192.168.0.20" )], "device2" )
+            .Build(),
+          new List<DiscoveredDevice> {
+            new() { Addresses = [new MacAddress( "52:55:18:e9:6e:28" ), new IpV4Address( "192.168.0.10" )] }
+          }
+        )
+        .SetName( "One MAC match, declared without IP" );
+
+      yield return new TestCaseData(
+          new NetworkBuilder()
+            .AddDevice(
+              [
+                new MacAddress( "52:55:18:e9:6e:28" ) { IsId = true },
+                new IpV4Address( "192.168.0.10" ) { IsId = false }
+              ],
+              "device1"
+            )
+            .AddDevice(
+              [
+                new MacAddress( "22:63:2f:67:88:cd" ),
+                new IpV4Address( "192.168.0.20" )
+              ],
+              "device2"
+            )
+            .Build(),
+          new List<DiscoveredDevice> {
+            new() { Addresses = [new MacAddress( "52:55:18:e9:6e:28" ), new IpV4Address( "192.168.0.15" )] }
+          }
+        )
+        .SetName( "One MAC match, discovered with different IP" );
     }
   }
 

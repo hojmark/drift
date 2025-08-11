@@ -93,6 +93,10 @@ public class DeviceIdTests {
         device1.GetDeviceId().IsSame( device2.GetDeviceId() ), Is.EqualTo( isSame ),
         isSame ? "Expected to be same" : "Expected not to be same"
       );
+      Assert.That(
+        device2.GetDeviceId().IsSame( device1.GetDeviceId() ), Is.EqualTo( isSame ),
+        $"Expected {nameof(DeviceId.IsSame)} usage to be commutative"
+      );
     }
   }
 }

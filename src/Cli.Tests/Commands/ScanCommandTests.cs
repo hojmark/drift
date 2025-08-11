@@ -99,24 +99,13 @@ public class ScanCommandTests {
       yield return new TestCaseData( new NetworkBuilder().Build(), new List<DiscoveredDevice>() )
         .SetName( "Empty spec, no devices" );
 
-      /*
-       * ┌───┬──────────────┬─────────┬───────────────────┬─────────────────────────────┐
-         │   │ IP           │ ID      │ MAC               │                             │
-         ├───┼──────────────┼─────────┼───────────────────┼─────────────────────────────┤
-         │ ? │ 192.168.0.10 │         │ 52:55:18:E9:6E:28 │ Unknown device              │ <---- discovered
-         │ ? │ 192.168.0.20 │ device2 │ 22:63:2F:67:88:CD │ State unknown or            │ <---- in spec
-         │   │              │         │                   │ unspecified                 │
-         │ ? │              │ device1 │ 52:55:18:E9:6E:28 │ State unknown or            │ <---- in spec (should have matched discovered)
-         │   │              │         │                   │ unspecified                 │
-         └───┴──────────────┴─────────┴───────────────────┴─────────────────────────────┘
-       */
       yield return new TestCaseData(
           new NetworkBuilder()
-            .AddDevice( [new MacAddress( "52:55:18:e9:6e:28" )], "device1" )
-            .AddDevice( [new MacAddress( "22:63:2f:67:88:cd" ), new IpV4Address( "192.168.0.20" )], "device2" )
+            .AddDevice( [new MacAddress( "10:10:10:10:10:10" )], "device1" )
+            .AddDevice( [new MacAddress( "20:20:20:20:20:20" ), new IpV4Address( "192.168.0.20" )], "device2" )
             .Build(),
           new List<DiscoveredDevice> {
-            new() { Addresses = [new MacAddress( "52:55:18:e9:6e:28" ), new IpV4Address( "192.168.0.10" )] }
+            new() { Addresses = [new MacAddress( "10:10:10:10:10:10" ), new IpV4Address( "192.168.0.10" )] }
           }
         )
         .SetName( "One MAC match, declared without IP" );
@@ -125,21 +114,21 @@ public class ScanCommandTests {
           new NetworkBuilder()
             .AddDevice(
               [
-                new MacAddress( "52:55:18:e9:6e:28" ) { IsId = true },
+                new MacAddress( "10:10:10:10:10:10" ) { IsId = true },
                 new IpV4Address( "192.168.0.10" ) { IsId = false }
               ],
               "device1"
             )
             .AddDevice(
               [
-                new MacAddress( "22:63:2f:67:88:cd" ),
+                new MacAddress( "20:20:20:20:20:20" ),
                 new IpV4Address( "192.168.0.20" )
               ],
               "device2"
             )
             .Build(),
           new List<DiscoveredDevice> {
-            new() { Addresses = [new MacAddress( "52:55:18:e9:6e:28" ), new IpV4Address( "192.168.0.15" )] }
+            new() { Addresses = [new MacAddress( "10:10:10:10:10:10" ), new IpV4Address( "192.168.0.15" )] }
           }
         )
         .SetName( "One MAC match, discovered with different IP" );

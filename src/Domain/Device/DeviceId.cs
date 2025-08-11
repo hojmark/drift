@@ -7,6 +7,7 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
     get;
   } = addresses.Where( a => a.IsId ?? true ).ToList();
 
+  [Obsolete]
   public bool Contains( DeviceId other ) {
     //if ( other is null ) return false;
     if ( ReferenceEquals( this, other ) ) return true;
@@ -37,7 +38,8 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
   }
 
   /// <summary>
-  /// considered the same if they share at least one type of address, and for every address type they have in common, the values are identical.
+  /// Considered the same if they share at least one type of address, and for every address type they have in common, the values are identical.
+  /// Commutative/symmetric.
   /// </summary>
   /// <param name="other"></param>
   /// <returns></returns>

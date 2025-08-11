@@ -2,6 +2,7 @@ using Drift.Cli.Output.Abstractions;
 using Drift.Diff;
 using Drift.Diff.Domain;
 using Drift.Domain;
+using Drift.Domain.Device;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
@@ -53,7 +54,8 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
       var state = diff.DiffType;
 
       var device = state switch {
-        DiffType.Unchanged => ( (DiffDevice) diff.Original! ),
+        // Note: may be unchanged based on device id, but other value may be updated in which case we'd like to show the updated values... but this is debatable... maybe both or a merge should be shown
+        DiffType.Unchanged => ( (DiffDevice) diff.Updated! ),
         DiffType.Removed => ( (DiffDevice) diff.Original! ),
         DiffType.Added => ( (DiffDevice) diff.Updated! ),
         _ => throw new Exception( "øv" )
@@ -76,8 +78,8 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
        *
        */
 
-      var declaredDevice = declaredDevices
-        .SingleOrDefault( d => d.Get( AddressType.IpV4 ) == device.Get( AddressType.IpV4 ) );
+      var declaredDevice = declaredDevices.SingleOrDefault( d =>
+        ( (IAddressableDevice) d ).GetDeviceId().IsSame( ( (IAddressableDevice) device ).GetDeviceId() ) );
       var declaredDeviceState = declaredDevice?.State;
       var discoveredDeviceState =
         state == DiffType.Removed ? DiscoveredDeviceState.Offline : DiscoveredDeviceState.Online;

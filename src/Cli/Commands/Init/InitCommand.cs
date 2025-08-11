@@ -296,17 +296,18 @@ public class InitCommandHandler(
     networkBuilder.AddSubnet( new CidrBlock( "192.168.100.0/24" ), id: "iot" );
     networkBuilder.AddSubnet( new CidrBlock( "192.168.200.0/24" ), id: "guest" );
 
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.10" )], id: "router", enabled: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.20" )], id: "nas", enabled: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.30" )], id: "server", enabled: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.40" )], id: "desktop", enabled: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.50" )], id: "laptop", enabled: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.10" )], id: "router", enabled: null, state: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.20" )], id: "nas", enabled: null, state: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.30" )], id: "server", enabled: null, state: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.40" )], id: "desktop", enabled: null, state: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.50" )], id: "laptop", enabled: null, state: null );
 
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.10" )], id: "smart-tv", enabled: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.20" )], id: "security-camera", enabled: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.30" )], id: "smart-switch", enabled: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.10" )], id: "smart-tv", enabled: null, state: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.20" )], id: "security-camera", enabled: null,
+      state: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.30" )], id: "smart-switch", enabled: null, state: null );
 
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.200.100" )], id: "guest-device", enabled: null );
+    networkBuilder.AddDevice( [new IpV4Address( "192.168.200.100" )], id: "guest-device", enabled: null, state: null );
 
     networkBuilder.WriteToFile( specPath );
   }
@@ -327,7 +328,7 @@ public class InitCommandHandler(
 
     var no = 1;
     foreach ( var device in declaredDevices ) {
-      networkBuilder.AddDevice( addresses: [..device.Addresses], id: $"device-{no++}", enabled: null );
+      networkBuilder.AddDevice( addresses: [..device.Addresses], id: $"device-{no++}", enabled: null, state: null );
     }
 
     networkBuilder.WriteToFile( specPath );

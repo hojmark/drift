@@ -2,10 +2,32 @@ using Drift.Domain.Device.Addresses;
 
 namespace Drift.Domain.Device;
 
+/// <summary>
+/// A device ID may consist of one or more addresses, such as MAC, IPv4, IPv6, and/or hostname.
+/// A discovered device (on the network) will only match a declared device (in the spec) if the device ID matches.
+/// One or more addresses can be marked with <see cref="IDeviceAddress.IsId"/> <c>true</c> to indicate that it should contribute to the device ID.
+/// </summary>
+/// <param name="addresses">Addresses that potentially make up the device ID. Only addresses where <see cref="IDeviceAddress.IsId"/> is <c>true</c>  will be used</param>
 public class DeviceId( List<IDeviceAddress> addresses ) {
   private List<IDeviceAddress> Addresses {
     get;
   } = addresses.Where( a => a.IsId ?? true ).ToList();
+
+  /// <summary>
+  /// Determines whether this <see cref="DeviceId"/> is equivalent to another.
+  /// Considered equivalent if both <see cref="DeviceId"/>s have at least one address type in common,
+  /// and for every address type they have in common, values are identical.
+  /// </summary>
+  /// <seealso cref="op_Inequality"/>
+  public static bool operator ==( DeviceId? left, DeviceId? right )
+    => Equals( left, right );
+
+  /// <summary>
+  /// Determines whether this <see cref="DeviceId"/> is not equivalent to another.
+  /// </summary>
+  /// <seealso cref="op_Equality"/>
+  public static bool operator !=( DeviceId? left, DeviceId? right )
+    => !Equals( left, right );
 
   [Obsolete]
   public bool Contains( DeviceId other ) {
@@ -37,13 +59,7 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
     }
   }
 
-  /// <summary>
-  /// Considered the same if they share at least one type of address, and for every address type they have in common, the values are identical.
-  /// Commutative/symmetric.
-  /// </summary>
-  /// <param name="other"></param>
-  /// <returns></returns>
-  public bool IsSame( DeviceId other ) {
+  private bool IsSame( DeviceId other ) {
     if ( other is null ) {
       return false;
     }
@@ -71,7 +87,7 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
       return thisValues.SetEquals( otherValues );
     } );
 
-    // Local normalization to compare addresses reliably
+    // Normalization to compare addresses reliably
     static string Normalize( string value ) {
       return string.IsNullOrWhiteSpace( value )
         ? string.Empty
@@ -79,6 +95,22 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
     }
   }
 
+  public override bool Equals( object? obj ) {
+    return IsSame( obj as DeviceId );
+  }
+
+  public override int GetHashCode() {
+    return ToString().GetHashCode();
+  }
+
+  /// <summary>
+  /// Returns a string representation of the <see cref="DeviceId"/>, consisting of the identifying addresses
+  /// (those which has <see cref="IDeviceAddress.IsId"/> being <c>true</c>).
+  /// If none are marked as identifiers, all addresses are included.
+  /// </summary>
+  /// <returns>
+  /// A string representing the identifier for the device.
+  /// </returns>
   public override string ToString() {
     var idAddresses = Addresses.Where( a => a.IsId == true ).ToList();
     var addressesToUse = idAddresses.Any() ? idAddresses : Addresses;

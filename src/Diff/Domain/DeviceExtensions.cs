@@ -54,7 +54,8 @@ public static class DeviceExtensions {
     .SetKeySelector<DiffDevice>( obj => {
       var updatedDeviceId = ( (IAddressableDevice) obj ).GetDeviceId();
       var matchingOriginal = originalDevices.FirstOrDefault( originalDevice =>
-        ( (IAddressableDevice) originalDevice ).GetDeviceId().IsSame( updatedDeviceId ) );
+        ( (IAddressableDevice) originalDevice ).GetDeviceId() == updatedDeviceId
+      );
 
       return matchingOriginal?.GetSelector() ?? obj.GetSelector();
     } )

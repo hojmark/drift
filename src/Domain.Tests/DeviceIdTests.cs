@@ -8,6 +8,104 @@ public class DeviceIdTests {
   private static IEnumerable<TestCaseData> DeviceIds {
     get {
       yield return new TestCaseData(
+        new DeviceId( [
+          new IpV4Address( "192.168.0.100" )
+        ] ),
+        "IpV4:192.168.0.100"
+      ).SetName( "Just IPv4" );
+      yield return new TestCaseData(
+        new DeviceId( [
+          new MacAddress( "d4:e1:8c:98:0b:cb" )
+        ] ),
+        "Mac:d4:e1:8c:98:0b:cb"
+      ).SetName( "Just MAC" );
+      yield return new TestCaseData(
+        new DeviceId( [
+          new HostnameAddress( "host.domain.local" )
+        ] ),
+        "Hostname:host.domain.local"
+      ).SetName( "Just hostname" );
+      ;
+      yield return new TestCaseData(
+        new DeviceId( [
+          new IpV4Address( "192.168.0.100" ),
+          new MacAddress( "d4:e1:8c:98:0b:cb" )
+        ] ),
+        // TODO Consider if this is correct:
+        //"IpV4:192.168.0.100"
+        "IpV4:192.168.0.100|Mac:d4:e1:8c:98:0b:cb"
+      ).SetName( "IPv4 and MAC - no IsId" );
+      yield return new TestCaseData(
+        new DeviceId( [
+          new MacAddress( "d4:e1:8c:98:0b:cb" ),
+          new IpV4Address( "192.168.0.100" )
+        ] ),
+        // TODO Consider if this is correct:
+        //"IpV4:192.168.0.100"
+        "IpV4:192.168.0.100|Mac:d4:e1:8c:98:0b:cb"
+      ).SetName( "IPv4 and MAC - no IsId - reversed order" );
+      yield return new TestCaseData(
+        new DeviceId( [
+          new IpV4Address( "192.168.0.100", true ),
+          new MacAddress( "d4:e1:8c:98:0b:cb" )
+        ] ),
+        "IpV4:192.168.0.100"
+      ).SetName( "IPv4 and MAC - IPv4 is ID" );
+      yield return new TestCaseData(
+        new DeviceId( [
+          new MacAddress( "d4:e1:8c:98:0b:cb" ),
+          new IpV4Address( "192.168.0.100", true )
+        ] ),
+        "IpV4:192.168.0.100"
+      ).SetName( "IPv4 and MAC - IPv4 is ID - reversed order" );
+      yield return new TestCaseData(
+        new DeviceId( [
+          new IpV4Address( "192.168.0.100" ),
+          new MacAddress( "d4:e1:8c:98:0b:cb", true )
+        ] ),
+        "Mac:d4:e1:8c:98:0b:cb"
+      ).SetName( "IPv4 and MAC - MAC is ID" );
+      yield return new TestCaseData(
+        new DeviceId( [
+          new IpV4Address( "192.168.0.100", true ),
+          new MacAddress( "d4:e1:8c:98:0b:cb", true )
+        ] ),
+        "IpV4:192.168.0.100|Mac:d4:e1:8c:98:0b:cb"
+      ).SetName( "IPv4 and MAC - IPv4 and MAC is ID" );
+      yield return new TestCaseData(
+        new DeviceId( [
+          new MacAddress( "d4:e1:8c:98:0b:cb", true ),
+          new IpV4Address( "192.168.0.100", true )
+        ] ),
+        "IpV4:192.168.0.100|Mac:d4:e1:8c:98:0b:cb"
+      ).SetName( "IPv4 and MAC - IPv4 and MAC is ID - reversed order" );
+      yield return new TestCaseData(
+        new DeviceId( [
+          new IpV4Address( "192.168.0.100", true ),
+          new HostnameAddress( "host.domain.local" ),
+          new MacAddress( "d4:e1:8c:98:0b:cb", true )
+        ] ),
+        "IpV4:192.168.0.100|Mac:d4:e1:8c:98:0b:cb"
+      ).SetName( "IPv4, hostname and MAC - IPv4 and MAC is ID" );
+      yield return new TestCaseData(
+        new DeviceId( [
+          new MacAddress( "d4:e1:8c:98:0b:cb", true ),
+          new HostnameAddress( "host.domain.local" ),
+          new IpV4Address( "192.168.0.100", true )
+        ] ),
+        "IpV4:192.168.0.100|Mac:d4:e1:8c:98:0b:cb"
+      ).SetName( "IPv4, hostname and MAC - IPv4 and MAC is ID - reversed order" );
+    }
+  }
+
+  [TestCaseSource( nameof(DeviceIds) )]
+  public void ContributionTest( DeviceId deviceId, string asString ) {
+    Assert.That( deviceId.ToString(), Is.EqualTo( asString ) );
+  }
+
+  private static IEnumerable<TestCaseData> DeviceIdComparisons {
+    get {
+      yield return new TestCaseData(
         new DeclaredDevice { Addresses = [new IpV4Address( "192.168.123.1" ), new MacAddress( "d4:e1:8c:98:0b:cb" )] },
         new DeclaredDevice { Addresses = [new IpV4Address( "192.168.123.1" ), new MacAddress( "d4:e1:8c:98:0b:cb" )] },
         true,
@@ -82,20 +180,38 @@ public class DeviceIdTests {
     }
   }
 
-  [TestCaseSource( nameof(DeviceIds) )]
+  [TestCaseSource( nameof(DeviceIdComparisons) )]
   public void ComparisonTest( IAddressableDevice device1, IAddressableDevice device2, bool isContained, bool isSame ) {
     using ( Assert.EnterMultipleScope() ) {
       Assert.That(
         device1.GetDeviceId().Contains( device2.GetDeviceId() ), Is.EqualTo( isContained ),
-        isContained ? "Expected to contain" : "Expected not to contain"
+        isContained
+          ? "Expected to contain"
+          : "Expected not to contain"
       );
       Assert.That(
-        device1.GetDeviceId().IsSame( device2.GetDeviceId() ), Is.EqualTo( isSame ),
-        isSame ? "Expected to be same" : "Expected not to be same"
+        device1.GetDeviceId().Equals( device2.GetDeviceId() ), Is.EqualTo( isSame ),
+        isSame
+          ? "Expected to be same (using Equals)"
+          : "Expected not to be same (using Equals)"
       );
       Assert.That(
-        device2.GetDeviceId().IsSame( device1.GetDeviceId() ), Is.EqualTo( isSame ),
-        $"Expected {nameof(DeviceId.IsSame)} usage to be commutative"
+        device1.GetDeviceId() == device2.GetDeviceId(), Is.EqualTo( isSame ),
+        isSame
+          ? "Expected to be same (using ==)"
+          : "Expected not to be same (using ==)"
+      );
+      Assert.That(
+        device2.GetDeviceId().Equals( device1.GetDeviceId() ), Is.EqualTo( isSame ),
+        isSame
+          ? "Expected to be same (using Equals) [commutative usage]"
+          : "Expected not to be same (using Equals) [commutative usage]"
+      );
+      Assert.That(
+        device2.GetDeviceId() == device1.GetDeviceId(), Is.EqualTo( isSame ),
+        isSame
+          ? "Expected to be same (using ==) [commutative usage]"
+          : "Expected not to be same (using ==) [commutative usage]"
       );
     }
   }

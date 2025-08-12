@@ -79,7 +79,8 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
        */
 
       var declaredDevice = declaredDevices.SingleOrDefault( d =>
-        ( (IAddressableDevice) d ).GetDeviceId().IsSame( ( (IAddressableDevice) device ).GetDeviceId() ) );
+        ( (IAddressableDevice) d ).GetDeviceId() == ( (IAddressableDevice) device ).GetDeviceId()
+      );
       var declaredDeviceState = declaredDevice?.State;
       var discoveredDeviceState =
         state == DiffType.Removed ? DiscoveredDeviceState.Offline : DiscoveredDeviceState.Online;

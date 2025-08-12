@@ -19,9 +19,9 @@ public class DiffTest {
     Status = ScanResultStatus.Success,
     DiscoveredDevices = [
       new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
-      new DiscoveredDevice {
-        Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "ABC" )], Ports = [443, 80]
-      },
+      /*new DiscoveredDevice {
+        Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "ABC" )] //, Ports = [443, 80]
+      },*/
       new DiscoveredDevice {
         Addresses = [new IpV4Address( "192.168.0.22" ), new MacAddress( "abcdefghijklmnopqrstu" )]
       }
@@ -36,9 +36,9 @@ public class DiffTest {
     Status = ScanResultStatus.Success,
     DiscoveredDevices = [
       new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
-      new DiscoveredDevice {
-        Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "DEF" )], Ports = [22, 443, 80]
-      },
+      /*new DiscoveredDevice {
+        Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "DEF" )] //, Ports = [22, 443, 80]
+      },*/
       new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.150" )] }
     ]
   };

@@ -318,10 +318,10 @@ class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
-  Target Test => _ => _
+  Target TestUnit => _ => _
     .DependsOn( Build )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(Test) );
+        using var _ = new TargetLifecycle( nameof(TestUnit) );
 
         DotNetTest( s => s
           .SetProjectFile( Solution )
@@ -361,11 +361,11 @@ class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
-  Target E2ETest => _ => _
+  Target TestE2E => _ => _
     .DependsOn( Publish )
-    .After( Test )
+    .After( TestUnit )
     .Executes( () => {
-      using var _ = new TargetLifecycle( nameof(E2ETest) );
+      using var _ = new TargetLifecycle( nameof(TestE2E) );
 
       //TODO
       foreach ( var runtime in SupportedRuntimes ) {
@@ -387,7 +387,7 @@ class NukeBuild : Nuke.Common.NukeBuild {
     } );
 
   Target TestAll => _ => _
-    .DependsOn( Test, E2ETest );
+    .DependsOn( TestUnit, TestE2E );
 
   Target TestAllLocal => _ => _
     .DependsOn( TestAll )

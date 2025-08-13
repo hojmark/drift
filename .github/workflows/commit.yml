@@ -41,6 +41,6 @@ jobs:
         if: always()
         run: dotnet trx --verbosity verbose #--output
 
-      - name: Check for build warnings
+      - name: Check for warnings
         continue-on-error: true # TODO remove
-        run: dotnet run --project ./build/_build.csproj --target CheckBuildWarnings --skip
+        run: dotnet run --project ./build/_build.csproj --target CheckWarnings

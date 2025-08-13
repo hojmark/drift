@@ -266,8 +266,8 @@ public class InitCommandHandler(
     }
     catch ( Exception e ) {
       //TODO create generic catch for all commands
-      output.Normal.WriteLine( e.ToString() );
-      output.Normal.WriteLineError( e.StackTrace );
+      output.Normal.WriteLineError( "Unexpected error" );
+      output.Normal.WriteLineError( e.ToString() );
       output.Log.LogError( e, "Unexpected error" );
       throw;
     }

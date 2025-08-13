@@ -32,8 +32,6 @@ public class InstallTests {
         await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( installScript );
 
-      Assert.That( installProcess.ExitCode, Is.EqualTo( 0 ) );
-
       Console.WriteLine( "------------------- install.sh output ----------------------" );
 
       await TestContext.Out.WriteLineAsync( installProcess.StdOut );
@@ -42,16 +40,11 @@ public class InstallTests {
 
       Console.WriteLine( "------------------------------------------------------------" );
 
-      // Act: run drift
-      var driftProcess = await new ToolWrapper( driftBinary ).ExecuteAsync( "--help" );
-
-      Console.WriteLine( "------------------- drift output ----------------------" );
-
-      await TestContext.Out.WriteLineAsync( driftProcess.StdOut );
-      if ( !string.IsNullOrWhiteSpace( driftProcess.ErrOut ) )
-        await TestContext.Out.WriteLineAsync( $"STDERR: {driftProcess.ErrOut}" );
-
-      Console.WriteLine( "------------------------------------------------------------" );
+      // Assert: binary exists
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( installProcess.ExitCode, Is.Zero, $"install.sh failed: {installProcess.ErrOut}" );
+        Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
+      }
 
       // Assert: install.sh output
       await Verify( installProcess.StdOut )
@@ -68,11 +61,16 @@ public class InstallTests {
           )
         );
 
-      // Assert: binary exists
-      using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.EqualTo( 0 ), $"install.sh failed: {installProcess.ErrOut}" );
-        Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
-      }
+      // Act: run drift
+      var driftProcess = await new ToolWrapper( driftBinary ).ExecuteAsync( "--help" );
+
+      Console.WriteLine( "------------------- drift output ----------------------" );
+
+      await TestContext.Out.WriteLineAsync( driftProcess.StdOut );
+      if ( !string.IsNullOrWhiteSpace( driftProcess.ErrOut ) )
+        await TestContext.Out.WriteLineAsync( $"STDERR: {driftProcess.ErrOut}" );
+
+      Console.WriteLine( "------------------------------------------------------------" );
 
       // Assert: drift output
       using ( Assert.EnterMultipleScope() ) {

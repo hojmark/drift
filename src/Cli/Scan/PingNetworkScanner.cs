@@ -128,7 +128,10 @@ internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) :
             try {
               throttler.Release();
             }
+            // Justification: enable when throttler is fixed
+#pragma warning disable CS0168 // Variable is declared but never used
             catch ( Exception ex ) {
+#pragma warning restore CS0168 // Variable is declared but never used
               //Console.WriteLine(ex);
               //TODO throttler not working!!!
             }

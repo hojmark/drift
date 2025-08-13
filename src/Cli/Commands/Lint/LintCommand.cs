@@ -38,10 +38,10 @@ public class LintCommandHandler( IOutputManager output ) : ICommandHandler<LintP
     }
 
     output.Log.LogInformation( "Validating network spec: {Spec}", filePath );
-    output.Normal.Write( $"Validating " );
+    output.Normal.Write( "Validating " );
     output.Normal.WriteLine( $"{filePath}  ", ConsoleColor.Cyan );
 
-    var yamlContent = await File.ReadAllTextAsync( filePath.FullName );
+    var yamlContent = await File.ReadAllTextAsync( filePath!.FullName, cancellationToken );
 
     var result = SpecValidator.Validate( yamlContent, Spec.Schema.SpecVersion.V1_preview );
 

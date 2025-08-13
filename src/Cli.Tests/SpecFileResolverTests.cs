@@ -281,7 +281,7 @@ public class SpecFileResolverTests {
 
     // Check warning was called
     output.Log.ReceivedWithAnyArgs().LogWarning( default, default, default, default, default );
-    output.Normal.ReceivedWithAnyArgs().WriteLineWarning( default );
+    output.Normal.ReceivedWithAnyArgs().WriteLineWarning( "" );
 
     Directory.Delete( tempDir, true );
   }

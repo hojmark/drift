@@ -31,15 +31,15 @@
         "CheckWarnings",
         "CleanArtifacts",
         "CleanProjects",
-        "E2ETest",
         "Pack",
         "Publish",
         "Release",
         "ReleaseSpecial",
         "Restore",
-        "Test",
         "TestAll",
         "TestAllLocal",
+        "TestE2E",
+        "TestUnit",
         "Version"
       ]
     },

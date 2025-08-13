@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Cli.Commands.Scan.Subnet;
 
 public class InterfaceSubnetProvider( IOutputManager output ) : IInterfaceSubnetProvider {
-  public List<System.Net.NetworkInformation.NetworkInterface> GetInterfacesRaw() {
+  public static List<System.Net.NetworkInformation.NetworkInterface> GetInterfacesRaw() {
     return System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces().ToList();
   }
 
@@ -41,7 +41,7 @@ public class InterfaceSubnetProvider( IOutputManager output ) : IInterfaceSubnet
     var cidrs = interfaces
       .Where( IsUp )
       .Where( i => i.UnicastAddress != null )
-      .Select( i => i.UnicastAddress.Value )
+      .Select( i => i.UnicastAddress!.Value )
       .Where( cidrBlock =>
         IpNetworkUtils.IsPrivateIpV4( cidrBlock.NetworkAddress ) ) //TODO log if non-private networks were filtered
       .Distinct() // Maybe return <interface, cidr> tuple?

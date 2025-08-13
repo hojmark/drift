@@ -44,7 +44,7 @@ public class DiffTest {
   };
 
   [Test]
-  public void SnapshotIndexAsKeyTest() {
+  public void IndexAsKeyTest() {
     var diffs = ObjectDiffEngine.Compare( ScanResult1, ScanResult2, nameof(ScanResult) );
 
     Print( diffs );
@@ -53,11 +53,12 @@ public class DiffTest {
   }
 
   [Test]
-  public Task SnapshotIpAsKeySelectorTest() {
+  public Task IpAsKeySelectorTest() {
     // Arrange
     var options = new DiffOptions()
       .SetDiffTypesAll()
-      .SetKeySelector<DiscoveredDevice>( device => device.Get( AddressType.IpV4 ) )
+      .SetKeySelector<DiscoveredDevice>( device =>
+        device.Get( AddressType.IpV4 ) ?? throw new InvalidOperationException( "Device has no IP address" ) )
       .SetKeySelector<Port>( port => port.Value.ToString() );
 
     // Act
@@ -71,7 +72,7 @@ public class DiffTest {
   }
 
   [Test]
-  public Task SnapshotDefaultKeySelectorTest() {
+  public Task DefaultKeySelectorTest() {
     // Arrange
     var testLogger = new TestLogger();
     var options = new DiffOptions()

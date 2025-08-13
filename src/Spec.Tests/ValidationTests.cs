@@ -8,15 +8,13 @@ public class ValidationTests {
     """
 
     """,
-    //TODO not a great message
-    "/: Value is \"null\" but should be \"object\""
+    "/: Required properties [\"version\",\"network\"] are not present"
   )]
   [TestCase( 2,
     """
     # Empty
     """,
-    //TODO not a great message
-    "/: Value is \"null\" but should be \"object\""
+    "/: Required properties [\"version\",\"network\"] are not present"
   )]
   [TestCase( 3,
     """

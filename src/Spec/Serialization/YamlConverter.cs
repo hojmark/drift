@@ -24,18 +24,15 @@ public static class YamlConverter {
     return Mapper.ToDomain( spec );
   }
 
-  internal static DriftSpec? DeserializeToDto( string yaml ) {
+  internal static DriftSpec DeserializeToDto( string yaml ) {
     var deserializer = new StaticDeserializerBuilder( new YamlStaticContext() )
-      /*.WithTypeDiscriminatingNodeDeserializer( o => {
-        //TODO move to IDeviceAddress?
-        o.AddKeyValueTypeDiscriminator<IDeviceAddress>( "type",
-          new Dictionary<string, Type>( StringComparer.Ordinal ) { ["ipv4"] = typeof(IPv4Address), } );
-      } )*/
       .IgnoreUnmatchedProperties() //TODO remove
       .ConfigureNamingConventions()
       .Build();
 
-    return deserializer.Deserialize<DriftSpec?>( yaml ); // ? because it may be null if the yaml is an empty string
+    var spec = deserializer.Deserialize<DriftSpec?>( yaml ); // null when the YAML is an empty string
+
+    return spec ?? new DriftSpec();
   }
 
   public static string Serialize( Inventory network, bool jsonCompatible = false ) {

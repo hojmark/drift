@@ -1,5 +1,4 @@
 using System.CommandLine;
-using System.Globalization;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
@@ -13,8 +12,6 @@ using Drift.Domain;
 using Drift.Domain.Progress;
 using Drift.Domain.Scan;
 using Drift.Utils;
-using Humanizer;
-using Humanizer.Localisation;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 

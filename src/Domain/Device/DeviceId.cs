@@ -13,6 +13,9 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
     get;
   } = addresses.Where( a => a.IsId ?? true ).ToList();
 
+  // TODO name
+  public bool IsIdPart( AddressType type ) => Addresses.Any( a => a.Type == type && a.IsId == true );
+
   /// <summary>
   /// Determines whether this <see cref="DeviceId"/> is equivalent to another.
   /// Considered equivalent if both <see cref="DeviceId"/>s have at least one address type in common,

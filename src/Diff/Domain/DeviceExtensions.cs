@@ -64,7 +64,7 @@ public static class DeviceExtensions {
     .SetKeySelector<Port>( obj => obj.Value.ToString() )
     //.SetKeySelector<IDeviceAddress>( obj => obj.Value.ToString() );
     .SetKeySelector<IDeviceAddress>(
-      // Using 'Type' because the scope is the device (IDeviceAddress) and only one address of each type is allowed per device
+      // Using 'Type' because scope is the device (IDeviceAddress) and only one address of each type is allowed per device
       obj => obj.Type.ToString()
     );
 }

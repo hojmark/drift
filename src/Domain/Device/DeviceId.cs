@@ -118,6 +118,6 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
     var idAddresses = Addresses.Where( a => a.IsId == true ).ToList();
     var addressesToUse = idAddresses.Any() ? idAddresses : Addresses;
 
-    return string.Join( "|", addressesToUse.OrderBy( a => a.Type ).Select( a => $"{a.Type}:{a.Value}" ) );
+    return string.Join( "|", addressesToUse.OrderBy( a => a.Type ).Select( a => $"{a.Type}={a.Value}" ) );
   }
 }

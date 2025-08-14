@@ -31,7 +31,7 @@ internal class NormalRenderer( INormalOutput console ) : DiffRendererBase {
 
     var showCustomIdColumn = declaredDevices.Any( d => d.Id != null );
     var showHostnameColumn = declaredDevices.Any( d => d.Addresses.Any( a => a.Type == AddressType.Hostname ) );
-    var table = CreateTable( showCustomIdColumn );
+    var table = CreateTable( showCustomIdColumn, showHostnameColumn );
 
     AddDevices( table, differences, declaredDevices, showCustomIdColumn, showHostnameColumn, logger );
 

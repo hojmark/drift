@@ -114,8 +114,8 @@ public class ScanCommandTests {
           new NetworkBuilder()
             .AddDevice(
               [
-                new MacAddress( "10:10:10:10:10:10" ) { IsId = true },
-                new IpV4Address( "192.168.0.10" ) { IsId = false }
+                new MacAddress( "10:10:10:10:10:10", isId: true ),
+                new IpV4Address( "192.168.0.10", isId: false )
               ],
               "device1"
             )

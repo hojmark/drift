@@ -1,5 +1,8 @@
+using System.CommandLine;
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
+using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Tests.Utils;
@@ -69,26 +72,13 @@ public class ScanCommandTests {
 
   //[Combinatorial]
   [TestCaseSource( nameof(DiscoveredDeviceLists) )]
-  public async Task SuccessTest(
-    List<DiscoveredDevice> devices,
+  public async Task WithoutSpec_Success_Test(
+    List<DiscoveredDevice> discoveredDevices,
     List<INetworkInterface> interfaces
     /*, [Values( "", "normal", "log" )] string outputFormat */
   ) {
     // Arrange
-    var config = TestCommandLineConfiguration.Create( services => {
-        services.AddScoped<IInterfaceSubnetProvider>( sp =>
-          new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), interfaces )
-        );
-        services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
-            new ScanResult {
-              Metadata = new Metadata { StartedAt = default, EndedAt = default },
-              Status = ScanResultStatus.Success,
-              DiscoveredDevices = devices
-            }
-          )
-        );
-      }
-    );
+    var config = GetCommandLineConfiguration( interfaces, discoveredDevices );
 
     // Act
     var exitCode = await config.InvokeAsync( "scan" );
@@ -98,7 +88,80 @@ public class ScanCommandTests {
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
       await Verify( config.Output.ToString() + config.Error )
-        .UseFileName( $"{nameof(ScanCommandTests)}.{nameof(SuccessTest)}.{TestContext.CurrentContext.Test.Name}" );
+        .UseFileName(
+          $"{nameof(ScanCommandTests)}.{nameof(WithoutSpec_Success_Test)}.{TestContext.CurrentContext.Test.Name}"
+        );
+    }
+  }
+
+  private static IEnumerable<TestCaseData> WithSpecList {
+    get {
+      yield return new TestCaseData( new NetworkBuilder().Build(), new List<DiscoveredDevice>() )
+        .SetName( "Empty spec, no devices" );
+
+      yield return new TestCaseData(
+          new NetworkBuilder()
+            .AddDevice( [new MacAddress( "10:10:10:10:10:10" )], "device1" )
+            .AddDevice( [new MacAddress( "20:20:20:20:20:20" ), new IpV4Address( "192.168.0.20" )], "device2" )
+            .Build(),
+          new List<DiscoveredDevice> {
+            new() { Addresses = [new MacAddress( "10:10:10:10:10:10" ), new IpV4Address( "192.168.0.10" )] }
+          }
+        )
+        .SetName( "One MAC match, declared without IP" );
+
+      yield return new TestCaseData(
+          new NetworkBuilder()
+            .AddDevice(
+              [
+                new MacAddress( "10:10:10:10:10:10", isId: true ),
+                new IpV4Address( "192.168.0.10", isId: false )
+              ],
+              "device1"
+            )
+            .AddDevice(
+              [
+                new MacAddress( "20:20:20:20:20:20" ),
+                new IpV4Address( "192.168.0.20" )
+              ],
+              "device2"
+            )
+            .Build(),
+          new List<DiscoveredDevice> {
+            new() { Addresses = [new MacAddress( "10:10:10:10:10:10" ), new IpV4Address( "192.168.0.15" )] }
+          }
+        )
+        .SetName( "One MAC match, discovered with different IP" );
+    }
+  }
+
+  [TestCaseSource( nameof(WithSpecList) )]
+  public async Task WithSpec_Success_Test(
+    Network network,
+    List<DiscoveredDevice> discoveredDevices
+  ) {
+    // Arrange
+    var config = GetCommandLineConfiguration(
+      [
+        new NetworkInterface {
+          Description = "eth1",
+          OperationalStatus = OperationalStatus.Up,
+          UnicastAddress = new CidrBlock( "192.168.0.0/24" )
+        }
+      ],
+      discoveredDevices,
+      new Inventory { Network = network }
+    );
+
+    // Act
+    var exitCode = await config.InvokeAsync( "scan unittest" );
+
+    // Assert
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
+      await Verify( config.Output.ToString() + config.Error )
+        .UseFileName(
+          $"{nameof(ScanCommandTests)}.{nameof(WithSpec_Success_Test)}.{TestContext.CurrentContext.Test.Name}" );
     }
   }
 
@@ -115,5 +178,33 @@ public class ScanCommandTests {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
       await Verify( config.Output.ToString() + config.Error );
     }
+  }
+
+  private static CommandLineConfiguration GetCommandLineConfiguration(
+    List<INetworkInterface> interfaces,
+    List<DiscoveredDevice>? discoveredDevices = null,
+    Inventory? inventory = null
+  ) {
+    return TestCommandLineConfiguration.Create( services => {
+        services.AddScoped<IInterfaceSubnetProvider>( sp =>
+          new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), interfaces )
+        );
+
+        if ( inventory != null ) {
+          services.AddScoped<ISpecFileProvider>( _ =>
+            new PredefinedSpecProvider( new Dictionary<string, Inventory> { { "unittest", inventory } } )
+          );
+        }
+
+        services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
+            new ScanResult {
+              Metadata = new Metadata { StartedAt = default, EndedAt = default },
+              Status = ScanResultStatus.Success,
+              DiscoveredDevices = discoveredDevices ?? []
+            }
+          )
+        );
+      }
+    );
   }
 }

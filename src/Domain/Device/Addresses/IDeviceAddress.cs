@@ -25,7 +25,7 @@ public interface IDeviceAddress {
 
   bool? IsId {
     get;
-  }
+  } // = true;
 
   // TODO introduce required
   /*public bool Required {

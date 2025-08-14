@@ -13,8 +13,10 @@ public static class AddressableDeviceExtensions {
     ).Select( a => $"{a.Type}:{a.Value}" ) );*/
     //TODO TEMP!!!
 #pragma warning disable CS8603 // Possible null reference return.
-    return device.Get( AddressType.IpV4 );
+    //return device.Get( AddressType.IpV4 );
+
 #pragma warning restore CS8603 // Possible null reference return.
+    return device.GetDeviceId().ToString();
   }
 
   public static string? Get( this IAddressableDevice device, AddressType addressType ) {

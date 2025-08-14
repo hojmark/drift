@@ -8,15 +8,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
 
-internal static class SpecFileDeserializer {
-  /// <summary>
-  /// 
-  /// </summary>
-  /// <param name="specFile"></param>
-  /// <param name="output"></param>
-  /// <returns></returns>
-  /// <exception cref="FileNotFoundException">If <paramref name="specFile"/> is not null and the file could not be found. Does not throw if a file was found using <paramref name="specFile"/> or if it was found using conventional names.</exception>
-  internal static Inventory? Deserialize( FileInfo? specFile, IOutputManager output ) {
+public class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvider {
+  public async Task<Inventory?> GetDeserializedAsync( FileInfo? specFile ) {
     Inventory? spec = null;
 
     if ( specFile == null ) {
@@ -26,7 +19,7 @@ internal static class SpecFileDeserializer {
 
     FileInfo? filePath;
     try {
-      filePath = new SpecFileResolver( output, specFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
+      filePath = new SpecFilePathResolver( output, specFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
         .Resolve( specFile?.Name, throwsOnNotFound: specFile != null );
     }
     catch ( FileNotFoundException exception ) {
@@ -40,8 +33,9 @@ internal static class SpecFileDeserializer {
       output.Normal.Write( "Using network spec " );
       output.Normal.Write( $"{filePath}  ", ConsoleColor.Cyan );
 
-      var specFileContents = new StreamReader( filePath.Open( FileMode.Open, FileAccess.Read, FileShare.Read ) );
-      var valid = SpecValidator.Validate( specFileContents.ReadToEnd(), SpecVersion.V1_preview ).IsValid;
+      var specFileContents = await new StreamReader( filePath.Open( FileMode.Open, FileAccess.Read, FileShare.Read ) )
+        .ReadToEndAsync();
+      var valid = SpecValidator.Validate( specFileContents, SpecVersion.V1_preview ).IsValid;
 
       output.Normal.WriteLineValidity( valid );
 

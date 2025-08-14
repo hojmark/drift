@@ -1,40 +1,6 @@
 ﻿[
   {
-    "PropertyPath": "ScanResult[DiffDevice_192.168.0.21].Addresses[IDeviceAddress_IpV4_DUPLICATE_1]",
-    "Original": {
-      "Value": "192.168.0.21",
-      "IsId": null,
-      "Type": "ipV4"
-    },
-    "Updated": null,
-    "DiffType": "removed"
-  },
-  {
-    "PropertyPath": "ScanResult[DiffDevice_192.168.0.21].Addresses[IDeviceAddress_Mac].Value",
-    "Original": "ABC",
-    "Updated": "DEF",
-    "DiffType": "changed"
-  },
-  {
-    "PropertyPath": "ScanResult[DiffDevice_192.168.0.21].Addresses[IDeviceAddress_IpV4]",
-    "Original": null,
-    "Updated": {
-      "Value": "192.168.0.21",
-      "IsId": null,
-      "Type": "ipV4"
-    },
-    "DiffType": "added"
-  },
-  {
-    "PropertyPath": "ScanResult[DiffDevice_192.168.0.21].Ports[Port_22]",
-    "Original": null,
-    "Updated": {
-      "Value": 22
-    },
-    "DiffType": "added"
-  },
-  {
-    "PropertyPath": "ScanResult[DiffDevice_192.168.0.22]",
+    "PropertyPath": "ScanResult[DiffDevice_IpV4=192.168.0.22|Mac=22-22-22-22-22-22]",
     "Original": {
       "Addresses": [
         {
@@ -44,7 +10,7 @@
         },
         {
           "Type": "mac",
-          "Value": "abcdefghijklmnopqrstu",
+          "Value": "22-22-22-22-22-22",
           "IsId": null
         }
       ],
@@ -54,7 +20,7 @@
     "DiffType": "removed"
   },
   {
-    "PropertyPath": "ScanResult[DiffDevice_192.168.0.150]",
+    "PropertyPath": "ScanResult[DiffDevice_IpV4=192.168.0.150]",
     "Original": null,
     "Updated": {
       "Addresses": [

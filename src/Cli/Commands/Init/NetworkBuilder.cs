@@ -29,7 +29,7 @@ public class NetworkBuilder {
     List<IDeviceAddress> addresses,
     string? id = null,
     bool? enabled = null,
-    DeclaredDeviceState? state = null
+    DeclaredDeviceState? state = DeclaredDeviceState.Up
   ) {
     var device = new DeclaredDevice { Addresses = addresses, Id = id, Enabled = enabled, State = state };
 

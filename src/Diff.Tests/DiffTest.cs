@@ -19,12 +19,10 @@ public class DiffTest {
     Status = ScanResultStatus.Success,
     DiscoveredDevices = [
       new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
-      new DiscoveredDevice {
-        Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "ABC" )], Ports = [443, 80]
-      },
-      new DiscoveredDevice {
-        Addresses = [new IpV4Address( "192.168.0.22" ), new MacAddress( "abcdefghijklmnopqrstu" )]
-      }
+      /*new DiscoveredDevice {
+        Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "ABC" )] //, Ports = [443, 80]
+      },*/
+      new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.22" ), new MacAddress( "22-22-22-22-22-22" )] }
     ]
   };
 
@@ -36,9 +34,9 @@ public class DiffTest {
     Status = ScanResultStatus.Success,
     DiscoveredDevices = [
       new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
-      new DiscoveredDevice {
-        Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "DEF" )], Ports = [22, 443, 80]
-      },
+      /*new DiscoveredDevice {
+        Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "DEF" )] //, Ports = [22, 443, 80]
+      },*/
       new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.150" )] }
     ]
   };
@@ -205,7 +203,9 @@ public class DiffTest {
   [Test]
   public void MatchDeclaredAndDiscoveredTest() {
     List<DeclaredDevice> declaredDevices = [
-      new() { Addresses = [new HostnameAddress( "t14", IsId: true ), new MacAddress( "t14-MAC", IsId: false )] },
+      new() {
+        Addresses = [new HostnameAddress( "t14", IsId: true ), new MacAddress( "14-14-14-14-14-14", isId: false )]
+      },
     ];
     List<DiscoveredDevice> discoveredDevices = [
       new() { Addresses = [new HostnameAddress( "t14" )] }

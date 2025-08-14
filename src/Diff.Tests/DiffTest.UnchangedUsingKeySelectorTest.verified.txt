@@ -1,20 +1,6 @@
 ﻿[
   {
-    "PropertyPath": "ScanResult[DiffDevice_192.168.0.10].Addresses[IDeviceAddress_IpV4]",
-    "Original": {
-      "Value": "192.168.0.10",
-      "IsId": null,
-      "Type": "ipV4"
-    },
-    "Updated": {
-      "Value": "192.168.0.10",
-      "IsId": null,
-      "Type": "ipV4"
-    },
-    "DiffType": "unchanged"
-  },
-  {
-    "PropertyPath": "ScanResult[DiffDevice_192.168.0.10]",
+    "PropertyPath": "ScanResult[DiffDevice_IpV4=192.168.0.10]",
     "Original": {
       "Addresses": [
         {

@@ -3,15 +3,19 @@ using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Rendering;
-using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Loggers;
 using Drift.Cli.Renderer;
-using Drift.Cli.Scan;
+using Drift.Core.Abstractions;
+using Drift.Core.Scan;
+using Drift.Core.Scan.Model;
+using Drift.Core.Scan.Subnet;
 using Drift.Domain;
+using Drift.Domain.NeoProgress;
 using Drift.Domain.Progress;
-using Drift.Domain.Scan;
 using Drift.Utils;
+using Drift.Utils.Tools;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
@@ -61,6 +65,7 @@ internal class ScanCommand( IServiceProvider provider ) : CommandBase<ScanParame
 public class ScanCommandHandler(
   IOutputManager output,
   INetworkScanner scanner,
+  IScanService scanService,
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ISpecFileProvider specProvider
 ) : ICommandHandler<ScanParameters> {
@@ -125,7 +130,11 @@ public class ScanCommandHandler(
           //progressBars["DNS resolution"] = ctx.AddTask( "DNS resolution" );
           //progressBars["Connect Scan"] = ctx.AddTask( "Connect Scan" );
 
-          return await scanner.ScanAsync( subnets, onProgress: progressReport => {
+          return ( await scanService.ScanAsync( new ScanRequest() { Spec = network }, onProgress => {
+            UpdateProgressBar2( onProgress, ctx, progressBars );
+          } ) ).Result;
+
+          return await scanner.ScanAsync( subnets, output.GetCompoundLogger(), onProgress: progressReport => {
             UpdateProgressBar( progressReport, ctx, progressBars );
           }, cancellationToken: CancellationToken.None );
         } );
@@ -135,7 +144,7 @@ public class ScanCommandHandler(
       var lastLogTime = DateTime.MinValue;
       var completedTasks = new HashSet<string>();
 
-      scanResult = await scanner.ScanAsync( subnets, onProgress: progressReport => {
+      scanResult = await scanner.ScanAsync( subnets, output.GetCompoundLogger(), onProgress: progressReport => {
         UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
       }, cancellationToken: CancellationToken.None );
     }
@@ -188,8 +197,28 @@ public class ScanCommandHandler(
         }
       }
     }
-  }
 
+    void UpdateProgressBar2(
+      ProgressNodeNew progressReport,
+      ProgressContext context,
+      Dictionary<string, ProgressTask> progressBars
+    ) {
+      foreach ( var taskProgress in progressReport.Children ) {
+        //TODO hack
+        //var transformedTaskName = taskProgress.TaskName.Contains( "DNS" ) ? "DNS resolution" : taskProgress.TaskName;
+        var transformedTaskName = taskProgress.Path;
+        if ( !progressBars.TryGetValue( transformedTaskName, out var bar ) ) {
+          bar = context.AddTask( $"{transformedTaskName}" );
+          progressBars[transformedTaskName] = bar;
+        }
+
+        if ( !bar.IsFinished ) {
+          // Spectre's max value is 100 by default
+          bar.Value = Math.Min( taskProgress.TotalProgress, 100 );
+        }
+      }
+    }
+  }
 
   //TODO make private
   internal static void UpdateProgressLog(

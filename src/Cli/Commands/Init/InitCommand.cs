@@ -1,19 +1,19 @@
 using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan;
-using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Loggers;
 using Drift.Cli.Output.Normal;
-using Drift.Cli.Scan;
+using Drift.Core.Scan;
+using Drift.Core.Scan.Model;
+using Drift.Core.Scan.Subnet;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Extensions;
-using Drift.Domain.Scan;
 using Drift.Utils;
 using Microsoft.Extensions.Logging;
 using NaturalSort.Extension;
@@ -214,7 +214,7 @@ public class InitCommandHandler(
           await AnsiConsole
             .Status()
             .StartAsync( "Scanning network ...", async ctx => {
-              scanResult = await scanner.ScanAsync( subnets );
+              scanResult = await scanner.ScanAsync( subnets, output.GetCompoundLogger() );
               await Task.Delay( 1500 );
             } );
         }
@@ -224,7 +224,7 @@ public class InitCommandHandler(
           var lastLogTime = DateTime.MinValue;
           var completedTasks = new HashSet<string>();
 
-          scanResult = await scanner.ScanAsync( subnets, onProgress: progressReport => {
+          scanResult = await scanner.ScanAsync( subnets, output.GetCompoundLogger(), onProgress: progressReport => {
             ScanCommandHandler.UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
           }, cancellationToken: CancellationToken.None );
         }

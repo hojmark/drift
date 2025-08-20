@@ -1,0 +1,8 @@
+﻿[DBG] Starting network scan at <time>
+[DBG] Starting ping scan for CIDR block 192.168.0.0/24 (254 addresses)
+[DBG] Ping to 192.168.0.1 succeeded
+[DBG] Ping to 192.168.0.2 succeeded
+[DBG] Ping to 192.168.0.3 succeeded
+[DBG] Finished ping scan for CIDR block 192.168.0.0/24
+[DBG] Reading ARP cache
+[DBG] Finished network scan at <time> in <elapsed>

@@ -1,8 +1,0 @@
-﻿Output format is 'Normal' using 'Verbose' output
-Starting network scan at <time>
-Starting ping scan for CIDR block 192.168.0.0/24 (254 addresses)
-Got reply from 192.168.0.1
-Got reply from 192.168.0.2
-Got reply from 192.168.0.3
-Finished ping scan for CIDR block 192.168.0.0/24
-Finished network scan at <time> in <elapsed>

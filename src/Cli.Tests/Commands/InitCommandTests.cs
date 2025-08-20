@@ -1,18 +1,20 @@
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init;
-using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Loggers;
 using Drift.Cli.Tests.Utils;
+using Drift.Core.Scan;
+using Drift.Core.Scan.Model;
+using Drift.Core.Scan.Subnet;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
-using Drift.Domain.Scan;
 using Drift.Spec.Schema;
 using Drift.Spec.Validation;
 using Drift.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using NetworkInterface = Drift.Cli.Commands.Scan.Subnet.NetworkInterface;
+using NetworkInterface = Drift.Core.Scan.Subnet.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 
@@ -82,7 +84,7 @@ public class InitCommandTests {
     var serviceConfig = ( IServiceCollection services ) => {
       services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
       services.AddScoped<IInterfaceSubnetProvider>( sp =>
-        new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), Interfaces )
+        new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>().GetCompoundLogger(), Interfaces )
       );
     };
 

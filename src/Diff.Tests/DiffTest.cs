@@ -1,12 +1,11 @@
+using Drift.Core.Scan.Model;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
-using Drift.Domain.Scan;
 using Drift.EnvironmentConfig;
-using Drift.TestUtilities;
 
 namespace Drift.Diff.Tests;
 
@@ -72,7 +71,6 @@ public class DiffTest {
   [Test]
   public Task DefaultKeySelectorTest() {
     // Arrange
-    var testLogger = new TestLogger();
     var options = new DiffOptions()
       .ConfigureDiffDeviceKeySelectors( [] );
 
@@ -81,8 +79,7 @@ public class DiffTest {
       ScanResult1.DiscoveredDevices.ToDiffDevices(),
       ScanResult2.DiscoveredDevices.ToDiffDevices(),
       nameof(ScanResult),
-      options,
-      testLogger
+      options
     );
 
     // Assert
@@ -224,32 +221,6 @@ public class DiffTest {
     var diffsAsJson = JsonConverter.Serialize( diffs );
     Verify( diffsAsJson );
   }
-
-  /*[Explicit]
-  [Test]
-  public void DiffDemo0Test() {
-    var demo0Spec = SharedTestResourceProvider.GetStream( "SPEC_YAML" );
-    var network = YamlConverter.Deserialize( demo0Spec );
-
-    var demo0NmapXml = SharedTestResourceProvider.GetStream( "NMAP_XML" );
-    var nmaprun = NmapXmlReader.Deserialize( demo0NmapXml );
-
-    var declaredDevices = network.Devices.Where( d => d.Enabled ?? true );
-    var discoveredDevices = NmapConverter.ToDevices( nmaprun );
-
-    var original = declaredDevices.ToDiffDevices();
-    var updated = discoveredDevices.ToDiffDevices();
-
-    var diffs = ObjectDiffEngine.Compare( original, updated, nameof(ScanResult),
-      new DiffOptions { IgnorePaths = ["ScanResult[*].Addresses[*].Required", "ScanResult[*].Ports[*]"] }
-        .ConfigureDiffDeviceKeySelectors()
-      // .SetDiffTypesAll()
-    );
-
-    Print( diffs );
-    var diffsAsJson = JsonConverter.Serialize( diffs );
-    Verify( diffsAsJson );
-  }*/
 
   private static void Print( List<ObjectDiff> diffs ) {
     foreach ( var diff in diffs ) {

@@ -4,7 +4,11 @@ using SpecVersion = Drift.Spec.Schema.SpecVersion;
 
 const SpecVersion version = SpecVersion.V1_preview;
 
-Console.WriteLine( "Generating schema for version " + version );
+Console.Write( "Generating schema for version " );
+Console.ForegroundColor = ConsoleColor.Cyan;
+Console.WriteLine( version );
+
+Console.ForegroundColor = ConsoleColor.Gray;
 Console.WriteLine( "Arguments: " + string.Join( " ", args ) );
 
 var outputDir = args[0];
@@ -14,10 +18,12 @@ try {
   var filePath = Path.GetFullPath( Path.Combine( outputDir, version.ToJsonSchemaFileName() ) );
   var serialized = SchemaGenerator.Generate( version );
   File.WriteAllText( filePath, serialized );
-  Console.WriteLine( $"Generated schema for version {version} ({filePath})" );
+  Console.ForegroundColor = ConsoleColor.Green;
+  Console.WriteLine( $"✔ Generated schema for version {version} ({filePath})" );
   Environment.Exit( 0 );
 }
 catch ( Exception ex ) {
-  Console.WriteLine( $"Failed to generate schema for version {version}: {ex.Message}" );
+  Console.ForegroundColor = ConsoleColor.Red;
+  Console.WriteLine( $"✗ Failed to generate schema for version {version}: {ex.Message}" );
   Environment.Exit( 1 );
 }

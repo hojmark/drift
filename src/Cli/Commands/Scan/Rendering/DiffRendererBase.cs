@@ -15,7 +15,7 @@ internal abstract class DiffRendererBase : IRenderer<ScanRenderData> {
       updated: data.DevicesDiscovered.ToDiffDevices(),
       "Device",
       new DiffOptions()
-        .ConfigureDiffDeviceKeySelectors()
+        .ConfigureDiffDeviceKeySelectors( data.DevicesDeclared.ToList() )
         // Includes Unchanged, which makes for an easier table population
         .SetDiffTypesAll()
       //, logger //TODO support ioutputmanager or create ilogger adapter?

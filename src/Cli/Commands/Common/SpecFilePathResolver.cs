@@ -3,11 +3,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
 
-internal class SpecFileResolver {
+public class SpecFilePathResolver {
   private readonly string _baseDirectory;
   private readonly IOutputManager _output;
 
-  internal SpecFileResolver( IOutputManager output, string baseDirectory ) {
+  internal SpecFilePathResolver( IOutputManager output, string baseDirectory ) {
     _baseDirectory = baseDirectory ?? throw new ArgumentNullException( nameof(baseDirectory) );
     _output = output;
   }

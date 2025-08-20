@@ -105,6 +105,7 @@ public enum DeviceState {
   Down = 3
 }
 
+// TODO add patterns
 [AdditionalProperties( false )]
 public record DeviceAddress {
   [Required]
@@ -133,6 +134,11 @@ public record Settings {
   }
 
   public int? PingThrottling {
+    get;
+    set;
+  }
+
+  public bool? ScanOnlyDeclaredSubnets {
     get;
     set;
   }

@@ -28,7 +28,7 @@ internal static class NormalOutputExtensions {
       WritePrompt();
 
       if ( regex == null || regex.IsMatch( value ) ) {
-        console.WritePromptValue( "✔ " + value );
+        console.WritePromptValue( $"{Chars.Checkmark} " + value );
         return value;
       }
 
@@ -96,10 +96,10 @@ internal static class NormalOutputExtensions {
 
   internal static void WriteLineValidity( this INormalOutput output, bool isValid ) {
     if ( isValid ) {
-      output.WriteLine( "✔ Valid", ConsoleColor.Green );
+      output.WriteLine( $"{Chars.Checkmark} Valid", ConsoleColor.Green );
     }
     else {
-      output.WriteLineError( "✖ Validation failed" );
+      output.WriteLineError( $"{Chars.Cross} Validation failed" );
     }
   }
 

@@ -9,7 +9,7 @@ public enum DeclaredDeviceState {
   /// <summary>
   /// Device can be up or down (no strict requirement)
   /// </summary>
-  Dynamic = 2, // TODO less ambiguous name?
+  Dynamic = 2,
 
   /// <summary>
   /// Device should always be down (offline)

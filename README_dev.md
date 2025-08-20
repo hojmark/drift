@@ -32,7 +32,8 @@
   A network resource representing a segment of the network, defined using CIDR notation (e.g., `192.168.1.0/24`).
 
 - **[Device ID](#device-id)**  
-  One or more addresses (MAC, IPv4, IPv6, and/or hostname) that together serve as a unique identifier for a network device.
+  One or more addresses (MAC, IPv4, IPv6, and/or hostname) that together serve as a unique identifier for a network
+  device.
 
 ## Concepts
 
@@ -42,10 +43,9 @@ A **device ID** may consist of one or more addresses, such as MAC, IPv4, IPv6, a
 
 A *discovered* device (on the network) will only match a *declared* device (in the spec) if the device ID matches.
 
-In the spec, you can mark one or more addresses with `is_id: true` to indicate which should contribute to the device ID.
-If no addresses are marked, the first available address is used according to this order of preference: IPv4 → IPv6 →
-MAC → hostname. Addresses not marked as identifiers are treated as metadata and do not affect how the device is
-identified or matched.
+In the spec, you can mark one or more addresses with `is_id: true` (or leave it unspecified, which will default to
+`true`) to indicate which should contribute to the device ID. Addresses marked with `is_id: false` are treated as
+metadata and do not affect how the device is identified or matched.
 
 ## Installation Options
 
@@ -56,7 +56,8 @@ location.
 
 ### Script (`install.sh`)
 
-Use the installation script to download and install Drift to your workstation, server or as part of an automation pipeline.
+Use the installation script to download and install Drift to your workstation, server or as part of an automation
+pipeline.
 
 Arguments, options and environment variables for `install.sh`:
 

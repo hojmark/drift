@@ -1,5 +1,4 @@
 using System.CommandLine;
-using System.Globalization;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
@@ -13,8 +12,6 @@ using Drift.Domain;
 using Drift.Domain.Progress;
 using Drift.Domain.Scan;
 using Drift.Utils;
-using Humanizer;
-using Humanizer.Localisation;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
@@ -64,7 +61,8 @@ internal class ScanCommand( IServiceProvider provider ) : CommandBase<ScanParame
 public class ScanCommandHandler(
   IOutputManager output,
   INetworkScanner scanner,
-  IInterfaceSubnetProvider interfaceSubnetProvider
+  IInterfaceSubnetProvider interfaceSubnetProvider,
+  ISpecFileProvider specProvider
 ) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running scan command" );
@@ -72,16 +70,18 @@ public class ScanCommandHandler(
     Network? network;
 
     try {
-      network = SpecFileDeserializer.Deserialize( parameters.SpecFile, output )?.Network;
+      network = ( await specProvider.GetDeserializedAsync( parameters.SpecFile ) )?.Network;
     }
     catch ( FileNotFoundException ) {
       return ExitCodes.GeneralError;
     }
 
-    //TODO use both declared and discovered subnets
-    ISubnetProvider subnetProvider = network == null
-      ? interfaceSubnetProvider
-      : new DeclaredSubnetProvider( network.Subnets.Where( s => s.Enabled ?? true ) );
+    var subnetProviders = new List<ISubnetProvider> { interfaceSubnetProvider };
+    if ( network != null ) {
+      subnetProviders.Add( new DeclaredSubnetProvider( network.Subnets ) );
+    }
+
+    var subnetProvider = new CompositeSubnetProvider( subnetProviders );
 
     output.Normal.WriteLineVerbose( $"Using subnet provider: {subnetProvider.GetType().Name}" );
     output.Log.LogDebug( "Using subnet provider: {SubnetProviderType}", subnetProvider.GetType().Name );
@@ -148,8 +148,8 @@ public class ScanCommandHandler(
 
     IRenderer<ScanRenderData> renderer =
       parameters.OutputFormat switch {
-        OutputFormat.Normal => new NormalRenderer( output.Normal ),
-        OutputFormat.Log => new LogRenderer( output.Log ),
+        OutputFormat.Normal => new NormalScanRenderer( output.Normal ),
+        OutputFormat.Log => new LogScanRenderer( output.Log ),
         _ => new NullRenderer<ScanRenderData>()
       };
 

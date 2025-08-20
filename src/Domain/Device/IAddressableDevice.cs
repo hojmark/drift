@@ -7,4 +7,8 @@ public interface IAddressableDevice {
     get;
     init;
   }
+
+  DeviceId GetDeviceId() {
+    return new DeviceId( Addresses );
+  }
 }

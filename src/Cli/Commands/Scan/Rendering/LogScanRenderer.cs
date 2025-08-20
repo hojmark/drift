@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan.Rendering;
 
-internal class LogRenderer( ILogOutput log ) : DiffRendererBase {
+internal class LogScanRenderer( ILogOutput log ) : DiffRendererBase {
   protected override void Render(
     List<ObjectDiff> differences,
     IEnumerable<DeclaredDevice> declaredDevices,

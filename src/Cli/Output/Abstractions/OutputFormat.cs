@@ -1,4 +1,4 @@
-namespace Drift.Cli.Output;
+namespace Drift.Cli.Output.Abstractions;
 
 // TODO consider grep?
 /// <summary>

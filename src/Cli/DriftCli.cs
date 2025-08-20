@@ -1,5 +1,6 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
+using Drift.Cli.Commands;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli;

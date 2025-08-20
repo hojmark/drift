@@ -2,9 +2,10 @@ using System.CommandLine;
 using System.CommandLine.Help;
 using System.CommandLine.Invocation;
 using Drift.Cli.Output;
+using Drift.Cli.Output.Abstractions;
 using Spectre.Console;
 
-namespace Drift.Cli;
+namespace Drift.Cli.Commands.Help;
 
 internal class FigletHeaderHelpAction( HelpAction action ) : SynchronousCommandLineAction {
   public override int Invoke( ParseResult parseResult ) {

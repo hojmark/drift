@@ -1,18 +1,18 @@
 using System.CommandLine;
 using System.CommandLine.Help;
 using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Help;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Scan;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
-using Drift.Cli.Scan;
-using Drift.Cli.Tools;
-using Drift.Domain.Scan;
+using Drift.Core.Scan;
+using Drift.Utils.Tools;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Drift.Cli;
+namespace Drift.Cli.Commands;
 
 internal static class RootCommandFactory {
   // Note: registering commands using reflection does not work with AOT compilation

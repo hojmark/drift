@@ -1,4 +1,4 @@
-namespace Drift.Domain.Scan;
+namespace Drift.Core.Scan;
 
 public class Metadata {
   /// <summary>

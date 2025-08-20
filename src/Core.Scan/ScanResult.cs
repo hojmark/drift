@@ -1,6 +1,6 @@
 using Drift.Domain.Device.Discovered;
 
-namespace Drift.Domain.Scan;
+namespace Drift.Core.Scan;
 
 public class ScanResult {
   public required Metadata Metadata {

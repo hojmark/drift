@@ -1,6 +1,6 @@
 using System.CommandLine;
 using Drift.Cli.Commands.Common;
-using Drift.Cli.Output;
+using Drift.Cli.Output.Abstractions;
 
 namespace Drift.Cli.Commands;
 

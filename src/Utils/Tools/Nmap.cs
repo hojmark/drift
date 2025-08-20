@@ -1,7 +1,6 @@
-using Drift.Utils;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Tools;
+namespace Drift.Utils.Tools;
 
 internal static class Nmap {
   internal static string ToolPath => "nmap";

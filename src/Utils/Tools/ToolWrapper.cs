@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace Drift.Utils;
+namespace Drift.Utils.Tools;
 
 public class ToolWrapper( string toolPath, Dictionary<string, string?>? environment = null ) {
   private readonly string _toolPath = toolPath ?? throw new ArgumentNullException( nameof(toolPath) );

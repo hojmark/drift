@@ -1,11 +1,13 @@
+using Drift.Domain;
 using Drift.Domain.Progress;
+using Microsoft.Extensions.Logging;
 
-namespace Drift.Domain.Scan;
+namespace Drift.Core.Scan;
 
-//TODO belongs to domain?
 public interface INetworkScanner {
   public Task<ScanResult> ScanAsync(
     List<CidrBlock> cidrs,
+    ILogger logger,
     Action<ProgressReport>? onProgress = null,
     CancellationToken cancellationToken = default,
     int maxPingsPerSecond = 50

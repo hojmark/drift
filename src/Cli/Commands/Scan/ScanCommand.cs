@@ -7,10 +7,9 @@ using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Renderer;
-using Drift.Cli.Scan;
+using Drift.Core.Scan;
 using Drift.Domain;
 using Drift.Domain.Progress;
-using Drift.Domain.Scan;
 using Drift.Utils;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
@@ -125,7 +124,7 @@ public class ScanCommandHandler(
           //progressBars["DNS resolution"] = ctx.AddTask( "DNS resolution" );
           //progressBars["Connect Scan"] = ctx.AddTask( "Connect Scan" );
 
-          return await scanner.ScanAsync( subnets, onProgress: progressReport => {
+          return await scanner.ScanAsync( subnets, output.GetCompoundLogger(), onProgress: progressReport => {
             UpdateProgressBar( progressReport, ctx, progressBars );
           }, cancellationToken: CancellationToken.None );
         } );
@@ -135,7 +134,7 @@ public class ScanCommandHandler(
       var lastLogTime = DateTime.MinValue;
       var completedTasks = new HashSet<string>();
 
-      scanResult = await scanner.ScanAsync( subnets, onProgress: progressReport => {
+      scanResult = await scanner.ScanAsync( subnets, output.GetCompoundLogger(), onProgress: progressReport => {
         UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
       }, cancellationToken: CancellationToken.None );
     }
@@ -189,7 +188,6 @@ public class ScanCommandHandler(
       }
     }
   }
-
 
   //TODO make private
   internal static void UpdateProgressLog(

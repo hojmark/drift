@@ -1,5 +1,6 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Drift.Cli.Commands;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli.Tests;

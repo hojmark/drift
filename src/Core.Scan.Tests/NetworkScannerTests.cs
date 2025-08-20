@@ -1,12 +1,9 @@
 using System.Net;
 using System.Text.RegularExpressions;
-using Drift.Cli.Output;
-using Drift.Cli.Scan;
-using Drift.Cli.Tests.Utils;
 using Drift.Domain;
-using Drift.Domain.Scan;
+using Drift.TestUtilities;
 
-namespace Drift.Cli.Tests;
+namespace Drift.Core.Scan.Tests;
 
 public class NetworkScannerTests {
   [Test]
@@ -20,26 +17,22 @@ public class NetworkScannerTests {
     var subnets = cidrs.Select( cidr => new CidrBlock( cidr ) ).ToList();
     var successfulIps = subnets.SelectMany( cidr => IPNetwork2
       .Parse( cidr.ToString() )
-      .ListIPAddress( FilterEnum.Usable )
+      .ListIPAddress( Filter.Usable )
       .Select( ip => IPAddress.Parse( ip.ToString() ) )
       .Take( 3 )
     ).ToList();
     var pingTool = new TestPingTool( successfulIps );
 
-    var stdOut = new StringWriter();
-    var errOut = new StringWriter();
-    var testOutputManager =
-      new OutputManagerFactory( false ).Create( OutputFormat.Normal, true, stdOut, errOut, true );
-
-    var scanner = new PingNetworkScanner( testOutputManager, pingTool );
+    var logger = new StringLogger();
+    var scanner = new PingNetworkScanner( pingTool );
 
     // Act
-    var result = await scanner.ScanAsync( subnets /*, networkProvider*/, maxPingsPerSecond: int.MaxValue );
+    var result = await scanner.ScanAsync( subnets /*, networkProvider*/, logger, maxPingsPerSecond: int.MaxValue );
 
     // Assert
     Assert.That( result, Is.Not.Null );
     Assert.That( result.Status, Is.EqualTo( ScanResultStatus.Success ) );
-    await Verify( stdOut.ToString() + errOut )
+    await Verify( logger.ToString() )
       .ScrubLinesWithReplace( line =>
         Regex.Replace(
           Regex.Replace(

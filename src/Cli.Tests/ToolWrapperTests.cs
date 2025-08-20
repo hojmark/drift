@@ -1,4 +1,4 @@
-﻿using Drift.Utils;
+﻿using Drift.Utils.Tools;
 
 namespace Drift.Cli.Tests;
 

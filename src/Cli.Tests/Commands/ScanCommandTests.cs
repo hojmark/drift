@@ -6,11 +6,11 @@ using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Tests.Utils;
+using Drift.Core.Scan;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
-using Drift.Domain.Scan;
 using Microsoft.Extensions.DependencyInjection;
 using NetworkInterface = Drift.Cli.Commands.Scan.Subnet.NetworkInterface;
 

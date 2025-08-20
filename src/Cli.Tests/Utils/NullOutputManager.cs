@@ -1,4 +1,3 @@
-using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;

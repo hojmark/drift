@@ -1,11 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <ProjectReference Include="..\Core.Scan\Core.Scan.csproj" />
-        <ProjectReference Include="..\Diff\Diff.csproj"/>
-        <ProjectReference Include="..\EnvironmentConfig\EnvironmentConfig.csproj"/>
-        <ProjectReference Include="..\Spec\Spec.csproj"/>
-        <ProjectReference Include="..\TestUtilities\TestUtilities.csproj"/>
+      <ProjectReference Include="..\Core.Scan\Core.Scan.csproj"/>
+      <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
     </ItemGroup>
 
     <ItemGroup>

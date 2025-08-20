@@ -1,0 +1,14 @@
+﻿[DBG] Starting network scan at <time>
+[WRN] Skipping ping scan for CIDR block 10.255.255.254/32 as it has no usable IP addresses
+[DBG] Starting ping scan for CIDR block 192.168.32.0/20 (4094 addresses)
+[DBG] Ping to 192.168.32.1 succeeded
+[DBG] Ping to 192.168.32.2 succeeded
+[DBG] Ping to 192.168.32.3 succeeded
+[DBG] Finished ping scan for CIDR block 192.168.32.0/20
+[DBG] Starting ping scan for CIDR block 172.19.0.0/16 (65534 addresses)
+[DBG] Ping to 172.19.0.1 succeeded
+[DBG] Ping to 172.19.0.2 succeeded
+[DBG] Ping to 172.19.0.3 succeeded
+[DBG] Finished ping scan for CIDR block 172.19.0.0/16
+[DBG] Reading ARP cache
+[DBG] Finished network scan at <time> in <elapsed>

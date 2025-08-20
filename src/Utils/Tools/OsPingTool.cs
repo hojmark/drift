@@ -1,9 +1,8 @@
-using Drift.Utils;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Tools;
+namespace Drift.Utils.Tools;
 
-internal class OsPingTool : IPingTool {
+public class OsPingTool : IPingTool {
   private static string ToolPath => "ping";
 
   public Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> RunAsync(

@@ -1,10 +1,10 @@
+using Drift.Core.Scan;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
-using Drift.Domain.Scan;
 using Drift.EnvironmentConfig;
 using Drift.TestUtilities;
 

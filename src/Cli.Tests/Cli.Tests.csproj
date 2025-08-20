@@ -6,18 +6,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="coverlet.collector"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-        <PackageReference Include="NSubstitute" />
+        <PackageReference Include="NSubstitute"/>
         <PackageReference Include="NUnit"/>
         <PackageReference Include="NUnit.Analyzers"/>
         <PackageReference Include="NUnit3TestAdapter"/>
         <PackageReference Include="Verify.NUnit"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="IPNetwork2" VersionOverride="3.4.832" />
-        <Using Include="NUnit.Framework"/>
     </ItemGroup>
 
 </Project>

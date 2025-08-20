@@ -1,8 +1,8 @@
 using Drift.Domain;
 
-namespace Drift.Cli.Commands.Scan.Subnet;
+namespace Drift.Core.Scan.Subnet;
 
-internal class CompositeSubnetProvider( IEnumerable<ISubnetProvider> providers ) : ISubnetProvider {
+public class CompositeSubnetProvider( IEnumerable<ISubnetProvider> providers ) : ISubnetProvider {
   private readonly List<ISubnetProvider> _providers = providers.ToList();
 
   public List<CidrBlock> Get() {

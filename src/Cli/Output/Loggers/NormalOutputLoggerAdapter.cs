@@ -1,7 +1,7 @@
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Output;
+namespace Drift.Cli.Output.Loggers;
 
 internal class NormalOutputLoggerAdapter( INormalOutput normalOutput ) : ILogger {
   public void Log<TState>(

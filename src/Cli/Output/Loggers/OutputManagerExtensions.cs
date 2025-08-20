@@ -1,7 +1,7 @@
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Output;
+namespace Drift.Cli.Output.Loggers;
 
 public static class OutputManagerExtensions {
   public static ILogger GetCompoundLogger( this IOutputManager outputManager ) {

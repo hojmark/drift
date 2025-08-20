@@ -5,10 +5,11 @@ using Drift.Cli.Commands.Help;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Scan;
-using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Loggers;
 using Drift.Core.Scan;
+using Drift.Core.Scan.Subnet;
 using Drift.Utils.Tools;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -77,7 +78,9 @@ internal static class RootCommandFactory {
   }
 
   private static void ConfigureSubnetProvider( IServiceCollection services ) {
-    services.AddScoped<IInterfaceSubnetProvider, PhysicalInterfaceSubnetProvider>();
+    services.AddScoped<IInterfaceSubnetProvider>( sp =>
+      new PhysicalInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>().GetCompoundLogger() )
+    );
   }
 
   private static void ConfigureBuiltInCommandHandlers( IServiceCollection services ) {

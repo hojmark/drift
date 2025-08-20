@@ -3,17 +3,18 @@ using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Rendering;
-using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Loggers;
 using Drift.Cli.Tests.Utils;
 using Drift.Core.Scan;
 using Drift.Core.Scan.Model;
+using Drift.Core.Scan.Subnet;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Microsoft.Extensions.DependencyInjection;
-using NetworkInterface = Drift.Cli.Commands.Scan.Subnet.NetworkInterface;
+using NetworkInterface = Drift.Core.Scan.Subnet.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 
@@ -109,7 +110,7 @@ public class ScanCommandTests {
 
       yield return new TestCaseData(
           new NetworkBuilder()
-            .AddDevice( [new MacAddress( "10:10:10:10:10:10" , isId: true )], "device1" )
+            .AddDevice( [new MacAddress( "10:10:10:10:10:10", isId: true )], "device1" )
             .AddDevice( [new MacAddress( "20:20:20:20:20:20" ), new IpV4Address( "192.168.0.20" )], "device2" )
             .Build(),
           new List<DiscoveredDevice> {
@@ -231,7 +232,7 @@ public class ScanCommandTests {
   ) {
     return services => {
       services.AddScoped<IInterfaceSubnetProvider>( sp =>
-        new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), interfaces )
+        new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>().GetCompoundLogger(), interfaces )
       );
 
       if ( inventory != null ) {

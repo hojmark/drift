@@ -8,6 +8,7 @@ using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Renderer;
 using Drift.Core.Scan;
+using Drift.Core.Scan.Model;
 using Drift.Domain;
 using Drift.Domain.Progress;
 using Drift.Utils;

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using Drift.Core.Scan.Model;
 using Drift.Domain;
 using Drift.TestUtilities;
 

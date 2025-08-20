@@ -7,6 +7,7 @@ using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Normal;
 using Drift.Core.Scan;
+using Drift.Core.Scan.Model;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;

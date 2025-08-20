@@ -1,4 +1,4 @@
-using Drift.Core.Scan;
+using Drift.Core.Scan.Model;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -6,7 +6,6 @@ using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Drift.EnvironmentConfig;
-using Drift.TestUtilities;
 
 namespace Drift.Diff.Tests;
 
@@ -72,7 +71,6 @@ public class DiffTest {
   [Test]
   public Task DefaultKeySelectorTest() {
     // Arrange
-    var testLogger = new TestLogger();
     var options = new DiffOptions()
       .ConfigureDiffDeviceKeySelectors( [] );
 
@@ -81,8 +79,7 @@ public class DiffTest {
       ScanResult1.DiscoveredDevices.ToDiffDevices(),
       ScanResult2.DiscoveredDevices.ToDiffDevices(),
       nameof(ScanResult),
-      options,
-      testLogger
+      options
     );
 
     // Assert

@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using Drift.Core.Scan.Model;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;

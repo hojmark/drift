@@ -1,4 +1,4 @@
-namespace Drift.Core.Scan;
+namespace Drift.Core.Scan.Model;
 
 public enum ScanResultStatus {
   /// <summary>

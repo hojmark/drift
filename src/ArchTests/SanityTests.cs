@@ -3,6 +3,9 @@ using Drift.ArchTests.Fixtures;
 namespace Drift.ArchTests;
 
 public class SanityTests : DriftArchitectureFixture {
+  private const uint ExpectedAssemblyCount = 17;
+  private const uint ExpectedAssemblyCountTolerance = 3;
+
   [Test]
   public void FindManyAssemblies() {
     foreach ( var assembly in DriftArchitecture.Assemblies ) {
@@ -11,7 +14,10 @@ public class SanityTests : DriftArchitectureFixture {
 
     Assert.That(
       DriftArchitecture.Assemblies.Count,
-      Is.GreaterThanOrEqualTo( 20 ),
+      Is.InRange(
+        ExpectedAssemblyCount - ExpectedAssemblyCountTolerance,
+        ExpectedAssemblyCount + ExpectedAssemblyCountTolerance
+      ),
       "A significant amount of assemblies was not found"
     );
   }

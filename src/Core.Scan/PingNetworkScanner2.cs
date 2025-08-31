@@ -22,13 +22,14 @@ public class PingNetworkScanner2( IPingTool pingTool ) {
     ILogger logger,
     ProgressNodeNew scanProgress,
     Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default,
     int maxPingsPerSecond = MaxPingsPerSecond,
-    Action<ProgressNodeNew>? onProgressNew = null
+    Action<ProgressNodeNew>? onProgressNew = null,
+    CancellationToken cancellationToken = default
   ) {
     var startedAt = DateTime.Now;
 
     var pingProgress = scanProgress.Add( "Ping Scan" );
+    pingProgress.Weight = 99;
     var arpProgress = scanProgress.Add( "Indirect ARP Scan" );
 
     logger.LogDebug( "Starting network scan at {StartedAt}", startedAt.ToString( CultureInfo.InvariantCulture ) );
@@ -137,7 +138,7 @@ public class PingNetworkScanner2( IPingTool pingTool ) {
           ]
         } );
 
-        pingProgress.Progress = (int) Math.Ceiling( ( (double) completed / total ) * 100 );
+        pingProgress.Progress = (uint) Math.Ceiling( ( (double) completed / total ) * 100 );
       }
       finally {
         _ = Task.Delay( 1000 / maxPingsPerSecond, cancellationToken )

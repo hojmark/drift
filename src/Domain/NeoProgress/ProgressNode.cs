@@ -1,7 +1,7 @@
 namespace Drift.Domain.NeoProgress;
 
 public class ProgressNodeNew {
-  private int _progress;
+  private uint _progress;
   private readonly Action? _onProgress;
 
   public ProgressNodeNew( Action? onProgress ) {
@@ -13,7 +13,13 @@ public class ProgressNodeNew {
     set;
   } = "";
 
-  public int Progress {
+  public uint Weight {
+    get;
+    set;
+  } = 1;
+
+
+  public uint Progress {
     get => _progress;
     set {
       if ( Children.Any() ) {
@@ -29,6 +35,17 @@ public class ProgressNodeNew {
     get;
   } = [];
 
+  public IEnumerable<ProgressNodeNew> Descendants {
+    get {
+      foreach ( var child in Children ) {
+        yield return child;
+        foreach ( var descendant in child.Descendants ) {
+          yield return descendant;
+        }
+      }
+    }
+  }
+
   public ProgressNodeNew Add( Path path ) {
     var child = new ProgressNodeNew( _onProgress ) { Path = path };
     Children.Add( child );
@@ -40,15 +57,20 @@ public class ProgressNodeNew {
     return Children.SelectMany( c => new[] { c.Find( path ) } ).FirstOrDefault( n => n != null );
   }
 
-  public int TotalProgress {
+  public ProgressNodeNew GetOrCreate( string path ) {
+    var node = Find( path );
+    return node ?? Add( path );
+  }
+
+  public uint TotalProgress {
     get {
       if ( Children.Count == 0 ) return Progress;
 
-      var totalWeight = Children.Sum( c => c.GetWeight() );
+      var totalWeight = Children.Sum( c => c.Weight );
       if ( totalWeight == 0 ) return 0;
 
-      var weightedProgress = Children.Sum( c => c.TotalProgress * c.GetWeight() );
-      return weightedProgress / totalWeight;
+      var weightedProgress = Children.Sum( c => c.TotalProgress * c.Weight );
+      return (uint) ( weightedProgress / totalWeight );
     }
   }
 
@@ -60,12 +82,6 @@ public class ProgressNodeNew {
     _progress = 100;
     _onProgress?.Invoke();
   }
-
-  // Calculate weight based on number of leaf nodes (actual work items)
-  private int GetWeight() {
-    if ( Children.Count == 0 ) return 1;
-    return Children.Sum( c => c.GetWeight() ); // Sum of children's weights
-  }
 }
 
 // Simple progress report
@@ -75,7 +91,7 @@ public class ProgressReportNew {
     init;
   }
 
-  public int Progress => Root.TotalProgress;
+  public uint Progress => Root.TotalProgress;
 }
 
 // Scan-specific report

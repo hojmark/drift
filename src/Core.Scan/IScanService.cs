@@ -7,13 +7,16 @@ using Drift.Domain.Progress;
 namespace Drift.Core.Abstractions;
 
 public interface IScanService {
-  Task<ScanResponse> ScanAsync( ScanRequest request,
+  Task<ScanResponse> ScanAsync(
+    ScanRequest request,
     Action<ProgressNodeNew>? onProgress = null,
-    CancellationToken cancellationToken = default );
+    CancellationToken cancellationToken = default
+  );
 }
 
 public class ScanRequest {
-  public Network? Spec { //Maybe just subnet or cidr+map function
+  public Network? Spec {
+    //Maybe just subnet or cidr+map function
     get;
     set;
   }

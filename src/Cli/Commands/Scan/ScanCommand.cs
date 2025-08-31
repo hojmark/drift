@@ -126,7 +126,7 @@ public class ScanCommandHandler(
         .Columns( dCol, pCol )
         .StartAsync( async ctx => {
           var progressBars = new Dictionary<string, ProgressTask>();
-          progressBars["Ping Scan"] = ctx.AddTask( "Ping Scan" );
+          //progressBars["Ping Scan"] = ctx.AddTask( "Ping Scan" );
           //progressBars["DNS resolution"] = ctx.AddTask( "DNS resolution" );
           //progressBars["Connect Scan"] = ctx.AddTask( "Connect Scan" );
 
@@ -203,7 +203,7 @@ public class ScanCommandHandler(
       ProgressContext context,
       Dictionary<string, ProgressTask> progressBars
     ) {
-      foreach ( var taskProgress in progressReport.Children ) {
+      foreach ( var taskProgress in progressReport.Find( "Discovering devices" ).Descendants ) {
         //TODO hack
         //var transformedTaskName = taskProgress.TaskName.Contains( "DNS" ) ? "DNS resolution" : taskProgress.TaskName;
         var transformedTaskName = taskProgress.Path;

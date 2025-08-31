@@ -28,16 +28,19 @@ public class ScanService : IScanService {
     ConnectScan
   }
 
-  public async Task<ScanResponse> ScanAsync( ScanRequest request,
+  public async Task<ScanResponse> ScanAsync(
+    ScanRequest request,
     Action<ProgressNodeNew>? onProgress = null,
-    CancellationToken cancellationToken = default ) {
+    CancellationToken cancellationToken = default
+  ) {
     var network = request.Spec;
 
     var builder = new ProgressBuilderNew( onProgress );
     var discovery = builder.Root.Add( ScanPhase.Discovery.ToString() );
-    discovery.Path = "Discovering subnets...";
+    discovery.Path = "Discovering subnets";
     var scanning = builder.Root.Add( ScanPhase.NetworkScanning.ToString() );
-    scanning.Path = "Scanning network...";
+    scanning.Path = "Discovering devices";
+    scanning.Weight = 99;
 
     // Phase 1: Discovery
     var subnets =
@@ -49,9 +52,9 @@ public class ScanService : IScanService {
       subnets,
       NullLogger.Instance,
       scanning,
-      cancellationToken: cancellationToken,
-      onProgressNew: onProgress
-    );
+      onProgressNew: onProgress, cancellationToken: cancellationToken );
+
+    await Task.Delay( 500, cancellationToken );
 
     return new ScanResponse { Result = d };
   }

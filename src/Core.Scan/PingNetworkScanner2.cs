@@ -11,6 +11,7 @@ using Drift.Domain.NeoProgress;
 using Drift.Domain.Progress;
 using Drift.Utils.Tools;
 using Microsoft.Extensions.Logging;
+using ProgressReport = Drift.Domain.Progress.ProgressReport;
 
 namespace Drift.Core.Scan;
 
@@ -20,10 +21,10 @@ public class PingNetworkScanner2( IPingTool pingTool ) {
   public async Task<ScanResult> ScanAsync(
     List<CidrBlock> cidrs,
     ILogger logger,
-    ProgressNodeNew scanProgress,
+    ProgressNode scanProgress,
     Action<ProgressReport>? onProgress = null,
     int maxPingsPerSecond = MaxPingsPerSecond,
-    Action<ProgressNodeNew>? onProgressNew = null,
+    Action<ProgressNode>? onProgressNew = null,
     CancellationToken cancellationToken = default
   ) {
     var startedAt = DateTime.Now;
@@ -85,8 +86,8 @@ public class PingNetworkScanner2( IPingTool pingTool ) {
     int maxPingsPerSecond,
     Action<ProgressReport>? onProgress = null,
     CancellationToken cancellationToken = default,
-    ProgressNodeNew pingProgress = null,
-    Action<ProgressNodeNew>? onProgressNew = null
+    ProgressNode pingProgress = null,
+    Action<ProgressNode>? onProgressNew = null
   ) {
     var ipRange = IPNetwork2
       .Parse( cidr.ToString() )

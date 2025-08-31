@@ -18,6 +18,7 @@ using Drift.Utils;
 using Drift.Utils.Tools;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
+using ProgressReport = Drift.Domain.Progress.ProgressReport;
 
 namespace Drift.Cli.Commands.Scan;
 
@@ -199,7 +200,7 @@ public class ScanCommandHandler(
     }
 
     void UpdateProgressBar2(
-      ProgressNodeNew progressReport,
+      ProgressNode progressReport,
       ProgressContext context,
       Dictionary<string, ProgressTask> progressBars
     ) {

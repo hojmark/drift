@@ -30,12 +30,12 @@ public class ScanService : IScanService {
 
   public async Task<ScanResponse> ScanAsync(
     ScanRequest request,
-    Action<ProgressNodeNew>? onProgress = null,
+    Action<ProgressNode>? onProgress = null,
     CancellationToken cancellationToken = default
   ) {
     var network = request.Spec;
 
-    var builder = new ProgressBuilderNew( onProgress );
+    var builder = new ProgressBuilder( onProgress );
     var discovery = builder.Root.Add( ScanPhase.Discovery.ToString() );
     discovery.Path = "Discovering subnets";
     var scanning = builder.Root.Add( ScanPhase.NetworkScanning.ToString() );

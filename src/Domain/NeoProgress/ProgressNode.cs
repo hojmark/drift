@@ -1,10 +1,10 @@
 namespace Drift.Domain.NeoProgress;
 
-public class ProgressNodeNew {
+public class ProgressNode {
   private uint _progress;
   private readonly Action? _onProgress;
 
-  public ProgressNodeNew( Action? onProgress ) {
+  public ProgressNode( Action? onProgress ) {
     _onProgress = onProgress;
   }
 
@@ -31,11 +31,11 @@ public class ProgressNodeNew {
     }
   }
 
-  public List<ProgressNodeNew> Children {
+  public List<ProgressNode> Children {
     get;
   } = [];
 
-  public IEnumerable<ProgressNodeNew> Descendants {
+  public IEnumerable<ProgressNode> Descendants {
     get {
       foreach ( var child in Children ) {
         yield return child;
@@ -46,18 +46,18 @@ public class ProgressNodeNew {
     }
   }
 
-  public ProgressNodeNew Add( Path path ) {
-    var child = new ProgressNodeNew( _onProgress ) { Path = path };
+  public ProgressNode Add( Path path ) {
+    var child = new ProgressNode( _onProgress ) { Path = path };
     Children.Add( child );
     return child;
   }
 
-  public ProgressNodeNew? Find( string path ) {
+  public ProgressNode? Find( string path ) {
     if ( Path == path ) return this;
     return Children.SelectMany( c => new[] { c.Find( path ) } ).FirstOrDefault( n => n != null );
   }
 
-  public ProgressNodeNew GetOrCreate( string path ) {
+  public ProgressNode GetOrCreate( string path ) {
     var node = Find( path );
     return node ?? Add( path );
   }
@@ -82,32 +82,4 @@ public class ProgressNodeNew {
     _progress = 100;
     _onProgress?.Invoke();
   }
-}
-
-// Simple progress report
-public class ProgressReportNew {
-  public ProgressNodeNew Root {
-    get;
-    init;
-  }
-
-  public uint Progress => Root.TotalProgress;
-}
-
-// Scan-specific report
-/*public class ScanProgressReportNew : ProgressReportNew<ScanPhase> {
-}*/
-
-// Simple builder
-public class ProgressBuilderNew {
-  public ProgressBuilderNew( Action<ProgressNodeNew>? onProgress = null ) {
-    Root = new ProgressNodeNew( () => onProgress?.Invoke( Root ) ) { Path = "Root" };
-  }
-
-  public readonly ProgressNodeNew Root;
-
-
-/*public ProgressReportNew Build<TPhase>( TPhase phase, string? message = null ) where TPhase : Enum {
-  return new ProgressReportNew { Phase =  phase, Root = Root, Message = message };
-}*/
 }

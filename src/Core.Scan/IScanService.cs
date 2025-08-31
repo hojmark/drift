@@ -9,7 +9,7 @@ namespace Drift.Core.Abstractions;
 public interface IScanService {
   Task<ScanResponse> ScanAsync(
     ScanRequest request,
-    Action<ProgressNodeNew>? onProgress = null,
+    Action<ProgressNode>? onProgress = null,
     CancellationToken cancellationToken = default
   );
 }

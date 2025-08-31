@@ -8,7 +8,7 @@ namespace Drift.Core.Scan;
 public static class SubnetDiscovery {
   internal static async Task<List<CidrBlock>> DetermineSubnets(
     ScanRequest request,
-    ProgressNodeNew node,
+    ProgressNode node,
     IInterfaceSubnetProvider interfaceSubnetProvider ) {
     //builder.UpdateStep(DiscoveryStep.SubnetDiscovery, 0, data);
     var fromInterface = node.Add( "Finding from ifs" );

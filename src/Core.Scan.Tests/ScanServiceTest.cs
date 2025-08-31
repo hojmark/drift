@@ -32,7 +32,7 @@ public class ScanServiceTest {
     var service = new ScanService( interfaceSubnetProvider, pingTool );
     var scanRequest = new ScanRequest();
     var logger = new StringLogger();
-    Action<ProgressNodeNew>? onProgress = progressReport => {
+    Action<ProgressNode>? onProgress = progressReport => {
       logger.LogInformation(
         "{Phase}: {StatusMessage} ({CompletionPct})",
         //progressReport.CurrentPhase,

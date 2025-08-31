@@ -9,7 +9,7 @@ public class ProgressTest {
   public async Task Flow() {
     var logger = new StringLogger();
 
-    var progressBuilder = new ProgressBuilderNew( a => logger.LogInformation( a.TotalProgress + "%: {Path}", a.Path ) );
+    var progressBuilder = new ProgressBuilder( a => logger.LogInformation( a.TotalProgress + "%: {Path}", a.Path ) );
 
     var root = progressBuilder.Root;
 
@@ -67,7 +67,7 @@ public class ProgressTest {
 
   [Test]
   public async Task Complete_ThrowsOnNonLeafNode() {
-    var progressBuilder = new ProgressBuilderNew();
+    var progressBuilder = new ProgressBuilder();
 
     var root = progressBuilder.Root;
 

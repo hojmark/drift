@@ -18,7 +18,6 @@ public class ProgressNode {
     set;
   } = 1;
 
-
   public uint Progress {
     get => _progress;
     set {
@@ -26,8 +25,25 @@ public class ProgressNode {
         throw new InvalidOperationException( "Cannot set progress on non-leaf node" );
       }
 
+      var shouldUpdate = _progress != value;
+
       _progress = value;
-      _onProgress?.Invoke();
+
+      if ( shouldUpdate ) {
+        _onProgress?.Invoke();
+      }
+    }
+  }
+
+  public uint TotalProgress {
+    get {
+      if ( Children.Count == 0 ) return Progress;
+
+      var totalWeight = Children.Sum( c => c.Weight );
+      if ( totalWeight == 0 ) return 0;
+
+      var weightedProgress = Children.Sum( c => c.TotalProgress * c.Weight );
+      return (uint) ( weightedProgress / totalWeight );
     }
   }
 
@@ -60,18 +76,6 @@ public class ProgressNode {
   public ProgressNode GetOrCreate( string path ) {
     var node = Find( path );
     return node ?? Add( path );
-  }
-
-  public uint TotalProgress {
-    get {
-      if ( Children.Count == 0 ) return Progress;
-
-      var totalWeight = Children.Sum( c => c.Weight );
-      if ( totalWeight == 0 ) return 0;
-
-      var weightedProgress = Children.Sum( c => c.TotalProgress * c.Weight );
-      return (uint) ( weightedProgress / totalWeight );
-    }
   }
 
   public void Complete() {

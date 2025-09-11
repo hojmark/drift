@@ -14,6 +14,9 @@ public class ScanUiApp {
   private readonly TreeRenderer _renderer;
   private readonly InputHandler _input;
 
+  private readonly AutoResetEvent _renderTrigger = new(false);
+  private ConsoleKey? _latestKey;
+
   public ScanUiApp( IScanner scanner ) {
     _scanner = scanner;
 
@@ -25,13 +28,37 @@ public class ScanUiApp {
 
   public void Run() {
     _scanner.Start();
+    
+    //Key thread
+    Task.Run( () => {
+      while ( _running ) {
+        if ( Console.KeyAvailable ) {
+          var key = Console.ReadKey( true ).Key;
+          _latestKey = key;
+          _renderTrigger.Set(); // Wake render loop
+        }
+
+        Thread.Sleep( 10 );
+      }
+    } );
 
     AnsiConsole.Live( _layout ).Start( ctx => {
+
+
       while ( _running ) {
+        // Wait for signal OR timeout
+        _renderTrigger.WaitOne(TimeSpan.FromMilliseconds(250));
+        
         var subnets = _scanner.GetCurrentSubnets().ToList();
+        
+        // Check and handle input if there was any
+        if (_latestKey is ConsoleKey key)
+        {
+          HandleInput(key, subnets);
+          _latestKey = null;
+        }
+        
         Render( ctx, subnets, _scanner.Progress );
-        HandleInput( subnets );
-        Thread.Sleep( 50 );
       }
     } );
 
@@ -57,10 +84,8 @@ public class ScanUiApp {
     ctx.Refresh();
   }
 
-  private void HandleInput( List<Subnet> subnets ) {
-    if ( !Console.KeyAvailable ) return;
+  private void HandleInput(ConsoleKey key, List<Subnet> subnets ) {
 
-    var key = Console.ReadKey( true ).Key;
     var action = InputHandler.MapKey( key );
 
     switch ( action ) {

@@ -35,11 +35,11 @@ public class SimulatedScanner : IScanner {
     _totalDevices = _allDevices.Count;
 
     foreach ( var subnet in session.Subnets )
-      _visibleBySubnet[subnet.Address] = new List<Device>();
+      _visibleBySubnet[subnet.Address] = [];
   }
 
   public void Start() {
-    _visibleDevices = new();
+    _visibleDevices = [];
     _started = true;
     _startedAt = DateTime.Now;
   }
@@ -62,13 +62,13 @@ public class SimulatedScanner : IScanner {
     }
 
     return Session.Subnets
-      .Select( s => new Subnet( s.Address, new List<Device>( _visibleBySubnet[s.Address] ) ) )
+      .Select( s => new Subnet( s.Address, [.._visibleBySubnet[s.Address]] ) )
       .ToList();
   }
 
   private List<Subnet> EmptySubnets() {
     return Session.Subnets
-      .Select( s => new Subnet( s.Address, new List<Device>() ) )
+      .Select( s => new Subnet( s.Address, [] ) )
       .ToList();
   }
 }

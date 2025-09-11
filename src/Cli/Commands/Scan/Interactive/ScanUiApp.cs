@@ -14,8 +14,8 @@ public class ScanUiApp {
   private readonly TreeRenderer _renderer;
   private readonly InputHandler _input;
 
-  private readonly AutoResetEvent _renderTrigger = new(false);
-  private ConsoleKey? _latestKey;
+  private readonly AsyncKeyInputWatcher _inputWatcher = new();
+
 
   public ScanUiApp( IScanner scanner ) {
     _scanner = scanner;
@@ -26,44 +26,27 @@ public class ScanUiApp {
     _input = new InputHandler( scanner.GetCurrentSubnets().Count );
   }
 
-  public void Run() {
+  public async Task RunAsync() {
     _scanner.Start();
-    
-    //Key thread
-    Task.Run( () => {
-      while ( _running ) {
-        if ( Console.KeyAvailable ) {
-          var key = Console.ReadKey( true ).Key;
-          _latestKey = key;
-          _renderTrigger.Set(); // Wake render loop
+
+    await AnsiConsole
+      .Live( _layout )
+      .AutoClear( true )
+      .StartAsync( async ctx => {
+        while ( _running ) {
+          var waitTask = _inputWatcher.WaitForNextKeyAsync();
+          var timeoutTask = Task.Delay( 250 );
+          await Task.WhenAny( waitTask, timeoutTask );
+
+          var subnets = _scanner.GetCurrentSubnets().ToList();
+
+          var key = _inputWatcher.ConsumeKey();
+          if ( key is { } pressed )
+            HandleInput( pressed, subnets );
+
+          Render( ctx, subnets, _scanner.Progress );
         }
-
-        Thread.Sleep( 10 );
-      }
-    } );
-
-    AnsiConsole.Live( _layout ).Start( ctx => {
-
-
-      while ( _running ) {
-        // Wait for signal OR timeout
-        _renderTrigger.WaitOne(TimeSpan.FromMilliseconds(250));
-        
-        var subnets = _scanner.GetCurrentSubnets().ToList();
-        
-        // Check and handle input if there was any
-        if (_latestKey is ConsoleKey key)
-        {
-          HandleInput(key, subnets);
-          _latestKey = null;
-        }
-        
-        Render( ctx, subnets, _scanner.Progress );
-      }
-    } );
-
-    AnsiConsole.Clear();
-    //AnsiConsole.MarkupLine( "[bold green]Exited.[/]" );
+      } );
   }
 
   private void Render( LiveDisplayContext ctx, List<Subnet> subnets, uint progress ) {
@@ -84,8 +67,7 @@ public class ScanUiApp {
     ctx.Refresh();
   }
 
-  private void HandleInput(ConsoleKey key, List<Subnet> subnets ) {
-
+  private void HandleInput( ConsoleKey key, List<Subnet> subnets ) {
     var action = InputHandler.MapKey( key );
 
     switch ( action ) {

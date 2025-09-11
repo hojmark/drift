@@ -18,9 +18,9 @@ public static class NewScanUi {
     ] )
   ]);
 
-  public static void Show() {
+  public static async Task Show() {
     var scanner = new SimulatedScanner( DemoScan1 );
     var app = new ScanUiApp( scanner );
-    app.Run();
+   await  app.RunAsync();
   }
 }

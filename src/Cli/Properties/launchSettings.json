@@ -24,6 +24,12 @@
       "dotnetRunMessages": true,
       "environmentVariables": {}
     },
+    "scan -i": {
+      "commandName": "Project",
+      "commandLineArgs": "scan ~ -i",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    },
     "scan (o=log)": {
       "commandName": "Project",
       "commandLineArgs": "scan -o log",

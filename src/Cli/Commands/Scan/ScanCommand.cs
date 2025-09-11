@@ -2,6 +2,7 @@ using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
+using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
@@ -27,11 +28,11 @@ namespace Drift.Cli.Commands.Scan;
  *   Monitor mode:
  *     drift monitor --reference declared.yaml --interval 10m --notify slack,email,log,webhook
  */
-internal class ScanCommand( IServiceProvider provider ) : CommandBase<ScanParameters, ScanCommandHandler>(
-  "scan",
-  "Scan the network and detect drift",
-  provider
-) {
+internal class ScanCommand : CommandBase<ScanParameters, ScanCommandHandler> {
+  public ScanCommand( IServiceProvider provider ) : base( "scan", "Scan the network and detect drift", provider ) {
+    Add( ScanParameters.Options.Interactive );
+  }
+
   private enum ShowMode {
     All = 1,
     Changed = 2,
@@ -74,6 +75,11 @@ public class ScanCommandHandler(
     }
     catch ( FileNotFoundException ) {
       return ExitCodes.GeneralError;
+    }
+
+    if ( parameters.Interactive ) {
+      NewScanUi.Show();
+      return ExitCodes.Success;
     }
 
     var subnetProviders = new List<ISubnetProvider> { interfaceSubnetProvider };

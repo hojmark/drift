@@ -36,7 +36,7 @@ public class ScanUiApp {
     } );
 
     AnsiConsole.Clear();
-    AnsiConsole.MarkupLine( "[bold green]Exited.[/]" );
+    //AnsiConsole.MarkupLine( "[bold green]Exited.[/]" );
   }
 
   private void Render( LiveDisplayContext ctx, List<Subnet> subnets, uint progress ) {

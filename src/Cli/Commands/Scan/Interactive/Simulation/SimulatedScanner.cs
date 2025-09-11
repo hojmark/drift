@@ -12,7 +12,7 @@ public class SimulatedScanner : IScanner {
       if ( !_started )
         return 0;
 
-      TimeSpan elapsed = DateTime.Now - _startedAt;
+      var elapsed = DateTime.Now - _startedAt;
       double ratio = elapsed.TotalSeconds / _duration.TotalSeconds;
 
       return (uint) Math.Clamp( ratio * 100, 0, 100 );
@@ -24,7 +24,7 @@ public class SimulatedScanner : IScanner {
   private readonly TimeSpan _duration;
   private readonly int _totalDevices;
 
-  private bool _started = false;
+  private bool _started;
   private DateTime _startedAt;
   private HashSet<Device> _visibleDevices = null!;
 
@@ -54,10 +54,8 @@ public class SimulatedScanner : IScanner {
 
     // Reveal devices in order
     foreach ( var device in _allDevices.Take( devicesToShow ) ) {
-      if ( _visibleDevices.Contains( device ) )
+      if ( !_visibleDevices.Add( device ) )
         continue;
-
-      _visibleDevices.Add( device );
 
       var subnet = Session.Subnets.First( s => s.Devices.Contains( device ) );
       _visibleBySubnet[subnet.Address].Add( device );

@@ -78,7 +78,7 @@ public class ScanCommandHandler(
     }
 
     if ( parameters.Interactive ) {
-      NewScanUi.Show();
+      await NewScanUi.Show();
       return ExitCodes.Success;
     }
 

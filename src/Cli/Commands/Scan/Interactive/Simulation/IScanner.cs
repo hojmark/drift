@@ -16,4 +16,8 @@ public interface IScanner {
   bool IsComplete {
     get;
   }
+
+  uint Progress {
+    get;
+  }
 }

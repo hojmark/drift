@@ -18,8 +18,8 @@ public class InputHandler {
     ConsoleKey.S => InputAction.ScrollDown,
     ConsoleKey.UpArrow => InputAction.MoveUp,
     ConsoleKey.DownArrow => InputAction.MoveDown,
-    ConsoleKey.LeftArrow => InputAction.Collapse,
-    ConsoleKey.RightArrow => InputAction.Expand,
+    //ConsoleKey.LeftArrow => InputAction.Collapse,
+    //ConsoleKey.RightArrow => InputAction.Expand,
     ConsoleKey.Enter or ConsoleKey.Spacebar => InputAction.ToggleSelected,
     >= ConsoleKey.D1 and <= ConsoleKey.D9 => InputAction.ToggleByIndex,
     _ => InputAction.None

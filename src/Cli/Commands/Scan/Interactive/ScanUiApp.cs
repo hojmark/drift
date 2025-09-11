@@ -95,9 +95,9 @@ public class ScanUiApp {
     }
   }
 
-  public Markup BuildFooter( int scroll, int maxScroll, int selectedIndex, List<Subnet> subnets )
-    => new Markup(
-      $"[green]q[/] quit   [green]↑/↓[/] navigate   [green]←/→[/] toggle   " +
+  public static Markup BuildFooter( int scroll, int maxScroll, int selectedIndex, List<Subnet> subnets )
+    => new(
+      $"[green]q[/] quit   [green]↑/↓/←/→[/] navigate   [green]space[/] toggle   " +
       $"[green]w/s[/] scroll   [grey]Scroll: {scroll}/{maxScroll}[/]  " +
       $"[grey]Selected: {selectedIndex + 1}/{subnets.Count}[/]"
     );

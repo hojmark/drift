@@ -134,9 +134,9 @@ public class ScanUiApp {
 
     var keyActions = new Dictionary<string, string> {
       { "q", "quit" },
-      { "r", "restart scan" },
+      { "r", "restart" },
       { "↑/↓" /*"/←/→"*/, "navigate" },
-      { "space", "toggle" },
+      { "space", "expansion toggle" },
       { "w/s", "scroll" },
       { "h", "help toggle" }
     };

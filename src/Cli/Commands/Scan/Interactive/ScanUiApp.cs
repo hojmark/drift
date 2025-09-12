@@ -12,8 +12,8 @@ public class ScanUiApp {
   private bool _running = true;
 
   private readonly TreeRenderer _renderer;
-  private readonly InputHandler _input;
 
+  //TODO should get IDisposable warning?
   private readonly AsyncKeyInputWatcher _inputWatcher = new();
 
 
@@ -23,7 +23,6 @@ public class ScanUiApp {
     _expanded = Enumerable.Repeat( true, scanner.GetCurrentSubnets().Count ).ToArray();
     _layout = LayoutFactory.Create();
     _renderer = new TreeRenderer( _expanded );
-    _input = new InputHandler( scanner.GetCurrentSubnets().Count );
   }
 
   public async Task RunAsync() {
@@ -34,9 +33,7 @@ public class ScanUiApp {
       .AutoClear( true )
       .StartAsync( async ctx => {
         while ( _running ) {
-          var waitTask = _inputWatcher.WaitForNextKeyAsync();
-          var timeoutTask = Task.Delay( 250 );
-          await Task.WhenAny( waitTask, timeoutTask );
+          await Task.WhenAny( _inputWatcher.WaitForNextKeyAsync(), Task.Delay( 250 ) );
 
           var subnets = _scanner.GetCurrentSubnets().ToList();
 
@@ -44,12 +41,14 @@ public class ScanUiApp {
           if ( key is { } pressed )
             HandleInput( pressed, subnets );
 
-          Render( ctx, subnets, _scanner.Progress );
+          Render( subnets, _scanner.Progress );
+
+          ctx.Refresh();
         }
       } );
   }
 
-  private void Render( LiveDisplayContext ctx, List<Subnet> subnets, uint progress ) {
+  private void Render( List<Subnet> subnets, uint progress ) {
     int availableRows = GetAvailableRows();
     int maxScroll = Math.Max( 0, _renderer.GetTotalHeight( subnets ) - availableRows );
     _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );
@@ -63,8 +62,6 @@ public class ScanUiApp {
     _layout["Progress"].Update( LayoutFactory.BuildProgressChart( progress ) );
 
     _layout["Footer"].Update( BuildFooter( _scrollOffset, maxScroll, _selectedIndex, subnets ) );
-
-    ctx.Refresh();
   }
 
   private void HandleInput( ConsoleKey key, List<Subnet> subnets ) {
@@ -96,12 +93,12 @@ public class ScanUiApp {
         _expanded[_selectedIndex] = !_expanded[_selectedIndex];
         break;
       case InputAction.ToggleByIndex:
-        int idx = _input.GetNumericIndex( key );
+        int idx = InputHandler.GetNumericIndex( key );
         if ( idx < subnets.Count ) _expanded[idx] = !_expanded[idx];
         break;
     }
   }
-  
+
   // TODO keymaps: default, vim, emacs, etc.
 
 
@@ -110,7 +107,11 @@ public class ScanUiApp {
     const string actionColor = "";
 
     var keyActions = new Dictionary<string, string> {
-      { "q", "quit" }, { "↑/↓"/*"/←/→"*/, "navigate" }, { "space", "toggle" }, { "w/s", "scroll" },{ "h", "help toggle" }
+      { "q", "quit" },
+      { "↑/↓" /*"/←/→"*/, "navigate" },
+      { "space", "toggle" },
+      { "w/s", "scroll" },
+      { "h", "help toggle" }
     };
 
     var footerParts = new List<string>();

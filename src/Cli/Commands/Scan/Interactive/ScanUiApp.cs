@@ -101,13 +101,29 @@ public class ScanUiApp {
         break;
     }
   }
+  
+  // TODO keymaps: default, vim, emacs, etc.
 
-  public static Markup BuildFooter( int scroll, int maxScroll, int selectedIndex, List<Subnet> subnets )
-    => new(
-      $"[green]q[/] quit   [green]↑/↓/←/→[/] navigate   [green]space[/] toggle   " +
-      $"[green]w/s[/] scroll   [grey]Scroll: {scroll}/{maxScroll}[/]  " +
-      $"[grey]Selected: {selectedIndex + 1}/{subnets.Count}[/]"
-    );
+
+  public static Markup BuildFooter( int scroll, int maxScroll, int selectedIndex, List<Subnet> subnets ) {
+    const string keyColor = "blue";
+    const string actionColor = "";
+
+    var keyActions = new Dictionary<string, string> {
+      { "q", "quit" }, { "↑/↓"/*"/←/→"*/, "navigate" }, { "space", "toggle" }, { "w/s", "scroll" },{ "h", "help toggle" }
+    };
+
+    var footerParts = new List<string>();
+
+    foreach ( var kvp in keyActions ) {
+      footerParts.Add( $"[{keyColor}]{kvp.Key}[/] [{actionColor}]{kvp.Value}[/]" );
+    }
+
+    footerParts.Add( $"[grey]Scroll: {scroll}/{maxScroll}[/]" );
+    footerParts.Add( $"[grey]Selected: {selectedIndex + 1}/{subnets.Count}[/]" );
+
+    return new Markup( string.Join( "   ", footerParts ) );
+  }
 
   private int GetAvailableRows()
     => AnsiConsole.Console.Profile.Height - 1 - 1 - 1 - 2; // header + footer + progress + padding

@@ -18,7 +18,7 @@ public static class LayoutFactory {
     );
 
     layout["Header"].Update( BuildHeader() );
-    layout["Progress"].Update( BuildProgressChart(0) );
+    layout["Progress"].Update( BuildProgressChart( 0 ) );
 
     return layout;
   }

@@ -18,9 +18,11 @@ public static class NewScanUi {
     ] )
   ]);
 
+  // TODO themes: greyscale, light, default
+
   public static async Task Show() {
     var scanner = new SimulatedScanner( DemoScan1 );
     var app = new ScanUiApp( scanner );
-   await  app.RunAsync();
+    await app.RunAsync();
   }
 }

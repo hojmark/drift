@@ -54,16 +54,15 @@ public class TreeRenderer {
     var subnet = subnets[index];
     var symbol = _expanded[index] ? "▾" : "▸";
 
-    string summary = !_expanded[index]
-      ? $" [grey]({subnet.Devices.Count} devices: " +
-        $"{subnet.Devices.Count( d => d.IsOnline )} online, " +
-        $"{subnet.Devices.Count( d => !d.IsOnline )} offline)[/]"
-      : "";
+    string summary =
+      $"[grey]({subnet.Devices.Count} devices: " +
+      $"{subnet.Devices.Count( d => d.IsOnline )} online, " +
+      $"{subnet.Devices.Count( d => !d.IsOnline )} offline)[/]";
 
-    string header = $"{symbol} {subnet.Address}{summary}";
+    string header = $"{symbol} {subnet.Address}";
     string formattedHeader = isSelected
-      ? $"[black on yellow]{header}[/]"
-      : $"[teal]{header}[/]";
+      ? $"[black on yellow]{header}[/] {summary}"
+      : $"[blue]{header}[/] {summary}";
 
     var tree = new Tree( formattedHeader ).Guide( TreeGuide.Line );
 

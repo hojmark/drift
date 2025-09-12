@@ -12,7 +12,7 @@ public class ScanUiApp {
 
   //TODO should get IDisposable warning?
   private readonly AsyncKeyInputWatcher _inputWatcher = new();
-  private List<UiSubnet> _subnets = new();
+  private readonly List<UiSubnet> _subnets = [];
 
 
   public ScanUiApp( IScanner scanner ) {
@@ -87,6 +87,13 @@ public class ScanUiApp {
       case InputAction.ToggleSelected:
         _subnets[_selectedIndex].IsExpanded = !_subnets[_selectedIndex].IsExpanded;
         break;
+      case InputAction.RestartScan:
+        _subnets.Clear();
+        _scanner.Start();
+        _selectedIndex = 0;
+        _scrollOffset = 0;
+        break;
+
     }
   }
 
@@ -127,6 +134,7 @@ public class ScanUiApp {
 
     var keyActions = new Dictionary<string, string> {
       { "q", "quit" },
+      { "r", "restart scan" },
       { "↑/↓" /*"/←/→"*/, "navigate" },
       { "space", "toggle" },
       { "w/s", "scroll" },

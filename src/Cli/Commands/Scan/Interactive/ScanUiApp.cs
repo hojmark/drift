@@ -5,7 +5,7 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 
 public class ScanUiApp {
   private readonly IScanner _scanner;
-  private readonly Layout _layout;
+  private readonly ScanLayout _layout2;
   private int _selectedIndex = 0;
   private int _scrollOffset = 0;
   private bool _running = true;
@@ -17,14 +17,14 @@ public class ScanUiApp {
 
   public ScanUiApp( IScanner scanner ) {
     _scanner = scanner;
-    _layout = LayoutFactory.Create();
+    _layout2 = new ScanLayout();
   }
 
   public async Task RunAsync() {
     _scanner.Start();
 
     await AnsiConsole
-      .Live( _layout )
+      .Live( _layout2.Renderable )
       .AutoClear( true )
       .StartAsync( async ctx => {
         while ( _running ) {
@@ -44,19 +44,15 @@ public class ScanUiApp {
 
   private void Render( List<UiSubnet> subnets, uint progress ) {
     var renderer = new TreeRenderer();
-    int availableRows = GetAvailableRows();
+    int availableRows = _layout2.GetAvailableRows();
     int maxScroll = Math.Max( 0, renderer.GetTotalHeight( subnets ) - availableRows );
     _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );
 
     var trees = renderer.RenderTrees( _scrollOffset, availableRows, _selectedIndex, subnets );
 
-    _layout["MainPanel"].Update(
-      new Panel( new Rows( trees ) ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 )
-    );
+    _layout2.UpdateMainPanel( trees );
 
-    _layout["Progress"].Update( LayoutFactory.BuildProgressChart( progress ) );
-
-    _layout["Footer"].Update( BuildFooter( _scrollOffset, maxScroll, _selectedIndex, subnets ) );
+    _layout2.UpdateProgress( progress );
   }
 
   private void HandleInput( ConsoleKey key, List<UiSubnet> subnets ) {
@@ -93,7 +89,6 @@ public class ScanUiApp {
         _selectedIndex = 0;
         _scrollOffset = 0;
         break;
-
     }
   }
 
@@ -126,35 +121,6 @@ public class ScanUiApp {
   }
 
   // TODO keymaps: default, vim, emacs, etc.
-
-
-  public static Markup BuildFooter( int scroll, int maxScroll, int selectedIndex, List<UiSubnet> subnets ) {
-    const string keyColor = "blue";
-    const string actionColor = "";
-
-    var keyActions = new Dictionary<string, string> {
-      { "q", "quit" },
-      { "r", "restart" },
-      { "↑/↓" /*"/←/→"*/, "navigate" },
-      { "space", "expansion toggle" },
-      { "w/s", "scroll" },
-      { "h", "help toggle" }
-    };
-
-    var footerParts = new List<string>();
-
-    foreach ( var kvp in keyActions ) {
-      footerParts.Add( $"[{keyColor}]{kvp.Key}[/] [{actionColor}]{kvp.Value}[/]" );
-    }
-
-    footerParts.Add( $"[grey]Scroll: {scroll}/{maxScroll}[/]" );
-    footerParts.Add( $"[grey]Selected: {selectedIndex + 1}/{subnets.Count}[/]" );
-
-    return new Markup( string.Join( "   ", footerParts ) );
-  }
-
-  private int GetAvailableRows()
-    => AnsiConsole.Console.Profile.Height - 1 - 1 - 1 - 2; // header + footer + progress + padding
 }
 
 public class UiSubnet {

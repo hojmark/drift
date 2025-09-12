@@ -5,17 +5,14 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 public class TreeRenderer {
   public const int ScrollAmount = 3;
 
-  private readonly bool[] _expanded;
+  //private readonly bool[] _expanded;
   private readonly int _statusWidth = "Offline".Length;
 
-  public TreeRenderer( bool[] expanded ) {
-    _expanded = expanded;
-  }
 
-  public int GetTotalHeight( List<Subnet> subnets )
+  public int GetTotalHeight( List<UiSubnet> subnets )
     => subnets.Select( ( _, i ) => GetTreeHeight( i, subnets ) ).Sum();
 
-  public IEnumerable<Tree> RenderTrees( int scrollOffset, int maxRows, int selectedIndex, List<Subnet> subnets ) {
+  public IEnumerable<Tree> RenderTrees( int scrollOffset, int maxRows, int selectedIndex, List<UiSubnet> subnets ) {
     var trees = new List<Tree>();
     int usedRows = 0, skippedRows = 0, startIndex = 0;
 
@@ -50,9 +47,10 @@ public class TreeRenderer {
   }
 
 
-  private Tree BuildTree( int index, bool isSelected, List<Subnet> subnets, int? maxDeviceCount = null ) {
-    var subnet = subnets[index];
-    var symbol = _expanded[index] ? "▾" : "▸";
+  private Tree BuildTree( int index, bool isSelected, List<UiSubnet> subnets, int? maxDeviceCount = null ) {
+    var uiSubnet = subnets[index];
+    var subnet = uiSubnet.Subnet;
+    var symbol = uiSubnet.IsExpanded ? "▾" : "▸";
 
     string summary =
       $"[grey]({subnet.Devices.Count} devices: " +
@@ -66,7 +64,7 @@ public class TreeRenderer {
 
     var tree = new Tree( formattedHeader ).Guide( TreeGuide.Line );
 
-    if ( _expanded[index] ) {
+    if ( uiSubnet.IsExpanded ) {
       var devices = subnet.Devices;
       if ( maxDeviceCount is not null )
         devices = devices.Take( maxDeviceCount.Value ).ToList();
@@ -93,14 +91,14 @@ public class TreeRenderer {
   }
 
 
-  private int GetTreeHeight( int index, List<Subnet> subnets )
-    => _expanded[index] ? 1 + subnets[index].Devices.Count : 1;
+  private int GetTreeHeight( int index, List<UiSubnet> subnets )
+    => subnets[index].IsExpanded ? 1 + subnets[index].Subnet.Devices.Count : 1;
 
-  private int GetIpWidth( List<Subnet> subnets ) {
-    return subnets.SelectMany( s => s.Devices ).Max( d => d.IP.Length );
+  private int GetIpWidth( List<UiSubnet> subnets ) {
+    return subnets.SelectMany( s => s.Subnet.Devices ).Max( d => d.IP.Length );
   }
 
-  private int GetMacWidth( List<Subnet> subnets ) {
-    return subnets.SelectMany( s => s.Devices ).Max( d => d.MAC.Length );
+  private int GetMacWidth( List<UiSubnet> subnets ) {
+    return subnets.SelectMany( s => s.Subnet.Devices ).Max( d => d.MAC.Length );
   }
 }

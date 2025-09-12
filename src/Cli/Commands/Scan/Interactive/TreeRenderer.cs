@@ -4,11 +4,8 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 
 public class TreeRenderer {
   public const int ScrollAmount = 3;
-
-  //private readonly bool[] _expanded;
   private readonly int _statusWidth = "Offline".Length;
-
-
+  
   public int GetTotalHeight( List<UiSubnet> subnets )
     => subnets.Select( ( _, i ) => GetTreeHeight( i, subnets ) ).Sum();
 
@@ -45,7 +42,6 @@ public class TreeRenderer {
 
     return trees;
   }
-
 
   private Tree BuildTree( int index, bool isSelected, List<UiSubnet> subnets, int? maxDeviceCount = null ) {
     var uiSubnet = subnets[index];
@@ -89,7 +85,6 @@ public class TreeRenderer {
 
     return tree;
   }
-
 
   private int GetTreeHeight( int index, List<UiSubnet> subnets )
     => subnets[index].IsExpanded ? 1 + subnets[index].Subnet.Devices.Count : 1;

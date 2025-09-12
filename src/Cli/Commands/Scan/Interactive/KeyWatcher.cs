@@ -14,7 +14,7 @@ public class AsyncKeyInputWatcher : IAsyncDisposable {
   private readonly CancellationTokenSource _cts = new();
   private readonly Task _listenerTask;
 
-  private TaskCompletionSource<bool>? _waiter;
+  private TaskCompletionSource? _waiter;
 
   public AsyncKeyInputWatcher() {
     _listenerTask = Task.Run( ListenLoopAsync );
@@ -26,7 +26,7 @@ public class AsyncKeyInputWatcher : IAsyncDisposable {
         var key = Console.ReadKey( intercept: true ).Key;
         _keyBuffer.Enqueue( key );
 
-        _waiter?.TrySetResult( true );
+        _waiter?.TrySetResult();
       }
 
       await Task.Delay( 10, _cts.Token ).ConfigureAwait( false );

@@ -10,7 +10,8 @@ public enum InputAction {
   Expand,
   Collapse,
   ToggleSelected,
-  ToggleByIndex
+  ToggleByIndex,
+  RestartScan
 }
 
 public static class InputHandler {
@@ -24,6 +25,7 @@ public static class InputHandler {
     //ConsoleKey.RightArrow => InputAction.Expand,
     ConsoleKey.Enter or ConsoleKey.Spacebar => InputAction.ToggleSelected,
     >= ConsoleKey.D1 and <= ConsoleKey.D9 => InputAction.ToggleByIndex,
+    ConsoleKey.R => InputAction.RestartScan,
     _ => InputAction.None
   };
 

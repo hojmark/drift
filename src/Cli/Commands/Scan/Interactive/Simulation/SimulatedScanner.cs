@@ -26,7 +26,7 @@ public class SimulatedScanner : IScanner {
 
   private bool _started;
   private DateTime _startedAt;
-  private HashSet<Device> _visibleDevices = null!;
+  private HashSet<Device> _visibleDevices = [];
 
   public SimulatedScanner( ScanSession session ) {
     Session = session;
@@ -39,7 +39,11 @@ public class SimulatedScanner : IScanner {
   }
 
   public void Start() {
-    _visibleDevices = [];
+    _visibleDevices.Clear();
+    foreach ( var subnetDevices in _visibleBySubnet.Values ) {
+      subnetDevices.Clear();
+    }
+
     _started = true;
     _startedAt = DateTime.Now;
   }

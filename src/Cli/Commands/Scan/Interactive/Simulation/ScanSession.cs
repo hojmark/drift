@@ -1,10 +1,6 @@
 namespace Drift.Cli.Commands.Scan.Interactive.Simulation;
 
 public class ScanSession {
-  public string Label {
-    get;
-  }
-
   public TimeSpan Duration {
     get;
   }
@@ -13,8 +9,7 @@ public class ScanSession {
     get;
   }
 
-  public ScanSession( string label, TimeSpan duration, List<Subnet> subnets ) {
-    Label = label;
+  public ScanSession( TimeSpan duration, List<Subnet> subnets ) {
     Duration = duration;
     Subnets = subnets;
   }

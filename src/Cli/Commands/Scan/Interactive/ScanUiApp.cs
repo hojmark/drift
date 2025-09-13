@@ -18,6 +18,9 @@ public class ScanUiApp {
   public ScanUiApp( IScanner scanner ) {
     _scanner = scanner;
     _layout2 = new ScanLayout();
+
+    // Subscribe to events instead of polling
+    _scanner.SubnetsUpdated += OnSubnetsUpdated;
   }
 
   public async Task RunAsync() {
@@ -34,7 +37,7 @@ public class ScanUiApp {
           if ( key is { } pressed )
             HandleInput( pressed, _subnets );
 
-          UpdateSubnetsFromScanner();
+          // UpdateSubnetsFromScanner();
           Render( _subnets, _scanner.Progress );
 
           ctx.Refresh();
@@ -92,7 +95,29 @@ public class ScanUiApp {
     }
   }
 
-  private void UpdateSubnetsFromScanner() {
+  private void OnSubnetsUpdated( object? sender, List<Subnet> currentSubnets ) {
+    // Same logic as before, but triggered by events
+    var existingSubnetsMap = _subnets.ToDictionary( ui => ui.Subnet.Address, ui => ui );
+    var updatedUiSubnets = new List<UiSubnet>();
+
+    foreach ( var subnet in currentSubnets ) {
+      if ( existingSubnetsMap.TryGetValue( subnet.Address, out var existingUiSubnet ) ) {
+        updatedUiSubnets.Add( new UiSubnet( subnet, existingUiSubnet.IsExpanded ) );
+      }
+      else {
+        updatedUiSubnets.Add( new UiSubnet( subnet, isExpanded: true ) );
+      }
+    }
+
+    _subnets.Clear();
+    _subnets.AddRange( updatedUiSubnets );
+
+    if ( _selectedIndex >= _subnets.Count )
+      _selectedIndex = Math.Max( 0, _subnets.Count - 1 );
+  }
+
+
+  /*private void UpdateSubnetsFromScanner() {
     var currentSubnets = _scanner.GetCurrentSubnets().ToList();
 
     // Create a dictionary to track existing subnets by their address for fast lookup
@@ -118,7 +143,7 @@ public class ScanUiApp {
     // Ensure selected index is still valid
     if ( _selectedIndex >= _subnets.Count )
       _selectedIndex = Math.Max( 0, _subnets.Count - 1 );
-  }
+  }*/
 
   // TODO keymaps: default, vim, emacs, etc.
 }

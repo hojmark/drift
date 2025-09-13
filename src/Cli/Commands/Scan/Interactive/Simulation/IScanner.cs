@@ -1,3 +1,5 @@
+using Drift.Domain.Scan;
+
 namespace Drift.Cli.Commands.Scan.Interactive.Simulation;
 
 public interface IScanner {
@@ -8,16 +10,21 @@ public interface IScanner {
 
   /// Starts the scanning process (real or simulated)
   void Start();
-
-  /// Returns the current state of the scan (can be partial)
-  List<Subnet> GetCurrentSubnets();
-
-  /// True if all data has been revealed / scan is done
-  bool IsComplete {
-    get;
-  }
+  
 
   uint Progress {
     get;
   }
+  
+  public event EventHandler<List<Subnet>>? SubnetsUpdated;
+}
+
+public interface IScanServiceTWO {
+  Task<ScanResult> ScanAsync(
+    ScanRequest request,
+    CancellationToken cancellationToken = default
+  );
+
+  event EventHandler<ScanResult>? ResultUpdate;
+  event EventHandler<ScanLogEventArgs>? MessageLogged;
 }

@@ -13,4 +13,6 @@ public class PredefinedResultNetworkScanner( ScanResult scanResult ) : INetworkS
   ) {
     return Task.FromResult( scanResult );
   }
+
+  public event EventHandler<ScanResult>? ResultUpdated;
 }

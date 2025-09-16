@@ -4,11 +4,7 @@ using Drift.Domain.Device.Addresses;
 
 namespace Drift.Cli.Commands.Scan.Interactive.Simulation;
 
-public class SimulatedScanner : IScanner, IDisposable {
-  public ScanSession Session {
-    get;
-  }
-
+public class SimulatedScanner : IScanService, IDisposable {
   public bool IsComplete => _visibleDevices.Count >= _totalDevices;
 
   public uint Progress {
@@ -24,6 +20,7 @@ public class SimulatedScanner : IScanner, IDisposable {
   }
 
   public event EventHandler<List<Subnet>>? SubnetsUpdated;
+  public event EventHandler<ScanResult>? ResultUpdated;
 
   private readonly List<Device> _allDevices;
   private readonly Dictionary<string, List<Device>> _visibleBySubnet = new();
@@ -34,9 +31,10 @@ public class SimulatedScanner : IScanner, IDisposable {
   private bool _started;
   private DateTime _startedAt;
   private HashSet<Device> _visibleDevices = [];
+  private readonly ScanSession _session;
 
   public SimulatedScanner( ScanSession session ) {
-    Session = session;
+    _session = session;
     _duration = session.Duration;
     _allDevices = session.Subnets.SelectMany( s => s.Devices ).ToList();
     _totalDevices = _allDevices.Count;
@@ -48,7 +46,7 @@ public class SimulatedScanner : IScanner, IDisposable {
     _updateTimer = new Timer( OnTimerTick, null, Timeout.Infinite, Timeout.Infinite );
   }
 
-  public void Start() {
+  public void Start( CancellationToken cancellationToken = default ) {
     _visibleDevices.Clear();
     foreach ( var subnetDevices in _visibleBySubnet.Values ) {
       subnetDevices.Clear();
@@ -78,7 +76,7 @@ public class SimulatedScanner : IScanner, IDisposable {
         continue;
 
       hasChanges = true;
-      var subnet = Session.Subnets.First( s => s.Devices.Contains( device ) );
+      var subnet = _session.Subnets.First( s => s.Devices.Contains( device ) );
       _visibleBySubnet[subnet.Address].Add( device );
     }
 
@@ -94,11 +92,18 @@ public class SimulatedScanner : IScanner, IDisposable {
   }
 
   private void UpdateAndFireEvents() {
-    var currentSubnets = Session.Subnets
+    var currentSubnets = _session.Subnets
       .Select( s => new Subnet( s.Address, [.._visibleBySubnet[s.Address]] ) )
       .ToList();
 
     SubnetsUpdated?.Invoke( this, currentSubnets );
+    ResultUpdated?.Invoke( this,
+      new ScanResult {
+        Metadata = null,
+        Status = ScanResultStatus.InProgress,
+        DiscoveredDevices = currentSubnets.Select( s => s.Devices.Select( ConvertToDiscoveredDevice ) )
+          .SelectMany( d => d )
+      } );
 
     /*var scanResult = new ScanResult {
       DiscoveredDevices = _visibleDevices.Select(ConvertToDiscoveredDevice),
@@ -110,7 +115,7 @@ public class SimulatedScanner : IScanner, IDisposable {
     ResultUpdated?.Invoke(this, scanResult);*/
   }
 
-  private DiscoveredDevice ConvertToDiscoveredDevice( Device device ) {
+  private static DiscoveredDevice ConvertToDiscoveredDevice( Device device ) {
     var addresses = new List<IDeviceAddress> { new IpV4Address( device.IP ) };
 
     if ( !string.IsNullOrWhiteSpace( device.MAC ) ) {
@@ -122,5 +127,10 @@ public class SimulatedScanner : IScanner, IDisposable {
 
   public void Dispose() {
     _updateTimer?.Dispose();
+  }
+
+  public Task<ScanResult> ScanAsync( ScanRequest request, CancellationToken cancellationToken = default ) {
+    Start( cancellationToken );
+    return Task.FromResult( new ScanResult { Status = ScanResultStatus.Success, Metadata = null } );
   }
 }

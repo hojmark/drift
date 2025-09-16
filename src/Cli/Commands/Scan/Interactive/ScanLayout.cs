@@ -6,28 +6,57 @@ using Spectre.Console.Rendering;
 public class ScanLayout {
   private readonly Layout _layout;
 
+  private bool _showLogs = true;
+  private readonly Layout _scanTree;
+  private readonly Layout _log;
+
+  public bool ShowLogs {
+    get => _showLogs;
+    set {
+      if ( _showLogs == value )
+        return;
+
+      _showLogs = value;
+      UpdateMainPanel( value );
+    }
+  }
+
   public ScanLayout() {
     _layout = new Layout( "Root" )
       .SplitRows(
         new Layout( "Header" ) { Size = 1 },
-        new Layout( "Body" ),
+        new Layout( "MainPanel" ),
+        new Layout( "Data" ) { Size = 1 },
+        new Layout( "Progress" ) { Size = 1 },
         new Layout( "Footer" ) { Size = 1 }
       );
 
-    _layout["Body"].SplitRows(
-      new Layout( "MainPanel" ),
-      new Layout( "Progress" ) { Size = 1 }
-    );
+    _scanTree = new Layout( "ScanTree" );
+    _log = new Layout( "Log" );
 
     _layout["Header"].Update( BuildHeader() );
     _layout["Progress"].Update( BuildProgressBar( 0 ) );
     _layout["Footer"].Update( BuildFooter() );
+
+    UpdateMainPanel( _showLogs );
   }
+
+  private void UpdateMainPanel( bool showLogs ) {
+    var mainPanelChildren = new List<Layout> { _scanTree };
+
+    if ( showLogs ) {
+      mainPanelChildren.Add( _log );
+    }
+
+    _layout["MainPanel"].SplitColumns(mainPanelChildren.ToArray());
+
+  }
+
 
   public IRenderable Renderable => _layout;
 
-  public void UpdateMainPanel( IEnumerable<Tree> content ) {
-    _layout["MainPanel"].Update(
+  public void UpdateScanTree( IEnumerable<Tree> content ) {
+    _scanTree.Update(
       new Panel( new Rows( content ) ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 )
     );
   }
@@ -36,9 +65,12 @@ public class ScanLayout {
     _layout["Progress"].Update( BuildProgressBar( progress ) );
   }
 
-  internal int GetAvailableRows()
-    => AnsiConsole.Console.Profile.Height - 1 - 1 - 1 - 2; // header + footer + progress + padding
+  public void UpdateData( string text ) {
+    _layout["Data"].Update( new Text( text ) );
+  }
 
+  internal int GetAvailableRows()
+    => AnsiConsole.Console.Profile.Height - 1 - 1 - 1 - 1 - 2; // header + data + footer + progress + padding
 
   private static Markup BuildHeader() {
     return new Markup( "Using [grey]/home/hojmark/[/][yellow bold]fh47[/][grey].spec.yaml[/]  [green]✔[/]" );
@@ -62,9 +94,10 @@ public class ScanLayout {
       { "q", "quit" },
       { "r", "restart" },
       { "↑/↓" /*"/←/→"*/, "navigate" },
-      { "space", "expansion toggle" },
+      { "space", "expansion" },
       { "w/s", "scroll" },
-      { "h", "help toggle" }
+      { "l", "log" },
+      { "h", "help" }
     };
 
     var footerParts = new List<string>();

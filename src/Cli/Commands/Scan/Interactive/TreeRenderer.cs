@@ -11,37 +11,69 @@ public class TreeRenderer {
 
   public IEnumerable<Tree> RenderTrees( int scrollOffset, int maxRows, int selectedIndex, List<UiSubnet> subnets ) {
     var trees = new List<Tree>();
-    int usedRows = 0, skippedRows = 0, startIndex = 0;
+    int currentRow = 0;
+    int renderedRows = 0;
 
-    // Skip trees that are completely above scroll offset
-    for ( ; startIndex < subnets.Count; startIndex++ ) {
-      int height = GetTreeHeight( startIndex, subnets );
-      if ( skippedRows + height > scrollOffset )
-        break;
-
-      skippedRows += height;
-    }
-
-    for ( int i = startIndex; i < subnets.Count && usedRows < maxRows; i++ ) {
-      int totalHeight = GetTreeHeight( i, subnets );
-      int remaining = maxRows - usedRows;
+    for ( int i = 0; i < subnets.Count && renderedRows < maxRows; i++ ) {
+      int treeHeight = GetTreeHeight( i, subnets );
       bool isSelected = i == selectedIndex;
-
-      if ( totalHeight <= remaining ) {
-        trees.Add( BuildTree( i, isSelected, subnets ) );
-        usedRows += totalHeight;
+      
+      // Check if this tree starts within the visible area
+      if ( currentRow + treeHeight > scrollOffset && currentRow < scrollOffset + maxRows ) {
+        // Calculate how many rows of this tree we can show
+        int treeStartRow = Math.Max( 0, scrollOffset - currentRow );
+        int remainingRows = maxRows - renderedRows;
+        int maxDeviceRows = Math.Min( remainingRows - 1, treeHeight - 1 - treeStartRow ); // -1 for header
+        
+        if ( treeStartRow == 0 ) {
+          // Show the full tree header
+          if ( maxDeviceRows >= 0 ) {
+            trees.Add( BuildTree( i, isSelected, subnets, maxDeviceRows ) );
+            renderedRows += Math.Min( treeHeight, remainingRows );
+          }
+        } else if ( treeStartRow < treeHeight && subnets[i].IsExpanded ) {
+          // Show partial tree (skip header, show some devices)
+          int devicesToSkip = treeStartRow - 1; // -1 because we're skipping the header
+          int devicesToShow = Math.Min( maxDeviceRows, subnets[i].Subnet.Devices.Count - devicesToSkip );
+          
+          if ( devicesToShow > 0 ) {
+            trees.Add( BuildPartialTree( i, isSelected, subnets, devicesToSkip, devicesToShow ) );
+            renderedRows += devicesToShow;
+          }
+        }
       }
-      else {
-        // Always render header (1 row), then as many children as possible
-        int rowsForChildren = remaining - 1;
-
-        trees.Add( BuildTree( i, isSelected, subnets, rowsForChildren > 0 ? rowsForChildren : 0 ) );
-        usedRows = maxRows;
-      }
+      
+      currentRow += treeHeight;
     }
 
     return trees;
+
   }
+  
+  private Tree BuildPartialTree( int index, bool isSelected, List<UiSubnet> subnets, int skipDevices, int maxDevices ) {
+    var uiSubnet = subnets[index];
+    var subnet = uiSubnet.Subnet;
+
+    // Create a tree with an empty header since we're showing a continuation
+    var tree = new Tree( "" ).Guide( TreeGuide.Line );
+
+    var devices = subnet.Devices.Skip( skipDevices ).Take( maxDevices ).ToList();
+
+    foreach ( var device in devices ) {
+      string statusColor = device.IsOnline ? "green" : "red";
+      string statusText = device.IsOnline ? "Online" : "Offline";
+
+      string line =
+        $"[white]{device.IP.PadRight( GetIpWidth( subnets ) )}[/]  " +
+        $"[grey]{device.MAC.PadRight( GetMacWidth( subnets ) )}[/]  " +
+        $"[{statusColor}]{statusText.PadRight( _statusWidth )}[/]";
+
+      tree.AddNode( line );
+    }
+
+    return tree;
+  }
+
 
   private Tree BuildTree( int index, bool isSelected, List<UiSubnet> subnets, int? maxDeviceCount = null ) {
     var uiSubnet = subnets[index];

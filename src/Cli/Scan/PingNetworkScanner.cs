@@ -13,9 +13,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Scan;
 
-internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) : INetworkScanner {
+internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) : INetworkScanner, IScanService {
   //TODO make private or configurable
   internal const int MaxPingsPerSecond = 50;
+
+  public Task<ScanResult> ScanAsync( ScanRequest request, CancellationToken cancellationToken = default ) {
+    return ScanAsync( request.Cidrs, null, cancellationToken, request.MaxPingsPerSecond );
+  }
 
   public async Task<ScanResult> ScanAsync(
     List<CidrBlock> cidrs,
@@ -69,6 +73,8 @@ internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) :
     };
   }
 
+  public event EventHandler<ScanResult>? ResultUpdated;
+
   private async Task PingScanAsync( ConcurrentBag<(string Ip, bool Success, string? Hostname)> results,
     CidrBlock cidr,
     IOutputManager output,
@@ -110,6 +116,15 @@ internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) :
         }
 
         results.Add( ( ip, success, hostname ) );
+
+        if ( success ) {
+          ResultUpdated.Invoke( null,
+            new ScanResult {
+              Metadata = null,
+              Status = ScanResultStatus.InProgress,
+              DiscoveredDevices = ToDiscoveredDevices( results, ArpHelper.GetSystemCachedIpToMacMap() )
+            } );
+        }
 
         Interlocked.Increment( ref completed );
 

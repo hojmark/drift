@@ -12,7 +12,7 @@ public class Metadata {
   /// <summary>
   /// Local time
   /// </summary>
-  public required DateTime EndedAt {
+  public DateTime? EndedAt {
     get;
     init;
   }

@@ -1,10 +1,13 @@
-using Drift.Cli.Commands.Scan.Interactive.Simulation;
+using Drift.Domain;
+using Drift.Domain.Device.Addresses;
+using Drift.Domain.Extensions;
+using Drift.Domain.Scan;
 using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
 public class ScanUiApp {
-  private readonly IScanner _scanner;
+  private readonly IScanService _scanner;
   private readonly ScanLayout _layout2;
   private int _selectedIndex = 0;
   private int _scrollOffset = 0;
@@ -15,16 +18,21 @@ public class ScanUiApp {
   private readonly List<UiSubnet> _subnets = [];
 
 
-  public ScanUiApp( IScanner scanner ) {
+  public ScanUiApp( IScanService scanner ) {
     _scanner = scanner;
     _layout2 = new ScanLayout();
 
     // Subscribe to events instead of polling
-    _scanner.SubnetsUpdated += OnSubnetsUpdated;
+    //_scanner.SubnetsUpdated += OnSubnetsUpdated;
+    _scanner.ResultUpdated += OnSubnetsUpdated;
+  }
+
+  private Task StartScanAsync() {
+    return _scanner.ScanAsync( new ScanRequest { Cidrs = [new CidrBlock( "192.168.0.0/24" )] } );
   }
 
   public async Task RunAsync() {
-    _scanner.Start();
+    StartScanAsync();
 
     await AnsiConsole
       .Live( _layout2.Renderable )
@@ -38,7 +46,7 @@ public class ScanUiApp {
             HandleInput( pressed, _subnets );
 
           // UpdateSubnetsFromScanner();
-          Render( _subnets, _scanner.Progress );
+          Render( _subnets, /*_scanner.Progress*/ 40 );
 
           ctx.Refresh();
         }
@@ -48,6 +56,23 @@ public class ScanUiApp {
   private void Render( List<UiSubnet> subnets, uint progress ) {
     var renderer = new TreeRenderer();
     int availableRows = _layout2.GetAvailableRows();
+    int totalHeight = renderer.GetTotalHeight( subnets );
+    int maxScroll = Math.Max( 0, totalHeight - availableRows );
+
+    // Debug information (remove after fixing)
+    _layout2.UpdateData(
+      $"ScrollOffset: {_scrollOffset}, MaxScroll: {maxScroll}, TotalHeight: {totalHeight}, AvailableRows: {availableRows}" );
+
+    _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );
+
+    var trees = renderer.RenderTrees( _scrollOffset, availableRows, _selectedIndex, subnets );
+
+    _layout2.UpdateScanTree( trees );
+
+    _layout2.UpdateProgress( progress );
+
+    /*var renderer = new TreeRenderer();
+    int availableRows = _layout2.GetAvailableRows();
     int maxScroll = Math.Max( 0, renderer.GetTotalHeight( subnets ) - availableRows );
     _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );
 
@@ -55,7 +80,7 @@ public class ScanUiApp {
 
     _layout2.UpdateMainPanel( trees );
 
-    _layout2.UpdateProgress( progress );
+    _layout2.UpdateProgress( progress );*/
   }
 
   private void HandleInput( ConsoleKey key, List<UiSubnet> subnets ) {
@@ -88,14 +113,24 @@ public class ScanUiApp {
         break;
       case InputAction.RestartScan:
         _subnets.Clear();
-        _scanner.Start();
+        StartScanAsync();
         _selectedIndex = 0;
         _scrollOffset = 0;
+        break;
+      case InputAction.ToggleLog:
+        _layout2.ShowLogs = !_layout2.ShowLogs;
         break;
     }
   }
 
-  private void OnSubnetsUpdated( object? sender, List<Subnet> currentSubnets ) {
+  private void OnSubnetsUpdated( object? sender, ScanResult scanResult ) {
+    List<Subnet> currentSubnets = [
+      new("192.168.0.0/24",
+        scanResult.DiscoveredDevices.Select( dd =>
+          new Device( dd.Get( AddressType.IpV4 ) ?? "n/a", dd.Get( AddressType.Mac ) ?? "n/a", true )
+        ).ToList()
+      )
+    ];
     // Same logic as before, but triggered by events
     var existingSubnetsMap = _subnets.ToDictionary( ui => ui.Subnet.Address, ui => ui );
     var updatedUiSubnets = new List<UiSubnet>();

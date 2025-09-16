@@ -1,4 +1,8 @@
 using Drift.Cli.Commands.Scan.Interactive.Simulation;
+using Drift.Cli.Scan;
+using Drift.Cli.Tests.Utils;
+using Drift.Cli.Tools;
+using Drift.Domain.Scan;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
@@ -23,7 +27,8 @@ public static class NewScanUi {
   // TODO themes: greyscale, light, default
 
   public static async Task Show() {
-    var scanner = new SimulatedScanner( DemoScan1 );
+    IScanService scanner = new SimulatedScanner( DemoScan1 );
+    scanner = new PingNetworkScanner( new NullOutputManager(), new OsPingTool() );
     var app = new ScanUiApp( scanner );
     await app.RunAsync();
   }

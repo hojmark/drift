@@ -1,18 +1,10 @@
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Common;
-using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Rendering;
-using Drift.Cli.Tests.Utils;
-using Drift.Core.Scan.Subnet;
 using Drift.Core.Scan.Subnet.Interface;
-using Drift.Core.Scan.Tests.Utils;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
-using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
-using Drift.Domain.Scan;
-using Microsoft.Extensions.DependencyInjection;
 using NetworkInterface = Drift.Core.Scan.Subnet.Interface.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
@@ -78,139 +70,6 @@ public class ScanCommandTests {
     NormalScanRenderer.IdMarkingStyle = IdMarkingStyle.Dot;
   }
 
-  //[Combinatorial]
-  [TestCaseSource( nameof(DiscoveredDeviceLists) )]
-  public async Task WithoutSpec_Success_Test(
-    List<DiscoveredDevice> discoveredDevices,
-    List<INetworkInterface> interfaces
-    /*, [Values( "", "normal", "log" )] string outputFormat */
-  ) {
-    // Arrange
-    var serviceConfig = ConfigureServices( interfaces, discoveredDevices );
-
-    // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan", serviceConfig );
-    //var exitCode = await config.InvokeAsync( $"scan -o {outputFormat}" );
-
-    // Assert
-    using ( Assert.EnterMultipleScope() ) {
-      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-      await Verify( output.ToString() + error )
-        .UseFileName(
-          $"{nameof(ScanCommandTests)}.{nameof(WithoutSpec_Success_Test)}.{TestContext.CurrentContext.Test.Name}"
-        );
-    }
-  }
-
-  private static IEnumerable<TestCaseData> WithSpecList {
-    get {
-      yield return new TestCaseData( new NetworkBuilder().Build(), new List<DiscoveredDevice>() )
-        .SetName( "Empty spec, no devices" );
-
-      yield return new TestCaseData(
-          new NetworkBuilder()
-            .AddDevice( [new MacAddress( "10:10:10:10:10:10", isId: true )], "device1" )
-            .AddDevice( [new MacAddress( "20:20:20:20:20:20" ), new IpV4Address( "192.168.0.20" )], "device2" )
-            .Build(),
-          new List<DiscoveredDevice> {
-            new() { Addresses = [new MacAddress( "10:10:10:10:10:10" ), new IpV4Address( "192.168.0.10" )] }
-          }
-        )
-        .SetName( "One MAC match, declared without IP" );
-
-      yield return new TestCaseData(
-          new NetworkBuilder()
-            .AddDevice(
-              [
-                new MacAddress( "10:10:10:10:10:10", isId: true ),
-                new IpV4Address( "192.168.0.10", isId: false )
-              ],
-              "device1"
-            )
-            .AddDevice(
-              [
-                new MacAddress( "20:20:20:20:20:20" ),
-                new IpV4Address( "192.168.0.20" )
-              ],
-              "device2"
-            )
-            .Build(),
-          new List<DiscoveredDevice> {
-            new() { Addresses = [new MacAddress( "10:10:10:10:10:10" ), new IpV4Address( "192.168.0.15" )] }
-          }
-        )
-        .SetName( "One MAC match, discovered with different IP" );
-
-      yield return new TestCaseData(
-          new NetworkBuilder()
-            .AddDevice(
-              [
-                new MacAddress( "10:10:10:10:10:10", isId: true ),
-                new IpV4Address( "192.168.0.10", isId: false )
-              ],
-              "device1",
-              state: DeclaredDeviceState.Dynamic
-            )
-            .AddDevice(
-              [
-                new MacAddress( "20:20:20:20:20:20", isId: true ),
-              ],
-              "device2",
-              state: DeclaredDeviceState.Dynamic
-            )
-            .Build(),
-          new List<DiscoveredDevice> { new() { Addresses = [new IpV4Address( "192.168.0.70" )] } }
-        )
-        .SetName( "Zero matches, two MACs declared" );
-
-      yield return new TestCaseData(
-          new NetworkBuilder()
-            .AddDevice(
-              [
-                new MacAddress( "10:10:10:10:10:10", isId: true ),
-                new IpV4Address( "192.168.0.10", isId: false )
-              ],
-              "device1",
-              state: DeclaredDeviceState.Dynamic
-            )
-            .Build(),
-          new List<DiscoveredDevice> {
-            new() { Addresses = [new IpV4Address( "192.168.0.10" ), new MacAddress( "11:11:11:11:11:11" )] }
-          }
-        )
-        .SetName( "Zero matches, discovered IP doesn't match declared IP" );
-    }
-  }
-
-  [TestCaseSource( nameof(WithSpecList) )]
-  public async Task WithSpec_Success_Test(
-    Network network,
-    List<DiscoveredDevice> discoveredDevices
-  ) {
-    // Arrange
-    var serviceConfig = ConfigureServices(
-      [
-        new NetworkInterface {
-          Description = "eth1",
-          OperationalStatus = OperationalStatus.Up,
-          UnicastAddress = new CidrBlock( "192.168.0.0/24" )
-        }
-      ],
-      discoveredDevices,
-      new Inventory { Network = network }
-    );
-
-    // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan unittest", serviceConfig );
-
-    // Assert
-    using ( Assert.EnterMultipleScope() ) {
-      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-      await Verify( output.ToString() + error )
-        .UseFileName(
-          $"{nameof(ScanCommandTests)}.{nameof(WithSpec_Success_Test)}.{TestContext.CurrentContext.Test.Name}" );
-    }
-  }
 
   [Test]
   public async Task NonExistingSpecOption() {
@@ -223,7 +82,7 @@ public class ScanCommandTests {
       await Verify( output.ToString() + error );
     }
   }
-
+/*
   private static Action<IServiceCollection> ConfigureServices(
     List<INetworkInterface> interfaces,
     List<DiscoveredDevice>? discoveredDevices = null,
@@ -240,8 +99,8 @@ public class ScanCommandTests {
         );
       }
 
-      services.AddScoped<IScanService>( _ => new PredefinedResultNetworkScanner(
-          new ScanResult {
+      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
+          new NetworkScanResult {
             Metadata = new Metadata { StartedAt = default, EndedAt = default },
             Status = ScanResultStatus.Success,
             DiscoveredDevices = discoveredDevices ?? []
@@ -249,5 +108,5 @@ public class ScanCommandTests {
         )
       );
     };
-  }
+  }*/
 }

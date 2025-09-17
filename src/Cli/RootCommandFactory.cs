@@ -8,7 +8,6 @@ using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Logging;
 using Drift.Core.Scan;
-using Drift.Core.Scan.Subnet;
 using Drift.Core.Scan.Subnet.Interface;
 using Drift.Domain.Scan;
 using Microsoft.Extensions.DependencyInjection;
@@ -107,7 +106,7 @@ internal static class RootCommandFactory {
 
   private static void ConfigureNetworkScanner( IServiceCollection services ) {
     services.AddSingleton<IPingTool, OsPingTool>();
-    services.AddScoped<IScanService, PingNetworkScanner>();
+    services.AddScoped<INetworkScanner, PingNetworkScanner>();
   }
 
   private static void AddFigletHeaderToHelpCommand( RootCommand rootCommand ) {

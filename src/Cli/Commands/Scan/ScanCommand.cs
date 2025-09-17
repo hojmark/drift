@@ -1,13 +1,11 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
-using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Renderer;
-using Drift.Core.Scan;
 using Drift.Core.Scan.Subnet;
 using Drift.Core.Scan.Subnet.Interface;
 using Drift.Domain;
@@ -62,7 +60,7 @@ internal class ScanCommand : CommandBase<ScanParameters, ScanCommandHandler> {
 
 public class ScanCommandHandler(
   IOutputManager output,
-  IScanService scanner,
+  INetworkScanner scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ISpecFileProvider specProvider
 ) : ICommandHandler<ScanParameters> {
@@ -78,11 +76,6 @@ public class ScanCommandHandler(
       return ExitCodes.GeneralError;
     }
 
-    if ( parameters.Interactive ) {
-      await NewScanUi.Show();
-      return ExitCodes.Success;
-    }
-
     var subnetProviders = new List<ISubnetProvider> { interfaceSubnetProvider };
     if ( network != null ) {
       subnetProviders.Add( new DeclaredSubnetProvider( network.Subnets ) );
@@ -95,7 +88,14 @@ public class ScanCommandHandler(
 
     var subnets = subnetProvider.Get();
 
-    var scanRequest = new ScanRequest { Cidrs = subnets };
+    var scanRequest = new NetworkScanOptions { Cidrs = subnets };
+
+    if ( parameters.Interactive ) {
+      //await NewScanUi.Show( scanRequest );
+      var ui = new InteractiveScanUi( scanner );
+      await ui.RunAsync( scanRequest );
+      return ExitCodes.Success;
+    }
 
     output.Normal.WriteLine( 0,
       $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : "" )}" ); // TODO many more varieties
@@ -114,7 +114,7 @@ public class ScanCommandHandler(
       string.Join( ", ", subnets )
     );
 
-    ScanResult? scanResult = null;
+    NetworkScanResult? scanResult = null;
 
     if ( output.Is( OutputFormat.Normal ) ) {
       var dCol = new TaskDescriptionColumn();
@@ -163,12 +163,14 @@ public class ScanCommandHandler(
 
     output.Normal.WriteLine();
 
-    renderer.Render(
-      new ScanRenderData {
-        DevicesDiscovered = scanResult.DiscoveredDevices,
-        DevicesDeclared = network == null ? [] : network.Devices.Where( d => d.Enabled ?? true )
-      } /*, output.Log*/
-    );
+    output.Normal.WriteError( "Not rendering!" );
+
+    /*  renderer.Render(
+        new ScanRenderData {
+          DevicesDiscovered = scanResult.DiscoveredDevices,
+          DevicesDeclared = network == null ? [] : network.Devices.Where( d => d.Enabled ?? true )
+        }
+      );*/
 
     output.Log.LogDebug( "Scan command completed" );
 

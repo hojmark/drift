@@ -5,13 +5,13 @@ using Drift.Utils;
 namespace Drift.Cli;
 
 internal static class ScanRequestExtensions {
-  internal static TimeSpan Duration( this ScanRequest scanRequest ) {
+  internal static TimeSpan Duration( this NetworkScanOptions scanRequest ) {
     return scanRequest.Cidrs.Aggregate( TimeSpan.Zero,
       ( current, cidr ) => current + Duration( scanRequest, cidr )
     );
   }
 
-  internal static TimeSpan Duration( this ScanRequest scanRequest, CidrBlock cidr ) {
+  internal static TimeSpan Duration( this NetworkScanOptions scanRequest, CidrBlock cidr ) {
     if ( !scanRequest.Cidrs.Contains( cidr ) ) {
       throw new ArgumentException( "CIDR block not found in scan request", nameof(cidr) );
     }

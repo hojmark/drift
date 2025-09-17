@@ -11,7 +11,7 @@ public class DependencyTests : DriftArchitectureFixture {
       .ResideInAssemblyMatching( @"Drift\.Cli$" )
       .Or()
       .ResideInAssemblyMatching( @"Drift\.Cli\..*" )
-      .As( "CLI Assemblies" );
+      .As( "Cli* assemblies" );
 
   private readonly IObjectProvider<IType> _testAssemblyTypes =
     Types().That()
@@ -36,7 +36,7 @@ public class DependencyTests : DriftArchitectureFixture {
     var rule = nonCliAssemblies
       .Should()
       .NotDependOnAny( _cliAssemlblyTypes )
-      .Because( "CLI assemblies are presentation layer and should not be dependencies for other layers" );
+      .Because( "they are presentation layer" );
 
     rule.Check( DriftArchitecture );
   }

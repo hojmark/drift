@@ -4,7 +4,6 @@ using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Cli.Commands.Scan.Subnet;
-using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Tests.Utils;
 using Drift.Core.Scan.Tests.Utils;
 using Drift.Domain;
@@ -230,8 +229,8 @@ public class ScanCommandTests {
     Inventory? inventory = null
   ) {
     return services => {
-      services.AddScoped<IInterfaceSubnetProvider>( sp =>
-        new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), interfaces )
+      services.AddScoped<IInterfaceSubnetProvider>( _ =>
+        new PredefinedInterfaceSubnetProvider( interfaces )
       );
 
       if ( inventory != null ) {

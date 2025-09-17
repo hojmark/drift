@@ -3,6 +3,7 @@ using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Logging;
 using Drift.Cli.Tests.Utils;
 using Drift.Core.Scan.Tests.Utils;
 using Drift.Domain;
@@ -83,7 +84,7 @@ public class InitCommandTests {
     var serviceConfig = ( IServiceCollection services ) => {
       services.AddScoped<IScanService>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
       services.AddScoped<IInterfaceSubnetProvider>( sp =>
-        new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), Interfaces )
+        new PredefinedInterfaceSubnetProvider( Interfaces, sp.GetRequiredService<IOutputManager>().GetCompoundLogger() )
       );
     };
 

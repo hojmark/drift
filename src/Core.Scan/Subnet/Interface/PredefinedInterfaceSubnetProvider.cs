@@ -1,7 +1,6 @@
-using Drift.Core.Scan.Subnet;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Tests.Utils;
+namespace Drift.Core.Scan.Subnet.Interface;
 
 public class PredefinedInterfaceSubnetProvider( List<INetworkInterface> interfaces, ILogger? logger = null )
   : InterfaceSubnetProviderBase( logger ) {

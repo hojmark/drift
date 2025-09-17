@@ -4,7 +4,7 @@ using Drift.Domain;
 using Drift.Utils;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Core.Scan.Subnet;
+namespace Drift.Core.Scan.Subnet.Interface;
 
 public class PhysicalInterfaceSubnetProvider( ILogger logger ) : InterfaceSubnetProviderBase( logger ) {
   private static List<System.Net.NetworkInformation.NetworkInterface> GetPhysicalInterfaces() {

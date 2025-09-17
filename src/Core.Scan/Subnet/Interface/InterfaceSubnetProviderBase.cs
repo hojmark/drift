@@ -3,7 +3,7 @@ using Drift.Domain;
 using Drift.Utils;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Core.Scan.Subnet;
+namespace Drift.Core.Scan.Subnet.Interface;
 
 public abstract class InterfaceSubnetProviderBase( ILogger? logger ) : IInterfaceSubnetProvider {
   public abstract List<INetworkInterface> GetInterfaces();

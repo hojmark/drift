@@ -1,3 +1,4 @@
+using Drift.Cli.Commands.Scan.Interactive.Models;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Extensions;
@@ -9,8 +10,8 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 public class ScanUiApp {
   private readonly IScanService _scanner;
   private readonly ScanLayout _layout2;
-  private int _selectedIndex = 0;
-  private int _scrollOffset = 0;
+  private int _selectedIndex;
+  private int _scrollOffset;
   private bool _running = true;
 
   //TODO should get IDisposable warning?
@@ -42,8 +43,9 @@ public class ScanUiApp {
           await Task.WhenAny( _inputWatcher.WaitForNextKeyAsync(), Task.Delay( 250 ) );
 
           var key = _inputWatcher.ConsumeKey();
-          if ( key is { } pressed )
+          if ( key is { } pressed ) {
             HandleInput( pressed, _subnets );
+          }
 
           // UpdateSubnetsFromScanner();
           Render( _subnets, /*_scanner.Progress*/ 40 );
@@ -84,7 +86,7 @@ public class ScanUiApp {
   }
 
   private void HandleInput( ConsoleKey key, List<UiSubnet> subnets ) {
-    var action = InputHandler.MapKey( key );
+    var action = InputMapper.MapKey( key );
 
     switch ( action ) {
       case InputAction.Quit:
@@ -124,12 +126,14 @@ public class ScanUiApp {
   }
 
   private void OnSubnetsUpdated( object? sender, ScanResult scanResult ) {
-    List<Subnet> currentSubnets = [
-      new("192.168.0.0/24",
-        scanResult.DiscoveredDevices.Select( dd =>
-          new Device( dd.Get( AddressType.IpV4 ) ?? "n/a", dd.Get( AddressType.Mac ) ?? "n/a", true )
-        ).ToList()
-      )
+    List<Models.Subnet> currentSubnets = [
+      new() {
+        Address = "192.168.0.0/24",
+        Devices = scanResult.DiscoveredDevices.Select( dd =>
+          new Device {
+            Ip = dd.Get( AddressType.IpV4 ) ?? "n/a", Mac = dd.Get( AddressType.Mac ) ?? "n/a", IsOnline = true
+          } ).ToList()
+      }
     ];
     // Same logic as before, but triggered by events
     var existingSubnetsMap = _subnets.ToDictionary( ui => ui.Subnet.Address, ui => ui );
@@ -184,7 +188,7 @@ public class ScanUiApp {
 }
 
 public class UiSubnet {
-  public Subnet Subnet {
+  public Models.Subnet Subnet {
     get;
   }
 
@@ -193,8 +197,7 @@ public class UiSubnet {
     set;
   }
 
-
-  public UiSubnet( Subnet subnet, bool isExpanded = true ) {
+  public UiSubnet( Models.Subnet subnet, bool isExpanded = true ) {
     Subnet = subnet;
     IsExpanded = isExpanded;
   }

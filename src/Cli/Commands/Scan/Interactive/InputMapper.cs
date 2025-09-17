@@ -15,7 +15,7 @@ public enum InputAction {
   ToggleLog
 }
 
-public static class InputHandler {
+public static class InputMapper {
   public static InputAction MapKey( ConsoleKey key ) => key switch {
     ConsoleKey.Q => InputAction.Quit,
     ConsoleKey.W => InputAction.ScrollUp,

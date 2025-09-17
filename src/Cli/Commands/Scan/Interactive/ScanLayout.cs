@@ -6,7 +6,7 @@ using Spectre.Console.Rendering;
 public class ScanLayout {
   private readonly Layout _layout;
 
-  private bool _showLogs = true;
+  private bool _showLogs;
   private readonly Layout _scanTree;
   private readonly Layout _log;
 
@@ -35,7 +35,7 @@ public class ScanLayout {
     _log = new Layout( "Log" );
 
     _layout["Header"].Update( BuildHeader() );
-    _layout["Progress"].Update( BuildProgressBar( 0 ) );
+    UpdateProgress( 0 );
     _layout["Footer"].Update( BuildFooter() );
 
     UpdateMainPanel( _showLogs );
@@ -48,8 +48,7 @@ public class ScanLayout {
       mainPanelChildren.Add( _log );
     }
 
-    _layout["MainPanel"].SplitColumns(mainPanelChildren.ToArray());
-
+    _layout["MainPanel"].SplitColumns( mainPanelChildren.ToArray() );
   }
 
 
@@ -96,7 +95,7 @@ public class ScanLayout {
       { "↑/↓" /*"/←/→"*/, "navigate" },
       { "space", "expansion" },
       { "w/s", "scroll" },
-      { "l", "log" },
+      // TODO { "l", "log" },
       { "h", "help" }
     };
 

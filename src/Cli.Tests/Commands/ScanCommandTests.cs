@@ -239,7 +239,7 @@ public class ScanCommandTests {
         );
       }
 
-      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
+      services.AddScoped<IScanService>( _ => new PredefinedResultNetworkScanner(
           new ScanResult {
             Metadata = new Metadata { StartedAt = default, EndedAt = default },
             Status = ScanResultStatus.Success,

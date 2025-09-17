@@ -1,3 +1,4 @@
+using Drift.Cli.Commands.Scan.Interactive.Models;
 using Drift.Domain.Scan;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Device.Addresses;
@@ -19,7 +20,6 @@ public class SimulatedScanner : IScanService, IDisposable {
     }
   }
 
-  public event EventHandler<List<Subnet>>? SubnetsUpdated;
   public event EventHandler<ScanResult>? ResultUpdated;
 
   private readonly List<Device> _allDevices;
@@ -93,10 +93,9 @@ public class SimulatedScanner : IScanService, IDisposable {
 
   private void UpdateAndFireEvents() {
     var currentSubnets = _session.Subnets
-      .Select( s => new Subnet( s.Address, [.._visibleBySubnet[s.Address]] ) )
+      .Select( s => new Models.Subnet { Address = s.Address, Devices = [.._visibleBySubnet[s.Address]] } )
       .ToList();
 
-    SubnetsUpdated?.Invoke( this, currentSubnets );
     ResultUpdated?.Invoke( this,
       new ScanResult {
         Metadata = null,
@@ -116,10 +115,10 @@ public class SimulatedScanner : IScanService, IDisposable {
   }
 
   private static DiscoveredDevice ConvertToDiscoveredDevice( Device device ) {
-    var addresses = new List<IDeviceAddress> { new IpV4Address( device.IP ) };
+    var addresses = new List<IDeviceAddress> { new IpV4Address( device.Ip ) };
 
-    if ( !string.IsNullOrWhiteSpace( device.MAC ) ) {
-      addresses.Add( new MacAddress( device.MAC ) );
+    if ( !string.IsNullOrWhiteSpace( device.Mac ) ) {
+      addresses.Add( new MacAddress( device.Mac ) );
     }
 
     return new DiscoveredDevice { Addresses = addresses };

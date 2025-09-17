@@ -80,7 +80,7 @@ public class InitCommandTests {
   ) {
     // Arrange
     var serviceConfig = ( IServiceCollection services ) => {
-      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
+      services.AddScoped<IScanService>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
       services.AddScoped<IInterfaceSubnetProvider>( sp =>
         new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), Interfaces )
       );
@@ -112,7 +112,7 @@ public class InitCommandTests {
   public async Task GenerateSpecWithoutDiscoverySuccess() {
     // Arrange
     var serviceConfig = ( IServiceCollection services ) => {
-      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
+      services.AddScoped<IScanService>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
     };
 
     // Act

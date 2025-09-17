@@ -5,11 +5,11 @@ public class ScanSession {
     get;
   }
 
-  public List<Subnet> Subnets {
+  public List<Models.Subnet> Subnets {
     get;
   }
 
-  public ScanSession( TimeSpan duration, List<Subnet> subnets ) {
+  public ScanSession( TimeSpan duration, List<Models.Subnet> subnets ) {
     Duration = duration;
     Subnets = subnets;
   }

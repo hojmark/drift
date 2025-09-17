@@ -1,7 +1,5 @@
 namespace Drift.Cli.Commands.Scan.Interactive.Models;
 
-
-
 public class Device {
   public required string Ip {
     get;

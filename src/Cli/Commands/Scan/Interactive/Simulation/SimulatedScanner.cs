@@ -42,15 +42,15 @@ public class SimulatedScanner : IScanService, IDisposable {
   private bool _started;
   private DateTime _startedAt;
   private HashSet<Device> _visibleDevices = [];
-  private readonly ScanSession _session;
+  private readonly SimulatedScanOptions _options;
 
-  public SimulatedScanner( ScanSession session ) {
-    _session = session;
-    _duration = session.Duration;
-    _allDevices = session.Subnets.SelectMany( s => s.Devices ).ToList();
+  public SimulatedScanner( SimulatedScanOptions options ) {
+    _options = options;
+    _duration = options.Duration;
+    _allDevices = options.Subnets.SelectMany( s => s.Devices ).ToList();
     _totalDevices = _allDevices.Count;
 
-    foreach ( var subnet in session.Subnets )
+    foreach ( var subnet in options.Subnets )
       _visibleBySubnet[subnet.Address] = [];
 
     // Create timer but don't start it yet
@@ -87,7 +87,7 @@ public class SimulatedScanner : IScanService, IDisposable {
         continue;
 
       hasChanges = true;
-      var subnet = _session.Subnets.First( s => s.Devices.Contains( device ) );
+      var subnet = _options.Subnets.First( s => s.Devices.Contains( device ) );
       _visibleBySubnet[subnet.Address].Add( device );
     }
 
@@ -103,7 +103,7 @@ public class SimulatedScanner : IScanService, IDisposable {
   }
 
   private void UpdateAndFireEvents() {
-    var currentSubnets = _session.Subnets
+    var currentSubnets = _options.Subnets
       .Select( s => new Models.Subnet { Address = s.Address, Devices = [.._visibleBySubnet[s.Address]] } )
       .ToList();
 

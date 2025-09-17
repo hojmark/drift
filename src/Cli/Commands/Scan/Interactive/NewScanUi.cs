@@ -5,9 +5,9 @@ using Drift.Core.Scan;
 namespace Drift.Cli.Commands.Scan.Interactive;
 
 public static class NewScanUi {
-  private static readonly ScanSession DemoScan1 = new(
-    TimeSpan.FromSeconds( 10 ),
-    [
+  private static readonly SimulatedScanOptions DemoScan1 = new() {
+    Duration = TimeSpan.FromSeconds( 10 ),
+    Subnets = [
       new Models.Subnet {
         Address = "192.168.1.0/24",
         Devices = [
@@ -24,7 +24,7 @@ public static class NewScanUi {
         ]
       }
     ]
-  );
+  };
 
   // TODO themes: greyscale, light, default
 

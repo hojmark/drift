@@ -1,20 +1,5 @@
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-public enum InputAction {
-  None,
-  Quit,
-  ScrollUp,
-  ScrollDown,
-  MoveUp,
-  MoveDown,
-  Expand,
-  Collapse,
-  ToggleSelected,
-  ToggleByIndex,
-  RestartScan,
-  ToggleLog
-}
-
 public static class InputMapper {
   public static InputAction MapKey( ConsoleKey key ) => key switch {
     ConsoleKey.Q => InputAction.Quit,

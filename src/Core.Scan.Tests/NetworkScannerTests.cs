@@ -1,12 +1,11 @@
 using System.Net;
 using System.Text.RegularExpressions;
-using Drift.Cli.Output;
-using Drift.Cli.Scan;
-using Drift.Cli.Tests.Utils;
+using Drift.Core.Scan.Tests.Utils;
 using Drift.Domain;
 using Drift.Domain.Scan;
+using Drift.TestUtilities;
 
-namespace Drift.Cli.Tests;
+namespace Drift.Core.Scan.Tests;
 
 public class NetworkScannerTests {
   [Test]
@@ -26,22 +25,19 @@ public class NetworkScannerTests {
     ).ToList();
     var pingTool = new TestPingTool( successfulIps );
 
-    var stdOut = new StringWriter();
-    var errOut = new StringWriter();
-    var testOutputManager =
-      new OutputManagerFactory( false ).Create( OutputFormat.Normal, true, stdOut, errOut, true );
+    var logger = new StringLogger();
 
-    var scanner = new PingNetworkScanner( testOutputManager, pingTool );
+    var scanner = new PingNetworkScanner( pingTool );
 
     // Act
     var result = await scanner.ScanAsync(
-      new ScanRequest { Cidrs = subnets, MaxPingsPerSecond = int.MaxValue } /*, networkProvider*/
+      new ScanRequest { Cidrs = subnets, MaxPingsPerSecond = int.MaxValue } /*, networkProvider*/, logger
     );
 
     // Assert
     Assert.That( result, Is.Not.Null );
     Assert.That( result.Status, Is.EqualTo( ScanResultStatus.Success ) );
-    await Verify( stdOut.ToString() + errOut )
+    await Verify( logger.ToString() )
       .ScrubLinesWithReplace( line =>
         Regex.Replace(
           Regex.Replace(

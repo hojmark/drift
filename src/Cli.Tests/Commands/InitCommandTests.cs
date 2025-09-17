@@ -4,6 +4,7 @@ using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Tests.Utils;
+using Drift.Core.Scan.Tests.Utils;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;

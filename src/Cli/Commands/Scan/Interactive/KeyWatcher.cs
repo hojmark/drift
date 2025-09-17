@@ -4,10 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using System;
-using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
 
 public class AsyncKeyInputWatcher : IAsyncDisposable {
   private readonly ConcurrentQueue<ConsoleKey> _keyBuffer = new();

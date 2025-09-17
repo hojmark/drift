@@ -6,6 +6,7 @@ using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Tests.Utils;
+using Drift.Core.Scan.Tests.Utils;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
@@ -108,7 +109,7 @@ public class ScanCommandTests {
 
       yield return new TestCaseData(
           new NetworkBuilder()
-            .AddDevice( [new MacAddress( "10:10:10:10:10:10" , isId: true )], "device1" )
+            .AddDevice( [new MacAddress( "10:10:10:10:10:10", isId: true )], "device1" )
             .AddDevice( [new MacAddress( "20:20:20:20:20:20" ), new IpV4Address( "192.168.0.20" )], "device2" )
             .Build(),
           new List<DiscoveredDevice> {

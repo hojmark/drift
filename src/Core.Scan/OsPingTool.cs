@@ -1,9 +1,10 @@
 using Drift.Utils;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Tools;
+namespace Drift.Core.Scan;
 
-internal class OsPingTool : IPingTool {
+//TODO should be possible to make internal by adding to dependency injection via this project
+public class OsPingTool : IPingTool {
   private static string ToolPath => "ping";
 
   public Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> RunAsync(

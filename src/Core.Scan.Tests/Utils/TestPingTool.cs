@@ -1,13 +1,15 @@
 using System.Net;
 using System.Text.RegularExpressions;
-using Drift.Cli.Tools;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Tests.Utils;
+namespace Drift.Core.Scan.Tests.Utils;
 
 public class TestPingTool( List<IPAddress> successful ) : IPingTool {
-  public Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> RunAsync( string arguments,
-    bool? logCommand, ILogger? logger = null ) {
+  public Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> RunAsync(
+    string arguments,
+    bool? logCommand,
+    ILogger? logger = null
+  ) {
     // Find IPv4 address in arguments string
     var match = Regex.Match( arguments, @"\b(?:(?:25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)(?:\.|$)){4}\b" );
 

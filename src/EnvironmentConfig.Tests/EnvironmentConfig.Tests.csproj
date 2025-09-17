@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <Using Include="NUnit.Framework"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\EnvironmentConfig\EnvironmentConfig.csproj"/>
         <ProjectReference Include="..\TestUtilities\TestUtilities.csproj"/>
     </ItemGroup>
@@ -12,10 +16,6 @@
         <PackageReference Include="NUnit.Analyzers"/>
         <PackageReference Include="NUnit3TestAdapter"/>
         <PackageReference Include="Verify.NUnit"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="NUnit.Framework"/>
     </ItemGroup>
 
 </Project>

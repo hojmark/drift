@@ -7,8 +7,7 @@ using Drift.Cli.Commands.Scan;
 using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
-using Drift.Cli.Scan;
-using Drift.Cli.Tools;
+using Drift.Core.Scan;
 using Drift.Domain.Scan;
 using Microsoft.Extensions.DependencyInjection;
 

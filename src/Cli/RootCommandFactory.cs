@@ -104,7 +104,7 @@ internal static class RootCommandFactory {
 
   private static void ConfigureNetworkScanner( IServiceCollection services ) {
     services.AddSingleton<IPingTool, OsPingTool>();
-    services.AddScoped<INetworkScanner, PingNetworkScanner>();
+    services.AddScoped<IScanService, PingNetworkScanner>();
   }
 
   private static void AddFigletHeaderToHelpCommand( RootCommand rootCommand ) {

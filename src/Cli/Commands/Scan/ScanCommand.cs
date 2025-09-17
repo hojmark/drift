@@ -61,7 +61,7 @@ internal class ScanCommand : CommandBase<ScanParameters, ScanCommandHandler> {
 
 public class ScanCommandHandler(
   IOutputManager output,
-  INetworkScanner scanner,
+  IScanService scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ISpecFileProvider specProvider
 ) : ICommandHandler<ScanParameters> {
@@ -131,7 +131,7 @@ public class ScanCommandHandler(
           //progressBars["DNS resolution"] = ctx.AddTask( "DNS resolution" );
           //progressBars["Connect Scan"] = ctx.AddTask( "Connect Scan" );
 
-          return await scanner.ScanAsync( subnets, onProgress: progressReport => {
+          return await scanner.ScanAsyncOld( new ScanRequest { Cidrs = subnets }, onProgress: progressReport => {
             UpdateProgressBar( progressReport, ctx, progressBars );
           }, cancellationToken: CancellationToken.None );
         } );
@@ -141,7 +141,7 @@ public class ScanCommandHandler(
       var lastLogTime = DateTime.MinValue;
       var completedTasks = new HashSet<string>();
 
-      scanResult = await scanner.ScanAsync( subnets, onProgress: progressReport => {
+      scanResult = await scanner.ScanAsyncOld( new ScanRequest { Cidrs = subnets }, onProgress: progressReport => {
         UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
       }, cancellationToken: CancellationToken.None );
     }

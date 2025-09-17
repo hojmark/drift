@@ -2,6 +2,7 @@ using Drift.Cli.Commands.Scan.Interactive.Models;
 using Drift.Domain.Scan;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Device.Addresses;
+using Drift.Domain.Progress;
 
 namespace Drift.Cli.Commands.Scan.Interactive.Simulation;
 
@@ -18,6 +19,10 @@ public class SimulatedScanner : IScanService, IDisposable {
 
       return (uint) Math.Clamp( ratio * 100, 0, 100 );
     }
+  }
+
+  public Task<ScanResult> ScanAsyncOld( ScanRequest request, Action<ProgressReport>? onProgress = null, CancellationToken cancellationToken = default ) {
+    throw new NotImplementedException();
   }
 
   public event EventHandler<ScanResult>? ResultUpdated;

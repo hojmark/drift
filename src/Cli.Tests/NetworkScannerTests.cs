@@ -34,7 +34,9 @@ public class NetworkScannerTests {
     var scanner = new PingNetworkScanner( testOutputManager, pingTool );
 
     // Act
-    var result = await scanner.ScanAsync( subnets /*, networkProvider*/, maxPingsPerSecond: int.MaxValue );
+    var result = await scanner.ScanAsync(
+      new ScanRequest { Cidrs = subnets, MaxPingsPerSecond = int.MaxValue } /*, networkProvider*/
+    );
 
     // Assert
     Assert.That( result, Is.Not.Null );

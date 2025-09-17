@@ -67,7 +67,7 @@ internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
 
 public class InitCommandHandler(
   IOutputManager output,
-  INetworkScanner scanner,
+  IScanService scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider
 ) : ICommandHandler<InitParameters> {
   public async Task<int> Invoke( InitParameters parameters, CancellationToken cancellationToken ) {
@@ -214,7 +214,7 @@ public class InitCommandHandler(
           await AnsiConsole
             .Status()
             .StartAsync( "Scanning network ...", async ctx => {
-              scanResult = await scanner.ScanAsync( subnets );
+              scanResult = await scanner.ScanAsync( new ScanRequest { Cidrs = subnets } );
               await Task.Delay( 1500 );
             } );
         }
@@ -224,7 +224,7 @@ public class InitCommandHandler(
           var lastLogTime = DateTime.MinValue;
           var completedTasks = new HashSet<string>();
 
-          scanResult = await scanner.ScanAsync( subnets, onProgress: progressReport => {
+          scanResult = await scanner.ScanAsyncOld( new ScanRequest { Cidrs = subnets }, onProgress: progressReport => {
             ScanCommandHandler.UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
           }, cancellationToken: CancellationToken.None );
         }

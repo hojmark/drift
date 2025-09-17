@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using Drift.Core.Abstractions;
 using Drift.Core.Scan.Model;
 using Drift.Core.Scan.Model.Progress;
 using Drift.Core.Scan.Subnet;
@@ -8,6 +7,7 @@ using Drift.Domain.NeoProgress;
 using Drift.Domain.Progress;
 using Drift.Utils;
 using Drift.Utils.Tools;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Drift.Core.Scan;
@@ -21,70 +21,40 @@ public class ScanService : IScanService {
     _pingTool = pingTool;
   }
 
-  public enum ScanStep {
-    Init,
-    PingScan,
-    DNSResolution,
-    ConnectScan
-  }
-
   public async Task<ScanResponse> ScanAsync(
     ScanRequest request,
     Action<ProgressNode>? onProgress = null,
+    ILogger? logger = null,
     CancellationToken cancellationToken = default
   ) {
     var network = request.Spec;
 
-    var builder = new ProgressBuilder( onProgress );
-    var discovery = builder.Root.Add( ScanPhase.Discovery.ToString() );
-    discovery.Path = "Discovering subnets";
-    var scanning = builder.Root.Add( ScanPhase.NetworkScanning.ToString() );
-    scanning.Path = "Discovering devices";
-    scanning.Weight = 99;
+    var progressRoot = ScanProgressFactory.Create( onProgress );
+    var discovery = progressRoot.SubnetDiscovery;
+    var scanning = progressRoot.DeviceDiscovery;
 
     // Phase 1: Discovery
-    var subnets =
-      await SubnetDiscovery.DetermineSubnets( request, discovery, _interfaceSubnetProvider );
+    var subnets = await SubnetDiscovery
+      .DetermineSubnets( request, discovery, _interfaceSubnetProvider, logger );
+
+    discovery.Self.AssertComplete();
+
+    logger?.LogInformation( "Found {Count} subnet(s) for scanning", subnets.Count );
 
     // Phase 2: Network Scanning
     //var devices = await ExecutePingScan( subnets, builder, onProgress );
-    var d = await new PingNetworkScanner2( _pingTool ).ScanAsync(
+    var scanResult = await new PingNetworkScanner2( _pingTool ).ScanAsync(
       subnets,
-      NullLogger.Instance,
+      logger,
       scanning,
-      onProgressNew: onProgress, cancellationToken: cancellationToken );
+      onProgressNew: onProgress,
+      cancellationToken: cancellationToken
+    );
+
+    scanning.Self.AssertComplete();
 
     await Task.Delay( 500, cancellationToken );
 
-    return new ScanResponse { Result = d };
+    return new ScanResponse { Result = scanResult };
   }
-}
-
-// High-level phases
-public enum ScanPhase {
-  Discovery,
-  NetworkScanning,
-  DeviceScanning,
-  Analysis
-}
-
-// Steps within phases
-public enum DiscoveryStep {
-  SubnetDiscovery,
-  ConfigurationLoading
-}
-
-public enum NetworkScanStep {
-  PingScanning,
-  ArpResolution
-}
-
-public enum DeviceScanStep {
-  PortScanning,
-  ServiceDetection
-}
-
-public enum AnalysisStep {
-  ResultConsolidation,
-  DriftDetection
 }

@@ -1,15 +1,15 @@
-﻿using Drift.Core.Scan;
-using Drift.Core.Scan.Model;
+﻿using Drift.Core.Scan.Model;
 using Drift.Domain;
 using Drift.Domain.NeoProgress;
-using Drift.Domain.Progress;
+using Microsoft.Extensions.Logging;
 
-namespace Drift.Core.Abstractions;
+namespace Drift.Core.Scan;
 
 public interface IScanService {
   Task<ScanResponse> ScanAsync(
     ScanRequest request,
     Action<ProgressNode>? onProgress = null,
+    ILogger logger = null,
     CancellationToken cancellationToken = default
   );
 }

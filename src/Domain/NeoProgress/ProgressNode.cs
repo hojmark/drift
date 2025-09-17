@@ -1,21 +1,44 @@
+using System.Data;
+
 namespace Drift.Domain.NeoProgress;
 
-public class ProgressNode {
-  private uint _progress;
-  private readonly Action? _onProgress;
+public record ProgressNode<T2> : ProgressNode {
+  private T2? _data;
 
-  public ProgressNode( Action? onProgress ) {
+  public ProgressNode( Action<ProgressNode>? onProgress ) : base( onProgress ) {
+  }
+
+  public void SetData( T2 value ) {
+    _data = value ?? throw new ArgumentNullException( nameof(value) );
+    //_onProgress?.Invoke();
+  }
+
+  public T2 GetData( ContextKey<T2> key ) {
+    return _data;
+  }
+}
+
+public record ProgressNode {
+  private uint _progress;
+  private readonly ProgressNode? _parent;
+  private readonly Action<ProgressNode>? _onProgress;
+
+  public ProgressNode( Action<ProgressNode>? onProgress ) {
     _onProgress = onProgress;
   }
 
-  public Path Path {
+  protected ProgressNode( ProgressNode parent ) {
+    _parent = parent;
+  }
+
+  public required Path Path {
     get;
-    set;
-  } = "";
+    init;
+  }
 
   public uint Weight {
     get;
-    set;
+    init;
   } = 1;
 
   public uint Progress {
@@ -30,8 +53,17 @@ public class ProgressNode {
       _progress = value;
 
       if ( shouldUpdate ) {
-        _onProgress?.Invoke();
+        Update();
       }
+    }
+  }
+
+  private void Update() {
+    if ( _parent == null ) {
+      _onProgress?.Invoke( this );
+    }
+    else {
+      _parent.Update();
     }
   }
 
@@ -62,20 +94,20 @@ public class ProgressNode {
     }
   }
 
-  public ProgressNode Add( Path path ) {
-    var child = new ProgressNode( _onProgress ) { Path = path };
+  public ProgressNode AddChild( Path path, uint weight = 1 ) {
+    var child = new ProgressNode( _onProgress ) { Path = path, Weight = weight };
     Children.Add( child );
     return child;
   }
 
-  public ProgressNode? Find( string path ) {
+  public ProgressNode? GetChild( Path path ) {
     if ( Path == path ) return this;
-    return Children.SelectMany( c => new[] { c.Find( path ) } ).FirstOrDefault( n => n != null );
+    return Children.SelectMany( c => new[] { c.GetChild( path ) } ).FirstOrDefault( n => n != null );
   }
 
-  public ProgressNode GetOrCreate( string path ) {
-    var node = Find( path );
-    return node ?? Add( path );
+  public ProgressNode GetOrCreateChild( Path path, uint weight = 1 ) {
+    var node = GetChild( path );
+    return node ?? AddChild( path, weight );
   }
 
   public void Complete() {
@@ -84,6 +116,37 @@ public class ProgressNode {
     }
 
     _progress = 100;
-    _onProgress?.Invoke();
+    Update();
+  }
+
+  public void AssertComplete() {
+    // TODO modes: ignore, telemetry/warning, throw
+    if ( TotalProgress < 100 ) {
+      throw new InvalidOperationException( "Node is not complete" );
+    }
+  }
+
+  // --------------------------
+
+  private readonly Dictionary<string, object> _context = new();
+
+
+  public void SetContext<T>( ContextKey<T> key, T value ) {
+    _context[key.Name] = value ?? throw new ArgumentNullException( nameof(value) );
+    Update();
+  }
+
+  public T? GetContext<T>( ContextKey<T> key ) {
+    return _context.TryGetValue( key.Name, out var value ) && value is T typed ? typed : default;
+  }
+
+  public bool TryGetContext<T>( ContextKey<T> key, out T value ) {
+    if ( _context.TryGetValue( key.Name, out var obj ) && obj is T typed ) {
+      value = typed;
+      return true;
+    }
+
+    value = default!;
+    return false;
   }
 }

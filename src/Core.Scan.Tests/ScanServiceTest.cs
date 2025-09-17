@@ -1,6 +1,5 @@
 using System.Net;
 using System.Text.RegularExpressions;
-using Drift.Core.Abstractions;
 using Drift.Core.Scan.Model;
 using Drift.Core.Scan.Subnet;
 using Drift.Domain;

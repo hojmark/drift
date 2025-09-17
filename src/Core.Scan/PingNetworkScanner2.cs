@@ -21,7 +21,7 @@ public class PingNetworkScanner2( IPingTool pingTool ) {
   public async Task<ScanResult> ScanAsync(
     List<CidrBlock> cidrs,
     ILogger logger,
-    ProgressNode scanProgress,
+    DeviceDiscoveryGroup scanProgress,
     Action<ProgressReport>? onProgress = null,
     int maxPingsPerSecond = MaxPingsPerSecond,
     Action<ProgressNode>? onProgressNew = null,
@@ -29,9 +29,7 @@ public class PingNetworkScanner2( IPingTool pingTool ) {
   ) {
     var startedAt = DateTime.Now;
 
-    var pingProgress = scanProgress.Add( "Ping Scan" );
-    pingProgress.Weight = 99;
-    var arpProgress = scanProgress.Add( "Indirect ARP Scan" );
+    var pingProgress = scanProgress.PingScanning;
 
     logger.LogDebug( "Starting network scan at {StartedAt}", startedAt.ToString( CultureInfo.InvariantCulture ) );
 
@@ -49,6 +47,8 @@ public class PingNetworkScanner2( IPingTool pingTool ) {
         onProgressNew );
     }
 
+    pingProgress.Complete();
+
     logger.LogDebug( "Reading ARP cache" );
     /*progressBuilder.AddStep( NetworkScanStep.ArpResolution, new NetworkScanData {
       Subnets = null
@@ -64,7 +64,7 @@ public class PingNetworkScanner2( IPingTool pingTool ) {
       ]
     } );
 
-    arpProgress.Complete();
+    scanProgress.ArpResolution.Complete();
 
     var finishedAt = DateTime.Now;
     var elapsed = finishedAt - startedAt; // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )

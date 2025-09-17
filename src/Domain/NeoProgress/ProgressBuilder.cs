@@ -1,14 +1,27 @@
 namespace Drift.Domain.NeoProgress;
+/*
+public class ProgressBuilder<TRoot> {
+  private readonly Func<ProgressNode, TRoot> _factory;
 
-public class ProgressBuilder {
-  public ProgressBuilder( Action<ProgressNode>? onProgress = null ) {
-    Root = new ProgressNode( () => onProgress?.Invoke( Root ) ) { Path = "Root" };
+  public ProgressBuilder( Func<ProgressNode, TRoot> factory, Action<ProgressNode>? onProgress = null ) {
+    _factory = factory;
+    _onProgress = () => onProgress?.Invoke( _rootNode! );
+    _rootNode = new ProgressNode( _onProgress ) { Path = "Root" };
   }
 
-  public readonly ProgressNode Root;
+  private readonly ProgressNode _rootNode;
+  private readonly Action _onProgress;
 
-
-/*public ProgressReportNew Build<TPhase>( TPhase phase, string? message = null ) where TPhase : Enum {
-  return new ProgressReportNew { Phase =  phase, Root = Root, Message = message };
-}*/
+  public TRoot Build() {
+    var root = _factory( _rootNode );
+    _onProgress.Invoke(); // Trigger initial progress update i.e. 0%
+    return root;
+  }
+}
+*/
+public abstract class BaseProgressDefinition {
+  /*public ProgressNode Node {
+    get;
+    init;
+  }*/
 }

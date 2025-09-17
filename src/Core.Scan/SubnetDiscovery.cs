@@ -1,34 +1,35 @@
-using Drift.Core.Abstractions;
 using Drift.Core.Scan.Subnet;
 using Drift.Domain;
 using Drift.Domain.NeoProgress;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Core.Scan;
 
 public static class SubnetDiscovery {
-  internal static async Task<List<CidrBlock>> DetermineSubnets(
-    ScanRequest request,
-    ProgressNode node,
-    IInterfaceSubnetProvider interfaceSubnetProvider ) {
-    //builder.UpdateStep(DiscoveryStep.SubnetDiscovery, 0, data);
-    var fromInterface = node.Add( "Finding from ifs" );
-    var fromSpec = node.Add( "Finding from spec" );
+  internal static async Task<List<CidrBlock>> DetermineSubnets( ScanRequest request,
+    SubnetDiscoveryGroup progress,
+    IInterfaceSubnetProvider interfaceSubnetProvider, ILogger? logger
+  ) {
+    var interfaceSubnets = interfaceSubnetProvider.Get();
 
-    //onProgress.Invoke( builder.Build( "Initializing subnet discovery..." ) );
+    logger?.LogDebug( "Subnets from interfaces: {Subnets}", string.Join( ", ", interfaceSubnets ) );
+
+    progress.FromInterfaces.SetContext( ScanPaths.SubnetDiscovery.ContextKeys.InterfaceSubnets, interfaceSubnets );
+    progress.FromInterfaces.Complete();
 
     var subnetProviders = new List<ISubnetProvider> { interfaceSubnetProvider };
-    fromInterface.Complete();
-    //onProgress.Invoke( builder.Build( "Found subnets from interfaces: xxx" ) );
 
     if ( request.Spec != null ) {
-      subnetProviders.Add( new DeclaredSubnetProvider( request.Spec.Subnets ) );
+      var declaredSubnetProvider = new DeclaredSubnetProvider( request.Spec.Subnets );
+      var declaredSubnets = declaredSubnetProvider.Get();
+
+      logger?.LogDebug( "Subnets from spec: {Subnets}", string.Join( ", ", declaredSubnets ) );
+
+      progress.FromSpec.SetContext( ScanPaths.SubnetDiscovery.ContextKeys.SpecSubnets, declaredSubnets );
+      progress.FromSpec.Complete();
+
+      subnetProviders.Add( declaredSubnetProvider );
     }
-
-    //onProgress.Invoke(
-    //builder.Build(
-    //"Found subnets from network spec: xxx" ) ); // Warning if some does not seem to be possible to reach given the physical interfaces
-
-    fromSpec.Complete();
 
     var subnetProvider = new CompositeSubnetProvider( subnetProviders );
     //onProgress.Invoke(

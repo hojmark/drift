@@ -10,7 +10,9 @@ public readonly struct Path : IEquatable<Path>, IEnumerable<string> {
 
   public Path( string path ) {
     if ( path == null ) throw new ArgumentNullException( nameof(path) );
-    _segments = path.Split( '/', '\\' ).Where( s => !string.IsNullOrEmpty( s ) ).ToArray();
+    _segments = path.Split( '/', '\\', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries );
+    if ( _segments.Length == 0 )
+      throw new ArgumentException( "Path must contain at least one valid segment", nameof(path) );
   }
 
   private Path( string[] segments ) {
@@ -33,4 +35,6 @@ public readonly struct Path : IEquatable<Path>, IEnumerable<string> {
 
   public IEnumerator<string> GetEnumerator() => ( (IEnumerable<string>) _segments ).GetEnumerator();
   IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+  public string GetLastSegment() => _segments[^1];
 }

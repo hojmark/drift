@@ -4,11 +4,11 @@ using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Scan;
-using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Logging;
 using Drift.Core.Scan;
+using Drift.Core.Scan.Subnet;
 using Drift.Domain.Scan;
 using Microsoft.Extensions.DependencyInjection;
 

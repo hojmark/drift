@@ -1,7 +1,7 @@
 using System.Net.NetworkInformation;
 using Drift.Domain;
 
-namespace Drift.Cli.Commands.Scan.Subnet;
+namespace Drift.Core.Scan.Subnet;
 
 public interface INetworkInterface {
   string Description {

@@ -1,4 +1,4 @@
-using Drift.Cli.Commands.Scan.Subnet;
+using Drift.Core.Scan.Subnet;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Tests.Utils;

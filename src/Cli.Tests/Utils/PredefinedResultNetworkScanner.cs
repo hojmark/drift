@@ -9,5 +9,9 @@ public class PredefinedResultNetworkScanner( ScanResult scanResult ) : IScanServ
     return Task.FromResult( scanResult );
   }
 
+  public Task<ScanResult> ScanAsyncOld( ScanRequest request, Action<ProgressReport>? onProgress = null, CancellationToken cancellationToken = default ) {
+    return Task.FromResult( scanResult );
+  }
+
   public event EventHandler<ScanResult>? ResultUpdated;
 }

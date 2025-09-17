@@ -13,19 +13,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Scan;
 
-internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) : INetworkScanner, IScanService {
+internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) : IScanService {
   //TODO make private or configurable
   internal const int MaxPingsPerSecond = 50;
 
   public Task<ScanResult> ScanAsync( ScanRequest request, CancellationToken cancellationToken = default ) {
-    return ScanAsync( request.Cidrs, null, cancellationToken, request.MaxPingsPerSecond );
+    return ScanAsyncOld( request, null, cancellationToken );
   }
 
-  public async Task<ScanResult> ScanAsync(
-    List<CidrBlock> cidrs,
+  public async Task<ScanResult> ScanAsyncOld(
+    ScanRequest request,
     Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default,
-    int maxPingsPerSecond = MaxPingsPerSecond
+    CancellationToken cancellationToken = default
   ) {
     var logger = output.Log;
     var startedAt = DateTime.Now;
@@ -41,8 +40,8 @@ internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) :
 
     var pingReplies = new ConcurrentBag<(string Ip, bool Success, string? Hostname)>();
 
-    foreach ( var cidr in cidrs ) {
-      await PingScanAsync( pingReplies, cidr, output, maxPingsPerSecond, onProgress, cancellationToken );
+    foreach ( var cidr in request.Cidrs ) {
+      await PingScanAsync( pingReplies, cidr, output, request.MaxPingsPerSecond, onProgress, cancellationToken );
     }
 
     logger.LogDebug( "Reading ARP cache" );
@@ -78,7 +77,7 @@ internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) :
   private async Task PingScanAsync( ConcurrentBag<(string Ip, bool Success, string? Hostname)> results,
     CidrBlock cidr,
     IOutputManager output,
-    int maxPingsPerSecond,
+    uint maxPingsPerSecond,
     Action<ProgressReport>? onProgress = null,
     CancellationToken cancellationToken = default
   ) {
@@ -101,7 +100,7 @@ internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) :
 
     output.Normal.WriteLineVerbose( $"Starting ping scan for CIDR block {cidr} ({total} addresses)" );
 
-    using var throttler = new SemaphoreSlim( maxPingsPerSecond );
+    using var throttler = new SemaphoreSlim( (int) maxPingsPerSecond );
 
     var pingTasks = ipRange.Select( async ip => {
       await throttler.WaitAsync( cancellationToken );
@@ -137,7 +136,7 @@ internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) :
         } );
       }
       finally {
-        _ = Task.Delay( 1000 / maxPingsPerSecond, cancellationToken )
+        _ = Task.Delay( (int) ( 1000u / maxPingsPerSecond ), cancellationToken )
           .ContinueWith( _ => {
             try {
               throttler.Release();

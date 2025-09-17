@@ -1,22 +1,98 @@
+using Drift.Domain.Device.Discovered;
 using Drift.Domain.Progress;
 
 namespace Drift.Domain.Scan;
 
 //TODO belongs to domain?
+/*[Obsolete( "Use IScanService instead" )]
 public interface INetworkScanner {
   public Task<ScanResult> ScanAsync(
-    List<CidrBlock> cidrs,
+    ScanRequest request,
     Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default,
-    int maxPingsPerSecond = 50
+    CancellationToken cancellationToken = default
   );
 
   event EventHandler<ScanResult>? ResultUpdated;
+}*/
+
+#region NEO
+
+public interface ISubnetScannerNEO {
+  Task<SubnetScanResult> ScanAsync(
+    CidrBlock subnet,
+    SubnetScanOptions options,
+    CancellationToken cancellationToken
+  );
+
+  event EventHandler<SubnetScanResult>? ResultUpdated;
 }
+
+// Multiple subnets (possibly distributed)
+public interface INetworkScannerNEO {
+  Task<NetworkScanResult> ScanAsync(
+    List<CidrBlock> subnets,
+    NetworkScanOptions options,
+    CancellationToken cancellationToken
+  );
+
+  event EventHandler<NetworkScanResult>? ResultUpdated;
+  event EventHandler<SubnetScanResult>? SubnetCompleted;
+}
+
+public class SubnetScanResult {
+  public required ScanResultStatus Status {
+    get;
+    init;
+  }
+
+
+  public IEnumerable<DiscoveredDevice> DiscoveredDevices {
+    get;
+    init;
+  } = [];
+}
+
+public class NetworkScanResult {
+  public required ScanResultStatus Status {
+    get;
+    init;
+  }
+
+
+  public IEnumerable<DiscoveredSubnet> DiscoveredSubnets {
+    get;
+    init;
+  } = [];
+}
+
+public class DiscoveredSubnet {
+  public CidrBlock Address {
+    get;
+  }
+
+  public List<DiscoveredDevice> Devices {
+    get;
+  }
+}
+
+public class NetworkScanOptions {
+}
+
+public class SubnetScanOptions {
+}
+
+#endregion
 
 public interface IScanService {
   Task<ScanResult> ScanAsync(
     ScanRequest request,
+    CancellationToken cancellationToken = default
+  );
+
+  [Obsolete( "Use other ScanAsync method plus ResultUpdated instead" )]
+  Task<ScanResult> ScanAsyncOld(
+    ScanRequest request,
+    Action<ProgressReport>? onProgress = null,
     CancellationToken cancellationToken = default
   );
 
@@ -30,7 +106,7 @@ public class ScanRequest {
     init;
   } = new();
 
-  public int MaxPingsPerSecond {
+  public uint MaxPingsPerSecond {
     get;
     init;
   } = 50;

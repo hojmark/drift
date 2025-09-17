@@ -1,10 +1,10 @@
 using Drift.Cli.Commands.Scan.Subnet;
-using Drift.Cli.Output.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Tests.Utils;
 
-public class PredefinedInterfaceSubnetProvider( IOutputManager output, List<INetworkInterface> interfaces )
-  : InterfaceSubnetProviderBase( output ) {
+public class PredefinedInterfaceSubnetProvider( List<INetworkInterface> interfaces, ILogger? logger = null )
+  : InterfaceSubnetProviderBase( logger ) {
   public override List<INetworkInterface> GetInterfaces() {
     return interfaces;
   }

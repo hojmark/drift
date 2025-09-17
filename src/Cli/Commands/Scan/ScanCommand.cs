@@ -95,6 +95,8 @@ public class ScanCommandHandler(
 
     var subnets = subnetProvider.Get();
 
+    var scanRequest = new ScanRequest { Cidrs = subnets };
+
     output.Normal.WriteLine( 0,
       $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : "" )}" ); // TODO many more varieties
     foreach ( var cidr in subnets ) {
@@ -103,10 +105,7 @@ public class ScanCommandHandler(
       output.Normal.WriteLine(
         " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
         " addresses, estimated scan time is " +
-        InitCommandHandler.CalculateScanDuration(
-          cidr,
-          PingNetworkScanner.MaxPingsPerSecond
-        ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
+        scanRequest.Duration( cidr ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
         ")", ConsoleColor.DarkGray );
     }
 
@@ -132,7 +131,7 @@ public class ScanCommandHandler(
           //progressBars["DNS resolution"] = ctx.AddTask( "DNS resolution" );
           //progressBars["Connect Scan"] = ctx.AddTask( "Connect Scan" );
 
-          return await scanner.ScanAsyncOld( new ScanRequest { Cidrs = subnets }, onProgress: progressReport => {
+          return await scanner.ScanAsyncOld( scanRequest, onProgress: progressReport => {
             UpdateProgressBar( progressReport, ctx, progressBars );
           }, cancellationToken: CancellationToken.None );
         } );
@@ -142,7 +141,7 @@ public class ScanCommandHandler(
       var lastLogTime = DateTime.MinValue;
       var completedTasks = new HashSet<string>();
 
-      scanResult = await scanner.ScanAsyncOld( new ScanRequest { Cidrs = subnets }, onProgress: progressReport => {
+      scanResult = await scanner.ScanAsyncOld( scanRequest, onProgress: progressReport => {
         UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
       }, cancellationToken: CancellationToken.None );
     }

@@ -191,6 +191,8 @@ public class InitCommandHandler(
       // SCAN
       var subnets = interfaceSubnetProvider.Get().ToList();
 
+      var scanRequest = new ScanRequest { Cidrs = subnets };
+
       ScanResult? scanResult = null;
 
       //TODO create unit test for this
@@ -199,10 +201,7 @@ public class InitCommandHandler(
           subnets.Select( cidr =>
             cidr + " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
             " addresses, " +
-            CalculateScanDuration(
-              cidr,
-              PingNetworkScanner.MaxPingsPerSecond
-            ) /* TODO .Humanize( 2, CultureInfo.InvariantCulture )*/ +
+            scanRequest.Duration( cidr ) /* TODO .Humanize( 2, CultureInfo.InvariantCulture )*/ +
             " estimated scan time" +
             ")"
           )
@@ -214,7 +213,7 @@ public class InitCommandHandler(
           await AnsiConsole
             .Status()
             .StartAsync( "Scanning network ...", async ctx => {
-              scanResult = await scanner.ScanAsync( new ScanRequest { Cidrs = subnets } );
+              scanResult = await scanner.ScanAsync( scanRequest );
               await Task.Delay( 1500 );
             } );
         }
@@ -224,7 +223,7 @@ public class InitCommandHandler(
           var lastLogTime = DateTime.MinValue;
           var completedTasks = new HashSet<string>();
 
-          scanResult = await scanner.ScanAsyncOld( new ScanRequest { Cidrs = subnets }, onProgress: progressReport => {
+          scanResult = await scanner.ScanAsyncOld( scanRequest, onProgress: progressReport => {
             ScanCommandHandler.UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
           }, cancellationToken: CancellationToken.None );
         }
@@ -272,13 +271,6 @@ public class InitCommandHandler(
       output.Log.LogError( e, "Unexpected error" );
       throw;
     }
-  }
-
-  //TODO move somewhere else - to scanservice e.g. GetStaticScanInfo
-  internal static TimeSpan CalculateScanDuration( CidrBlock cidr, double scansPerSecond ) {
-    double hostCount = IpNetworkUtils.GetIpRangeCount( cidr );
-    double totalSeconds = hostCount / scansPerSecond;
-    return TimeSpan.FromSeconds( totalSeconds );
   }
 
   internal static void CreateSpecWithDiscovery(

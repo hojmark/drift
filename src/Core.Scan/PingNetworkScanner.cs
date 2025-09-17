@@ -12,8 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Core.Scan;
 
 public class PingNetworkScanner( IPingTool pingTool ) : IScanService {
-  [Obsolete( "Use property in ScanRequest instead" )]
-  public const int MaxPingsPerSecond = 50;
+
 
   public Task<ScanResult> ScanAsync(
     ScanRequest request,
@@ -42,7 +41,7 @@ public class PingNetworkScanner( IPingTool pingTool ) : IScanService {
     var pingReplies = new ConcurrentBag<(string Ip, bool Success, string? Hostname)>();
 
     foreach ( var cidr in request.Cidrs ) {
-      await PingScanAsync( pingReplies, cidr, logger, request.MaxPingsPerSecond, onProgress, cancellationToken );
+      await PingScanAsync( pingReplies, cidr, logger, request.PingsPerSecond, onProgress, cancellationToken );
     }
 
     logger?.LogDebug( "Reading ARP cache" );

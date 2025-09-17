@@ -31,7 +31,7 @@ public class NetworkScannerTests {
 
     // Act
     var result = await scanner.ScanAsync(
-      new ScanRequest { Cidrs = subnets, MaxPingsPerSecond = int.MaxValue } /*, networkProvider*/, logger
+      new ScanRequest { Cidrs = subnets, PingsPerSecond = uint.MaxValue } /*, networkProvider*/, logger
     );
 
     // Assert

@@ -109,7 +109,7 @@ public class ScanRequest {
     init;
   } = new();
 
-  public uint MaxPingsPerSecond {
+  public uint PingsPerSecond {
     get;
     init;
   } = 50;

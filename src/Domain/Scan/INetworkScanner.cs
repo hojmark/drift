@@ -1,5 +1,6 @@
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Progress;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Domain.Scan;
 
@@ -86,12 +87,14 @@ public class SubnetScanOptions {
 public interface IScanService {
   Task<ScanResult> ScanAsync(
     ScanRequest request,
+    ILogger? logger = null,
     CancellationToken cancellationToken = default
   );
 
   [Obsolete( "Use other ScanAsync method plus ResultUpdated instead" )]
   Task<ScanResult> ScanAsyncOld(
     ScanRequest request,
+    ILogger? logger = null,
     Action<ProgressReport>? onProgress = null,
     CancellationToken cancellationToken = default
   );

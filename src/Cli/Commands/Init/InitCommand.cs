@@ -1,5 +1,4 @@
 using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan;
@@ -7,7 +6,7 @@ using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Normal;
-using Drift.Cli.Scan;
+using Drift.Core.Scan;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -274,7 +273,7 @@ public class InitCommandHandler(
     }
   }
 
-  //TODO move somewhere else
+  //TODO move somewhere else - to scanservice e.g. GetStaticScanInfo
   internal static TimeSpan CalculateScanDuration( CidrBlock cidr, double scansPerSecond ) {
     double hostCount = IpNetworkUtils.GetIpRangeCount( cidr );
     double totalSeconds = hostCount / scansPerSecond;

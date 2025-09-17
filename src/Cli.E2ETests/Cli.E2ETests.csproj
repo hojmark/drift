@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <Using Include="NUnit.Framework"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj"/>
         <ProjectReference Include="..\Utils\Utils.csproj"/>
         <ProjectReference Include="..\Spec.SchemaGenerator.Cli\Spec.SchemaGenerator.Cli.csproj"/>
@@ -13,11 +17,7 @@
         <PackageReference Include="NUnit.Analyzers"/>
         <PackageReference Include="NUnit3TestAdapter"/>
         <PackageReference Include="Verify.NUnit"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="IPNetwork2" VersionOverride="3.4.832" />
-        <Using Include="NUnit.Framework"/>
+        <PackageReference Include="IPNetwork2" VersionOverride="3.4.832"/>
     </ItemGroup>
 
 </Project>

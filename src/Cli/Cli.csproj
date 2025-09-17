@@ -20,6 +20,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj"/>
+        <ProjectReference Include="..\Core.Scan\Core.Scan.csproj" />
         <ProjectReference Include="..\Diff\Diff.csproj"/>
         <ProjectReference Include="..\Domain\Domain.csproj"/>
         <ProjectReference Include="..\Spec\Spec.csproj"/>

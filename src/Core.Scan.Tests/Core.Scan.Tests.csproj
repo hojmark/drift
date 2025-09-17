@@ -5,8 +5,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Core.Scan\Core.Scan.csproj"/>
         <ProjectReference Include="..\TestUtilities\TestUtilities.csproj"/>
-        <ProjectReference Include="..\Spec\Spec.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

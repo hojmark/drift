@@ -3,6 +3,7 @@ using Drift.Domain.Scan;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Progress;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan.Interactive.Simulation;
 
@@ -21,7 +22,12 @@ public class SimulatedScanner : IScanService, IDisposable {
     }
   }
 
-  public Task<ScanResult> ScanAsyncOld( ScanRequest request, Action<ProgressReport>? onProgress = null, CancellationToken cancellationToken = default ) {
+  public Task<ScanResult> ScanAsyncOld(
+    ScanRequest request,
+    ILogger? logger = null,
+    Action<ProgressReport>? onProgress = null,
+    CancellationToken cancellationToken = default
+  ) {
     throw new NotImplementedException();
   }
 
@@ -133,7 +139,11 @@ public class SimulatedScanner : IScanService, IDisposable {
     _updateTimer?.Dispose();
   }
 
-  public Task<ScanResult> ScanAsync( ScanRequest request, CancellationToken cancellationToken = default ) {
+  public Task<ScanResult> ScanAsync(
+    ScanRequest request,
+    ILogger? logger,
+    CancellationToken cancellationToken = default
+  ) {
     Start( cancellationToken );
     return Task.FromResult( new ScanResult { Status = ScanResultStatus.Success, Metadata = null } );
   }

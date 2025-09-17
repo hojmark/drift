@@ -8,7 +8,7 @@ using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Renderer;
-using Drift.Cli.Scan;
+using Drift.Core.Scan;
 using Drift.Domain;
 using Drift.Domain.Progress;
 using Drift.Domain.Scan;

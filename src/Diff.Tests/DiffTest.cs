@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -5,45 +7,60 @@ using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
-using Drift.EnvironmentConfig;
-using Drift.TestUtilities;
+using JsonConverter = Drift.EnvironmentConfig.JsonConverter;
 
 namespace Drift.Diff.Tests;
 
 public class DiffTest {
-  private static readonly ScanResult ScanResult1 = new() {
+  private static readonly NetworkScanResult ScanResult1 = new() {
     Metadata = new Metadata {
       StartedAt = DateTime.Parse( "2025-04-24T12:20:08.4219405+02:00" ).ToUniversalTime(),
       EndedAt = DateTime.Parse( "2023-01-01" )
     },
     Status = ScanResultStatus.Success,
-    DiscoveredDevices = [
-      new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
-      /*new DiscoveredDevice {
-        Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "ABC" )] //, Ports = [443, 80]
-      },*/
-      new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.22" ), new MacAddress( "22-22-22-22-22-22" )] }
+    Subnets = [
+      new SubnetScanResult {
+        CidrBlock = new CidrBlock( "192.168.0.0/24" ),
+        Metadata = null,
+        Status = ScanResultStatus.Success,
+        DiscoveredDevices = [
+          new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
+          /*new DiscoveredDevice {
+            Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "ABC" )] //, Ports = [443, 80]
+          },*/
+          new DiscoveredDevice {
+            Addresses = [new IpV4Address( "192.168.0.22" ), new MacAddress( "22-22-22-22-22-22" )]
+          }
+        ]
+      }
     ]
   };
 
-  private static readonly ScanResult ScanResult2 = new() {
+  private static readonly NetworkScanResult ScanResult2 = new() {
     Metadata = new Metadata {
       StartedAt = DateTime.Parse( "2025-04-24T12:20:08.4219405+02:00" ).ToUniversalTime(),
       EndedAt = DateTime.Parse( "2023-01-01" )
     },
     Status = ScanResultStatus.Success,
-    DiscoveredDevices = [
-      new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
-      /*new DiscoveredDevice {
-        Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "DEF" )] //, Ports = [22, 443, 80]
-      },*/
-      new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.150" )] }
+    Subnets = [
+      new SubnetScanResult {
+        CidrBlock = new CidrBlock( "192.168.0.0/24" ),
+        Metadata = null,
+        Status = ScanResultStatus.Success,
+        DiscoveredDevices = [
+          new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
+          /*new DiscoveredDevice {
+            Addresses = [new IpV4Address( "192.168.0.21" ), new MacAddress( "DEF" )] //, Ports = [22, 443, 80]
+          },*/
+          new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.150" )] }
+        ]
+      }
     ]
   };
 
   [Test]
   public void IndexAsKeyTest() {
-    var diffs = ObjectDiffEngine.Compare( ScanResult1, ScanResult2, nameof(ScanResult) );
+    var diffs = ObjectDiffEngine.Compare( ScanResult1, ScanResult2, nameof(NetworkScanResult) );
 
     Print( diffs );
     var diffsAsJson = JsonConverter.Serialize( diffs );
@@ -57,40 +74,18 @@ public class DiffTest {
       .SetDiffTypesAll()
       .SetKeySelector<DiscoveredDevice>( device =>
         device.Get( AddressType.IpV4 ) ?? throw new InvalidOperationException( "Device has no IP address" ) )
+      .SetKeySelector<SubnetScanResult>( subnet => subnet.CidrBlock.ToString() )
       .SetKeySelector<Port>( port => port.Value.ToString() );
 
     // Act
-    var diffs = ObjectDiffEngine.Compare( ScanResult1, ScanResult2, nameof(ScanResult), options );
+    var diffs = ObjectDiffEngine.Compare( ScanResult1, ScanResult2, nameof(NetworkScanResult), options );
 
     // Assert
     Print( diffs );
     // TODO custom serializer that skips properties not directly defined on the object (e.g. lists, objects)
-    var diffsAsJson = JsonConverter.Serialize( diffs );
+    var diffsAsJson = JsonConverter.Serialize( diffs ,new IPAddressConverter());
     return Verify( diffsAsJson );
   }
-
-  [Test]
-  public Task DefaultKeySelectorTest() {
-    // Arrange
-    var testLogger = new TestLogger();
-    var options = new DiffOptions()
-      .ConfigureDiffDeviceKeySelectors( [] );
-
-    // Act
-    var diffs = ObjectDiffEngine.Compare(
-      ScanResult1.DiscoveredDevices.ToDiffDevices(),
-      ScanResult2.DiscoveredDevices.ToDiffDevices(),
-      nameof(ScanResult),
-      options,
-      testLogger
-    );
-
-    // Assert
-    //Print( diffs );
-    var diffsAsJson = JsonConverter.Serialize( diffs );
-    return Verify( diffsAsJson );
-  }
-
 
   [Test]
   public Task UnchangedUsingNoKeySelectorTest() {
@@ -111,7 +106,7 @@ public class DiffTest {
     }.ToDiffDevices();
 
     // Act
-    var diffs = ObjectDiffEngine.Compare( original, updated, nameof(ScanResult), options );
+    var diffs = ObjectDiffEngine.Compare( original, updated, nameof(NetworkScanResult), options );
 
     // Assert
     Print( diffs );
@@ -139,7 +134,7 @@ public class DiffTest {
     }.ToDiffDevices();
 
     // Act
-    var diffs = ObjectDiffEngine.Compare( original, updated, nameof(ScanResult), options );
+    var diffs = ObjectDiffEngine.Compare( original, updated, nameof(NetworkScanResult), options );
 
     // Assert
     Print( diffs );
@@ -167,7 +162,7 @@ public class DiffTest {
     }.ToDiffDevices();
 
     // Act
-    var diffs = ObjectDiffEngine.Compare( original, updated, nameof(ScanResult), options );
+    var diffs = ObjectDiffEngine.Compare( original, updated, nameof(NetworkScanResult), options );
 
     // Assert
     Print( diffs );
@@ -191,14 +186,13 @@ public class DiffTest {
     }.ToDiffDevices();
 
     // Act
-    var diffs = ObjectDiffEngine.Compare( original, updated, nameof(ScanResult), options );
+    var diffs = ObjectDiffEngine.Compare( original, updated, nameof(NetworkScanResult), options );
 
     // Assert
     Print( diffs );
     var diffsAsJson = JsonConverter.Serialize( diffs );
     return Verify( diffsAsJson );
   }
-
 
   [Test]
   public void MatchDeclaredAndDiscoveredTest() {
@@ -225,35 +219,23 @@ public class DiffTest {
     Verify( diffsAsJson );
   }
 
-  /*[Explicit]
-  [Test]
-  public void DiffDemo0Test() {
-    var demo0Spec = SharedTestResourceProvider.GetStream( "SPEC_YAML" );
-    var network = YamlConverter.Deserialize( demo0Spec );
-
-    var demo0NmapXml = SharedTestResourceProvider.GetStream( "NMAP_XML" );
-    var nmaprun = NmapXmlReader.Deserialize( demo0NmapXml );
-
-    var declaredDevices = network.Devices.Where( d => d.Enabled ?? true );
-    var discoveredDevices = NmapConverter.ToDevices( nmaprun );
-
-    var original = declaredDevices.ToDiffDevices();
-    var updated = discoveredDevices.ToDiffDevices();
-
-    var diffs = ObjectDiffEngine.Compare( original, updated, nameof(ScanResult),
-      new DiffOptions { IgnorePaths = ["ScanResult[*].Addresses[*].Required", "ScanResult[*].Ports[*]"] }
-        .ConfigureDiffDeviceKeySelectors()
-      // .SetDiffTypesAll()
-    );
-
-    Print( diffs );
-    var diffsAsJson = JsonConverter.Serialize( diffs );
-    Verify( diffsAsJson );
-  }*/
-
   private static void Print( List<ObjectDiff> diffs ) {
     foreach ( var diff in diffs ) {
       Console.WriteLine( $"{diff.PropertyPath}: {diff.DiffType} — '{diff.Original}' → '{diff.Updated}'" );
+    }
+  }
+
+  public class IPAddressConverter : JsonConverter<System.Net.IPAddress> {
+    public override System.Net.IPAddress Read( ref Utf8JsonReader reader, Type typeToConvert,
+      JsonSerializerOptions options ) {
+      string? ip = reader.GetString();
+      var ipAddress = ( ip == null ) ? null : System.Net.IPAddress.Parse( ip );
+      return ipAddress ?? throw new Exception( "Cannot read" ); //System.Net.IPAddress.None;
+    }
+
+    public override void Write( Utf8JsonWriter writer, System.Net.IPAddress value, JsonSerializerOptions options ) {
+      ArgumentNullException.ThrowIfNull( writer );
+      writer.WriteStringValue( value?.ToString() );
     }
   }
 }

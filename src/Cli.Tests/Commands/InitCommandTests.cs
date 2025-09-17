@@ -3,7 +3,6 @@ using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Logging;
-using Drift.Cli.Tests.Utils;
 using Drift.Core.Scan.Subnet;
 using Drift.Core.Scan.Subnet.Interface;
 using Drift.Core.Scan.Tests.Utils;
@@ -23,17 +22,24 @@ public class InitCommandTests {
   const string SpecNameWithDiscovery = "myNetworkWithDiscovery";
   const string SpecNameWithoutDiscovery = "myNetworkWithoutDiscovery";
 
-  private static readonly ScanResult ScanResult = new() {
+  private static readonly NetworkScanResult ScanResult = new() {
     Metadata =
       new Metadata {
         StartedAt = DateTime.Parse( "2025-06-11T12:20:08.4219405+02:00" ).ToUniversalTime(),
         EndedAt = DateTime.Parse( "2025-06-11" )
       },
     Status = ScanResultStatus.Success,
-    DiscoveredDevices = [
-      new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
-      new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.11" )] },
-      new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.12" )] }
+    Subnets = [
+      new SubnetScanResult {
+        CidrBlock = new CidrBlock( "192.168.0.0/24" ),
+        Metadata = null,
+        Status = ScanResultStatus.Success,
+        DiscoveredDevices = [
+          new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
+          new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.11" )] },
+          new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.12" )] }
+        ]
+      }
     ]
   };
 
@@ -83,7 +89,7 @@ public class InitCommandTests {
   ) {
     // Arrange
     var serviceConfig = ( IServiceCollection services ) => {
-      services.AddScoped<IScanService>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
+      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
       services.AddScoped<IInterfaceSubnetProvider>( sp =>
         new PredefinedInterfaceSubnetProvider( Interfaces, sp.GetRequiredService<IOutputManager>().GetCompoundLogger() )
       );
@@ -115,7 +121,7 @@ public class InitCommandTests {
   public async Task GenerateSpecWithoutDiscoverySuccess() {
     // Arrange
     var serviceConfig = ( IServiceCollection services ) => {
-      services.AddScoped<IScanService>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
+      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
     };
 
     // Act

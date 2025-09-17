@@ -11,19 +11,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Core.Scan;
 
-public class PingNetworkScanner( IPingTool pingTool ) : IScanService {
-
-
-  public Task<ScanResult> ScanAsync(
-    ScanRequest request,
+public class PingNetworkScanner( IPingTool pingTool ) : INetworkScanner {
+  public Task<NetworkScanResult> ScanAsync(
+    NetworkScanOptions request,
     ILogger? logger = null,
     CancellationToken cancellationToken = default
   ) {
     return ScanAsyncOld( request, logger, null, cancellationToken );
   }
 
-  public async Task<ScanResult> ScanAsyncOld(
-    ScanRequest request,
+  public async Task<NetworkScanResult> ScanAsyncOld(
+    NetworkScanOptions request,
     ILogger? logger = null,
     Action<ProgressReport>? onProgress = null,
     CancellationToken cancellationToken = default
@@ -38,7 +36,7 @@ public class PingNetworkScanner( IPingTool pingTool ) : IScanService {
       ]
     } );
 
-    var pingReplies = new ConcurrentBag<(string Ip, bool Success, string? Hostname)>();
+    var pingReplies = new ConcurrentBag<(CidrBlock cidr, string Ip, bool Success, string? Hostname)>();
 
     foreach ( var cidr in request.Cidrs ) {
       await PingScanAsync( pingReplies, cidr, logger, request.PingsPerSecond, onProgress, cancellationToken );
@@ -62,17 +60,17 @@ public class PingNetworkScanner( IPingTool pingTool ) : IScanService {
       elapsed
     );
 
-    return new ScanResult {
-      DiscoveredDevices = ToDiscoveredDevices( pingReplies, ipToMac ),
+    return new NetworkScanResult {
       Metadata = new Metadata { StartedAt = startedAt, EndedAt = DateTime.Now },
       Status = ScanResultStatus.Success,
-      Progress = Percentage.Hundred
+      Progress = Percentage.Hundred,
+      Subnets = ToDiscoveredDevices( pingReplies, ipToMac, finished: true )
     };
   }
 
-  public event EventHandler<ScanResult>? ResultUpdated;
+  public event EventHandler<NetworkScanResult>? ResultUpdated;
 
-  private async Task PingScanAsync( ConcurrentBag<(string Ip, bool Success, string? Hostname)> results,
+  private async Task PingScanAsync( ConcurrentBag<(CidrBlock cidr, string Ip, bool Success, string? Hostname)> results,
     CidrBlock cidr,
     ILogger? logger,
     uint maxPingsPerSecond,
@@ -109,16 +107,17 @@ public class PingNetworkScanner( IPingTool pingTool ) : IScanService {
           //Console.WriteLine( hostname );
         }
 
-        results.Add( ( ip, success, hostname ) );
+        results.Add( ( cidr, ip, success, hostname ) );
 
         Interlocked.Increment( ref completed );
 
         if ( success ) {
           ResultUpdated?.Invoke( null,
-            new ScanResult {
+            new NetworkScanResult {
               Metadata = null,
               Status = ScanResultStatus.InProgress,
-              DiscoveredDevices = ToDiscoveredDevices( results, ArpHelper.GetSystemCachedIpToMacMap() ),
+              Subnets =
+                ToDiscoveredDevices( results, ArpHelper.GetSystemCachedIpToMacMap(), finished: false ),
               Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 ))
             }
           );
@@ -154,15 +153,22 @@ public class PingNetworkScanner( IPingTool pingTool ) : IScanService {
     logger?.LogDebug( "Finished ping scan for CIDR block {Cidr}", cidr );
   }
 
-  private static IEnumerable<DiscoveredDevice> ToDiscoveredDevices(
-    ConcurrentBag<(string Ip, bool Success, string? Hostname)> pingReplies, Dictionary<string, string> ipToMac ) {
+  private static IEnumerable<SubnetScanResult> ToDiscoveredDevices(
+    ConcurrentBag<(CidrBlock cidr, string Ip, bool Success, string? Hostname)> pingReplies,
+    Dictionary<string, string> ipToMac, bool finished ) {
     return pingReplies
       .Where( r => r.Success )
-      .Select( pingReply =>
-        new DiscoveredDevice { Addresses = CreateAddresses( pingReply ) }
-      );
+      .GroupBy( r => r.cidr )
+      .Select( group => new SubnetScanResult {
+        Metadata = null,
+        Status = finished ? ScanResultStatus.Success : ScanResultStatus.InProgress,
+        CidrBlock = group.Key,
+        DiscoveredDevices = group.Select( pingReply =>
+          new DiscoveredDevice { Addresses = CreateAddresses( pingReply ) }
+        )
+      } );
 
-    List<IDeviceAddress> CreateAddresses( (string Ip, bool Success, string? Hostname) pingReply ) {
+    List<IDeviceAddress> CreateAddresses( (CidrBlock cidr, string Ip, bool Success, string? Hostname) pingReply ) {
       var list = new List<IDeviceAddress> { new IpV4Address( pingReply.Ip ), };
 
       if ( !string.IsNullOrWhiteSpace( pingReply.Hostname ) ) {

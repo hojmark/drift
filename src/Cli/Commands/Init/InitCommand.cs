@@ -5,8 +5,6 @@ using Drift.Cli.Commands.Scan;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Normal;
-using Drift.Core.Scan;
-using Drift.Core.Scan.Subnet;
 using Drift.Core.Scan.Subnet.Interface;
 using Drift.Diff.Domain;
 using Drift.Domain;
@@ -67,7 +65,7 @@ internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
 
 public class InitCommandHandler(
   IOutputManager output,
-  IScanService scanner,
+  INetworkScanner scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider
 ) : ICommandHandler<InitParameters> {
   public async Task<int> Invoke( InitParameters parameters, CancellationToken cancellationToken ) {
@@ -191,9 +189,9 @@ public class InitCommandHandler(
       // SCAN
       var subnets = interfaceSubnetProvider.Get().ToList();
 
-      var scanRequest = new ScanRequest { Cidrs = subnets };
+      var scanRequest = new NetworkScanOptions { Cidrs = subnets };
 
-      ScanResult? scanResult = null;
+      NetworkScanResult? scanResult = null;
 
       //TODO create unit test for this
       output.Normal.WriteLineVerbose(
@@ -235,7 +233,9 @@ public class InitCommandHandler(
         }
 
         output.Log.LogInformation( "Scan completed" );
-        output.Log.LogDebug( "Found {Count} devices", scanResult.DiscoveredDevices.Count() );
+        output.Log.LogDebug( "Found {Count} devices",
+          scanResult.Subnets.Select( subnet => subnet.DiscoveredDevices.Count() ).Sum()
+        );
 
         output.Log.LogInformation( "Writing spec..." );
 
@@ -274,14 +274,15 @@ public class InitCommandHandler(
   }
 
   internal static void CreateSpecWithDiscovery(
-    ScanResult? scanResult,
+    NetworkScanResult? scanResult,
     List<CidrBlock> subnets,
     string specPath
   ) {
-    var devices = scanResult?.DiscoveredDevices.ToDeclared() ?? [];
+    var devices = scanResult?.Subnets.SelectMany( subnet => subnet.DiscoveredDevices ).ToDeclared() ?? [];
     CreateSpec( subnets, devices, specPath );
   }
 
+  //TODO consider "dropdown" for different templates
   internal static void CreateSpecWithoutDiscovery( string specPath ) {
     var networkBuilder = new NetworkBuilder();
 

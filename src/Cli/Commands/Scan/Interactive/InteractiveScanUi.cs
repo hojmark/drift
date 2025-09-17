@@ -7,8 +7,9 @@ using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-public class ScanUiApp {
-  private readonly IScanService _scanner;
+public class InteractiveScanUi {
+  private NetworkScanOptions _scanRequest;
+  private readonly INetworkScanner _scanner;
   private readonly ScanLayout _layout2;
   private int _selectedIndex;
   private int _scrollOffset;
@@ -20,20 +21,21 @@ public class ScanUiApp {
   private Percentage _progress;
 
 
-  public ScanUiApp( IScanService scanner ) {
+  public InteractiveScanUi( INetworkScanner scanner ) {
     _scanner = scanner;
     _layout2 = new ScanLayout();
 
     // Subscribe to events instead of polling
     //_scanner.SubnetsUpdated += OnSubnetsUpdated;
-    _scanner.ResultUpdated += OnSubnetsUpdated;
+    _scanner.ResultUpdated += OnScanResultUpdated;
   }
 
   private Task StartScanAsync() {
-    return _scanner.ScanAsync( new ScanRequest { Cidrs = [new CidrBlock( "192.168.0.0/24" )] } );
+    return _scanner.ScanAsync( _scanRequest );
   }
 
-  public async Task RunAsync() {
+  public async Task RunAsync( NetworkScanOptions scanRequest ) {
+    _scanRequest = scanRequest;
     var scanTask = StartScanAsync();
 
     await AnsiConsole
@@ -46,11 +48,10 @@ public class ScanUiApp {
           await Task.WhenAny( renderCriteria );
 
           var key = _inputWatcher.ConsumeKey();
-          if ( key is { } pressed ) {
-            HandleInput( pressed, _subnets );
+          if ( key != null ) {
+            HandleInput( key.Value, _subnets );
           }
 
-          // UpdateSubnetsFromScanner();
           Render();
 
           ctx.Refresh();
@@ -117,18 +118,18 @@ public class ScanUiApp {
     }
   }
 
-  private void OnSubnetsUpdated( object? sender, ScanResult scanResult ) {
+  private void OnScanResultUpdated( object? sender, NetworkScanResult scanResult ) {
     _progress = scanResult.Progress;
 
-    List<Subnet> currentSubnets = [
-      new() {
-        Address = "192.168.0.0/24",
-        Devices = scanResult.DiscoveredDevices.Select( dd =>
+    List<Subnet> currentSubnets = scanResult.Subnets
+      .Select( kvp => new Subnet {
+        Address = kvp.CidrBlock.ToString(),
+        Devices = kvp.DiscoveredDevices.Select( dd =>
           new Device {
             Ip = dd.Get( AddressType.IpV4 ) ?? "n/a", Mac = dd.Get( AddressType.Mac ) ?? "n/a", IsOnline = true
           } ).ToList()
-      }
-    ];
+      } ).ToList();
+
     // Same logic as before, but triggered by events
     var existingSubnetsMap = _subnets.ToDictionary( ui => ui.Subnet.Address, ui => ui );
     var updatedUiSubnets = new List<UiSubnet>();
@@ -148,35 +149,6 @@ public class ScanUiApp {
     if ( _selectedIndex >= _subnets.Count )
       _selectedIndex = Math.Max( 0, _subnets.Count - 1 );
   }
-
-
-  /*private void UpdateSubnetsFromScanner() {
-    var currentSubnets = _scanner.GetCurrentSubnets().ToList();
-
-    // Create a dictionary to track existing subnets by their address for fast lookup
-    var existingSubnetsMap = _subnets.ToDictionary( ui => ui.Subnet.Address, ui => ui );
-
-    var updatedUiSubnets = new List<UiSubnet>();
-
-    // Process current subnets from scanner
-    foreach ( var subnet in currentSubnets ) {
-      if ( existingSubnetsMap.TryGetValue( subnet.Address, out var existingUiSubnet ) ) {
-        // Update existing subnet with fresh data while preserving UI state
-        updatedUiSubnets.Add( new UiSubnet( subnet, existingUiSubnet.IsExpanded ) );
-      }
-      else {
-        // New subnet - add to the end with default expanded state
-        updatedUiSubnets.Add( new UiSubnet( subnet, isExpanded: true ) );
-      }
-    }
-
-    _subnets.Clear();
-    _subnets.AddRange( updatedUiSubnets );
-
-    // Ensure selected index is still valid
-    if ( _selectedIndex >= _subnets.Count )
-      _selectedIndex = Math.Max( 0, _subnets.Count - 1 );
-  }*/
 
   // TODO keymaps: default, vim, emacs, etc.
 }

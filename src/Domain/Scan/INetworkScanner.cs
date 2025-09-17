@@ -16,54 +16,48 @@ public interface INetworkScanner {
   event EventHandler<ScanResult>? ResultUpdated;
 }*/
 
-#region NEO
-
-public interface ISubnetScannerNEO {
-  Task<SubnetScanResult> ScanAsync(
-    CidrBlock subnet,
-    SubnetScanOptions options,
-    CancellationToken cancellationToken
+public interface INetworkScanner {
+  Task<NetworkScanResult> ScanAsync(
+    NetworkScanOptions request,
+    ILogger? logger = null,
+    CancellationToken cancellationToken = default
   );
 
-  event EventHandler<SubnetScanResult>? ResultUpdated;
-}
-
-// Multiple subnets (possibly distributed)
-public interface INetworkScannerNEO {
-  Task<NetworkScanResult> ScanAsync(
-    List<CidrBlock> subnets,
-    NetworkScanOptions options,
-    CancellationToken cancellationToken
+  [Obsolete( "Use other ScanAsync method plus ResultUpdated instead" )]
+  Task<NetworkScanResult> ScanAsyncOld(
+    NetworkScanOptions request,
+    ILogger? logger = null,
+    Action<ProgressReport>? onProgress = null,
+    CancellationToken cancellationToken = default
   );
 
   event EventHandler<NetworkScanResult>? ResultUpdated;
-  event EventHandler<SubnetScanResult>? SubnetCompleted;
+  //event EventHandler<NetworkScanResult>? ResultUpdated;
+  //event EventHandler<SubnetScanResult>? SubnetCompleted;
 }
 
-public class SubnetScanResult {
-  public required ScanResultStatus Status {
+public class NetworkScanOptions {
+  public List<CidrBlock> Cidrs {
     get;
     init;
-  }
+  } = new();
 
-
-  public IEnumerable<DiscoveredDevice> DiscoveredDevices {
+  public uint PingsPerSecond {
     get;
     init;
-  } = [];
+  } = 50;
 }
 
-public class NetworkScanResult {
-  public required ScanResultStatus Status {
-    get;
-    init;
-  }
+#region NEO
 
+public interface ISubnetScanner {
+  Task<SubnetScanResult> ScanAsync(
+    SubnetScanOptions options,
+    ILogger? logger = null,
+    CancellationToken cancellationToken = default
+  );
 
-  public IEnumerable<DiscoveredSubnet> DiscoveredSubnets {
-    get;
-    init;
-  } = [];
+  event EventHandler<SubnetScanResult>? ResultUpdated;
 }
 
 public class DiscoveredSubnet {
@@ -76,38 +70,11 @@ public class DiscoveredSubnet {
   }
 }
 
-public class NetworkScanOptions {
-}
-
 public class SubnetScanOptions {
-}
-
-#endregion
-
-public interface IScanService {
-  Task<ScanResult> ScanAsync(
-    ScanRequest request,
-    ILogger? logger = null,
-    CancellationToken cancellationToken = default
-  );
-
-  [Obsolete( "Use other ScanAsync method plus ResultUpdated instead" )]
-  Task<ScanResult> ScanAsyncOld(
-    ScanRequest request,
-    ILogger? logger = null,
-    Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default
-  );
-
-  event EventHandler<ScanResult>? ResultUpdated;
-  //event EventHandler<ScanLogEventArgs>? MessageLogged;
-}
-
-public class ScanRequest {
-  public List<CidrBlock> Cidrs {
+  public required CidrBlock Cidrs {
     get;
     init;
-  } = new();
+  }
 
   public uint PingsPerSecond {
     get;
@@ -115,8 +82,10 @@ public class ScanRequest {
   } = 50;
 }
 
+#endregion
+
 public abstract class ScanResultEventArgs : EventArgs {
-  public ScanResult IntermediateResult {
+  public NetworkScanResult IntermediateResult {
     get;
     init;
   }

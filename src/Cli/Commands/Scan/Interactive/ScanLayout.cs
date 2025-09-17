@@ -58,22 +58,24 @@ public class ScanLayout {
   }
 
   private static Layout BuildProgressBar( Percentage progress ) {
+    var progressValue = $" {progress}";
+
     return new Layout( "ProgressComponents" ).SplitColumns(
       new Layout( new Text( progress.Value switch {
         0 => "Idle",
         100 => "Completed",
-        _ => "Scanning... "
-      } ) ),
+        _ => "Scanning..."
+      } ) ) { Size = "Scanning...".Length + 1 },
       new Layout(
         new BreakdownChart()
           .HideTags()
-          .Width( AnsiConsole.Console.Profile.Width )
+          //.Width( AnsiConsole.Console.Profile.Width )
           .AddItem( "Good", progress, Color.Green )
           //.AddItem("Unknown", 5, Color.Yellow)
           //.AddItem("Bad", 2, Color.Red)
           .AddItem( "Remaining", Percentage.Hundred.Value - progress, Color.Grey ).Expand()
       ),
-      new Layout( new Text( $" {progress}%" ) )
+      new Layout( new Text( $" {progressValue}" ) ) { Size = progressValue.Length + 1 }
     );
   }
 

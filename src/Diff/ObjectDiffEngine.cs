@@ -111,7 +111,11 @@ public static class ObjectDiffEngine {
       return diffs;
     }
 
-    if ( original.GetType() != updated.GetType() ) throw new Exception( "Type mismatch" );
+    if ( original.GetType() != updated.GetType() ) {
+      throw new Exception( "Type mismatch in path '" + path + "': " + original.GetType().FullName + " vs " +
+                           updated.GetType().FullName );
+    }
+
     var type = original.GetType();
 
     // Value types (primitives like int and bool, as well as structs and enums; string is treated like a value type for convenience, though it is technically a reference type

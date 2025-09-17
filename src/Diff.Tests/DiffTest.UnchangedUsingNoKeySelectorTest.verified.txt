@@ -1,6 +1,6 @@
 ﻿[
   {
-    "PropertyPath": "ScanResult[0]",
+    "PropertyPath": "NetworkScanResult[0]",
     "Original": {
       "Addresses": [
         {

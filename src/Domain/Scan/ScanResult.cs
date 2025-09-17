@@ -17,4 +17,9 @@ public class ScanResult {
     get;
     init;
   } = [];
+
+  public Percentage Progress {
+    get;
+    init;
+  } = new(0);
 }

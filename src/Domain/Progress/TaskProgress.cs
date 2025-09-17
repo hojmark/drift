@@ -6,7 +6,7 @@ public class TaskProgress {
     init;
   }
 
-  public required int CompletionPct {
+  public required uint CompletionPct {
     get;
     init;
   }

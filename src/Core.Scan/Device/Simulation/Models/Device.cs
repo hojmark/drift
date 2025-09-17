@@ -1,4 +1,4 @@
-namespace Drift.Cli.Commands.Scan.Interactive.Models;
+namespace Drift.Core.Scan.Device.Simulation.Models;
 
 public class Device {
   public required string Ip {

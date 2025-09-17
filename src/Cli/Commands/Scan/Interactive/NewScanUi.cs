@@ -1,6 +1,6 @@
-using Drift.Cli.Commands.Scan.Interactive.Models;
-using Drift.Cli.Commands.Scan.Interactive.Simulation;
 using Drift.Core.Scan;
+using Drift.Core.Scan.Device.Simulation;
+using Drift.Core.Scan.Device.Simulation.Models;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
@@ -8,7 +8,7 @@ public static class NewScanUi {
   private static readonly SimulatedScanOptions DemoScan1 = new() {
     Duration = TimeSpan.FromSeconds( 10 ),
     Subnets = [
-      new Models.Subnet {
+      new Subnet {
         Address = "192.168.1.0/24",
         Devices = [
           new Device { Ip = "192.168.1.10", Mac = "AA:BB:CC:DD:EE:01", IsOnline = true },
@@ -16,7 +16,7 @@ public static class NewScanUi {
           new Device { Ip = "192.168.1.12", Mac = "AA:BB:CC:DD:EE:03", IsOnline = true }
         ]
       },
-      new Models.Subnet {
+      new Subnet {
         Address = "10.0.0.0/24",
         Devices = [
           new Device { Ip = "10.0.0.1", Mac = "FF:EE:DD:CC:BB:01", IsOnline = true },

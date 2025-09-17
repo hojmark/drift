@@ -1,11 +1,10 @@
-using Drift.Cli.Commands.Scan.Interactive.Models;
-using Drift.Domain.Scan;
-using Drift.Domain.Device.Discovered;
 using Drift.Domain.Device.Addresses;
+using Drift.Domain.Device.Discovered;
 using Drift.Domain.Progress;
+using Drift.Domain.Scan;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Commands.Scan.Interactive.Simulation;
+namespace Drift.Core.Scan.Device.Simulation;
 
 public class SimulatedScanner : IScanService, IDisposable {
   public bool IsComplete => _visibleDevices.Count >= _totalDevices;
@@ -33,15 +32,15 @@ public class SimulatedScanner : IScanService, IDisposable {
 
   public event EventHandler<ScanResult>? ResultUpdated;
 
-  private readonly List<Device> _allDevices;
-  private readonly Dictionary<string, List<Device>> _visibleBySubnet = new();
+  private readonly List<Models.Device> _allDevices;
+  private readonly Dictionary<string, List<Models.Device>> _visibleBySubnet = new();
   private readonly TimeSpan _duration;
   private readonly int _totalDevices;
   private readonly Timer _updateTimer;
 
   private bool _started;
   private DateTime _startedAt;
-  private HashSet<Device> _visibleDevices = [];
+  private HashSet<Models.Device> _visibleDevices = [];
   private readonly SimulatedScanOptions _options;
 
   public SimulatedScanner( SimulatedScanOptions options ) {
@@ -125,7 +124,7 @@ public class SimulatedScanner : IScanService, IDisposable {
     ResultUpdated?.Invoke(this, scanResult);*/
   }
 
-  private static DiscoveredDevice ConvertToDiscoveredDevice( Device device ) {
+  private static DiscoveredDevice ConvertToDiscoveredDevice( Models.Device device ) {
     var addresses = new List<IDeviceAddress> { new IpV4Address( device.Ip ) };
 
     if ( !string.IsNullOrWhiteSpace( device.Mac ) ) {

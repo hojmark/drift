@@ -1,3 +1,5 @@
+using Drift.Domain;
+
 namespace Drift.Cli.Commands.Scan.Interactive;
 
 using Spectre.Console;
@@ -6,18 +8,11 @@ using Spectre.Console.Rendering;
 public class ScanLayout {
   private readonly Layout _layout;
 
-  private bool _showLogs;
-  private readonly Layout _scanTree;
-  private readonly Layout _log;
-
   public bool ShowLogs {
-    get => _showLogs;
+    get => _layout["Log"].IsVisible;
     set {
-      if ( _showLogs == value )
-        return;
-
-      _showLogs = value;
-      UpdateMainPanel( value );
+      _layout["Log"].IsVisible = value;
+      _layout["MainPanel"].Update( _layout["MainPanel"] );
     }
   }
 
@@ -25,42 +20,29 @@ public class ScanLayout {
     _layout = new Layout( "Root" )
       .SplitRows(
         new Layout( "Header" ) { Size = 1 },
-        new Layout( "MainPanel" ),
+        new Layout( "MainPanel" ).SplitColumns(
+          new Layout( "ScanTree" ),
+          new Layout( "Log" ) { IsVisible = false }
+        ),
         new Layout( "Data" ) { Size = 1 },
         new Layout( "Progress" ) { Size = 1 },
         new Layout( "Footer" ) { Size = 1 }
       );
 
-    _scanTree = new Layout( "ScanTree" );
-    _log = new Layout( "Log" );
-
     _layout["Header"].Update( BuildHeader() );
-    UpdateProgress( 0 );
+    UpdateProgress( Percentage.Zero );
     _layout["Footer"].Update( BuildFooter() );
-
-    UpdateMainPanel( _showLogs );
   }
-
-  private void UpdateMainPanel( bool showLogs ) {
-    var mainPanelChildren = new List<Layout> { _scanTree };
-
-    if ( showLogs ) {
-      mainPanelChildren.Add( _log );
-    }
-
-    _layout["MainPanel"].SplitColumns( mainPanelChildren.ToArray() );
-  }
-
 
   public IRenderable Renderable => _layout;
 
   public void UpdateScanTree( IEnumerable<Tree> content ) {
-    _scanTree.Update(
+    _layout["ScanTree"].Update(
       new Panel( new Rows( content ) ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 )
     );
   }
 
-  public void UpdateProgress( uint progress ) {
+  public void UpdateProgress( Percentage progress ) {
     _layout["Progress"].Update( BuildProgressBar( progress ) );
   }
 
@@ -75,14 +57,24 @@ public class ScanLayout {
     return new Markup( "Using [grey]/home/hojmark/[/][yellow bold]fh47[/][grey].spec.yaml[/]  [green]✔[/]" );
   }
 
-  private static BreakdownChart BuildProgressBar( uint progress ) {
-    return new BreakdownChart()
-      .HideTags()
-      .Width( AnsiConsole.Console.Profile.Width )
-      .AddItem( "Good", progress, Color.Green )
-      //.AddItem("Unknown", 5, Color.Yellow)
-      //.AddItem("Bad", 2, Color.Red)
-      .AddItem( "Remaining", 100 - progress, Color.Grey );
+  private static Layout BuildProgressBar( Percentage progress ) {
+    return new Layout( "ProgressComponents" ).SplitColumns(
+      new Layout( new Text( progress.Value switch {
+        0 => "Idle",
+        100 => "Completed",
+        _ => "Scanning... "
+      } ) ),
+      new Layout(
+        new BreakdownChart()
+          .HideTags()
+          .Width( AnsiConsole.Console.Profile.Width )
+          .AddItem( "Good", progress, Color.Green )
+          //.AddItem("Unknown", 5, Color.Yellow)
+          //.AddItem("Bad", 2, Color.Red)
+          .AddItem( "Remaining", Percentage.Hundred.Value - progress, Color.Grey ).Expand()
+      ),
+      new Layout( new Text( $" {progress}%" ) )
+    );
   }
 
   private static Markup BuildFooter(  /*int scroll, int maxScroll, int selectedIndex, List<UiSubnet> subnets */ ) {

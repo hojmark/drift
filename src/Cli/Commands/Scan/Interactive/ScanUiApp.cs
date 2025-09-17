@@ -1,4 +1,4 @@
-using Drift.Cli.Commands.Scan.Interactive.Models;
+using Drift.Core.Scan.Device.Simulation.Models;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Extensions;
@@ -17,6 +17,7 @@ public class ScanUiApp {
   //TODO should get IDisposable warning?
   private readonly AsyncKeyInputWatcher _inputWatcher = new();
   private readonly List<UiSubnet> _subnets = [];
+  private Percentage _progress;
 
 
   public ScanUiApp( IScanService scanner ) {
@@ -33,14 +34,16 @@ public class ScanUiApp {
   }
 
   public async Task RunAsync() {
-    StartScanAsync();
+    var scanTask = StartScanAsync();
 
     await AnsiConsole
       .Live( _layout2.Renderable )
       .AutoClear( true )
       .StartAsync( async ctx => {
         while ( _running ) {
-          await Task.WhenAny( _inputWatcher.WaitForNextKeyAsync(), Task.Delay( 250 ) );
+          Task[] renderCriteria = [_inputWatcher.WaitForNextKeyAsync(), Task.Delay( 250 )];
+
+          await Task.WhenAny( renderCriteria );
 
           var key = _inputWatcher.ConsumeKey();
           if ( key is { } pressed ) {
@@ -48,17 +51,17 @@ public class ScanUiApp {
           }
 
           // UpdateSubnetsFromScanner();
-          Render( _subnets, /*_scanner.Progress*/ 40 );
+          Render();
 
           ctx.Refresh();
         }
       } );
   }
 
-  private void Render( List<UiSubnet> subnets, uint progress ) {
+  private void Render() {
     var renderer = new TreeRenderer();
     int availableRows = _layout2.GetAvailableRows();
-    int totalHeight = renderer.GetTotalHeight( subnets );
+    int totalHeight = renderer.GetTotalHeight( _subnets );
     int maxScroll = Math.Max( 0, totalHeight - availableRows );
 
     // Debug information (remove after fixing)
@@ -67,22 +70,11 @@ public class ScanUiApp {
 
     _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );
 
-    var trees = renderer.RenderTrees( _scrollOffset, availableRows, _selectedIndex, subnets );
+    var trees = renderer.RenderTrees( _scrollOffset, availableRows, _selectedIndex, _subnets );
 
     _layout2.UpdateScanTree( trees );
 
-    _layout2.UpdateProgress( progress );
-
-    /*var renderer = new TreeRenderer();
-    int availableRows = _layout2.GetAvailableRows();
-    int maxScroll = Math.Max( 0, renderer.GetTotalHeight( subnets ) - availableRows );
-    _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );
-
-    var trees = renderer.RenderTrees( _scrollOffset, availableRows, _selectedIndex, subnets );
-
-    _layout2.UpdateMainPanel( trees );
-
-    _layout2.UpdateProgress( progress );*/
+    _layout2.UpdateProgress( _progress );
   }
 
   private void HandleInput( ConsoleKey key, List<UiSubnet> subnets ) {
@@ -126,7 +118,9 @@ public class ScanUiApp {
   }
 
   private void OnSubnetsUpdated( object? sender, ScanResult scanResult ) {
-    List<Models.Subnet> currentSubnets = [
+    _progress = scanResult.Progress;
+
+    List<Subnet> currentSubnets = [
       new() {
         Address = "192.168.0.0/24",
         Devices = scanResult.DiscoveredDevices.Select( dd =>
@@ -188,7 +182,7 @@ public class ScanUiApp {
 }
 
 public class UiSubnet {
-  public Models.Subnet Subnet {
+  public Subnet Subnet {
     get;
   }
 
@@ -197,7 +191,7 @@ public class UiSubnet {
     set;
   }
 
-  public UiSubnet( Models.Subnet subnet, bool isExpanded = true ) {
+  public UiSubnet( Subnet subnet, bool isExpanded = true ) {
     Subnet = subnet;
     IsExpanded = isExpanded;
   }

@@ -66,7 +66,8 @@ public class PingNetworkScanner( IPingTool pingTool ) : IScanService {
     return new ScanResult {
       DiscoveredDevices = ToDiscoveredDevices( pingReplies, ipToMac ),
       Metadata = new Metadata { StartedAt = startedAt, EndedAt = DateTime.Now },
-      Status = ScanResultStatus.Success
+      Status = ScanResultStatus.Success,
+      Progress = Percentage.Hundred
     };
   }
 
@@ -86,7 +87,7 @@ public class PingNetworkScanner( IPingTool pingTool ) : IScanService {
       .ToList();
 
     var total = ipRange.Count;
-    var completed = 0;
+    var completed = 0u;
 
     if ( total == 0 ) {
       logger?.LogWarning( "Skipping ping scan for CIDR block {Cidr} as it has no usable IP addresses", cidr );
@@ -118,14 +119,16 @@ public class PingNetworkScanner( IPingTool pingTool ) : IScanService {
             new ScanResult {
               Metadata = null,
               Status = ScanResultStatus.InProgress,
-              DiscoveredDevices = ToDiscoveredDevices( results, ArpHelper.GetSystemCachedIpToMacMap() )
-            } );
+              DiscoveredDevices = ToDiscoveredDevices( results, ArpHelper.GetSystemCachedIpToMacMap() ),
+              Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 ))
+            }
+          );
         }
 
         onProgress?.Invoke( new ProgressReport {
           Tasks = [
             new TaskProgress {
-              TaskName = "Ping Scan", CompletionPct = (int) Math.Ceiling( ( (double) completed / total ) * 100 )
+              TaskName = "Ping Scan", CompletionPct = (uint) Math.Ceiling( ( (double) completed / total ) * 100 )
             }
           ]
         } );

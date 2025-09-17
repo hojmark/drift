@@ -4,13 +4,8 @@ using Drift.Domain.Scan;
 
 namespace Drift.Cli.Tests.Utils;
 
-public class PredefinedResultNetworkScanner( ScanResult scanResult ) : INetworkScanner {
-  public Task<ScanResult> ScanAsync(
-    List<CidrBlock> cidrs,
-    Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default,
-    int maxPingsPerSecond = 50
-  ) {
+public class PredefinedResultNetworkScanner( ScanResult scanResult ) : IScanService {
+  public Task<ScanResult> ScanAsync( ScanRequest request, CancellationToken cancellationToken = default ) {
     return Task.FromResult( scanResult );
   }
 

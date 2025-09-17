@@ -5,7 +5,7 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 public class TreeRenderer {
   public const int ScrollAmount = 3;
   private readonly int _statusWidth = "Offline".Length;
-  
+
   public int GetTotalHeight( List<UiSubnet> subnets )
     => subnets.Select( ( _, i ) => GetTreeHeight( i, subnets ) ).Sum();
 
@@ -17,39 +17,39 @@ public class TreeRenderer {
     for ( int i = 0; i < subnets.Count && renderedRows < maxRows; i++ ) {
       int treeHeight = GetTreeHeight( i, subnets );
       bool isSelected = i == selectedIndex;
-      
+
       // Check if this tree starts within the visible area
       if ( currentRow + treeHeight > scrollOffset && currentRow < scrollOffset + maxRows ) {
         // Calculate how many rows of this tree we can show
         int treeStartRow = Math.Max( 0, scrollOffset - currentRow );
         int remainingRows = maxRows - renderedRows;
         int maxDeviceRows = Math.Min( remainingRows - 1, treeHeight - 1 - treeStartRow ); // -1 for header
-        
+
         if ( treeStartRow == 0 ) {
           // Show the full tree header
           if ( maxDeviceRows >= 0 ) {
             trees.Add( BuildTree( i, isSelected, subnets, maxDeviceRows ) );
             renderedRows += Math.Min( treeHeight, remainingRows );
           }
-        } else if ( treeStartRow < treeHeight && subnets[i].IsExpanded ) {
+        }
+        else if ( treeStartRow < treeHeight && subnets[i].IsExpanded ) {
           // Show partial tree (skip header, show some devices)
           int devicesToSkip = treeStartRow - 1; // -1 because we're skipping the header
           int devicesToShow = Math.Min( maxDeviceRows, subnets[i].Subnet.Devices.Count - devicesToSkip );
-          
+
           if ( devicesToShow > 0 ) {
             trees.Add( BuildPartialTree( i, isSelected, subnets, devicesToSkip, devicesToShow ) );
             renderedRows += devicesToShow;
           }
         }
       }
-      
+
       currentRow += treeHeight;
     }
 
     return trees;
-
   }
-  
+
   private Tree BuildPartialTree( int index, bool isSelected, List<UiSubnet> subnets, int skipDevices, int maxDevices ) {
     var uiSubnet = subnets[index];
     var subnet = uiSubnet.Subnet;
@@ -64,8 +64,8 @@ public class TreeRenderer {
       string statusText = device.IsOnline ? "Online" : "Offline";
 
       string line =
-        $"[white]{device.IP.PadRight( GetIpWidth( subnets ) )}[/]  " +
-        $"[grey]{device.MAC.PadRight( GetMacWidth( subnets ) )}[/]  " +
+        $"[white]{device.Ip.PadRight( GetIpWidth( subnets ) )}[/]  " +
+        $"[grey]{device.Mac.PadRight( GetMacWidth( subnets ) )}[/]  " +
         $"[{statusColor}]{statusText.PadRight( _statusWidth )}[/]";
 
       tree.AddNode( line );
@@ -102,8 +102,8 @@ public class TreeRenderer {
         string statusText = device.IsOnline ? "Online" : "Offline";
 
         string line =
-          $"[white]{device.IP.PadRight( GetIpWidth( subnets ) )}[/]  " +
-          $"[grey]{device.MAC.PadRight( GetMacWidth( subnets ) )}[/]  " +
+          $"[white]{device.Ip.PadRight( GetIpWidth( subnets ) )}[/]  " +
+          $"[grey]{device.Mac.PadRight( GetMacWidth( subnets ) )}[/]  " +
           $"[{statusColor}]{statusText.PadRight( _statusWidth )}[/]";
 
         tree.AddNode( line );
@@ -122,10 +122,10 @@ public class TreeRenderer {
     => subnets[index].IsExpanded ? 1 + subnets[index].Subnet.Devices.Count : 1;
 
   private int GetIpWidth( List<UiSubnet> subnets ) {
-    return subnets.SelectMany( s => s.Subnet.Devices ).Max( d => d.IP.Length );
+    return subnets.SelectMany( s => s.Subnet.Devices ).Max( d => d.Ip.Length );
   }
 
   private int GetMacWidth( List<UiSubnet> subnets ) {
-    return subnets.SelectMany( s => s.Subnet.Devices ).Max( d => d.MAC.Length );
+    return subnets.SelectMany( s => s.Subnet.Devices ).Max( d => d.Mac.Length );
   }
 }

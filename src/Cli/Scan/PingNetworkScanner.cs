@@ -117,16 +117,16 @@ internal class PingNetworkScanner( IOutputManager output, IPingTool pingTool ) :
 
         results.Add( ( ip, success, hostname ) );
 
+        Interlocked.Increment( ref completed );
+
         if ( success ) {
-          ResultUpdated.Invoke( null,
+          ResultUpdated?.Invoke( null,
             new ScanResult {
               Metadata = null,
               Status = ScanResultStatus.InProgress,
               DiscoveredDevices = ToDiscoveredDevices( results, ArpHelper.GetSystemCachedIpToMacMap() )
             } );
         }
-
-        Interlocked.Increment( ref completed );
 
         onProgress?.Invoke( new ProgressReport {
           Tasks = [

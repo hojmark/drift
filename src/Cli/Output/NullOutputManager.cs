@@ -1,9 +1,8 @@
-using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
-namespace Drift.Cli.Tests.Utils;
+namespace Drift.Cli.Output;
 
 internal class NullOutputManager : IOutputManager {
   public ILogOutput Log {

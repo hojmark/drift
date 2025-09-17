@@ -13,7 +13,6 @@ public class ScanResult {
     init;
   }
 
-
   public IEnumerable<DiscoveredDevice> DiscoveredDevices {
     get;
     init;

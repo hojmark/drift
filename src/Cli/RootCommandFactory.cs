@@ -79,7 +79,7 @@ internal static class RootCommandFactory {
 
   private static void ConfigureSubnetProvider( IServiceCollection services ) {
     services.AddScoped<IInterfaceSubnetProvider>( sp =>
-      new PhysicalInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>().GetCompoundLogger() )
+      new PhysicalInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>().GetLogger() )
     );
   }
 

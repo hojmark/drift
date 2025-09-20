@@ -23,7 +23,7 @@ using ProductHeaderValue = Octokit.ProductHeaderValue;
 // ReSharper disable AllUnderscoreLocalParameterName
 // ReSharper disable UnusedMember.Local
 
-class NukeBuild : Nuke.Common.NukeBuild {
+sealed class NukeBuild : Nuke.Common.NukeBuild {
   public static int Main() => Execute<NukeBuild>( x => x.Build );
 
   private static class Paths {

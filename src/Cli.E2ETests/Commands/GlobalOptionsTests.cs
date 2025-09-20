@@ -2,7 +2,7 @@ using Drift.Cli.Abstractions;
 
 namespace Drift.Cli.E2ETests.Commands;
 
-public class GlobalOptionsTests : DriftBinaryFixture {
+internal sealed class GlobalOptionsTests : DriftBinaryFixture {
   [Test]
   public async Task VersionOptionTest() {
     var result = await DriftBinary.ExecuteAsync( "--version" );

@@ -2,7 +2,7 @@ using System.CommandLine;
 
 namespace Drift.Cli.Commands.Init;
 
-public record InitParameters : DefaultParameters {
+internal record InitParameters : DefaultParameters {
   internal bool? Discover {
     get;
   }

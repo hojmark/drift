@@ -1,6 +1,6 @@
 namespace Drift.Cli.E2ETests.Schema;
 
-public class SchemaAvailabilityTests {
+internal sealed class SchemaAvailabilityTests {
   [Explicit( "For now, use schema directly from GitHub repo" )]
   [TestCase( "drift-spec-v1-preview.schema.json" )]
   public async Task SchemaIsAvailableOnGitHubIo( string schemaName ) {

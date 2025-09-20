@@ -2,7 +2,7 @@
 
 namespace Drift.Cli.E2ETests.Commands;
 
-public class LintTests : DriftBinaryFixture {
+internal sealed class LintTests : DriftBinaryFixture {
   [Test]
   public async Task InitThenLintTest() {
     try {

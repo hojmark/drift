@@ -9,7 +9,7 @@ using NetworkInterface = Drift.Core.Scan.Subnets.Interface.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 
-public class ScanCommandTests {
+internal sealed class ScanCommandTests {
   private static readonly INetworkInterface DefaultInterface = new NetworkInterface {
     Description = "eth0", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "192.168.0.0/24" )
   };

@@ -3,7 +3,7 @@ using Drift.TestUtilities.ResourceProviders;
 
 namespace Drift.Spec.Tests;
 
-public class DeserializeTests {
+internal sealed class DeserializeTests {
   [Test]
   public async Task SubnetTest() {
     var stream = LocalTestResourceProvider.GetStream( "network_single_subnet.yaml" );

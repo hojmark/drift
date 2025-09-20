@@ -1,6 +1,6 @@
 ﻿namespace Drift.Domain.Tests;
 
-public class CidrBlockTests {
+internal sealed class CidrBlockTests {
   [Test]
   [TestCase( "192.168.123.0/24" )]
   [TestCase( "2001:db8::/64" )]

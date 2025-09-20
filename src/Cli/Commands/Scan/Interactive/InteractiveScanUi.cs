@@ -7,7 +7,7 @@ using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-public class InteractiveScanUi {
+internal class InteractiveScanUi {
   private NetworkScanOptions _scanRequest;
   private readonly INetworkScanner _scanner;
   private readonly ScanLayout _layout2;
@@ -154,7 +154,7 @@ public class InteractiveScanUi {
   // TODO keymaps: default, vim, emacs, etc.
 }
 
-public class UiSubnet {
+internal class UiSubnet {
   public Subnet Subnet {
     get;
   }

@@ -5,7 +5,7 @@ using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
 namespace Drift.ArchTests;
 
-public class DependencyTests : DriftArchitectureFixture {
+internal sealed class DependencyTests : DriftArchitectureFixture {
   private readonly IObjectProvider<IType> _cliAssemlblyTypes =
     Types().That()
       .ResideInAssemblyMatching( @"Drift\.Cli$" )

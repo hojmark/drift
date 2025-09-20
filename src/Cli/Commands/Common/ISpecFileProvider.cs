@@ -2,6 +2,6 @@ using Drift.Domain;
 
 namespace Drift.Cli.Commands.Common;
 
-public interface ISpecFileProvider {
+internal interface ISpecFileProvider {
   Task<Inventory?> GetDeserializedAsync( FileInfo? specFile );
 }

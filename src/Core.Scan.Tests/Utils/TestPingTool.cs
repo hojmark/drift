@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Core.Scan.Tests.Utils;
 
-public class TestPingTool( List<IPAddress> successful ) : IPingTool {
+internal sealed class TestPingTool( List<IPAddress> successful ) : IPingTool {
   public Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> RunAsync(
     string arguments,
     bool? logCommand,

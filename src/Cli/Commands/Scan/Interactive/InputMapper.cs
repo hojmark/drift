@@ -1,6 +1,6 @@
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-public static class InputMapper {
+internal static class InputMapper {
   public static InputAction MapKey( ConsoleKey key ) => key switch {
     ConsoleKey.Q => InputAction.Quit,
     ConsoleKey.W => InputAction.ScrollUp,

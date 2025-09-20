@@ -8,7 +8,7 @@ using Drift.TestUtilities;
 
 namespace Drift.Core.Scan.Tests;
 
-public class NetworkScannerTests {
+internal sealed class NetworkScannerTests {
   [Test]
   [TestCase( "192.168.0.0/24" )]
   [TestCase( "192.168.0.1/24" )] // TODO should fail

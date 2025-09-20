@@ -3,7 +3,7 @@ using Drift.Cli.Abstractions;
 
 namespace Drift.Cli.E2ETests.Commands;
 
-public class ReadmeWorkflowTests : DriftBinaryFixture {
+internal sealed class ReadmeWorkflowTests : DriftBinaryFixture {
   //TODO implement
   [Explicit( "Relies on a real network scan. Need to create a mock network." )]
   [Test]

@@ -11,7 +11,7 @@ using JsonConverter = Drift.EnvironmentConfig.JsonConverter;
 
 namespace Drift.Diff.Tests;
 
-public class DiffTest {
+internal sealed class DiffTest {
   private static readonly NetworkScanResult ScanResult1 = new() {
     Metadata = new Metadata {
       StartedAt = DateTime.Parse( "2025-04-24T12:20:08.4219405+02:00" ).ToUniversalTime(),
@@ -225,7 +225,7 @@ public class DiffTest {
     }
   }
 
-  public class IPAddressConverter : JsonConverter<System.Net.IPAddress> {
+  internal sealed class IPAddressConverter : JsonConverter<System.Net.IPAddress> {
     public override System.Net.IPAddress Read( ref Utf8JsonReader reader, Type typeToConvert,
       JsonSerializerOptions options ) {
       string? ip = reader.GetString();

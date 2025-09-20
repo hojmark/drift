@@ -7,7 +7,7 @@ using Drift.Cli.Output.Abstractions;
 
 namespace Drift.Cli.Tests;
 
-public class ExitCodeTests {
+internal sealed class ExitCodeTests {
   private const string ExitCodeCommand = "exitcode";
   private const int ExitCodeCommandExitCode = 1337;
 
@@ -69,7 +69,7 @@ public class ExitCodeTests {
     }
   }
 
-  private class ExitCodeTestCommand( IServiceProvider provider )
+  private sealed class ExitCodeTestCommand( IServiceProvider provider )
     : CommandBase<DefaultParameters, ExitCodeCommandHandler>(
       ExitCodeCommand,
       "Command that returns a specific exit code",
@@ -80,14 +80,14 @@ public class ExitCodeTests {
     }
   }
 
-  private class ExitCodeCommandHandler( IOutputManager output ) : ICommandHandler<DefaultParameters> {
+  private sealed class ExitCodeCommandHandler( IOutputManager output ) : ICommandHandler<DefaultParameters> {
     public Task<int> Invoke( DefaultParameters parameters, CancellationToken cancellationToken ) {
       output.Normal.Write( $"Output from command '{ExitCodeCommand}'" );
       return Task.FromResult( ExitCodeCommandExitCode );
     }
   }
 
-  private class ExceptionTestCommand( IServiceProvider provider )
+  private sealed class ExceptionTestCommand( IServiceProvider provider )
     : CommandBase<DefaultParameters, ExceptionCommandHandler>(
       ExceptionThrowingCommand,
       "Command that throws an exception",
@@ -98,7 +98,7 @@ public class ExitCodeTests {
     }
   }
 
-  private class ExceptionCommandHandler : ICommandHandler<DefaultParameters> {
+  private sealed class ExceptionCommandHandler : ICommandHandler<DefaultParameters> {
     public Task<int> Invoke( DefaultParameters parameters, CancellationToken cancellationToken ) {
       throw new Exception( $"This exception was thrown from {nameof(ExceptionCommandHandler)}" );
     }

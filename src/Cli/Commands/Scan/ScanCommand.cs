@@ -58,7 +58,7 @@ internal class ScanCommand : CommandBase<ScanParameters, ScanCommandHandler> {
   }
 }
 
-public class ScanCommandHandler(
+internal class ScanCommandHandler(
   IOutputManager output,
   INetworkScanner scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider,

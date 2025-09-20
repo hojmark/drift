@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
 
-public class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvider {
+internal class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvider {
   public async Task<Inventory?> GetDeserializedAsync( FileInfo? specFile ) {
     Inventory? spec = null;
 

@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.TestUtilities;
 
-public class StringLogger( StringWriter? writer = null ) : ILogger {
+public sealed class StringLogger( StringWriter? writer = null ) : ILogger {
   private readonly StringWriter _writer = writer ?? new StringWriter();
 
   public void Log<TState>(

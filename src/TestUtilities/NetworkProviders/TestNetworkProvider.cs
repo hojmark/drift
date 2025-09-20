@@ -2,5 +2,5 @@ using Drift.Domain;
 
 namespace Drift.TestUtilities.NetworkProviders;
 
-public class TestNetworkProvider : INetworkProvider {
+internal sealed class TestNetworkProvider : INetworkProvider {
 }

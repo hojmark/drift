@@ -22,7 +22,7 @@ internal class LintCommand : CommandBase<LintParameters, LintCommandHandler> {
   }
 }
 
-public class LintCommandHandler( IOutputManager output ) : ICommandHandler<LintParameters> {
+internal class LintCommandHandler( IOutputManager output ) : ICommandHandler<LintParameters> {
   public async Task<int> Invoke( LintParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running lint command" );
 

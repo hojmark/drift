@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
 
-public class SpecFilePathResolver {
+internal class SpecFilePathResolver {
   private readonly string _baseDirectory;
   private readonly IOutputManager _output;
 

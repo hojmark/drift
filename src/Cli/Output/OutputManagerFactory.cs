@@ -11,7 +11,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Drift.Cli.Output;
 
-public interface IOutputManagerFactory {
+internal interface IOutputManagerFactory {
   IOutputManager Create( ParseResult result, bool plainConsole );
 }
 

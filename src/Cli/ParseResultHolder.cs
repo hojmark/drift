@@ -2,7 +2,7 @@ using System.CommandLine;
 
 namespace Drift.Cli;
 
-public class ParseResultHolder {
+internal class ParseResultHolder {
   private ParseResult? _parseResult;
 
   public ParseResult ParseResult {

@@ -3,7 +3,7 @@ using Drift.Domain;
 
 namespace Drift.Utils.Tests;
 
-public class IpNetworkUtilsTests {
+internal sealed class IpNetworkUtilsTests {
   //TODO test all cases - there's not that many
   [TestCase( "0.0.0.0", 0 )]
   [TestCase( "128.0.0.0", 1 )]

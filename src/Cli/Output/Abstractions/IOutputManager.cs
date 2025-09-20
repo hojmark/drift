@@ -1,7 +1,7 @@
 namespace Drift.Cli.Output.Abstractions;
 
 // Internal?
-public interface IOutputManager {
+internal interface IOutputManager {
   internal ILogOutput Log {
     get;
   }

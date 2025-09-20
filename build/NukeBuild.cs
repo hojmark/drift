@@ -122,7 +122,7 @@ class NukeBuild : Nuke.Common.NukeBuild {
   }
 
   //TODO or is it build type? in that case, Default should probably be Other
-  public enum VersionStrategy {
+  internal enum VersionStrategy {
     Default,
     Release,
     ReleaseSpecial

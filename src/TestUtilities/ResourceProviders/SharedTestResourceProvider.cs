@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Drift.TestUtilities.ResourceProviders;
 
-public static class SharedTestResourceProvider {
+internal static class SharedTestResourceProvider {
   private static Assembly Assembly => typeof(SharedTestResourceProvider).Assembly;
 
   public static Stream GetStream( string path ) {

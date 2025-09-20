@@ -4,13 +4,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Core.Scan.Tests.Utils;
 
-public class PredefinedResultNetworkScanner( NetworkScanResult scanResult ) : INetworkScanner {
+#pragma warning disable CA1515 //TODO try to remove
+public sealed class PredefinedResultNetworkScanner( NetworkScanResult scanResult ) : INetworkScanner {
+#pragma warning restore CA1515
   public Task<NetworkScanResult> ScanAsync(
     NetworkScanOptions request,
     ILogger? logger = null,
     CancellationToken cancellationToken = default
   ) {
-    var intermediateResult = new NetworkScanResult { Metadata = scanResult.Metadata, Status = ScanResultStatus.InProgress };
+    var intermediateResult =
+      new NetworkScanResult { Metadata = scanResult.Metadata, Status = ScanResultStatus.InProgress };
     ResultUpdated?.Invoke( this, intermediateResult );
     return Task.FromResult( scanResult );
   }

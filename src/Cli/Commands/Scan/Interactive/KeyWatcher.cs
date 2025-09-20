@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
-public class AsyncKeyInputWatcher : IAsyncDisposable {
+internal sealed class AsyncKeyInputWatcher : IAsyncDisposable {
   private readonly ConcurrentQueue<ConsoleKey> _keyBuffer = new();
   private readonly CancellationTokenSource _cts = new();
   private readonly Task _listenerTask;
@@ -16,22 +16,14 @@ public class AsyncKeyInputWatcher : IAsyncDisposable {
     _listenerTask = Task.Run( ListenLoopAsync );
   }
 
-  private async Task ListenLoopAsync() {
+  private void ListenLoopAsync() {
     while ( !_cts.Token.IsCancellationRequested ) {
-      if ( Console.KeyAvailable ) {
-        var key = Console.ReadKey( intercept: true ).Key;
-        _keyBuffer.Enqueue( key );
-
-        _waiter?.TrySetResult();
-      }
-
-      await Task.Delay( 10, _cts.Token ).ConfigureAwait( false );
+      var key = Console.ReadKey( intercept: true ).Key;
+      _keyBuffer.Enqueue( key );
+      _waiter?.TrySetResult();
     }
   }
 
-  /// <summary>
-  /// Awaits the next keypress (or returns immediately if a key is already buffered).
-  /// </summary>
   public Task WaitForNextKeyAsync() {
     if ( !_keyBuffer.IsEmpty )
       return Task.CompletedTask;
@@ -40,20 +32,18 @@ public class AsyncKeyInputWatcher : IAsyncDisposable {
     return _waiter.Task;
   }
 
-  /// <summary>
-  /// Returns the next keypress from the buffer, or null if none.
-  /// </summary>
   public ConsoleKey? ConsumeKey() {
     return _keyBuffer.TryDequeue( out var key ) ? key : null;
   }
 
   public async ValueTask DisposeAsync() {
-    _cts.Cancel();
+    await _cts.CancelAsync();
 
     try {
       await _listenerTask;
     }
     catch ( TaskCanceledException ) {
+      // Expected when task is cancelled
     }
 
     _cts.Dispose();

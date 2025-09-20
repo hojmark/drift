@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Output.Logging;
 
-public class CompoundLogger( IEnumerable<ILogger> loggers ) : ILogger {
+internal class CompoundLogger( IEnumerable<ILogger> loggers ) : ILogger {
   private readonly List<ILogger> _loggers = loggers.ToList();
 
   public void Log<TState>(

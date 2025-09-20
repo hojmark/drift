@@ -5,7 +5,7 @@ using NSubstitute;
 
 namespace Drift.Cli.Tests;
 
-public class SpecFilePathResolverTests {
+internal sealed class SpecFilePathResolverTests {
   private string? _originalHome;
   private string _tempHome;
   private const string _homeEnvVar = "HOME";

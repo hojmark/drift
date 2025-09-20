@@ -6,7 +6,7 @@ using Drift.Domain.Scan;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-public static class NewScanUi {
+internal static class NewScanUi {
   private static readonly SimulatedScanOptions DemoScan1 = new() {
     Duration = TimeSpan.FromSeconds( 10 ),
     Subnets = [

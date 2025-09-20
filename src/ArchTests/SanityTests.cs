@@ -2,7 +2,7 @@ using Drift.ArchTests.Fixtures;
 
 namespace Drift.ArchTests;
 
-public class SanityTests : DriftArchitectureFixture {
+internal sealed class SanityTests : DriftArchitectureFixture {
   private const uint ExpectedAssemblyCount = 17;
   private const uint ExpectedAssemblyCountTolerance = 3;
 

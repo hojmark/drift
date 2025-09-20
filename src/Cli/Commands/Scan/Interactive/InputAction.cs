@@ -1,6 +1,6 @@
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-public enum InputAction {
+internal enum InputAction {
   None,
   Quit,
   ScrollUp,

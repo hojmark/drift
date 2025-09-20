@@ -3,7 +3,7 @@ using Drift.TestUtilities;
 
 namespace Drift.Spec.Tests;
 
-public class ValidationTests {
+internal sealed class ValidationTests {
   [TestCase( 1,
     """
 

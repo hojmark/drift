@@ -2,7 +2,7 @@ using System.CommandLine;
 
 namespace Drift.Cli.Commands.Scan;
 
-public record ScanParameters : DefaultParameters {
+internal record ScanParameters : DefaultParameters {
   internal static class Options {
     internal static readonly Option<bool> Interactive = new("--interactive", "-i") {
       Description = "Interactive mode", Arity = ArgumentArity.Zero, Hidden = true

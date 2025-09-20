@@ -5,7 +5,7 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
-public class ScanLayout {
+internal class ScanLayout {
   private readonly Layout _layout;
 
   public bool ShowLogs {

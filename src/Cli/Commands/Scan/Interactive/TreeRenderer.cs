@@ -2,7 +2,7 @@ using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-public class TreeRenderer {
+internal class TreeRenderer {
   public const int ScrollAmount = 3;
   private readonly int _statusWidth = "Offline".Length;
 

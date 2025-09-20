@@ -18,7 +18,7 @@ using NetworkInterface = Drift.Core.Scan.Subnets.Interface.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 
-public class InitCommandTests {
+internal sealed class InitCommandTests {
   const string SpecNameWithDiscovery = "myNetworkWithDiscovery";
   const string SpecNameWithoutDiscovery = "myNetworkWithoutDiscovery";
 

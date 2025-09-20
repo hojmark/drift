@@ -63,7 +63,7 @@ internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
   }
 }
 
-public class InitCommandHandler(
+internal class InitCommandHandler(
   IOutputManager output,
   INetworkScanner scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider

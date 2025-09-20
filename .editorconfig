@@ -149,3 +149,8 @@ csharp_preserve_single_line_blocks                                       = false
 # My additions
 csharp_keep_blank_lines_in_code = 1
 csharp_blank_lines_around_invocable = 1
+
+# Code analyzer rules
+dotnet_diagnostic.CA1816.severity = error
+dotnet_diagnostic.CA1515.severity = error
+dotnet_diagnostic.CA1852.severity = error

@@ -1,6 +1,6 @@
 using Drift.Domain;
 
-namespace Drift.Core.Scan.Subnet;
+namespace Drift.Core.Scan.Subnets;
 
 //TODO needed?
 public class CompositeSubnetProvider( IEnumerable<ISubnetProvider> providers ) : ISubnetProvider {

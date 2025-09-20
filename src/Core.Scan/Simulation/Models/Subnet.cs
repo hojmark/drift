@@ -1,4 +1,4 @@
-namespace Drift.Core.Scan.Device.Simulation.Models;
+namespace Drift.Core.Scan.Simulation.Models;
 
 public class Subnet {
   public required string Address {

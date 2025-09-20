@@ -9,9 +9,11 @@ using Drift.Domain.Progress;
 using Drift.Domain.Scan;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Core.Scan;
+namespace Drift.Core.Scan.Scanners;
 
 public class PingNetworkScanner( IPingTool pingTool ) : INetworkScanner {
+  public event EventHandler<NetworkScanResult>? ResultUpdated;
+
   public Task<NetworkScanResult> ScanAsync(
     NetworkScanOptions request,
     ILogger? logger = null,
@@ -29,46 +31,40 @@ public class PingNetworkScanner( IPingTool pingTool ) : INetworkScanner {
     var startedAt = DateTime.Now;
     logger?.LogDebug( "Starting network scan at {StartedAt}", startedAt.ToString( CultureInfo.InvariantCulture ) );
 
-    onProgress?.Invoke( new ProgressReport {
-      Tasks = [
-        new TaskProgress { TaskName = "Ping Scan", CompletionPct = 0, },
-        new TaskProgress { TaskName = "Indirect ARP Scan", CompletionPct = 0 }
-      ]
-    } );
+    EventHandler<SubnetScanResult> eventHandler = ( ( _, result ) => ResultUpdated?.Invoke( null,
+      new NetworkScanResult { Metadata = null, Status = ScanResultStatus.InProgress, Subnets = [result], Progress = result.Progress } ) );
 
-    var pingReplies = new ConcurrentBag<(CidrBlock cidr, string Ip, bool Success, string? Hostname)>();
+    var localSubnetScanner = new LocalSubnetScanner( pingTool );
+    localSubnetScanner.ResultUpdated += eventHandler;
 
-    foreach ( var cidr in request.Cidrs ) {
-      await PingScanAsync( pingReplies, cidr, logger, request.PingsPerSecond, onProgress, cancellationToken );
+    try {
+      var subnetScanners = request.Cidrs.Select( c =>
+        localSubnetScanner.ScanAsync(
+          new SubnetScanOptions { Cidr = c }, logger, onProgress, cancellationToken )
+      ).ToList();
+
+      await Task.WhenAll( subnetScanners );
+
+      var finishedAt = DateTime.Now;
+      var elapsed =
+        finishedAt - startedAt; // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
+      logger?.LogDebug( "Finished network scan at {StartedAt} in {Elapsed}",
+        finishedAt.ToString( CultureInfo.InvariantCulture ),
+        elapsed
+      );
+
+      return new NetworkScanResult {
+        Metadata = new Metadata { StartedAt = startedAt, EndedAt = DateTime.Now },
+        Status = ScanResultStatus.Success,
+        Progress = Percentage.Hundred,
+        Subnets = subnetScanners.Select( t => t.Result )
+      };
     }
-
-    logger?.LogDebug( "Reading ARP cache" );
-
-    // Note: reads from system ARP cache, which is assumed to be up to date after having performed a ping scan
-    var ipToMac = ArpHelper.GetSystemCachedIpToMacMap();
-
-    onProgress?.Invoke( new ProgressReport {
-      Tasks = [
-        new TaskProgress { TaskName = "Indirect ARP Scan", CompletionPct = 100 }
-      ]
-    } );
-
-    var finishedAt = DateTime.Now;
-    var elapsed = finishedAt - startedAt; // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
-    logger?.LogDebug( "Finished network scan at {StartedAt} in {Elapsed}",
-      finishedAt.ToString( CultureInfo.InvariantCulture ),
-      elapsed
-    );
-
-    return new NetworkScanResult {
-      Metadata = new Metadata { StartedAt = startedAt, EndedAt = DateTime.Now },
-      Status = ScanResultStatus.Success,
-      Progress = Percentage.Hundred,
-      Subnets = ToDiscoveredDevices( pingReplies, ipToMac, finished: true )
-    };
+    finally {
+      localSubnetScanner.ResultUpdated -= eventHandler;
+    }
   }
 
-  public event EventHandler<NetworkScanResult>? ResultUpdated;
 
   private async Task PingScanAsync( ConcurrentBag<(CidrBlock cidr, string Ip, bool Success, string? Hostname)> results,
     CidrBlock cidr,

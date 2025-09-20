@@ -10,9 +10,4 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Device\" />
-      <Folder Include="Network\" />
-    </ItemGroup>
-
 </Project>

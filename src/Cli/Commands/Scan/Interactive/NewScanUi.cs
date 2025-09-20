@@ -1,6 +1,7 @@
 using Drift.Core.Scan;
-using Drift.Core.Scan.Device.Simulation;
-using Drift.Core.Scan.Device.Simulation.Models;
+using Drift.Core.Scan.Scanners;
+using Drift.Core.Scan.Simulation;
+using Drift.Core.Scan.Simulation.Models;
 using Drift.Domain.Scan;
 
 namespace Drift.Cli.Commands.Scan.Interactive;

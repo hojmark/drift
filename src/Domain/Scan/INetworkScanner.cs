@@ -4,18 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Domain.Scan;
 
-//TODO belongs to domain?
-/*[Obsolete( "Use IScanService instead" )]
-public interface INetworkScanner {
-  public Task<ScanResult> ScanAsync(
-    ScanRequest request,
-    Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default
-  );
-
-  event EventHandler<ScanResult>? ResultUpdated;
-}*/
-
 public interface INetworkScanner {
   Task<NetworkScanResult> ScanAsync(
     NetworkScanOptions request,
@@ -71,7 +59,7 @@ public class DiscoveredSubnet {
 }
 
 public class SubnetScanOptions {
-  public required CidrBlock Cidrs {
+  public required CidrBlock Cidr {
     get;
     init;
   }

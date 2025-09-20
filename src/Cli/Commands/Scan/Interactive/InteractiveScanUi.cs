@@ -1,4 +1,4 @@
-using Drift.Core.Scan.Device.Simulation.Models;
+using Drift.Core.Scan.Simulation.Models;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Extensions;
@@ -42,21 +42,22 @@ public class InteractiveScanUi {
       .Live( _layout2.Renderable )
       .AutoClear( true )
       .StartAsync( async ctx => {
-        while ( _running ) {
-          Task[] renderCriteria = [_inputWatcher.WaitForNextKeyAsync(), Task.Delay( 250 )];
+          while ( _running ) {
+            Task[] renderCriteria = [_inputWatcher.WaitForNextKeyAsync(), Task.Delay( 250 )];
 
-          await Task.WhenAny( renderCriteria );
+            await Task.WhenAny( renderCriteria );
 
-          var key = _inputWatcher.ConsumeKey();
-          if ( key != null ) {
-            HandleInput( key.Value, _subnets );
+            var key = _inputWatcher.ConsumeKey();
+            if ( key != null ) {
+              HandleInput( key.Value, _subnets );
+            }
+
+            Render();
+
+            ctx.Refresh();
           }
-
-          Render();
-
-          ctx.Refresh();
         }
-      } );
+      );
   }
 
   private void Render() {

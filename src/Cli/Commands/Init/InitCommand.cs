@@ -5,7 +5,7 @@ using Drift.Cli.Commands.Scan;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Normal;
-using Drift.Core.Scan.Subnet.Interface;
+using Drift.Core.Scan.Subnets.Interface;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;

@@ -1,4 +1,4 @@
-namespace Drift.Core.Scan.Device.Simulation;
+namespace Drift.Core.Scan.Simulation;
 
 public class SimulatedScanOptions {
   public required TimeSpan Duration {

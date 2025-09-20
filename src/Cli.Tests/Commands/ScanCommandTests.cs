@@ -1,11 +1,11 @@
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Scan.Rendering;
-using Drift.Core.Scan.Subnet.Interface;
+using Drift.Core.Scan.Subnets.Interface;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
-using NetworkInterface = Drift.Core.Scan.Subnet.Interface.NetworkInterface;
+using NetworkInterface = Drift.Core.Scan.Subnets.Interface.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 

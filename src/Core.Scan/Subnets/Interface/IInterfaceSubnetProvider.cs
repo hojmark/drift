@@ -1,4 +1,4 @@
-namespace Drift.Core.Scan.Subnet.Interface;
+namespace Drift.Core.Scan.Subnets.Interface;
 
 public interface IInterfaceSubnetProvider : ISubnetProvider {
   List<INetworkInterface> GetInterfaces();

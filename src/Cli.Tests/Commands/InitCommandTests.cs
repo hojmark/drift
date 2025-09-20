@@ -91,7 +91,7 @@ internal sealed class InitCommandTests {
     var serviceConfig = ( IServiceCollection services ) => {
       services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
       services.AddScoped<IInterfaceSubnetProvider>( sp =>
-        new PredefinedInterfaceSubnetProvider( Interfaces, sp.GetRequiredService<IOutputManager>().GetCompoundLogger() )
+        new PredefinedInterfaceSubnetProvider( Interfaces, sp.GetRequiredService<IOutputManager>().GetLogger() )
       );
     };
 

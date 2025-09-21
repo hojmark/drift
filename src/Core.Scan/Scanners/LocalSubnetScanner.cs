@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Net;
+using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Progress;
@@ -63,15 +63,15 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
         Interlocked.Increment( ref completed );
 
         if ( success ) {
-          ResultUpdated?.Invoke( null,
-            new SubnetScanResult {
-              Metadata = null,
-              Status = ScanResultStatus.InProgress,
-              DiscoveredDevices = ToDiscoveredDevices( pingReplies, null ),
-              Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
-              CidrBlock = cidr
-            }
-          );
+          var intermediateResult = new SubnetScanResult {
+            Metadata = null,
+            Status = ScanResultStatus.InProgress,
+            DiscoveredDevices = ToDiscoveredDevices( pingReplies, null ),
+            Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
+            CidrBlock = cidr
+          };
+
+          ResultUpdated?.Invoke( null, intermediateResult );
         }
 
         onProgress?.Invoke( new ProgressReport {
@@ -105,15 +105,19 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
 
     var arpCache = ArpHelper.GetSystemCachedIpToMacMap();
 
-    logger?.LogDebug( "Finished ping scan for CIDR block {Cidr}", cidr );
-
-    return new SubnetScanResult {
+    var result = new SubnetScanResult {
       Metadata = null,
       Status = ScanResultStatus.Success,
       DiscoveredDevices = ToDiscoveredDevices( pingReplies, arpCache ),
-      Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
+      Progress = Percentage.Hundred,
       CidrBlock = cidr
     };
+
+    ResultUpdated?.Invoke( null, result );
+
+    logger?.LogDebug( "Finished ping scan for CIDR block {Cidr}", cidr );
+
+    return result;
   }
 
   private static IEnumerable<DiscoveredDevice> ToDiscoveredDevices(

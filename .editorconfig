@@ -158,6 +158,7 @@ dotnet_diagnostic.CA1852.severity = error
 dotnet_diagnostic.CA1848.severity = suggestion
 dotnet_diagnostic.CA2007.severity = suggestion
 dotnet_diagnostic.CA1303.severity = silent
+dotnet_diagnostic.CA1848.severity = silent
 
 [**/*.{Tests,E2ETests,ArchTests}*/**.cs]
 dotnet_diagnostic.CA1852.severity = warning

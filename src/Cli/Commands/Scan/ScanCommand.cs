@@ -163,14 +163,12 @@ internal class ScanCommandHandler(
 
     output.Normal.WriteLine();
 
-    output.Normal.WriteError( "Not rendering!" );
-
-    /*  renderer.Render(
-        new ScanRenderData {
-          DevicesDiscovered = scanResult.DiscoveredDevices,
-          DevicesDeclared = network == null ? [] : network.Devices.Where( d => d.Enabled ?? true )
-        }
-      );*/
+    renderer.Render(
+      new ScanRenderData {
+        DevicesDiscovered = scanResult.Subnets.SelectMany( s => s.DiscoveredDevices ),
+        DevicesDeclared = network == null ? [] : network.Devices.Where( d => d.Enabled ?? true )
+      }
+    );
 
     output.Log.LogDebug( "Scan command completed" );
 

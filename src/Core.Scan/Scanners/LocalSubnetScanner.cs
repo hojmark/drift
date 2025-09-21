@@ -12,18 +12,9 @@ namespace Drift.Core.Scan.Scanners;
 public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
   public event EventHandler<SubnetScanResult>? ResultUpdated;
 
-  public Task<SubnetScanResult> ScanAsync(
-    SubnetScanOptions options,
-    ILogger? logger = null,
-    CancellationToken cancellationToken = default
-  ) {
-    return ScanAsync( options, logger, null, cancellationToken );
-  }
-
   public async Task<SubnetScanResult> ScanAsync(
     SubnetScanOptions options,
     ILogger? logger = null,
-    Action<ProgressReport>? onProgress = null,
     CancellationToken cancellationToken = default
   ) {
     var pingReplies = new ConcurrentBag<( IPAddress Ip, bool Success, string? Hostname)>();
@@ -73,14 +64,6 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
 
           ResultUpdated?.Invoke( null, intermediateResult );
         }
-
-        onProgress?.Invoke( new ProgressReport {
-          Tasks = [
-            new TaskProgress {
-              TaskName = "Ping Scan", CompletionPct = (uint) Math.Ceiling( ( (double) completed / total ) * 100 )
-            }
-          ]
-        } );
       }
       finally {
         _ = Task.Delay( (int) ( 1000u / options.PingsPerSecond ), cancellationToken )

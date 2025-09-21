@@ -219,11 +219,19 @@ internal class InitCommandHandler(
         if ( output.Is( OutputFormat.Log ) ) {
           output.Log.LogInformation( "Scanning network..." );
           var lastLogTime = DateTime.MinValue;
-          var completedTasks = new HashSet<string>();
 
-          scanResult = await scanner.ScanAsyncOld( scanRequest, onProgress: progressReport => {
-            ScanCommandHandler.UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
-          }, cancellationToken: CancellationToken.None );
+          EventHandler<NetworkScanResult> updater = ( _, scanResult ) => {
+            ScanCommandHandler.UpdateProgressLog( scanResult.Progress, output, ref lastLogTime );
+          };
+
+          scanner.ResultUpdated += updater;
+
+          try {
+            scanResult = await scanner.ScanAsync( scanRequest, cancellationToken: CancellationToken.None );
+          }
+          finally {
+            scanner.ResultUpdated -= updater;
+          }
         }
 
         if ( scanResult == null ) {

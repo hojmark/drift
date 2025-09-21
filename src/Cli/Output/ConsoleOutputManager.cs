@@ -10,8 +10,13 @@ internal class ConsoleOutputManager(
   TextWriter normalErrOut,
   bool normalVerbose,
   OutputFormat outputFormat,
-  bool plainConsole
+  bool plainConsole,
+  TextReader unifiedReader
 ) : IOutputManager {
+  public TextReader GetUnifiedReader() {
+    return unifiedReader;
+  }
+
   public ILogOutput Log {
     get;
   } = new LogOutput( consoleLogger );

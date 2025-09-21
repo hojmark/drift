@@ -50,6 +50,10 @@ internal class ScanLayout {
     _layout["Data"].Update( new Text( text ) );
   }
 
+  public void UpdateLog( string text ) {
+    _layout["Log"].Update( new Panel( new Text( text ) ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 ) );
+  }
+
   internal int GetAvailableRows()
     => AnsiConsole.Console.Profile.Height - 1 - 1 - 1 - 1 - 2; // header + data + footer + progress + padding
 

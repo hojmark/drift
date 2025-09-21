@@ -2,6 +2,8 @@ namespace Drift.Cli.Output.Abstractions;
 
 // Internal?
 internal interface IOutputManager {
+  internal TextReader GetUnifiedReader();
+
   internal ILogOutput Log {
     get;
   }

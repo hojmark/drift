@@ -199,7 +199,7 @@ internal class InitCommandHandler(
           subnets.Select( cidr =>
             cidr + " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
             " addresses, " +
-            scanRequest.Duration( cidr ) /* TODO .Humanize( 2, CultureInfo.InvariantCulture )*/ +
+            scanRequest.EstimatedDuration( cidr ) /* TODO .Humanize( 2, CultureInfo.InvariantCulture )*/ +
             " estimated scan time" +
             ")"
           )

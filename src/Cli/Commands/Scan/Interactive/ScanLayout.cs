@@ -54,7 +54,7 @@ internal class ScanLayout {
     => AnsiConsole.Console.Profile.Height - 1 - 1 - 1 - 1 - 2; // header + data + footer + progress + padding
 
   private static Markup BuildHeader() {
-    return new Markup( "Using [grey]/home/hojmark/[/][yellow bold]fh47[/][grey].spec.yaml[/]  [green]✔[/]" );
+    return new Markup( "[grey]/home/hojmark/[/][yellow bold]fh47[/][grey].spec.yaml[/]  [green]✔[/]" );
   }
 
   private static Layout BuildProgressBar( Percentage progress ) {

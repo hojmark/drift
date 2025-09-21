@@ -30,7 +30,7 @@ internal class InteractiveScanUi {
     _scanner.ResultUpdated += OnScanResultUpdated;
   }
 
-  private Task StartScanAsync() {
+  private Task<NetworkScanResult> StartScanAsync() {
     return _scanner.ScanAsync( _scanRequest );
   }
 

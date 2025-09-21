@@ -1,3 +1,4 @@
+using Drift.Cli.Abstractions;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Logging;
 using Drift.Core.Scan.Simulation.Models;
@@ -38,14 +39,14 @@ internal class InteractiveScanUi {
     return _scanner.ScanAsync( _scanRequest, _outputManager.GetLogger() );
   }
 
-  private bool logEnabled = false;
+  private readonly bool _logEnabled = false;
   private string _log;
 
-  public async Task RunAsync( NetworkScanOptions scanRequest ) {
+  public async Task<int> RunAsync( NetworkScanOptions scanRequest ) {
     _scanRequest = scanRequest;
     var scanTask = StartScanAsync();
 
-    if ( logEnabled ) {
+    if ( _logEnabled ) {
       _ = Task.Run( async () => {
         while ( true ) {
           var line = await _outputManager.GetUnifiedReader().ReadLineAsync();
@@ -81,6 +82,8 @@ internal class InteractiveScanUi {
           }
         }
       );
+
+    return ExitCodes.Success;
   }
 
   private async Task Render() {
@@ -93,7 +96,7 @@ internal class InteractiveScanUi {
     _layout2.UpdateData(
       $"ScrollOffset: {_scrollOffset}, MaxScroll: {maxScroll}, TotalHeight: {totalHeight}, AvailableRows: {availableRows}" );
 
-    if ( logEnabled ) {
+    if ( _logEnabled ) {
       _layout2.UpdateLog( _log );
     }
 

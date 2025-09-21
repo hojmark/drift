@@ -5,11 +5,11 @@ using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Logging;
 using Drift.Cli.Renderer;
 using Drift.Core.Scan.Subnets;
 using Drift.Core.Scan.Subnets.Interface;
 using Drift.Domain;
-using Drift.Domain.Progress;
 using Drift.Domain.Scan;
 using Drift.Utils;
 using Microsoft.Extensions.Logging;
@@ -91,10 +91,8 @@ internal class ScanCommandHandler(
     var scanRequest = new NetworkScanOptions { Cidrs = subnets };
 
     if ( parameters.Interactive ) {
-      //await NewScanUi.Show( scanRequest );
       var ui = new InteractiveScanUi( output, scanner );
-      await ui.RunAsync( scanRequest );
-      return ExitCodes.Success;
+      return await ui.RunAsync( scanRequest );
     }
 
     output.Normal.WriteLine( 0,
@@ -133,7 +131,8 @@ internal class ScanCommandHandler(
           scanner.ResultUpdated += updater;
 
           try {
-            return await scanner.ScanAsync( scanRequest, cancellationToken: CancellationToken.None );
+            return await scanner.ScanAsync( scanRequest, output.GetLogger(),
+              cancellationToken: CancellationToken.None );
           }
           finally {
             scanner.ResultUpdated -= updater;
@@ -151,7 +150,8 @@ internal class ScanCommandHandler(
       scanner.ResultUpdated += updater;
 
       try {
-        scanResult = await scanner.ScanAsync( scanRequest, cancellationToken: CancellationToken.None );
+        scanResult =
+          await scanner.ScanAsync( scanRequest, output.GetLogger(), cancellationToken: CancellationToken.None );
       }
       finally {
         scanner.ResultUpdated -= updater;

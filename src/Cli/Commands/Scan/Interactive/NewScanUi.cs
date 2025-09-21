@@ -32,7 +32,7 @@ internal static class NewScanUi {
 
   public static async Task Show( NetworkScanOptions scanRequest ) {
     //var scanner = new SimulatedScanner( DemoScan1 );
-    var scanner = new PingNetworkScanner( new OsPingTool() );
+    var scanner = new DefaultNetworkScanner( new DefaultSubnetScannerProvider( new OsPingTool() ) );
     var app = new InteractiveScanUi( scanner );
     await app.RunAsync( scanRequest );
   }

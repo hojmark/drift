@@ -124,8 +124,8 @@ internal class ScanCommandHandler(
         .StartAsync( async ctx => {
           var progressBar = ctx.AddTask( "Ping Scan" );
 
-          EventHandler<NetworkScanResult> updater = ( _, scanResult ) => {
-            progressBar.Value = scanResult.Progress;
+          EventHandler<NetworkScanResult> updater = ( _, r ) => {
+            progressBar.Value = r.Progress;
           };
 
           scanner.ResultUpdated += updater;
@@ -143,8 +143,8 @@ internal class ScanCommandHandler(
     if ( output.Is( OutputFormat.Log ) ) {
       var lastLogTime = DateTime.MinValue;
 
-      EventHandler<NetworkScanResult> updater = ( _, scanResult ) => {
-        UpdateProgressLog( scanResult.Progress, output, ref lastLogTime );
+      EventHandler<NetworkScanResult> updater = ( _, r ) => {
+        UpdateProgressLog( r.Progress, output, ref lastLogTime );
       };
 
       scanner.ResultUpdated += updater;

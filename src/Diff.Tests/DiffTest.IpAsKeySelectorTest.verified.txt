@@ -1,18 +1,6 @@
 ﻿[
   {
-    "PropertyPath": "NetworkScanResult.Metadata",
-    "Original": {
-      "StartedAt": "2025-04-24T10:20:08.4219405Z",
-      "EndedAt": "2023-01-01T00:00:00"
-    },
-    "Updated": {
-      "StartedAt": "2025-04-24T10:20:08.4219405Z",
-      "EndedAt": "2023-01-01T00:00:00"
-    },
-    "DiffType": "unchanged"
-  },
-  {
-    "PropertyPath": "NetworkScanResult.SubnetResults[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.10]",
+    "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.10]",
     "Original": {
       "Addresses": [
         {
@@ -38,7 +26,7 @@
     "DiffType": "unchanged"
   },
   {
-    "PropertyPath": "NetworkScanResult.SubnetResults[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.22]",
+    "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.22]",
     "Original": {
       "Addresses": [
         {
@@ -59,7 +47,7 @@
     "DiffType": "removed"
   },
   {
-    "PropertyPath": "NetworkScanResult.SubnetResults[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.150]",
+    "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.150]",
     "Original": null,
     "Updated": {
       "Addresses": [
@@ -75,10 +63,8 @@
     "DiffType": "added"
   },
   {
-    "PropertyPath": "NetworkScanResult.SubnetResults[SubnetScanResult_192.168.0.0/24]",
+    "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24]",
     "Original": {
-      "Metadata": null,
-      "Status": "success",
       "CidrBlock": {
         "NetworkAddress": "192.168.0.0",
         "PrefixLength": 24
@@ -112,13 +98,13 @@
           "Timestamp": "0001-01-01T00:00:00"
         }
       ],
+      "Metadata": null,
+      "Status": "success",
       "Progress": {
         "Value": 0
       }
     },
     "Updated": {
-      "Metadata": null,
-      "Status": "success",
       "CidrBlock": {
         "NetworkAddress": "192.168.0.0",
         "PrefixLength": 24
@@ -147,6 +133,8 @@
           "Timestamp": "0001-01-01T00:00:00"
         }
       ],
+      "Metadata": null,
+      "Status": "success",
       "Progress": {
         "Value": 0
       }
@@ -154,17 +142,22 @@
     "DiffType": "unchanged"
   },
   {
+    "PropertyPath": "NetworkScanResult.Metadata",
+    "Original": {
+      "StartedAt": "2025-04-24T10:20:08.4219405Z",
+      "EndedAt": "2023-01-01T00:00:00"
+    },
+    "Updated": {
+      "StartedAt": "2025-04-24T10:20:08.4219405Z",
+      "EndedAt": "2023-01-01T00:00:00"
+    },
+    "DiffType": "unchanged"
+  },
+  {
     "PropertyPath": "NetworkScanResult",
     "Original": {
-      "Metadata": {
-        "StartedAt": "2025-04-24T10:20:08.4219405Z",
-        "EndedAt": "2023-01-01T00:00:00"
-      },
-      "Status": "success",
-      "SubnetResults": [
+      "Subnets": [
         {
-          "Metadata": null,
-          "Status": "success",
           "CidrBlock": {
             "NetworkAddress": "192.168.0.0",
             "PrefixLength": 24
@@ -198,25 +191,25 @@
               "Timestamp": "0001-01-01T00:00:00"
             }
           ],
+          "Metadata": null,
+          "Status": "success",
           "Progress": {
             "Value": 0
           }
         }
       ],
-      "Progress": {
-        "Value": 0
-      }
-    },
-    "Updated": {
       "Metadata": {
         "StartedAt": "2025-04-24T10:20:08.4219405Z",
         "EndedAt": "2023-01-01T00:00:00"
       },
       "Status": "success",
-      "SubnetResults": [
+      "Progress": {
+        "Value": 0
+      }
+    },
+    "Updated": {
+      "Subnets": [
         {
-          "Metadata": null,
-          "Status": "success",
           "CidrBlock": {
             "NetworkAddress": "192.168.0.0",
             "PrefixLength": 24
@@ -245,11 +238,18 @@
               "Timestamp": "0001-01-01T00:00:00"
             }
           ],
+          "Metadata": null,
+          "Status": "success",
           "Progress": {
             "Value": 0
           }
         }
       ],
+      "Metadata": {
+        "StartedAt": "2025-04-24T10:20:08.4219405Z",
+        "EndedAt": "2023-01-01T00:00:00"
+      },
+      "Status": "success",
       "Progress": {
         "Value": 0
       }

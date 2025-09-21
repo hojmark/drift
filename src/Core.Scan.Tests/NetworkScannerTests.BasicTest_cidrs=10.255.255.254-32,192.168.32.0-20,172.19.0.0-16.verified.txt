@@ -4,11 +4,12 @@
 [DBG] Got reply from 192.168.32.1
 [DBG] Got reply from 192.168.32.2
 [DBG] Got reply from 192.168.32.3
-[DBG] Finished ping scan for CIDR block 192.168.32.0/20
 [DBG] Starting ping scan for CIDR block 172.19.0.0/16 (65534 addresses)
 [DBG] Got reply from 172.19.0.1
 [DBG] Got reply from 172.19.0.2
 [DBG] Got reply from 172.19.0.3
-[DBG] Finished ping scan for CIDR block 172.19.0.0/16
 [DBG] Reading ARP cache
+[DBG] Finished ping scan for CIDR block 192.168.32.0/20
+[DBG] Reading ARP cache
+[DBG] Finished ping scan for CIDR block 172.19.0.0/16
 [DBG] Finished network scan at <time> in <elapsed>

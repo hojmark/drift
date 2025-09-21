@@ -67,10 +67,7 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
             new SubnetScanResult {
               Metadata = null,
               Status = ScanResultStatus.InProgress,
-              DiscoveredDevices =
-                ToDiscoveredDevices( pingReplies,
-                  ArpHelper.GetSystemCachedIpToMacMap(),
-                  finished: false ),
+              DiscoveredDevices = ToDiscoveredDevices( pingReplies, null ),
               Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
               CidrBlock = cidr
             }
@@ -104,15 +101,16 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
 
     await Task.WhenAll( pingTasks );
 
+    logger?.LogDebug( "Reading ARP cache" );
+
+    var arpCache = ArpHelper.GetSystemCachedIpToMacMap();
+
     logger?.LogDebug( "Finished ping scan for CIDR block {Cidr}", cidr );
 
     return new SubnetScanResult {
       Metadata = null,
       Status = ScanResultStatus.Success,
-      DiscoveredDevices =
-        ToDiscoveredDevices( pingReplies,
-          ArpHelper.GetSystemCachedIpToMacMap(),
-          finished: false ),
+      DiscoveredDevices = ToDiscoveredDevices( pingReplies, arpCache ),
       Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
       CidrBlock = cidr
     };
@@ -120,8 +118,8 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
 
   private static IEnumerable<DiscoveredDevice> ToDiscoveredDevices(
     ConcurrentBag<( string Ip, bool Success, string? Hostname)> pingReplies,
-    Dictionary<string, string> ipToMac, bool finished ) {
-    return pingReplies.Where( r=>r.Success ).Select( pingReply =>
+    Dictionary<string, string>? ipToMac ) {
+    return pingReplies.Where( r => r.Success ).Select( pingReply =>
       new DiscoveredDevice { Addresses = CreateAddresses( pingReply ) }
     );
 
@@ -132,7 +130,7 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
         list.Add( new HostnameAddress( pingReply.Hostname ) );
       }
 
-      if ( ipToMac.TryGetValue( pingReply.Ip, out var macStr ) ) {
+      if ( ipToMac?.TryGetValue( pingReply.Ip, out var macStr ) ?? false ) {
         list.Add( new MacAddress( macStr ) );
       }
 

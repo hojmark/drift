@@ -14,12 +14,21 @@ public struct IpV4Address : IIpAddress {
     get;
   }
 
-  public IpV4Address( string value, bool? isId = null ) {
-    if ( !IPAddress.TryParse( value, out var ip ) || ip.AddressFamily != AddressFamily.InterNetwork ) {
-      throw new ArgumentException( $"'{value}' is not a valid IPv4 address.", nameof(value) );
+  public IpV4Address( string ipAddress, bool? isId = null ) {
+    if ( !IPAddress.TryParse( ipAddress, out var ip ) || ip.AddressFamily != AddressFamily.InterNetwork ) {
+      throw new ArgumentException( $"'{ipAddress}' is not a valid IPv4 address.", nameof(ipAddress) );
     }
 
-    Value = value;
+    Value = ipAddress;
+    IsId = isId;
+  }
+  
+  public IpV4Address( IPAddress ipAddress, bool? isId = null ) {
+    if ( ipAddress.AddressFamily != AddressFamily.InterNetwork ) {
+      throw new ArgumentException( $"'{ipAddress}' is not a valid IPv4 address.", nameof(ipAddress) );
+    }
+
+    Value = ipAddress.ToString();
     IsId = isId;
   }
 }

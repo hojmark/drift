@@ -6,8 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Core.Scan.Scanners;
 
-public class DefaultNetworkScanner( ISubnetScannerProvider subnetScannerProvider )
-  : INetworkScanner {
+public class DefaultNetworkScanner( ISubnetScannerProvider subnetScannerProvider ) : INetworkScanner {
   public event EventHandler<NetworkScanResult>? ResultUpdated;
 
   public Task<NetworkScanResult> ScanAsync(

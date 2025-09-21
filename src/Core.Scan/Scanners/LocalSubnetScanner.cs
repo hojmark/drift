@@ -26,12 +26,12 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
     Action<ProgressReport>? onProgress = null,
     CancellationToken cancellationToken = default
   ) {
-    var pingReplies = new ConcurrentBag<( string Ip, bool Success, string? Hostname)>();
+    var pingReplies = new ConcurrentBag<( IPAddress Ip, bool Success, string? Hostname)>();
     var cidr = options.Cidr;
     var ipRange = IPNetwork2
       .Parse( cidr.ToString() )
       .ListIPAddress( FilterEnum.Usable )
-      .Select( ip => ip.ToString() )
+      .Select( ip => ip )
       .ToList();
 
     var total = ipRange.Count;
@@ -121,14 +121,15 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
   }
 
   private static IEnumerable<DiscoveredDevice> ToDiscoveredDevices(
-    ConcurrentBag<( string Ip, bool Success, string? Hostname)> pingReplies,
-    Dictionary<string, string>? ipToMac ) {
+    ConcurrentBag<( IPAddress Ip, bool Success, string? Hostname)> pingReplies,
+    Dictionary<IPAddress, string>? ipToMac
+  ) {
     return pingReplies.Where( r => r.Success ).Select( pingReply =>
       new DiscoveredDevice { Addresses = CreateAddresses( pingReply ) }
     );
 
-    List<IDeviceAddress> CreateAddresses( ( string Ip, bool Success, string? Hostname) pingReply ) {
-      var list = new List<IDeviceAddress> { new IpV4Address( pingReply.Ip ), };
+    List<IDeviceAddress> CreateAddresses( ( IPAddress Ip, bool Success, string? Hostname) pingReply ) {
+      var list = new List<IDeviceAddress> { new IpV4Address( pingReply.Ip ) };
 
       if ( !string.IsNullOrWhiteSpace( pingReply.Hostname ) ) {
         list.Add( new HostnameAddress( pingReply.Hostname ) );
@@ -142,7 +143,7 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
     }
   }
 
-  private static async Task<string?> GetHostNameAsync( string ip, int timeoutMs = 1000 ) {
+  private static async Task<string?> GetHostNameAsync( IPAddress ip, int timeoutMs = 1000 ) {
     var task = Dns.GetHostEntryAsync( ip );
     if ( await Task.WhenAny( task, Task.Delay( timeoutMs ) ) == task ) {
       try {

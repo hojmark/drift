@@ -1,11 +1,13 @@
 using System.Diagnostics;
+using System.Net;
+using Drift.Domain.Device.Addresses;
 
 namespace Drift.Core.Scan.Scanners;
 
 //TODO read from /proc/net/arp instead
-internal sealed class ArpHelper {
-  public static Dictionary<string, string> GetSystemCachedIpToMacMap() {
-    var map = new Dictionary<string, string>();
+internal static class ArpHelper {
+  public static Dictionary<IPAddress, string> GetSystemCachedIpToMacMap() {
+    var map = new Dictionary<IPAddress, string>();
 
     var startInfo = new ProcessStartInfo {
       FileName = "arp",
@@ -34,7 +36,10 @@ internal sealed class ArpHelper {
       {
         var ip = parts[0];
         var mac = parts[2].ToUpperInvariant();
-        map[ip] = mac;
+
+        IPAddress.TryParse( ip, out var ipParsedResult );
+        var macParsed = new MacAddress( mac );
+        map[ipParsedResult] = mac;
       }
     }
 

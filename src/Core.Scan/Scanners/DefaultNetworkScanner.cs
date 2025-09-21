@@ -6,7 +6,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Core.Scan.Scanners;
 
-public class PingNetworkScanner( IPingTool pingTool ) : INetworkScanner {
+public class DefaultNetworkScanner( ISubnetScannerProvider subnetScannerProvider )
+  : INetworkScanner {
   public event EventHandler<NetworkScanResult>? ResultUpdated;
 
   public Task<NetworkScanResult> ScanAsync(
@@ -28,23 +29,29 @@ public class PingNetworkScanner( IPingTool pingTool ) : INetworkScanner {
 
     EventHandler<SubnetScanResult> eventHandler = ( ( _, result ) => ResultUpdated?.Invoke( null,
       new NetworkScanResult {
-        Metadata = null, Status = ScanResultStatus.InProgress, Subnets = [result], Progress = result.Progress
+        Metadata = new Metadata { StartedAt = startedAt },
+        Status = ScanResultStatus.InProgress,
+        Progress = result.Progress, //TODO not right
+        Subnets = [result]
       } ) );
 
-    var localSubnetScanner = new LocalSubnetScanner( pingTool );
-    localSubnetScanner.ResultUpdated += eventHandler;
+    var scanners = CreateScanners( request ); // TODO create scanner tasks that encapsulates logic better
 
     try {
-      var subnetScanners = request.Cidrs.Select( c =>
-        localSubnetScanner.ScanAsync(
-          new SubnetScanOptions { Cidr = c }, logger, onProgress, cancellationToken )
+      foreach ( var (_, scanner) in scanners ) {
+        scanner.ResultUpdated += eventHandler;
+      }
+
+      var scannerTasks = scanners.Select( pair =>
+        pair.Scanner.ScanAsync( new SubnetScanOptions { Cidr = pair.Cidr }, logger, cancellationToken )
       ).ToList();
 
-      await Task.WhenAll( subnetScanners );
+      await Task.WhenAll( scannerTasks );
 
       var finishedAt = DateTime.Now;
       var elapsed =
         finishedAt - startedAt; // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
+
       logger?.LogDebug( "Finished network scan at {StartedAt} in {Elapsed}",
         finishedAt.ToString( CultureInfo.InvariantCulture ),
         elapsed
@@ -54,11 +61,19 @@ public class PingNetworkScanner( IPingTool pingTool ) : INetworkScanner {
         Metadata = new Metadata { StartedAt = startedAt, EndedAt = DateTime.Now },
         Status = ScanResultStatus.Success,
         Progress = Percentage.Hundred,
-        Subnets = subnetScanners.Select( t => t.Result )
+        Subnets = scannerTasks.Select( t => t.Result )
       };
     }
     finally {
-      localSubnetScanner.ResultUpdated -= eventHandler;
+      foreach ( var (_, scanner) in scanners ) {
+        scanner.ResultUpdated -= eventHandler;
+      }
     }
+  }
+
+  private List<(CidrBlock Cidr, ISubnetScanner Scanner)> CreateScanners( NetworkScanOptions options ) {
+    return options.Cidrs
+      .Select( cidr => ( Cidr: cidr, Scanner: subnetScannerProvider.GetScanner( cidr ) ) )
+      .ToList();
   }
 }

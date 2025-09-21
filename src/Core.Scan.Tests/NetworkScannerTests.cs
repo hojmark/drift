@@ -28,7 +28,7 @@ internal sealed class NetworkScannerTests {
 
     var logger = new StringLogger();
 
-    var scanner = new PingNetworkScanner( pingTool );
+    var scanner = new DefaultNetworkScanner( new DefaultSubnetScannerProvider( pingTool ) );
 
     // Act
     var result = await scanner.ScanAsync(

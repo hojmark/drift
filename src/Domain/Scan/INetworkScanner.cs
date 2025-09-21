@@ -11,14 +11,6 @@ public interface INetworkScanner {
     CancellationToken cancellationToken = default
   );
 
-  [Obsolete( "Use other ScanAsync method plus ResultUpdated instead" )]
-  Task<NetworkScanResult> ScanAsyncOld(
-    NetworkScanOptions request,
-    ILogger? logger = null,
-    Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default
-  );
-
   event EventHandler<NetworkScanResult>? ResultUpdated;
   //event EventHandler<NetworkScanResult>? ResultUpdated;
   //event EventHandler<SubnetScanResult>? SubnetCompleted;

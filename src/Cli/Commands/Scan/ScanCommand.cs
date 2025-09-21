@@ -118,33 +118,44 @@ internal class ScanCommandHandler(
     NetworkScanResult? scanResult = null;
 
     if ( output.Is( OutputFormat.Normal ) ) {
-      var dCol = new TaskDescriptionColumn();
-      dCol.Alignment = Justify.Right;
-      var pCol = new PercentageColumn();
-      pCol.Style = new Style( Color.Cyan1 );
-      pCol.CompletedStyle = new Style( Color.Green1 );
+      var dCol = new TaskDescriptionColumn { Alignment = Justify.Right };
+      var pCol = new PercentageColumn { Style = new Style( Color.Cyan1 ), CompletedStyle = new Style( Color.Green1 ) };
       scanResult = await AnsiConsole.Progress()
         .AutoClear( true )
         .Columns( dCol, pCol )
         .StartAsync( async ctx => {
-          var progressBars = new Dictionary<string, ProgressTask>();
-          progressBars["Ping Scan"] = ctx.AddTask( "Ping Scan" );
-          //progressBars["DNS resolution"] = ctx.AddTask( "DNS resolution" );
-          //progressBars["Connect Scan"] = ctx.AddTask( "Connect Scan" );
+          var progressBar = ctx.AddTask( "Ping Scan" );
 
-          return await scanner.ScanAsyncOld( scanRequest, onProgress: progressReport => {
-            UpdateProgressBar( progressReport, ctx, progressBars );
-          }, cancellationToken: CancellationToken.None );
+          EventHandler<NetworkScanResult> updater = ( _, scanResult ) => {
+            progressBar.Value = scanResult.Progress;
+          };
+
+          scanner.ResultUpdated += updater;
+
+          try {
+            return await scanner.ScanAsync( scanRequest, cancellationToken: CancellationToken.None );
+          }
+          finally {
+            scanner.ResultUpdated -= updater;
+          }
         } );
     }
 
     if ( output.Is( OutputFormat.Log ) ) {
       var lastLogTime = DateTime.MinValue;
-      var completedTasks = new HashSet<string>();
 
-      scanResult = await scanner.ScanAsyncOld( scanRequest, onProgress: progressReport => {
-        UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
-      }, cancellationToken: CancellationToken.None );
+      EventHandler<NetworkScanResult> updater = ( _, scanResult ) => {
+        UpdateProgressLog( scanResult.Progress, output, ref lastLogTime );
+      };
+
+      scanner.ResultUpdated += updater;
+
+      try {
+        scanResult = await scanner.ScanAsync( scanRequest, cancellationToken: CancellationToken.None );
+      }
+      finally {
+        scanner.ResultUpdated -= updater;
+      }
     }
 
     if ( scanResult == null ) {
@@ -174,56 +185,21 @@ internal class ScanCommandHandler(
     output.Log.LogDebug( "Scan command completed" );
 
     return ExitCodes.Success;
-
-    void UpdateProgressBar(
-      ProgressReport progressReport,
-      ProgressContext context,
-      Dictionary<string, ProgressTask> progressBars
-    ) {
-      foreach ( var taskProgress in progressReport.Tasks ) {
-        //TODO hack
-        var transformedTaskName = taskProgress.TaskName.Contains( "DNS" ) ? "DNS resolution" : taskProgress.TaskName;
-
-        if ( !progressBars.TryGetValue( transformedTaskName, out var bar ) ) {
-          bar = context.AddTask( $"{transformedTaskName}" );
-          progressBars[transformedTaskName] = bar;
-        }
-
-        if ( !bar.IsFinished ) {
-          // Spectre's max value is 100 by default
-          bar.Value = Math.Min( taskProgress.CompletionPct, 100 );
-        }
-      }
-    }
   }
-
 
   //TODO make private
   internal static void UpdateProgressLog(
-    ProgressReport progressReport,
+    Percentage progress,
     IOutputManager output,
-    ref DateTime lastLogTime,
-    ref HashSet<string> completedTasks
+    ref DateTime lastLogTime
   ) {
     var now = DateTime.UtcNow;
     bool shouldLog = ( now - lastLogTime ).TotalSeconds >= 1;
 
     if ( shouldLog ) {
-      foreach ( var taskProgress in progressReport.Tasks ) {
-        //TODO hack
-        var transformedTaskName = taskProgress.TaskName.Contains( "DNS" ) ? "DNS resolution" : taskProgress.TaskName;
-        if ( completedTasks.Contains( transformedTaskName ) ) {
-          continue;
-        }
+      output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress );
 
-        output.Log.LogInformation( "{TaskName}: {CompletionPct}%", transformedTaskName, taskProgress.CompletionPct );
-
-        if ( taskProgress.CompletionPct >= 100 ) {
-          completedTasks.Add( transformedTaskName );
-        }
-
-        Thread.Sleep( 500 ); //TODO remove
-      }
+      Thread.Sleep( 500 ); //TODO remove
     }
 
     if ( shouldLog ) {

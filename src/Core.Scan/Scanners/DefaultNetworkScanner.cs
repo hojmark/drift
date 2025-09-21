@@ -9,18 +9,9 @@ namespace Drift.Core.Scan.Scanners;
 public class DefaultNetworkScanner( ISubnetScannerProvider subnetScannerProvider ) : INetworkScanner {
   public event EventHandler<NetworkScanResult>? ResultUpdated;
 
-  public Task<NetworkScanResult> ScanAsync(
+  public async Task<NetworkScanResult> ScanAsync(
     NetworkScanOptions request,
     ILogger? logger = null,
-    CancellationToken cancellationToken = default
-  ) {
-    return ScanAsyncOld( request, logger, null, cancellationToken );
-  }
-
-  public async Task<NetworkScanResult> ScanAsyncOld(
-    NetworkScanOptions request,
-    ILogger? logger = null,
-    Action<ProgressReport>? onProgress = null,
     CancellationToken cancellationToken = default
   ) {
     var startedAt = DateTime.Now;

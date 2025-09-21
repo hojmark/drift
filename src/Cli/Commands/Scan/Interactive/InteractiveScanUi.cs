@@ -1,3 +1,5 @@
+using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Logging;
 using Drift.Core.Scan.Simulation.Models;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -8,6 +10,7 @@ using Spectre.Console;
 namespace Drift.Cli.Commands.Scan.Interactive;
 
 internal class InteractiveScanUi {
+  private readonly IOutputManager _outputManager;
   private NetworkScanOptions _scanRequest;
   private readonly INetworkScanner _scanner;
   private readonly ScanLayout _layout2;
@@ -21,8 +24,9 @@ internal class InteractiveScanUi {
   private Percentage _progress;
 
 
-  public InteractiveScanUi( INetworkScanner scanner ) {
+  public InteractiveScanUi( IOutputManager outputManager, INetworkScanner scanner ) {
     _scanner = scanner;
+    _outputManager = outputManager;
     _layout2 = new ScanLayout();
 
     // Subscribe to events instead of polling
@@ -31,12 +35,31 @@ internal class InteractiveScanUi {
   }
 
   private Task<NetworkScanResult> StartScanAsync() {
-    return _scanner.ScanAsync( _scanRequest );
+    return _scanner.ScanAsync( _scanRequest, _outputManager.GetLogger() );
   }
+
+  private bool logEnabled = false;
+  private string _log;
 
   public async Task RunAsync( NetworkScanOptions scanRequest ) {
     _scanRequest = scanRequest;
     var scanTask = StartScanAsync();
+
+    if ( logEnabled ) {
+      _ = Task.Run( async () => {
+        while ( true ) {
+          var line = await _outputManager.GetUnifiedReader().ReadLineAsync();
+
+          if ( line != null ) {
+            // Dispatch back to UI thread
+            _log += string.IsNullOrEmpty( _log ) ? line : "\n" + line;
+          }
+          else {
+            await Task.Delay( 50 ); // Avoid tight loop on EOF
+          }
+        }
+      } );
+    }
 
     await AnsiConsole
       .Live( _layout2.Renderable )
@@ -60,7 +83,7 @@ internal class InteractiveScanUi {
       );
   }
 
-  private void Render() {
+  private async Task Render() {
     var renderer = new TreeRenderer();
     int availableRows = _layout2.GetAvailableRows();
     int totalHeight = renderer.GetTotalHeight( _subnets );
@@ -69,6 +92,10 @@ internal class InteractiveScanUi {
     // Debug information (remove after fixing)
     _layout2.UpdateData(
       $"ScrollOffset: {_scrollOffset}, MaxScroll: {maxScroll}, TotalHeight: {totalHeight}, AvailableRows: {availableRows}" );
+
+    if ( logEnabled ) {
+      _layout2.UpdateLog( _log );
+    }
 
     _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );
 

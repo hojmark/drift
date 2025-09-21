@@ -92,7 +92,7 @@ internal class ScanCommandHandler(
 
     if ( parameters.Interactive ) {
       //await NewScanUi.Show( scanRequest );
-      var ui = new InteractiveScanUi( scanner );
+      var ui = new InteractiveScanUi( output, scanner );
       await ui.RunAsync( scanRequest );
       return ExitCodes.Success;
     }
@@ -105,7 +105,8 @@ internal class ScanCommandHandler(
       output.Normal.WriteLine(
         " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
         " addresses, estimated scan time is " +
-        scanRequest.Duration( cidr ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
+        scanRequest.EstimatedDuration(
+          cidr ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
         ")", ConsoleColor.DarkGray );
     }
 

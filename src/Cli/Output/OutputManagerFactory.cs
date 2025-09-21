@@ -1,5 +1,7 @@
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Pipelines;
+using System.Text;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -48,25 +50,36 @@ internal class OutputManagerFactory(
     TextWriter consoleErr,
     bool plainConsole
   ) {
-    var consoleOuts = GetConsoleOuts( outputFormat, verbose, consoleOut, consoleErr, plainConsole );
+    var sharedOutput = new WriterReaderBridge();
+    var stdOutWrapper = new CompoundTextWriter( consoleOut, sharedOutput.Writer );
+    var errOutWrapper = new CompoundTextWriter( consoleErr, sharedOutput.Writer );
+
+    var consoleOuts = GetConsoleOuts(
+      outputFormat,
+      verbose,
+      stdOutWrapper,
+      errOutWrapper,
+      plainConsole,
+      sharedOutput.Reader
+    );
 
     return new ConsoleOutputManager(
-      GetLogger( outputFormat, verbose, consoleOut, consoleErr, toConsole ),
+      GetLogger( outputFormat, verbose, stdOutWrapper, errOutWrapper, toConsole ),
       consoleOuts.StdOut,
       consoleOuts.ErrOut,
       verbose,
       outputFormat,
-      plainConsole
+      plainConsole,
+      sharedOutput.Reader
     );
   }
 
-
-  private static (TextWriter StdOut, TextWriter ErrOut) GetConsoleOuts(
-    OutputFormat outputFormat,
+  private static (TextWriter StdOut, TextWriter ErrOut) GetConsoleOuts( OutputFormat outputFormat,
     bool verboseValue,
     TextWriter consoleOut,
     TextWriter consoleErr,
-    bool plainConsole
+    bool plainConsole,
+    TextReader sharedOutputReader
   ) {
     if ( outputFormat is not OutputFormat.Normal ) {
       return ( TextWriter.Null, TextWriter.Null );
@@ -78,7 +91,8 @@ internal class OutputManagerFactory(
       consoleErr,
       verboseValue /*|| veryVerboseValue*/,
       outputFormat,
-      plainConsole
+      plainConsole,
+      sharedOutputReader
     );
 
     tempOutputManager.Normal.WriteLineVerbose(

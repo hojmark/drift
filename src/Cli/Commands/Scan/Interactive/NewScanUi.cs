@@ -1,3 +1,4 @@
+using Drift.Cli.Output.Abstractions;
 using Drift.Core.Scan;
 using Drift.Core.Scan.Scanners;
 using Drift.Core.Scan.Simulation;
@@ -30,10 +31,10 @@ internal static class NewScanUi {
 
   // TODO themes: greyscale, light, default
 
-  public static async Task Show( NetworkScanOptions scanRequest ) {
+  public static async Task Show( NetworkScanOptions scanRequest, IOutputManager outputManager ) {
     //var scanner = new SimulatedScanner( DemoScan1 );
     var scanner = new DefaultNetworkScanner( new DefaultSubnetScannerProvider( new OsPingTool() ) );
-    var app = new InteractiveScanUi( scanner );
+    var app = new InteractiveScanUi( outputManager, scanner );
     await app.RunAsync( scanRequest );
   }
 }

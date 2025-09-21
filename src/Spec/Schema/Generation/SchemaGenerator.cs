@@ -13,7 +13,7 @@ public static class SchemaGenerator {
   };
 
   static readonly SchemaGeneratorConfiguration SchemaConfiguration = new() {
-    PropertyNameResolver = PropertyNameResolvers.LowerSnakeCase, Generators = { new LowerCaseEnumGenerator() },
+    PropertyNameResolver = PropertyNameResolvers.LowerSnakeCase, Generators = { new LowerCaseEnumGenerator() }
   };
 
   public static string Generate( SpecVersion version ) {

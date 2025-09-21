@@ -26,8 +26,12 @@ public static class JsonConverter {
   public static string Serialize( object environment,
     System.Text.Json.Serialization.JsonConverter? extraConverter = null ) {
     //TODO hack
-    if ( extraConverter != null )
-      SerializerOptions.Converters.Add( extraConverter );
-    return JsonSerializer.Serialize( environment, SerializerOptions );
+    var options = SerializerOptions;
+    if ( extraConverter != null ) {
+      options = new JsonSerializerOptions( SerializerOptions );
+      options.Converters.Add( extraConverter );
+    }
+
+    return JsonSerializer.Serialize( environment, options );
   }
 }

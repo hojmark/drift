@@ -4,6 +4,7 @@ using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Logging;
 using Drift.Cli.Output.Normal;
 using Drift.Core.Scan.Subnets.Interface;
 using Drift.Diff.Domain;
@@ -211,7 +212,7 @@ internal class InitCommandHandler(
           await AnsiConsole
             .Status()
             .StartAsync( "Scanning network ...", async ctx => {
-              scanResult = await scanner.ScanAsync( scanRequest );
+              scanResult = await scanner.ScanAsync( scanRequest, output.GetLogger() );
               await Task.Delay( 1500 );
             } );
         }
@@ -220,8 +221,8 @@ internal class InitCommandHandler(
           output.Log.LogInformation( "Scanning network..." );
           var lastLogTime = DateTime.MinValue;
 
-          EventHandler<NetworkScanResult> updater = ( _, scanResult ) => {
-            ScanCommandHandler.UpdateProgressLog( scanResult.Progress, output, ref lastLogTime );
+          EventHandler<NetworkScanResult> updater = ( _, r ) => {
+            ScanCommandHandler.UpdateProgressLog( r.Progress, output, ref lastLogTime );
           };
 
           scanner.ResultUpdated += updater;

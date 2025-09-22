@@ -7,6 +7,7 @@ using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
+using Drift.TestUtilities;
 using JsonConverter = Drift.EnvironmentConfig.JsonConverter;
 
 namespace Drift.Diff.Tests;
@@ -68,6 +69,29 @@ internal sealed class DiffTest {
   }
 
   [Test]
+  public Task DefaultKeySelectorTest() {
+    // Arrange
+    var testLogger = new StringLogger();
+    var options = new DiffOptions()
+      .ConfigureDiffDeviceKeySelectors( [] );
+
+    // Act
+    var diffs = ObjectDiffEngine.Compare(
+      ScanResult1.Subnets.First().DiscoveredDevices.ToDiffDevices(),
+      ScanResult2.Subnets.First().DiscoveredDevices.ToDiffDevices(),
+      nameof(NetworkScanResult),
+      options,
+      testLogger
+    );
+
+    // Assert
+    //Print( diffs );
+    var diffsAsJson = JsonConverter.Serialize( diffs );
+    return Verify( diffsAsJson );
+  }
+
+
+  [Test]
   public Task IpAsKeySelectorTest() {
     // Arrange
     var options = new DiffOptions()
@@ -83,7 +107,7 @@ internal sealed class DiffTest {
     // Assert
     Print( diffs );
     // TODO custom serializer that skips properties not directly defined on the object (e.g. lists, objects)
-    var diffsAsJson = JsonConverter.Serialize( diffs ,new IPAddressConverter());
+    var diffsAsJson = JsonConverter.Serialize( diffs, new IPAddressConverter() );
     return Verify( diffsAsJson );
   }
 

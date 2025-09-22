@@ -42,17 +42,21 @@ public class DefaultNetworkScanner( ISubnetScannerProvider subnetScannerProvider
       var elapsed =
         finishedAt - startedAt; // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
 
-      logger?.LogDebug( "Finished network scan at {StartedAt} in {Elapsed}",
-        finishedAt.ToString( CultureInfo.InvariantCulture ),
-        elapsed
-      );
-
-      return new NetworkScanResult {
+      var result = new NetworkScanResult {
         Metadata = new Metadata { StartedAt = startedAt, EndedAt = DateTime.Now },
         Status = ScanResultStatus.Success,
         Progress = Percentage.Hundred,
         Subnets = scannerTasks.Select( t => t.Result )
       };
+
+      ResultUpdated?.Invoke( null, result );
+
+      logger?.LogDebug( "Finished network scan at {StartedAt} in {Elapsed}",
+        finishedAt.ToString( CultureInfo.InvariantCulture ),
+        elapsed
+      );
+
+      return result;
     }
     finally {
       foreach ( var (_, scanner) in scanners ) {

@@ -1,3 +1,4 @@
+using Drift.Domain;
 using Drift.Domain.Progress;
 using Drift.Domain.Scan;
 using Microsoft.Extensions.Logging;
@@ -12,19 +13,24 @@ public sealed class PredefinedResultNetworkScanner( NetworkScanResult scanResult
     ILogger? logger = null,
     CancellationToken cancellationToken = default
   ) {
-    var intermediateResult =
-      new NetworkScanResult { Metadata = scanResult.Metadata, Status = ScanResultStatus.InProgress };
-    ResultUpdated?.Invoke( this, intermediateResult );
-    return Task.FromResult( scanResult );
-  }
+    ResultUpdated?.Invoke( this,
+      new NetworkScanResult {
+        Metadata = scanResult.Metadata,
+        Status = ScanResultStatus.InProgress,
+        Progress = Percentage.Zero,
+        Subnets = scanResult.Subnets
+      } );
 
-  public Task<NetworkScanResult> ScanAsyncOld(
-    NetworkScanOptions request,
-    ILogger? logger = null,
-    Action<ProgressReport>? onProgress = null,
-    CancellationToken cancellationToken = default
-  ) {
-    return ScanAsync( request, cancellationToken: cancellationToken );
+    var finalResult = new NetworkScanResult {
+      Metadata = scanResult.Metadata,
+      Status = ScanResultStatus.Success,
+      Progress = Percentage.Hundred,
+      Subnets = scanResult.Subnets
+    };
+
+    ResultUpdated?.Invoke( this, finalResult );
+
+    return Task.FromResult( finalResult );
   }
 
   // TODO call this before the scan is done i.e. in progress

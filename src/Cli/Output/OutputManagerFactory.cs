@@ -48,9 +48,9 @@ internal class OutputManagerFactory(
     TextWriter consoleErr,
     bool plainConsole
   ) {
-    var sharedOutput = new WriterReaderBridge();
-    var stdOutWrapper = new CompoundTextWriter( consoleOut, sharedOutput.Writer );
-    var errOutWrapper = new CompoundTextWriter( consoleErr, sharedOutput.Writer );
+    var bridge = new WriterReaderBridge();
+    var stdOutWrapper = new CompoundTextWriter( consoleOut, bridge.Writer );
+    var errOutWrapper = new CompoundTextWriter( consoleErr, bridge.Writer );
 
     var consoleOuts = GetConsoleOuts(
       outputFormat,
@@ -58,7 +58,7 @@ internal class OutputManagerFactory(
       stdOutWrapper,
       errOutWrapper,
       plainConsole,
-      sharedOutput.Reader
+      bridge.Reader
     );
 
     return new ConsoleOutputManager(
@@ -68,7 +68,7 @@ internal class OutputManagerFactory(
       verbose,
       outputFormat,
       plainConsole,
-      sharedOutput.Reader
+      bridge.Reader
     );
   }
 
@@ -77,7 +77,7 @@ internal class OutputManagerFactory(
     TextWriter consoleOut,
     TextWriter consoleErr,
     bool plainConsole,
-    TextReader sharedOutputReader
+    TextReader outputReader
   ) {
     if ( outputFormat is not OutputFormat.Normal ) {
       return ( TextWriter.Null, TextWriter.Null );
@@ -90,7 +90,7 @@ internal class OutputManagerFactory(
       verboseValue /*|| veryVerboseValue*/,
       outputFormat,
       plainConsole,
-      sharedOutputReader
+      outputReader
     );
 
     tempOutputManager.Normal.WriteLineVerbose(

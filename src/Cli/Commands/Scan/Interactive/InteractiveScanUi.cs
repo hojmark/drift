@@ -1,7 +1,7 @@
 using Drift.Cli.Abstractions;
+using Drift.Cli.Commands.Scan.Interactive.Models;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Logging;
-using Drift.Core.Scan.Simulation.Models;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Extensions;
@@ -49,7 +49,7 @@ internal class InteractiveScanUi {
     if ( _logEnabled ) {
       _ = Task.Run( async () => {
         while ( true ) {
-          var line = await _outputManager.GetUnifiedReader().ReadLineAsync();
+          var line = await _outputManager.GetReader().ReadLineAsync();
 
           if ( line != null ) {
             // Dispatch back to UI thread

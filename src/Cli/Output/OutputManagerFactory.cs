@@ -49,20 +49,22 @@ internal class OutputManagerFactory(
     bool plainConsole
   ) {
     var bridge = new WriterReaderBridge();
-    var stdOutWrapper = new CompoundTextWriter( consoleOut, bridge.Writer );
-    var errOutWrapper = new CompoundTextWriter( consoleErr, bridge.Writer );
+    var outWrapper = new CompoundTextWriter( consoleOut, bridge.Writer );
+    var errWrapper = new CompoundTextWriter( consoleErr, bridge.Writer );
 
     var consoleOuts = GetConsoleOuts(
       outputFormat,
       verbose,
-      stdOutWrapper,
-      errOutWrapper,
+      outWrapper,
+      errWrapper,
       plainConsole,
       bridge.Reader
     );
 
+    var logger = GetLogger( outputFormat, verbose, outWrapper, errWrapper, toConsole );
+
     return new ConsoleOutputManager(
-      GetLogger( outputFormat, verbose, stdOutWrapper, errOutWrapper, toConsole ),
+      logger,
       consoleOuts.StdOut,
       consoleOuts.ErrOut,
       verbose,

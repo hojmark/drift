@@ -13,7 +13,7 @@ internal class ConsoleOutputManager(
   bool plainConsole,
   TextReader unifiedReader
 ) : IOutputManager {
-  public TextReader GetUnifiedReader() {
+  public TextReader GetReader() {
     return unifiedReader;
   }
 

@@ -5,7 +5,7 @@ using Spectre.Console;
 namespace Drift.Cli.Output;
 
 internal class NullOutputManager : IOutputManager {
-  public TextReader GetUnifiedReader() {
+  public TextReader GetReader() {
     return new StringReader( "" );
   }
 

@@ -32,6 +32,5 @@ public sealed class PredefinedResultNetworkScanner( NetworkScanResult scanResult
     return Task.FromResult( finalResult );
   }
 
-  // TODO call this before the scan is done i.e. in progress
   public event EventHandler<NetworkScanResult>? ResultUpdated;
 }

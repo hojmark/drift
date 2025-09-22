@@ -11,10 +11,10 @@ internal class ConsoleOutputManager(
   bool normalVerbose,
   OutputFormat outputFormat,
   bool plainConsole,
-  TextReader unifiedReader
+  TextReader reader
 ) : IOutputManager {
   public TextReader GetReader() {
-    return unifiedReader;
+    return reader;
   }
 
   public ILogOutput Log {

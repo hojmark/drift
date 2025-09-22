@@ -1,5 +1,4 @@
 using Drift.Domain;
-using Drift.Domain.Progress;
 using Drift.Domain.Scan;
 using Microsoft.Extensions.Logging;
 

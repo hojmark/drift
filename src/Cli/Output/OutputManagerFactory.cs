@@ -1,7 +1,5 @@
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Pipelines;
-using System.Text;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;

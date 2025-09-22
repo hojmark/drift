@@ -3,7 +3,6 @@ using System.Net;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
-using Drift.Domain.Progress;
 using Drift.Domain.Scan;
 using Microsoft.Extensions.Logging;
 

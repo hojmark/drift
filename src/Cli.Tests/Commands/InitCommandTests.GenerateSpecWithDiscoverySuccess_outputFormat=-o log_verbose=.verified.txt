@@ -1,4 +1,6 @@
 ﻿[<time> INF] Scanning network...
+[<time> INF] Ping Scan: 0%
+[<time> INF] Ping Scan: 100%
 [<time> INF] Scan completed
 [<time> INF] Writing spec...
 [<time> INF] Created spec: {CurrentDirectory}myNetworkWithDiscovery.spec.yaml

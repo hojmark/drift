@@ -194,16 +194,16 @@ internal class ScanCommandHandler(
     ref DateTime lastLogTime
   ) {
     var now = DateTime.UtcNow;
-    bool shouldLog = ( now - lastLogTime ).TotalSeconds >= 1;
+    bool shouldLog = ( now - lastLogTime ).TotalSeconds >= 1 ||
+                     // Always log start/end
+                     progress == Percentage.Zero ||
+                     progress == Percentage.Hundred;
 
-    if ( shouldLog ) {
-      output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress );
-
-      Thread.Sleep( 500 ); //TODO remove
+    if ( !shouldLog ) {
+      return;
     }
 
-    if ( shouldLog ) {
-      lastLogTime = now;
-    }
+    output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress );
+    lastLogTime = now;
   }
 }

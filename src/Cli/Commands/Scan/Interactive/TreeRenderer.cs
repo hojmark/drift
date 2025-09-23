@@ -1,3 +1,4 @@
+using Drift.Cli.Commands.Scan.Interactive.Models;
 using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Interactive;

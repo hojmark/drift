@@ -10,25 +10,26 @@ using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-internal class InteractiveScanUi {
+internal class InteractiveScanUi : IAsyncDisposable {
   private readonly IOutputManager _outputManager;
   private NetworkScanOptions _scanRequest;
   private readonly INetworkScanner _scanner;
-  private readonly ScanLayout _layout2;
+  private readonly ScanLayout _layout;
   private int _selectedIndex;
   private int _scrollOffset;
-  private bool _running = true;
+  private readonly CancellationTokenSource _running = new();
+  private const int RenderRefreshIntervalMs = 250;
+
 
   //TODO should get IDisposable warning?
   private readonly AsyncKeyInputWatcher _inputWatcher = new();
   private readonly List<UiSubnet> _subnets = [];
   private Percentage _progress;
 
-
   public InteractiveScanUi( IOutputManager outputManager, INetworkScanner scanner ) {
     _scanner = scanner;
     _outputManager = outputManager;
-    _layout2 = new ScanLayout();
+    _layout = new ScanLayout();
 
     // Subscribe to events instead of polling
     //_scanner.SubnetsUpdated += OnSubnetsUpdated;
@@ -40,43 +41,31 @@ internal class InteractiveScanUi {
   }
 
   private readonly bool _logEnabled = false;
-  private string _log;
+  private string _log = string.Empty;
 
   public async Task<int> RunAsync( NetworkScanOptions scanRequest ) {
     _scanRequest = scanRequest;
     var scanTask = StartScanAsync();
 
     if ( _logEnabled ) {
-      _ = Task.Run( async () => {
-        while ( true ) {
-          var line = await _outputManager.GetReader().ReadLineAsync();
-
-          if ( line != null ) {
-            // Dispatch back to UI thread
-            _log += string.IsNullOrEmpty( _log ) ? line : "\n" + line;
-          }
-          else {
-            await Task.Delay( 50 ); // Avoid tight loop on EOF
-          }
-        }
-      } );
+      _ = Task.Run( ReadLogAsync );
     }
 
     await AnsiConsole
-      .Live( _layout2.Renderable )
+      .Live( _layout.Renderable )
       .AutoClear( true )
       .StartAsync( async ctx => {
-          while ( _running ) {
-            Task[] renderCriteria = [_inputWatcher.WaitForNextKeyAsync(), Task.Delay( 250 )];
+          while ( !_running.IsCancellationRequested ) {
+            Task[] renderCriteria = [_inputWatcher.WaitForNextKeyAsync(), Task.Delay( RenderRefreshIntervalMs )];
 
             await Task.WhenAny( renderCriteria );
 
             var key = _inputWatcher.ConsumeKey();
             if ( key != null ) {
-              HandleInput( key.Value, _subnets );
+              HandleInput( key.Value );
             }
 
-            Render();
+            await RenderAsync();
 
             ctx.Refresh();
           }
@@ -86,35 +75,47 @@ internal class InteractiveScanUi {
     return ExitCodes.Success;
   }
 
-  private async Task Render() {
+  private async Task ReadLogAsync() {
+    while ( true ) {
+      var line = await _outputManager.GetReader().ReadLineAsync();
+      if ( line != null ) {
+        _log += string.IsNullOrEmpty( _log ) ? line : "\n" + line;
+      }
+      else {
+        await Task.Delay( 50 );
+      }
+    }
+  }
+
+  private async Task RenderAsync() {
     var renderer = new TreeRenderer();
-    int availableRows = _layout2.GetAvailableRows();
+    int availableRows = _layout.GetAvailableRows();
     int totalHeight = renderer.GetTotalHeight( _subnets );
     int maxScroll = Math.Max( 0, totalHeight - availableRows );
 
     // Debug information (remove after fixing)
-    _layout2.UpdateData(
+    _layout.UpdateData(
       $"ScrollOffset: {_scrollOffset}, MaxScroll: {maxScroll}, TotalHeight: {totalHeight}, AvailableRows: {availableRows}" );
 
     if ( _logEnabled ) {
-      _layout2.UpdateLog( _log );
+      _layout.UpdateLog( _log );
     }
 
     _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );
 
     var trees = renderer.RenderTrees( _scrollOffset, availableRows, _selectedIndex, _subnets );
 
-    _layout2.UpdateScanTree( trees );
+    _layout.UpdateScanTree( trees );
 
-    _layout2.UpdateProgress( _progress );
+    _layout.UpdateProgress( _progress );
   }
 
-  private void HandleInput( ConsoleKey key, List<UiSubnet> subnets ) {
+  private void HandleInput( ConsoleKey key ) {
     var action = InputMapper.MapKey( key );
 
     switch ( action ) {
       case InputAction.Quit:
-        _running = false;
+        _running.Cancel();
         break;
       case InputAction.ScrollUp:
         _scrollOffset -= TreeRenderer.ScrollAmount;
@@ -126,7 +127,7 @@ internal class InteractiveScanUi {
         _selectedIndex = Math.Max( 0, _selectedIndex - 1 );
         break;
       case InputAction.MoveDown:
-        _selectedIndex = Math.Min( subnets.Count - 1, _selectedIndex + 1 );
+        _selectedIndex = Math.Min( _subnets.Count - 1, _selectedIndex + 1 );
         break;
       case InputAction.Expand:
         _subnets[_selectedIndex].IsExpanded = true;
@@ -144,7 +145,7 @@ internal class InteractiveScanUi {
         _scrollOffset = 0;
         break;
       case InputAction.ToggleLog:
-        _layout2.ShowLogs = !_layout2.ShowLogs;
+        _layout.ShowLogs = !_layout.ShowLogs;
         break;
     }
   }
@@ -182,20 +183,9 @@ internal class InteractiveScanUi {
   }
 
   // TODO keymaps: default, vim, emacs, etc.
-}
-
-internal class UiSubnet {
-  public Subnet Subnet {
-    get;
-  }
-
-  public bool IsExpanded {
-    get;
-    set;
-  }
-
-  public UiSubnet( Subnet subnet, bool isExpanded = true ) {
-    Subnet = subnet;
-    IsExpanded = isExpanded;
+  public async ValueTask DisposeAsync() {
+    _scanner.ResultUpdated -= OnScanResultUpdated;
+    _running.Dispose();
+    await _inputWatcher.DisposeAsync();
   }
 }

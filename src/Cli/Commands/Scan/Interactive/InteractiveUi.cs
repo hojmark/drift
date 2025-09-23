@@ -69,11 +69,11 @@ internal class InteractiveUi : IAsyncDisposable {
           while ( !_running.IsCancellationRequested ) {
             _logUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var keyTask = _inputWatcher.WaitForNextKeyAsync();
             var delayTask = Task.Delay( RenderRefreshIntervalMs );
+            var keyTask = _inputWatcher.WaitForNextKeyAsync();
             var logTask = _logEnabled ? _logUpdateSignal.Task : Task.Delay( -1 );
 
-            await Task.WhenAny( keyTask, delayTask, logTask );
+            await Task.WhenAny( delayTask, keyTask, logTask );
             _logUpdateSignal = null;
 
             ProcessInput();
@@ -190,10 +190,10 @@ internal class InteractiveUi : IAsyncDisposable {
     foreach ( var subnet in currentSubnets ) {
       if ( existingSubnetsMap.TryGetValue( subnet.Address, out var existingUiSubnet ) ) {
         subnet.IsExpanded = existingUiSubnet.IsExpanded;
-        updatedUiSubnets.Add(subnet);
+        updatedUiSubnets.Add( subnet );
       }
       else {
-        updatedUiSubnets.Add(   subnet );
+        updatedUiSubnets.Add( subnet );
       }
     }
 

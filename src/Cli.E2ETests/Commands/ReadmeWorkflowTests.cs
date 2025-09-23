@@ -11,7 +11,7 @@ internal sealed class ReadmeWorkflowTests : DriftBinaryFixture {
     try {
       var c = new CancellationTokenSource( TimeSpan.FromSeconds( 30 ) );
       var initResult = await DriftBinary
-        .ExecuteAsync( "init unittest --discover --overwrite -vv", c.Token );
+        .ExecuteAsync( "init unittest --discover --overwrite -vv", null, c.Token );
 
       TestContext.Out.WriteLine( "STD OUT:\n" + initResult.StdOut );
       TestContext.Out.WriteLine( "ERR OUT:\n" + initResult.ErrOut );

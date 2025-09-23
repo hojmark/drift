@@ -106,7 +106,7 @@ internal static class RootCommandFactory {
   }
 
   private static void ConfigureNetworkScanner( IServiceCollection services ) {
-    services.AddSingleton<IPingTool, OsPingTool>();
+    services.AddSingleton<IPingTool, LinuxPingTool>();
     services.AddScoped<ISubnetScannerProvider, DefaultSubnetScannerProvider>();
     services.AddScoped<INetworkScanner, DefaultNetworkScanner>();
   }

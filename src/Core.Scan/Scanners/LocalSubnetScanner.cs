@@ -34,13 +34,15 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
 
     logger?.LogDebug( "Starting ping scan for CIDR block {Cidr} ({Total} addresses)", cidr, total );
 
+    var startedAt = DateTime.Now;
+
     using var throttler = new SemaphoreSlim( (int) options.PingsPerSecond );
 
     var pingTasks = ipRange.Select( async ip => {
       await throttler.WaitAsync( cancellationToken );
 
       try {
-        var success = ( await pingTool.RunAsync( $"-c 1 -W 1 {ip}" ) ).ExitCode == 0;
+        var success = ( await pingTool.PingAsync( ip, logger, cancellationToken ) ).Success;
         string? hostname = "";
         if ( success ) {
           logger?.LogDebug( "Got reply from {Ip}", ip );
@@ -54,7 +56,7 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
 
         if ( success ) {
           var intermediateResult = new SubnetScanResult {
-            Metadata = null,
+            Metadata = new Metadata { StartedAt = startedAt },
             Status = ScanResultStatus.InProgress,
             DiscoveredDevices = ToDiscoveredDevices( pingReplies, null ),
             Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
@@ -87,8 +89,10 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
 
     var arpCache = ArpHelper.GetSystemCachedIpToMacMap();
 
+    var endedAt = DateTime.Now;
+
     var result = new SubnetScanResult {
-      Metadata = null,
+      Metadata = new Metadata { StartedAt = startedAt, EndedAt = endedAt },
       Status = ScanResultStatus.Success,
       DiscoveredDevices = ToDiscoveredDevices( pingReplies, arpCache ),
       Progress = Percentage.Hundred,

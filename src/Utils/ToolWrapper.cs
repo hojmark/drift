@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Utils;
 
@@ -8,6 +9,7 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
 
   public async Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> ExecuteAsync(
     string arguments,
+    ILogger? logger = null,
     CancellationToken cancellationToken = default
   ) {
     var startInfo = new ProcessStartInfo {
@@ -41,6 +43,8 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
         error.AppendLine( args.Data );
       }
     };
+
+    logger?.LogDebug( "Executing: {Tool} {Arguments}", _toolPath, arguments );
 
     process.Start();
 

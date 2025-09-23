@@ -10,4 +10,6 @@ internal class Subnet {
     get;
     set;
   }
+  
+  public bool IsExpanded { get; set; } = true;
 }

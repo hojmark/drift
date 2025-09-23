@@ -1,3 +1,4 @@
+using System.Text;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Scan.Interactive.KeyMaps;
 using Drift.Cli.Commands.Scan.Interactive.Models;
@@ -13,7 +14,7 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 
 // TODO keymaps: default, vim, emacs, etc.
 // TODO themes: nocolor, default, etc.
-internal class InteractiveScanUi : IAsyncDisposable {
+internal class InteractiveUi : IAsyncDisposable {
   private const int RenderRefreshIntervalMs = 250;
 
   private readonly IOutputManager _outputManager;
@@ -29,13 +30,15 @@ internal class InteractiveScanUi : IAsyncDisposable {
   private int _selectedIndex;
   private int _scrollOffset;
 
-  private bool _logEnabled = false;
-  private string _log = string.Empty;
+  private readonly bool _logEnabled = true;
+  private readonly ILogReader? _logReader;
+  private readonly StringBuilder _logBuilder = new();
+  private TaskCompletionSource<bool>? _logUpdateSignal;
 
 
   //TODO should get IDisposable warning?
 
-  public InteractiveScanUi(
+  public InteractiveUi(
     IOutputManager outputManager,
     INetworkScanner scanner,
     NetworkScanOptions scanRequest,
@@ -46,13 +49,17 @@ internal class InteractiveScanUi : IAsyncDisposable {
     _keyMap = keyMap;
     _outputManager = outputManager;
     _scanner.ResultUpdated += OnScanResultUpdated;
+    if ( _logEnabled ) {
+      _logReader = new LogReader( _outputManager );
+      _logReader.LogUpdated += OnLogUpdated;
+    }
   }
 
   public async Task<int> RunAsync() {
     _ = StartScanAsync();
 
-    if ( _logEnabled ) {
-      _ = Task.Run( ReadLogAsync );
+    if ( _logEnabled && _logReader != null ) {
+      await _logReader.StartAsync( _running.Token );
     }
 
     await AnsiConsole
@@ -60,14 +67,16 @@ internal class InteractiveScanUi : IAsyncDisposable {
       .AutoClear( true )
       .StartAsync( async ctx => {
           while ( !_running.IsCancellationRequested ) {
-            Task[] renderCriteria = [_inputWatcher.WaitForNextKeyAsync(), Task.Delay( RenderRefreshIntervalMs )];
+            _logUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            await Task.WhenAny( renderCriteria );
+            var keyTask = _inputWatcher.WaitForNextKeyAsync();
+            var delayTask = Task.Delay( RenderRefreshIntervalMs );
+            var logTask = _logEnabled ? _logUpdateSignal.Task : Task.Delay( -1 );
 
-            var key = _inputWatcher.ConsumeKey();
-            if ( key != null ) {
-              HandleInput( key.Value );
-            }
+            await Task.WhenAny( keyTask, delayTask, logTask );
+            _logUpdateSignal = null;
+
+            ProcessInput();
 
             await RenderAsync();
 
@@ -79,20 +88,25 @@ internal class InteractiveScanUi : IAsyncDisposable {
     return ExitCodes.Success;
   }
 
+  private void ProcessInput() {
+    var key = _inputWatcher.ConsumeKey();
+    if ( key != null ) {
+      HandleInput( key.Value );
+    }
+  }
+
   private Task<NetworkScanResult> StartScanAsync() {
     return _scanner.ScanAsync( _scanRequest, _outputManager.GetLogger(), _running.Token );
   }
 
-  private async Task ReadLogAsync() {
-    while ( !_running.IsCancellationRequested ) {
-      var line = await _outputManager.GetReader().ReadLineAsync();
-      if ( line != null ) {
-        _log += string.IsNullOrEmpty( _log ) ? line : "\n" + line;
-      }
-      else {
-        await Task.Delay( 50 );
-      }
+  private void OnLogUpdated( object? sender, string line ) {
+    lock ( _logBuilder ) {
+      if ( _logBuilder.Length > 0 )
+        _logBuilder.Append( '\n' );
+      _logBuilder.Append( line );
     }
+
+    _logUpdateSignal?.TrySetResult( true );
   }
 
   private async Task RenderAsync() {
@@ -105,8 +119,10 @@ internal class InteractiveScanUi : IAsyncDisposable {
     _layout.UpdateData(
       $"ScrollOffset: {_scrollOffset}, MaxScroll: {maxScroll}, TotalHeight: {totalHeight}, AvailableRows: {availableRows}" );
 
-    if ( _logEnabled ) {
-      _layout.UpdateLog( _log );
+    if ( _logEnabled && _logReader != null ) {
+      lock ( _logBuilder ) {
+        _layout.UpdateLog( _logBuilder.ToString() );
+      }
     }
 
     _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );
@@ -191,5 +207,9 @@ internal class InteractiveScanUi : IAsyncDisposable {
     _scanner.ResultUpdated -= OnScanResultUpdated;
     _running.Dispose();
     await _inputWatcher.DisposeAsync();
+
+    if ( _logReader != null ) {
+      _logReader.LogUpdated -= OnLogUpdated;
+    }
   }
 }

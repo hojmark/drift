@@ -22,7 +22,7 @@ internal class InteractiveUi : IAsyncDisposable {
   private readonly ScanLayout _layout = new();
   private readonly CancellationTokenSource _running = new();
   private readonly AsyncKeyInputWatcher _inputWatcher = new();
-  private readonly List<UiSubnet> _subnets = [];
+  private readonly List<Subnet> _subnets = [];
   private readonly NetworkScanOptions _scanRequest;
   private readonly IKeyMap _keyMap;
 
@@ -184,15 +184,16 @@ internal class InteractiveUi : IAsyncDisposable {
       } ).ToList();
 
     // Same logic as before, but triggered by events
-    var existingSubnetsMap = _subnets.ToDictionary( ui => ui.Subnet.Address, ui => ui );
-    var updatedUiSubnets = new List<UiSubnet>();
+    var existingSubnetsMap = _subnets.ToDictionary( s => s.Address );
+    var updatedUiSubnets = new List<Subnet>();
 
     foreach ( var subnet in currentSubnets ) {
       if ( existingSubnetsMap.TryGetValue( subnet.Address, out var existingUiSubnet ) ) {
-        updatedUiSubnets.Add( new UiSubnet( subnet, existingUiSubnet.IsExpanded ) );
+        subnet.IsExpanded = existingUiSubnet.IsExpanded;
+        updatedUiSubnets.Add(subnet);
       }
       else {
-        updatedUiSubnets.Add( new UiSubnet( subnet, isExpanded: true ) );
+        updatedUiSubnets.Add(   subnet );
       }
     }
 

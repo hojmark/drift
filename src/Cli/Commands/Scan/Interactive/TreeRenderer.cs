@@ -7,10 +7,10 @@ internal class TreeRenderer {
   public const int ScrollAmount = 3;
   private readonly int _statusWidth = "Offline".Length;
 
-  public int GetTotalHeight( List<UiSubnet> subnets )
+  public int GetTotalHeight( List<Subnet> subnets )
     => subnets.Select( ( _, i ) => GetTreeHeight( i, subnets ) ).Sum();
 
-  public IEnumerable<Tree> RenderTrees( int scrollOffset, int maxRows, int selectedIndex, List<UiSubnet> subnets ) {
+  public IEnumerable<Tree> RenderTrees( int scrollOffset, int maxRows, int selectedIndex, List<Subnet> subnets ) {
     var trees = new List<Tree>();
     int currentRow = 0;
     int renderedRows = 0;
@@ -36,7 +36,7 @@ internal class TreeRenderer {
         else if ( treeStartRow < treeHeight && subnets[i].IsExpanded ) {
           // Show partial tree (skip header, show some devices)
           int devicesToSkip = treeStartRow - 1; // -1 because we're skipping the header
-          int devicesToShow = Math.Min( maxDeviceRows, subnets[i].Subnet.Devices.Count - devicesToSkip );
+          int devicesToShow = Math.Min( maxDeviceRows, subnets[i].Devices.Count - devicesToSkip );
 
           if ( devicesToShow > 0 ) {
             trees.Add( BuildPartialTree( i, isSelected, subnets, devicesToSkip, devicesToShow ) );
@@ -51,9 +51,8 @@ internal class TreeRenderer {
     return trees;
   }
 
-  private Tree BuildPartialTree( int index, bool isSelected, List<UiSubnet> subnets, int skipDevices, int maxDevices ) {
-    var uiSubnet = subnets[index];
-    var subnet = uiSubnet.Subnet;
+  private Tree BuildPartialTree( int index, bool isSelected, List<Subnet> subnets, int skipDevices, int maxDevices ) {
+    var subnet = subnets[index];
 
     // Create a tree with an empty header since we're showing a continuation
     var tree = new Tree( "" ).Guide( TreeGuide.Line );
@@ -76,10 +75,9 @@ internal class TreeRenderer {
   }
 
 
-  private Tree BuildTree( int index, bool isSelected, List<UiSubnet> subnets, int? maxDeviceCount = null ) {
-    var uiSubnet = subnets[index];
-    var subnet = uiSubnet.Subnet;
-    var symbol = uiSubnet.IsExpanded ? "▾" : "▸";
+  private Tree BuildTree( int index, bool isSelected, List<Subnet> subnets, int? maxDeviceCount = null ) {
+    var subnet = subnets[index];
+    var symbol = subnet.IsExpanded ? "▾" : "▸";
 
     string summary =
       $"[grey]({subnet.Devices.Count} devices: " +
@@ -93,7 +91,7 @@ internal class TreeRenderer {
 
     var tree = new Tree( formattedHeader ).Guide( TreeGuide.Line );
 
-    if ( uiSubnet.IsExpanded ) {
+    if ( subnet.IsExpanded ) {
       var devices = subnet.Devices;
       if ( maxDeviceCount is not null )
         devices = devices.Take( maxDeviceCount.Value ).ToList();
@@ -119,14 +117,14 @@ internal class TreeRenderer {
     return tree;
   }
 
-  private int GetTreeHeight( int index, List<UiSubnet> subnets )
-    => subnets[index].IsExpanded ? 1 + subnets[index].Subnet.Devices.Count : 1;
+  private int GetTreeHeight( int index, List<Subnet> subnets )
+    => subnets[index].IsExpanded ? 1 + subnets[index].Devices.Count : 1;
 
-  private int GetIpWidth( List<UiSubnet> subnets ) {
-    return subnets.SelectMany( s => s.Subnet.Devices ).Max( d => d.Ip.Length );
+  private int GetIpWidth( List<Subnet> subnets ) {
+    return subnets.SelectMany( s => s.Devices ).Max( d => d.Ip.Length );
   }
 
-  private int GetMacWidth( List<UiSubnet> subnets ) {
-    return subnets.SelectMany( s => s.Subnet.Devices ).Max( d => d.Mac.Length );
+  private int GetMacWidth( List<Subnet> subnets ) {
+    return subnets.SelectMany( s => s.Devices ).Max( d => d.Mac.Length );
   }
 }

@@ -92,7 +92,7 @@ internal class ScanCommandHandler(
     var scanRequest = new NetworkScanOptions { Cidrs = subnets };
 
     if ( parameters.Interactive ) {
-      var ui = new InteractiveScanUi( output, scanner, scanRequest, new DefaultKeyMap() );
+      var ui = new InteractiveUi( output, scanner, scanRequest, new DefaultKeyMap() );
       return await ui.RunAsync();
     }
 

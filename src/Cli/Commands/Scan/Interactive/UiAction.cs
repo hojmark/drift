@@ -1,16 +1,13 @@
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-internal enum InputAction {
+internal enum UiAction {
   None,
   Quit,
   ScrollUp,
   ScrollDown,
   MoveUp,
   MoveDown,
-  Expand,
-  Collapse,
-  ToggleSelected,
-  ToggleByIndex,
+  ToggleSubnet,
   RestartScan,
   ToggleLog
 }

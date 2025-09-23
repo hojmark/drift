@@ -1,4 +1,5 @@
 using Drift.Cli.Abstractions;
+using Drift.Cli.Commands.Scan.Interactive.KeyMaps;
 using Drift.Cli.Commands.Scan.Interactive.Models;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Logging;
@@ -10,42 +11,45 @@ using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
+// TODO keymaps: default, vim, emacs, etc.
+// TODO themes: nocolor, default, etc.
 internal class InteractiveScanUi : IAsyncDisposable {
+  private const int RenderRefreshIntervalMs = 250;
+
   private readonly IOutputManager _outputManager;
-  private NetworkScanOptions _scanRequest;
   private readonly INetworkScanner _scanner;
-  private readonly ScanLayout _layout;
+  private readonly ScanLayout _layout = new();
+  private readonly CancellationTokenSource _running = new();
+  private readonly AsyncKeyInputWatcher _inputWatcher = new();
+  private readonly List<UiSubnet> _subnets = [];
+  private readonly NetworkScanOptions _scanRequest;
+  private readonly IKeyMap _keyMap;
+
+  private Percentage _progress = Percentage.Zero;
   private int _selectedIndex;
   private int _scrollOffset;
-  private readonly CancellationTokenSource _running = new();
-  private const int RenderRefreshIntervalMs = 250;
+
+  private bool _logEnabled = false;
+  private string _log = string.Empty;
 
 
   //TODO should get IDisposable warning?
-  private readonly AsyncKeyInputWatcher _inputWatcher = new();
-  private readonly List<UiSubnet> _subnets = [];
-  private Percentage _progress;
 
-  public InteractiveScanUi( IOutputManager outputManager, INetworkScanner scanner ) {
+  public InteractiveScanUi(
+    IOutputManager outputManager,
+    INetworkScanner scanner,
+    NetworkScanOptions scanRequest,
+    IKeyMap keyMap
+  ) {
     _scanner = scanner;
+    _scanRequest = scanRequest;
+    _keyMap = keyMap;
     _outputManager = outputManager;
-    _layout = new ScanLayout();
-
-    // Subscribe to events instead of polling
-    //_scanner.SubnetsUpdated += OnSubnetsUpdated;
     _scanner.ResultUpdated += OnScanResultUpdated;
   }
 
-  private Task<NetworkScanResult> StartScanAsync() {
-    return _scanner.ScanAsync( _scanRequest, _outputManager.GetLogger() );
-  }
-
-  private readonly bool _logEnabled = false;
-  private string _log = string.Empty;
-
-  public async Task<int> RunAsync( NetworkScanOptions scanRequest ) {
-    _scanRequest = scanRequest;
-    var scanTask = StartScanAsync();
+  public async Task<int> RunAsync() {
+    _ = StartScanAsync();
 
     if ( _logEnabled ) {
       _ = Task.Run( ReadLogAsync );
@@ -75,8 +79,12 @@ internal class InteractiveScanUi : IAsyncDisposable {
     return ExitCodes.Success;
   }
 
+  private Task<NetworkScanResult> StartScanAsync() {
+    return _scanner.ScanAsync( _scanRequest, _outputManager.GetLogger(), _running.Token );
+  }
+
   private async Task ReadLogAsync() {
-    while ( true ) {
+    while ( !_running.IsCancellationRequested ) {
       var line = await _outputManager.GetReader().ReadLineAsync();
       if ( line != null ) {
         _log += string.IsNullOrEmpty( _log ) ? line : "\n" + line;
@@ -111,41 +119,38 @@ internal class InteractiveScanUi : IAsyncDisposable {
   }
 
   private void HandleInput( ConsoleKey key ) {
-    var action = InputMapper.MapKey( key );
+    var action = _keyMap.MapKey( key );
 
     switch ( action ) {
-      case InputAction.Quit:
+      case UiAction.Quit:
         _running.Cancel();
         break;
-      case InputAction.ScrollUp:
+      case UiAction.ScrollUp:
         _scrollOffset -= TreeRenderer.ScrollAmount;
         break;
-      case InputAction.ScrollDown:
+      case UiAction.ScrollDown:
         _scrollOffset += TreeRenderer.ScrollAmount;
         break;
-      case InputAction.MoveUp:
+      case UiAction.MoveUp:
         _selectedIndex = Math.Max( 0, _selectedIndex - 1 );
         break;
-      case InputAction.MoveDown:
+      case UiAction.MoveDown:
         _selectedIndex = Math.Min( _subnets.Count - 1, _selectedIndex + 1 );
         break;
-      case InputAction.Expand:
-        _subnets[_selectedIndex].IsExpanded = true;
-        break;
-      case InputAction.Collapse:
-        _subnets[_selectedIndex].IsExpanded = false;
-        break;
-      case InputAction.ToggleSelected:
+      case UiAction.ToggleSubnet:
         _subnets[_selectedIndex].IsExpanded = !_subnets[_selectedIndex].IsExpanded;
         break;
-      case InputAction.RestartScan:
+      case UiAction.RestartScan:
         _subnets.Clear();
         StartScanAsync();
         _selectedIndex = 0;
         _scrollOffset = 0;
         break;
-      case InputAction.ToggleLog:
+      case UiAction.ToggleLog:
         _layout.ShowLogs = !_layout.ShowLogs;
+        break;
+      case UiAction.None:
+      default:
         break;
     }
   }
@@ -182,7 +187,6 @@ internal class InteractiveScanUi : IAsyncDisposable {
       _selectedIndex = Math.Max( 0, _subnets.Count - 1 );
   }
 
-  // TODO keymaps: default, vim, emacs, etc.
   public async ValueTask DisposeAsync() {
     _scanner.ResultUpdated -= OnScanResultUpdated;
     _running.Dispose();

@@ -2,6 +2,7 @@ using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan.Interactive;
+using Drift.Cli.Commands.Scan.Interactive.KeyMaps;
 using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
@@ -91,8 +92,8 @@ internal class ScanCommandHandler(
     var scanRequest = new NetworkScanOptions { Cidrs = subnets };
 
     if ( parameters.Interactive ) {
-      var ui = new InteractiveScanUi( output, scanner );
-      return await ui.RunAsync( scanRequest );
+      var ui = new InteractiveScanUi( output, scanner, scanRequest, new DefaultKeyMap() );
+      return await ui.RunAsync();
     }
 
     output.Normal.WriteLine( 0,

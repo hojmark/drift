@@ -16,6 +16,14 @@ internal class ScanLayout {
     }
   }
 
+  public bool ShowDebug {
+    get => _layout["Debug"].IsVisible;
+    set {
+      _layout["Debug"].IsVisible = value;
+      _layout["Debug"].Update( _layout["Debug"] );
+    }
+  }
+
   public ScanLayout() {
     _layout = new Layout( "Root" )
       .SplitRows(
@@ -24,7 +32,7 @@ internal class ScanLayout {
           new Layout( "ScanTree" ),
           new Layout( "Log" ) { IsVisible = false }
         ),
-        new Layout( "Data" ) { Size = 1 },
+        new Layout( "Debug" ) { Size = 1, IsVisible = false },
         new Layout( "Progress" ) { Size = 1 },
         new Layout( "Footer" ) { Size = 1 }
       );
@@ -46,8 +54,8 @@ internal class ScanLayout {
     _layout["Progress"].Update( BuildProgressBar( progress ) );
   }
 
-  public void SetData( string text ) {
-    _layout["Data"].Update( new Text( text ) );
+  public void SetDebug( string text ) {
+    _layout["Debug"].Update( new Text( text ) );
   }
 
   public void SetLog( string text ) {
@@ -55,7 +63,9 @@ internal class ScanLayout {
   }
 
   internal uint GetAvailableRows() {
-    var rows = AnsiConsole.Console.Profile.Height - 1 - 1 - 1 - 1 - 2; // header + data + footer + progress + padding
+    var rows = AnsiConsole.Console.Profile.Height -
+               // header + data (optional) + footer + progress + padding
+               1 - ( _layout["Debug"].IsVisible ? 1 : 0 ) - 1 - 1 - 2;
     return (uint) Math.Max( 0, rows );
   }
 

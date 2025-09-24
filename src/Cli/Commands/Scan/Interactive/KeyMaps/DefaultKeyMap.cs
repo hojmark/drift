@@ -12,6 +12,7 @@ internal class DefaultKeyMap : IKeyMap {
     ConsoleKey.Enter or ConsoleKey.Spacebar => UiAction.ToggleSubnet,
     ConsoleKey.R => UiAction.RestartScan,
     ConsoleKey.L => UiAction.ToggleLog,
+    ConsoleKey.F1 => UiAction.ToggleDebug,
     _ => UiAction.None
   };
 }

@@ -53,8 +53,7 @@ internal class InteractiveUi : IAsyncDisposable {
     _logReader = new LogReader( _outputManager );
     _logReader.LogUpdated += OnLogUpdated;
 
-    var availableRows = _layout.GetAvailableRows();
-    SubnetViewport = new SubnetView( availableRows );
+    SubnetViewport = new SubnetView( () => _layout.GetAvailableRows() );
   }
 
   private SubnetView SubnetViewport {
@@ -120,7 +119,7 @@ internal class InteractiveUi : IAsyncDisposable {
     SubnetViewport.Subnets = _subnets;
 
     // Debug information (remove after fixing)
-    _layout.SetData( SubnetViewport.DebugData );
+    _layout.SetDebug( SubnetViewport.DebugData );
 
     _layout.SetScanTree( SubnetViewport );
 
@@ -166,6 +165,9 @@ internal class InteractiveUi : IAsyncDisposable {
         break;
       case UiAction.ToggleLog:
         _layout.ShowLogs = !_layout.ShowLogs;
+        break;
+      case UiAction.ToggleDebug:
+        _layout.ShowDebug = !_layout.ShowDebug;
         break;
       case UiAction.None:
       default:

@@ -149,3 +149,26 @@ csharp_preserve_single_line_blocks                                       = false
 # My additions
 csharp_keep_blank_lines_in_code = 1
 csharp_blank_lines_around_invocable = 1
+
+# Code analyzer rules
+[**/*.cs]
+# Elements should be documented
+dotnet_diagnostic.SA1600.severity = suggestion
+# Braces for multi-line statements should not share line
+dotnet_diagnostic.SA1500.severity = silent
+# The keywords within the declaration of an element do not follow a standard ordering scheme.
+dotnet_diagnostic.SA1206.severity = silent
+# Using directive should appear within a namespace declaration
+dotnet_diagnostic.SA1200.severity = silent
+# Closing parenthesis should not be preceded by a space.
+#dotnet_diagnostic.SA1209.severity = silent
+# Opening parenthesis should not be followed by a space.
+dotnet_diagnostic.SA1008.severity = silent
+# Closing parenthesis should not be preceded by a space.
+dotnet_diagnostic.SA1009.severity = silent
+# Closing parenthesis should be on line of last parameter
+dotnet_diagnostic.SA1111.severity = silent
+
+[**/*.{Tests,E2ETests,ArchTests}*/**.cs]
+# Elements should be documented
+dotnet_diagnostic.SA1600.severity = silent

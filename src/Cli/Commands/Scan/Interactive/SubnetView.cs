@@ -17,6 +17,10 @@ internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
         if ( _subnets.FirstOrDefault( s => s.Cidr == Selected ) == null ) {
           Selected = _subnets.FirstOrDefault()?.Cidr;
         }
+
+        if ( MaxScrollOffset == 0 ) {
+          ScrollOffset = 0;
+        }
       }
     }
   }

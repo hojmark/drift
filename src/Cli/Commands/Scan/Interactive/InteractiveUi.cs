@@ -25,7 +25,9 @@ internal class InteractiveUi : IAsyncDisposable {
   private readonly CancellationTokenSource _running = new();
 
   //TODO should get IDisposable warning?
-  private readonly AsyncKeyInputWatcher _inputWatcher = new();
+  private readonly KeyWatcher _keyWatcher = new();
+  private readonly ConsoleResizeWatcher _resizeWatcher = new();
+  
   private readonly List<Subnet> _subnets = [];
   private readonly NetworkScanOptions _scanRequest;
   private readonly IKeyMap _keyMap;
@@ -36,7 +38,7 @@ internal class InteractiveUi : IAsyncDisposable {
   private readonly StringBuilder _logBuilder = new();
   private TaskCompletionSource _logUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-  private TaskCompletionSource _restartSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
+  private TaskCompletionSource _scanUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
   public InteractiveUi(
     IOutputManager outputManager,
@@ -70,18 +72,19 @@ internal class InteractiveUi : IAsyncDisposable {
       .Live( _layout.Renderable )
       .AutoClear( true )
       .StartAsync( async ctx => {
-          while ( !_running.IsCancellationRequested ) {
-            var delayTask = Task.Delay( RenderRefreshIntervalMs );
-            var keyTask = _inputWatcher.WaitForNextKeyAsync();
-            var logTask = _logUpdateSignal.Task ?? Task.Delay( -1 );
-            var restartTask = _restartSignal.Task ?? Task.Delay( -1 );
+          await RenderAsync();
+          ctx.Refresh();
 
-            await Task.WhenAny( delayTask, keyTask, logTask, restartTask );
+          while ( !_running.IsCancellationRequested ) {
+            var keyTask = _keyWatcher.WaitForKeyAsync();
+            var resizeTask = _resizeWatcher.WaitForResizeAsync();
+            var logTask = _logUpdateSignal.Task;
+            var scanTask = _scanUpdateSignal.Task;
+
+            await Task.WhenAny( keyTask, logTask, scanTask, resizeTask );
 
             ProcessInput();
-
             await RenderAsync();
-
             ctx.Refresh();
           }
         }
@@ -91,7 +94,7 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   private void ProcessInput() {
-    var key = _inputWatcher.Consume();
+    var key = _keyWatcher.Consume();
     if ( key != null ) {
       var action = _keyMap.Map( key.Value );
       Handle( action );
@@ -152,9 +155,6 @@ internal class InteractiveUi : IAsyncDisposable {
       case UiAction.RestartScan:
         _subnets.Clear();
         StartScanAsync();
-        //TODO wrap below two statements in lock
-        _restartSignal.SetResult();
-        _restartSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
         break;
       case UiAction.ToggleLog:
         _layout.ShowLogs = !_layout.ShowLogs;
@@ -196,13 +196,15 @@ internal class InteractiveUi : IAsyncDisposable {
 
       _subnets.Clear();
       _subnets.AddRange( updated );
+      _scanUpdateSignal.TrySetResult();
+      _scanUpdateSignal = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
     }
   }
 
   public async ValueTask DisposeAsync() {
     _scanner.ResultUpdated -= OnScanResultUpdated;
     _running.Dispose();
-    await _inputWatcher.DisposeAsync();
+    await _keyWatcher.DisposeAsync();
     _logReader.LogUpdated -= OnLogUpdated;
   }
 }

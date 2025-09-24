@@ -4,6 +4,8 @@ obj/
 .nuke/parameters.local.json
 *.user
 #*.idea
+.idea/.idea.Drift/.idea/watcherTasks.xml
+.idea/.idea.Drift/.idea/encodings.xml
 *.DotSettings
 *.received.*
 artifacts/

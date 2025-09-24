@@ -9,7 +9,7 @@ root = true
 indent_style = space
 
 # Code files
-[*.{cs,csproj,json,props}]
+[*.{cs,csproj,props,json}]
 indent_size          = 2
 insert_final_newline = false
 charset              = utf-8
@@ -168,6 +168,16 @@ dotnet_diagnostic.SA1008.severity = silent
 dotnet_diagnostic.SA1009.severity = silent
 # Closing parenthesis should be on line of last parameter
 dotnet_diagnostic.SA1111.severity = silent
+# Opening square brackets should not be preceded by a space
+dotnet_diagnostic.SA1010.severity = silent
+# Closing brace should be followed by blank line
+dotnet_diagnostic.SA1513.severity = silent
+# Code should not contain empty statements
+dotnet_diagnostic.SA1106.severity = silent
+# The file header is missing or not located at the top of the file.
+dotnet_diagnostic.SA1633.severity = silent
+# Operator '!' should not be preceded by whitespace.
+dotnet_diagnostic.SA1003.severity = silent
 
 [**/*.{Tests,E2ETests,ArchTests}*/**.cs]
 # Elements should be documented

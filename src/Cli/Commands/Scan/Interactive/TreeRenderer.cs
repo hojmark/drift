@@ -38,10 +38,10 @@ internal static class TreeRenderer {
         else if ( treeStartRow < treeHeight && subnet.IsExpanded ) {
           // Show partial tree (skip header, show some devices)
           int devicesToSkip = treeStartRow - 1; // -1 because we're skipping the header
-          int devicesToShow = Math.Min( maxDeviceRows, subnet.Devices.Count - devicesToSkip );
+          int devicesToShow = Math.Min( maxDeviceRows + 1, subnet.Devices.Count - devicesToSkip ); // +1 because the header is not shown (makes room for additional device)
 
           if ( devicesToShow > 0 ) {
-            trees.Add( BuildPartialTree( subnet, subnets, devicesToSkip, devicesToShow ) );
+            trees.Add( BuildPartialTree( subnet, subnets, devicesToSkip ) );
             renderedRows += devicesToShow;
           }
         }
@@ -53,11 +53,13 @@ internal static class TreeRenderer {
     return trees;
   }
 
-  private static Tree BuildPartialTree( Subnet subnet, List<Subnet> subnets, int skipDevices, int maxDevices ) {
+  private static Tree BuildPartialTree( Subnet subnet, List<Subnet> subnets, int skipDevices ) {
     // Create a tree with an empty header since we're showing a continuation
     var tree = new Tree( "" ).Guide( TreeGuide.Line );
 
-    var devices = subnet.Devices.Skip( skipDevices ).Take( maxDevices ).ToList();
+    var devices = subnet.Devices
+      .Skip( skipDevices )
+      .ToList();
 
     foreach ( var device in devices ) {
       var deviceString = RenderDevice( device, subnets );

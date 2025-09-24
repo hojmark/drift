@@ -49,7 +49,7 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
     };
     process.ErrorDataReceived += ErrorDataReceived;
 
-    logger?.LogDebug( "Executing: {Tool} {Arguments}", _toolPath, arguments );
+    logger?.LogTrace( "Executing: {Tool} {Arguments}", _toolPath, arguments );
 
     process.Start();
 

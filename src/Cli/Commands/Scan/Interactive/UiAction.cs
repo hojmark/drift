@@ -5,6 +5,8 @@ internal enum UiAction {
   Quit,
   ScrollUp,
   ScrollDown,
+  ScrollUpPage,
+  ScrollDownPage,
   MoveUp,
   MoveDown,
   ToggleSubnet,

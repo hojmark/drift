@@ -32,12 +32,11 @@ internal class InteractiveUi : IAsyncDisposable {
 
   private Percentage _progress = Percentage.Zero;
 
-  private readonly bool _logEnabled = true;
-  private readonly ILogReader? _logReader;
+  private readonly ILogReader _logReader;
   private readonly StringBuilder _logBuilder = new();
-  private TaskCompletionSource? _logUpdateSignal;
+  private TaskCompletionSource _logUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-  private TaskCompletionSource? _restartSignal;
+  private TaskCompletionSource _restartSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
   public InteractiveUi(
     IOutputManager outputManager,
@@ -51,16 +50,14 @@ internal class InteractiveUi : IAsyncDisposable {
     _outputManager = outputManager;
     _scanner.ResultUpdated += OnScanResultUpdated;
 
-    if ( _logEnabled ) {
-      _logReader = new LogReader( _outputManager );
-      _logReader.LogUpdated += OnLogUpdated;
-    }
+    _logReader = new LogReader( _outputManager );
+    _logReader.LogUpdated += OnLogUpdated;
 
-    int availableRows = _layout.GetAvailableRows();
-    SubnetViewport = new SubnetViewport( (uint) availableRows );
+    var availableRows = _layout.GetAvailableRows();
+    SubnetViewport = new SubnetView( availableRows );
   }
 
-  private SubnetViewport SubnetViewport {
+  private SubnetView SubnetViewport {
     get;
     set;
   }
@@ -68,22 +65,17 @@ internal class InteractiveUi : IAsyncDisposable {
   public async Task<int> RunAsync() {
     _ = StartScanAsync();
 
-    if ( _logEnabled && _logReader != null ) {
-      await _logReader.StartAsync( _running.Token );
-    }
+    await _logReader.StartAsync( _running.Token );
 
     await AnsiConsole
       .Live( _layout.Renderable )
       .AutoClear( true )
       .StartAsync( async ctx => {
           while ( !_running.IsCancellationRequested ) {
-            _logUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
-            _restartSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
             var delayTask = Task.Delay( RenderRefreshIntervalMs );
             var keyTask = _inputWatcher.WaitForNextKeyAsync();
-            var logTask = _logEnabled ? _logUpdateSignal.Task : Task.Delay( -1 );
-            var restartTask = _restartSignal?.Task ?? Task.Delay( -1 );
+            var logTask = _logUpdateSignal.Task ?? Task.Delay( -1 );
+            var restartTask = _restartSignal.Task ?? Task.Delay( -1 );
 
             await Task.WhenAny( delayTask, keyTask, logTask, restartTask );
 
@@ -115,16 +107,14 @@ internal class InteractiveUi : IAsyncDisposable {
       if ( _logBuilder.Length > 0 )
         _logBuilder.Append( '\n' );
       _logBuilder.Append( line );
-      _logUpdateSignal?.TrySetResult();
+      _logUpdateSignal.TrySetResult();
       _logUpdateSignal = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
     }
   }
 
   private async Task RenderAsync() {
-    if ( _logEnabled && _logReader != null ) {
-      lock ( _logBuilder ) {
-        _layout.SetLog( _logBuilder.ToString() );
-      }
+    lock ( _logBuilder ) {
+      _layout.SetLog( _logBuilder.ToString() );
     }
 
     SubnetViewport.Subnets = _subnets;
@@ -149,6 +139,12 @@ internal class InteractiveUi : IAsyncDisposable {
         break;
       case UiAction.ScrollDown:
         SubnetViewport.ScrollOffset += ScrollAmount;
+        break;
+      case UiAction.ScrollUpPage:
+        SubnetViewport.ScrollOffset -= (int) _layout.GetAvailableRows();
+        break;
+      case UiAction.ScrollDownPage:
+        SubnetViewport.ScrollOffset += (int) _layout.GetAvailableRows();
         break;
       case UiAction.MoveUp:
         SubnetViewport.SelectPrevious();
@@ -214,8 +210,6 @@ internal class InteractiveUi : IAsyncDisposable {
     _running.Dispose();
     await _inputWatcher.DisposeAsync();
 
-    if ( _logReader != null ) {
-      _logReader.LogUpdated -= OnLogUpdated;
-    }
+    _logReader.LogUpdated -= OnLogUpdated;
   }
 }

@@ -5,7 +5,7 @@ using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-internal class SubnetView( uint height ) : IEnumerable<Tree> {
+internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
   private readonly Lock _subnetLock = new();
 
   private List<Subnet> _subnets = [];
@@ -21,7 +21,7 @@ internal class SubnetView( uint height ) : IEnumerable<Tree> {
     }
   }
 
-  private uint MaxScrollOffset => (uint) Math.Max( 0, _subnets.GetHeight() - height );
+  private uint MaxScrollOffset => (uint) Math.Max( 0, _subnets.GetHeight() - height() );
 
   private uint _scrollOffset;
 
@@ -50,7 +50,7 @@ internal class SubnetView( uint height ) : IEnumerable<Tree> {
       }
 
       return
-        $"{nameof(ScrollOffset)}: {ScrollOffset}, {nameof(MaxScrollOffset)}: {MaxScrollOffset}, TotalHeight: {_subnets.GetHeight()}, ViewportHeight: {height}, SelectedIndex: {selectedIndex}";
+        $"{nameof(ScrollOffset)}: {ScrollOffset}, {nameof(MaxScrollOffset)}: {MaxScrollOffset}, TotalHeight: {_subnets.GetHeight()}, ViewportHeight: {height()}, SelectedIndex: {selectedIndex}";
     }
   }
 
@@ -98,7 +98,7 @@ internal class SubnetView( uint height ) : IEnumerable<Tree> {
   public IEnumerator<Tree> GetEnumerator() {
     lock ( _subnetLock ) {
       var snapshot = _subnets.ToList();
-      return TreeRenderer.Render( snapshot, Selected, height, _scrollOffset ).GetEnumerator();
+      return TreeRenderer.Render( snapshot, Selected, height(), _scrollOffset ).GetEnumerator();
     }
   }
 

@@ -11,5 +11,6 @@ internal enum UiAction {
   MoveDown,
   ToggleSubnet,
   RestartScan,
-  ToggleLog
+  ToggleLog,
+  ToggleDebug
 }

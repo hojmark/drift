@@ -102,7 +102,9 @@ internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
   public IEnumerator<Tree> GetEnumerator() {
     lock ( _subnetLock ) {
       var snapshot = _subnets.ToList();
-      return TreeRenderer.Render( snapshot, Selected, height(), _scrollOffset ).GetEnumerator();
+      // TODO Hack; implement IRenderable to provide the right size. Note that other layout changes may make _scrollOffset invalid.
+      var offset = Math.Min( _scrollOffset, MaxScrollOffset );
+      return TreeRenderer.Render( snapshot, Selected, height(), offset ).GetEnumerator();
     }
   }
 

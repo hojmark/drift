@@ -32,7 +32,7 @@ internal sealed class AsyncKeyInputWatcher : IAsyncDisposable {
     return _waiter.Task;
   }
 
-  public ConsoleKey? ConsumeKey() {
+  public ConsoleKey? Consume() {
     return _keyBuffer.TryDequeue( out var key ) ? key : null;
   }
 

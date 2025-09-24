@@ -15,7 +15,8 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 // TODO keymaps: default, vim, emacs, etc.
 // TODO themes: nocolor, default, etc.
 internal class InteractiveUi : IAsyncDisposable {
-  private const int RenderRefreshIntervalMs = 250;
+  private const int RenderRefreshIntervalMs = 1000;
+  private const int ScrollAmount = 1;
 
   private readonly IOutputManager _outputManager;
   private readonly INetworkScanner _scanner;
@@ -27,8 +28,6 @@ internal class InteractiveUi : IAsyncDisposable {
   private readonly IKeyMap _keyMap;
 
   private Percentage _progress = Percentage.Zero;
-  private int _selectedIndex;
-  private int _scrollOffset;
 
   private readonly bool _logEnabled = true;
   private readonly ILogReader? _logReader;
@@ -53,6 +52,14 @@ internal class InteractiveUi : IAsyncDisposable {
       _logReader = new LogReader( _outputManager );
       _logReader.LogUpdated += OnLogUpdated;
     }
+
+    int availableRows = _layout.GetAvailableRows();
+    SubnetViewPort = new SubnetViewPort( (uint) availableRows );
+  }
+
+  private SubnetViewPort SubnetViewPort {
+    get;
+    set;
   }
 
   public async Task<int> RunAsync() {
@@ -110,9 +117,8 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   private async Task RenderAsync() {
-    var renderer = new TreeRenderer();
-    int availableRows = _layout.GetAvailableRows();
-    int totalHeight = renderer.GetTotalHeight( _subnets );
+    _layout.UpdateData( "DUMMY" );
+    /*int totalHeight = subnetViewPort.GetTotalHeight( _subnets );
     int maxScroll = Math.Max( 0, totalHeight - availableRows );
 
     // Debug information (remove after fixing)
@@ -125,11 +131,15 @@ internal class InteractiveUi : IAsyncDisposable {
       }
     }
 
-    _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );
+    _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );*/
+    SubnetViewPort.Subnets = _subnets;
 
-    var trees = renderer.RenderTrees( _scrollOffset, availableRows, _selectedIndex, _subnets );
+    //var trees = subnetViewPort.RenderTrees( _subnets );
+    if ( _subnets.Count > 0 ) {
+      Console.WriteLine( "hi" );
+    }
 
-    _layout.UpdateScanTree( trees );
+    _layout.UpdateScanTree( SubnetViewPort );
 
     _layout.UpdateProgress( _progress );
   }
@@ -142,25 +152,25 @@ internal class InteractiveUi : IAsyncDisposable {
         _running.Cancel();
         break;
       case UiAction.ScrollUp:
-        _scrollOffset -= TreeRenderer.ScrollAmount;
+        //_scrollOffset -= SubnetViewPort.ScrollAmount;
         break;
       case UiAction.ScrollDown:
-        _scrollOffset += TreeRenderer.ScrollAmount;
+        //_scrollOffset += SubnetViewPort.ScrollAmount;
         break;
       case UiAction.MoveUp:
-        _selectedIndex = Math.Max( 0, _selectedIndex - 1 );
+        //_selectedIndex = Math.Max( 0, _selectedIndex - 1 );
         break;
       case UiAction.MoveDown:
-        _selectedIndex = Math.Min( _subnets.Count - 1, _selectedIndex + 1 );
+        //_selectedIndex = Math.Min( _subnets.Count - 1, _selectedIndex + 1 );
         break;
       case UiAction.ToggleSubnet:
-        _subnets[_selectedIndex].IsExpanded = !_subnets[_selectedIndex].IsExpanded;
+        //_subnets[_selectedIndex].IsExpanded = !_subnets[_selectedIndex].IsExpanded;
         break;
       case UiAction.RestartScan:
         _subnets.Clear();
         StartScanAsync();
-        _selectedIndex = 0;
-        _scrollOffset = 0;
+        //_selectedIndex = 0;
+        //_scrollOffset = 0;
         break;
       case UiAction.ToggleLog:
         _layout.ShowLogs = !_layout.ShowLogs;
@@ -174,9 +184,9 @@ internal class InteractiveUi : IAsyncDisposable {
   private void OnScanResultUpdated( object? sender, NetworkScanResult scanResult ) {
     _progress = scanResult.Progress;
 
-    List<Subnet> currentSubnets = scanResult.Subnets
+    var currentSubnets = scanResult.Subnets
       .Select( kvp => new Subnet {
-        Address = kvp.CidrBlock.ToString(),
+        Cidr = kvp.CidrBlock,
         Devices = kvp.DiscoveredDevices.Select( dd =>
           new Device {
             Ip = dd.Get( AddressType.IpV4 ) ?? "n/a", Mac = dd.Get( AddressType.Mac ) ?? "n/a", IsOnline = true
@@ -184,11 +194,11 @@ internal class InteractiveUi : IAsyncDisposable {
       } ).ToList();
 
     // Same logic as before, but triggered by events
-    var existingSubnetsMap = _subnets.ToDictionary( s => s.Address );
+    var existingSubnetsMap = _subnets.ToDictionary( s => s.Cidr );
     var updatedUiSubnets = new List<Subnet>();
 
     foreach ( var subnet in currentSubnets ) {
-      if ( existingSubnetsMap.TryGetValue( subnet.Address, out var existingUiSubnet ) ) {
+      if ( existingSubnetsMap.TryGetValue( subnet.Cidr, out var existingUiSubnet ) ) {
         subnet.IsExpanded = existingUiSubnet.IsExpanded;
         updatedUiSubnets.Add( subnet );
       }
@@ -200,8 +210,8 @@ internal class InteractiveUi : IAsyncDisposable {
     _subnets.Clear();
     _subnets.AddRange( updatedUiSubnets );
 
-    if ( _selectedIndex >= _subnets.Count )
-      _selectedIndex = Math.Max( 0, _subnets.Count - 1 );
+    /*if ( _selectedIndex >= _subnets.Count )
+      _selectedIndex = Math.Max( 0, _subnets.Count - 1 );*/
   }
 
   public async ValueTask DisposeAsync() {

@@ -1,7 +1,9 @@
+using Drift.Domain;
+
 namespace Drift.Cli.Commands.Scan.Interactive.Models;
 
 internal class Subnet {
-  public required string Address {
+  public required CidrBlock Cidr {
     get;
     set;
   }

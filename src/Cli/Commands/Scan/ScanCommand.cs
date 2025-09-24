@@ -8,11 +8,11 @@ using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Logging;
 using Drift.Cli.Renderer;
-using Drift.Core.Scan.Subnets;
-using Drift.Core.Scan.Subnets.Interface;
+using Drift.Common;
 using Drift.Domain;
 using Drift.Domain.Scan;
-using Drift.Utils;
+using Drift.Scanning.Subnets;
+using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 

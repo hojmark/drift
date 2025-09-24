@@ -3,18 +3,18 @@ using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Logging;
-using Drift.Core.Scan.Subnets;
-using Drift.Core.Scan.Subnets.Interface;
-using Drift.Core.Scan.Tests.Utils;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Scan;
+using Drift.Scanning.Subnets;
+using Drift.Scanning.Subnets.Interface;
+using Drift.Scanning.Tests.Utils;
 using Drift.Spec.Schema;
 using Drift.Spec.Validation;
 using Drift.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using NetworkInterface = Drift.Core.Scan.Subnets.Interface.NetworkInterface;
+using NetworkInterface = Drift.Scanning.Subnets.Interface.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 

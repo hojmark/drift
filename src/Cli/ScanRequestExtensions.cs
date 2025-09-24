@@ -1,6 +1,6 @@
+using Drift.Common;
 using Drift.Domain;
 using Drift.Domain.Scan;
-using Drift.Utils;
 
 namespace Drift.Cli;
 

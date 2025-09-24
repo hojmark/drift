@@ -35,9 +35,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.Tests", "src\Domain.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "_build", "build\_build.csproj", "{8523E9E0-F412-41B7-B361-ADE639FFAF24}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "src\Utils\Utils.csproj", "{44BA8865-6D42-4D14-8199-EE660EAE87CB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "src\Common\Common.csproj", "{44BA8865-6D42-4D14-8199-EE660EAE87CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils.Tests", "src\Utils.Tests\Utils.Tests.csproj", "{004FE90A-E749-4C17-B7B7-B529AA0F5F34}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Tests", "src\Common.Tests\Common.Tests.csproj", "{004FE90A-E749-4C17-B7B7-B529AA0F5F34}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.E2ETests", "src\Cli.E2ETests\Cli.E2ETests.csproj", "{11F44BDE-0563-4C64-BE3C-9E7B69F89E12}"
 EndProject
@@ -47,9 +47,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spec.SchemaGenerator.Cli", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchTests", "src\ArchTests\ArchTests.csproj", "{E6DFCDB4-BFE2-4A30-91CB-9F2CBFFDED24}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Scan", "src\Core.Scan\Core.Scan.csproj", "{9DCB7B29-E8A2-45C2-9EAD-FE3B02F8DC3B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scanning", "src\Scanning\Scanning.csproj", "{9DCB7B29-E8A2-45C2-9EAD-FE3B02F8DC3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Scan.Tests", "src\Core.Scan.Tests\Core.Scan.Tests.csproj", "{B52EA4A2-8D92-4575-8632-A438805BB4F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scanning.Tests", "src\Scanning.Tests\Scanning.Tests.csproj", "{B52EA4A2-8D92-4575-8632-A438805BB4F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -8,8 +8,11 @@ internal class Subnet {
 
   public required List<Device> Devices {
     get;
-    set;
+    init;
   }
-  
-  public bool IsExpanded { get; set; } = true;
+
+  public bool IsExpanded {
+    get;
+    set;
+  } = true;
 }

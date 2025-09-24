@@ -53,10 +53,10 @@ internal class InteractiveUi : IAsyncDisposable {
     _logReader = new LogReader( _outputManager );
     _logReader.LogUpdated += OnLogUpdated;
 
-    SubnetViewport = new SubnetView( () => _layout.GetAvailableRows() );
+    SubnetView = new SubnetView( () => _layout.GetAvailableRows() );
   }
 
-  private SubnetView SubnetViewport {
+  private SubnetView SubnetView {
     get;
     set;
   }
@@ -116,13 +116,9 @@ internal class InteractiveUi : IAsyncDisposable {
       _layout.SetLog( _logBuilder.ToString() );
     }
 
-    SubnetViewport.Subnets = _subnets;
-
-    // Debug information (remove after fixing)
-    _layout.SetDebug( SubnetViewport.DebugData );
-
-    _layout.SetScanTree( SubnetViewport );
-
+    SubnetView.Subnets = _subnets;
+    _layout.SetDebug( SubnetView.DebugData );
+    _layout.SetScanTree( SubnetView );
     _layout.SetProgress( _progress );
   }
 
@@ -134,34 +130,32 @@ internal class InteractiveUi : IAsyncDisposable {
         _running.Cancel();
         break;
       case UiAction.ScrollUp:
-        SubnetViewport.ScrollOffset -= ScrollAmount;
+        SubnetView.ScrollOffset -= ScrollAmount;
         break;
       case UiAction.ScrollDown:
-        SubnetViewport.ScrollOffset += ScrollAmount;
+        SubnetView.ScrollOffset += ScrollAmount;
         break;
       case UiAction.ScrollUpPage:
-        SubnetViewport.ScrollOffset -= (int) _layout.GetAvailableRows();
+        SubnetView.ScrollOffset -= (int) _layout.GetAvailableRows();
         break;
       case UiAction.ScrollDownPage:
-        SubnetViewport.ScrollOffset += (int) _layout.GetAvailableRows();
+        SubnetView.ScrollOffset += (int) _layout.GetAvailableRows();
         break;
       case UiAction.MoveUp:
-        SubnetViewport.SelectPrevious();
+        SubnetView.SelectPrevious();
         break;
       case UiAction.MoveDown:
-        SubnetViewport.SelectNext();
+        SubnetView.SelectNext();
         break;
       case UiAction.ToggleSubnet:
-        SubnetViewport.ToggleSelected();
+        SubnetView.ToggleSelected();
         break;
       case UiAction.RestartScan:
         _subnets.Clear();
         StartScanAsync();
         //TODO wrap below two statements in lock
-        _restartSignal?.SetResult();
+        _restartSignal.SetResult();
         _restartSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        //_selectedIndex = 0;
-        //_scrollOffset = 0;
         break;
       case UiAction.ToggleLog:
         _layout.ShowLogs = !_layout.ShowLogs;
@@ -180,30 +174,29 @@ internal class InteractiveUi : IAsyncDisposable {
       _progress = scanResult.Progress;
 
       var currentSubnets = scanResult.Subnets
-        .Select( kvp => new Subnet {
-          Cidr = kvp.CidrBlock,
-          Devices = kvp.DiscoveredDevices.Select( dd =>
+        .Select( subnet => new Subnet {
+          Cidr = subnet.CidrBlock,
+          Devices = subnet.DiscoveredDevices.Select( device =>
             new Device {
-              Ip = dd.Get( AddressType.IpV4 ) ?? "n/a", Mac = dd.Get( AddressType.Mac ) ?? "n/a", IsOnline = true
+              Ip = device.Get( AddressType.IpV4 ) ?? "n/a",
+              Mac = device.Get( AddressType.Mac ) ?? "n/a",
+              IsOnline = true
             } ).ToList()
         } ).ToList();
 
-      // Same logic as before, but triggered by events
-      var existingSubnetsMap = _subnets.ToDictionary( s => s.Cidr );
-      var updatedUiSubnets = new List<Subnet>();
+      var existing = _subnets.ToDictionary( s => s.Cidr );
+      var updated = new List<Subnet>();
 
       foreach ( var subnet in currentSubnets ) {
-        if ( existingSubnetsMap.TryGetValue( subnet.Cidr, out var existingUiSubnet ) ) {
-          subnet.IsExpanded = existingUiSubnet.IsExpanded;
-          updatedUiSubnets.Add( subnet );
+        if ( existing.TryGetValue( subnet.Cidr, out var existingSubnet ) ) {
+          subnet.IsExpanded = existingSubnet.IsExpanded;
         }
-        else {
-          updatedUiSubnets.Add( subnet );
-        }
+
+        updated.Add( subnet );
       }
 
       _subnets.Clear();
-      _subnets.AddRange( updatedUiSubnets );
+      _subnets.AddRange( updated );
     }
   }
 
@@ -211,7 +204,6 @@ internal class InteractiveUi : IAsyncDisposable {
     _scanner.ResultUpdated -= OnScanResultUpdated;
     _running.Dispose();
     await _inputWatcher.DisposeAsync();
-
     _logReader.LogUpdated -= OnLogUpdated;
   }
 }

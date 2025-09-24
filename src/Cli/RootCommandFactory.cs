@@ -7,10 +7,10 @@ using Drift.Cli.Commands.Scan;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Logging;
-using Drift.Core.Scan;
-using Drift.Core.Scan.Scanners;
-using Drift.Core.Scan.Subnets.Interface;
 using Drift.Domain.Scan;
+using Drift.Scanning;
+using Drift.Scanning.Scanners;
+using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli;
@@ -107,7 +107,7 @@ internal static class RootCommandFactory {
 
   private static void ConfigureNetworkScanner( IServiceCollection services ) {
     services.AddSingleton<IPingTool, LinuxPingTool>();
-    services.AddScoped<ISubnetScannerProvider, DefaultSubnetScannerProvider>();
+    services.AddScoped<SubnetScannerFactory>();
     services.AddScoped<INetworkScanner, DefaultNetworkScanner>();
   }
 

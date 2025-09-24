@@ -5,19 +5,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Cli\Cli.csproj"/>
-        <ProjectReference Include="..\Scanning.Tests\Scanning.Tests.csproj" />
-        <ProjectReference Include="..\TestUtilities\TestUtilities.csproj"/>
+        <ProjectReference Include="..\Common\Common.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-        <PackageReference Include="NSubstitute"/>
         <PackageReference Include="NUnit"/>
         <PackageReference Include="NUnit.Analyzers"/>
         <PackageReference Include="NUnit3TestAdapter"/>
-        <PackageReference Include="Verify.NUnit"/>
-        <PackageReference Include="IPNetwork2" VersionOverride="3.4.832"/>
     </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
 using Drift.Cli.E2ETests.Utils;
-using Drift.Utils;
+using Drift.Common;
 
 namespace Drift.Cli.E2ETests;
 

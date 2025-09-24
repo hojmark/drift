@@ -42,7 +42,6 @@ internal static class NormalOutputExtensions {
     }
   }
 
-
   internal static bool PromptBool( this INormalOutput console, string question, PromptOption defaultOption ) {
     var options = defaultOption == PromptOption.Yes ? "Y/n" : "y/N";
     while ( true ) {

@@ -4,31 +4,36 @@ using Drift.TestUtilities;
 namespace Drift.Spec.Tests;
 
 internal sealed class ValidationTests {
-  [TestCase( 1,
+  [TestCase(
+    1,
     """
 
     """,
     "/: Required properties [\"version\",\"network\"] are not present"
   )]
-  [TestCase( 2,
+  [TestCase(
+    2,
     """
     # Empty
     """,
     "/: Required properties [\"version\",\"network\"] are not present"
   )]
-  [TestCase( 3,
+  [TestCase(
+    3,
     """
     settings:
     """,
     "/: Required properties [\"version\",\"network\"] are not present"
   )]
-  [TestCase( 4,
+  [TestCase(
+    4,
     """
     version: v1-preview
     """,
     "/: Required properties [\"network\"] are not present"
   )]
-  [TestCase( 5,
+  [TestCase(
+    5,
     """
     version: invalid-version
     """,
@@ -58,7 +63,8 @@ internal sealed class ValidationTests {
       subnets:
     """,
     "/network: Required properties [\"subnets\"] are not present" )]*/
-  [TestCase( 6,
+  [TestCase(
+    6,
     """
     version: v1-preview
     network:
@@ -68,7 +74,8 @@ internal sealed class ValidationTests {
     """,
     "/network/subnets/0: Required properties [\"address\"] are not present"
   )]
-  [TestCase( 7,
+  [TestCase(
+    7,
     """
     version: invalid-version
     network:
@@ -92,7 +99,8 @@ internal sealed class ValidationTests {
     Console.WriteLine( result.ToString() );
   }
 
-  [TestCase( 1,
+  [TestCase(
+    1,
     """
     version: v1-preview
     network:
@@ -101,7 +109,8 @@ internal sealed class ValidationTests {
         - id: my-subnet
           address: 192.168.0.100/24
     """ )]
-  [TestCase( 2,
+  [TestCase(
+    2,
     """
     version: "v1-preview"
     network:
@@ -110,7 +119,8 @@ internal sealed class ValidationTests {
         - id: "my-subnet"
           address: "100.100.100.100/16"
     """ )]
-  [TestCase( 3,
+  [TestCase(
+    3,
     """
     version: v1-preview
     network:

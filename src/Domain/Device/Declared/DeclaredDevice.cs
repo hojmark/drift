@@ -23,7 +23,6 @@ public record DeclaredDevice : IAddressableDevice {
     set;
   } = DeclaredDeviceState.Up;
 
-
   public List<Port>? Ports {
     get;
     set;

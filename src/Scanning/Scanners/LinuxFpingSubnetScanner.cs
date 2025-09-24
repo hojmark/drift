@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Runtime.Versioning;
 using Drift.Common;
@@ -15,7 +16,7 @@ internal sealed class LinuxFpingSubnetScanner : ISubnetScanner {
 
   public async Task<SubnetScanResult> ScanAsync(
     SubnetScanOptions options,
-    ILogger? logger = null,
+    ILogger logger,
     CancellationToken cancellationToken = default
   ) {
     var ipRange = IPNetwork2
@@ -26,18 +27,25 @@ internal sealed class LinuxFpingSubnetScanner : ISubnetScanner {
 
     var startedAt = DateTime.Now;
 
+    var stopwatch = new Stopwatch();
+    stopwatch.Start();
+
     var pingInterval = 1000 / options.PingsPerSecond;
 
     var discoveredDevices = new List<DiscoveredDevice>();
 
     var pingTool = new ToolWrapper( "fping" );
     pingTool.OutputDataReceived += ( _, args ) => {
-      if ( string.IsNullOrEmpty( args.Data ) ) return;
+      if ( string.IsNullOrEmpty( args.Data ) ) {
+        return;
+      }
+
       discoveredDevices.Add( new DiscoveredDevice { Addresses = [new IpV4Address( args.Data )] } );
-      var elapsed = DateTime.Now - startedAt;
+      var elapsed = stopwatch.Elapsed;
       var estimatedScanned = elapsed.TotalSeconds * options.PingsPerSecond;
       var progress = Math.Min( 99, Math.Ceiling( ( estimatedScanned / ipRange.Count ) * 100 ) );
-      ResultUpdated?.Invoke( this,
+      ResultUpdated?.Invoke(
+        this,
         new SubnetScanResult {
           Metadata = new Metadata { StartedAt = startedAt },
           CidrBlock = options.Cidr,
@@ -54,8 +62,8 @@ internal sealed class LinuxFpingSubnetScanner : ISubnetScanner {
     );
 
     if ( fping.ExitCode != 0 ) {
-      //TODO
-      //logger?.LogError( fping.ErrOut );
+      // TODO
+      // logger?.LogError( fping.ErrOut );
     }
 
     var result = new SubnetScanResult {

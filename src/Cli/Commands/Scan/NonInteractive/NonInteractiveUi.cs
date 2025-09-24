@@ -14,6 +14,26 @@ using Spectre.Console;
 namespace Drift.Cli.Commands.Scan.NonInteractive;
 
 internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner scanner ) {
+  // TODO make private
+  internal static void UpdateProgressDebounced(
+    Percentage progress,
+    Action<Percentage> output,
+    ref DateTime lastLogTime
+  ) {
+    var now = DateTime.UtcNow;
+    bool shouldLog = ( now - lastLogTime ).TotalSeconds >= 1 ||
+                     // Always log start/end
+                     progress == Percentage.Zero ||
+                     progress == Percentage.Hundred;
+
+    if ( !shouldLog ) {
+      return;
+    }
+
+    output( progress );
+    lastLogTime = now;
+  }
+
   internal async Task<int> RunAsync(
     NetworkScanOptions scanRequest,
     Network? network,
@@ -69,7 +89,7 @@ internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner s
     if ( output.Is( OutputFormat.Log ) ) {
       var lastLogTime = DateTime.MinValue;
 
-      //TODO refactor to PerformScan like in InitCommand
+      // TODO refactor to PerformScan like in InitCommand
 
       EventHandler<NetworkScanResult> updater = ( _, r ) => {
         UpdateProgressDebounced(
@@ -89,25 +109,5 @@ internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner s
     }
 
     throw new NotImplementedException();
-  }
-
-  //TODO make private
-  internal static void UpdateProgressDebounced(
-    Percentage progress,
-    Action<Percentage> output,
-    ref DateTime lastLogTime
-  ) {
-    var now = DateTime.UtcNow;
-    bool shouldLog = ( now - lastLogTime ).TotalSeconds >= 1 ||
-                     // Always log start/end
-                     progress == Percentage.Zero ||
-                     progress == Percentage.Hundred;
-
-    if ( !shouldLog ) {
-      return;
-    }
-
-    output( progress );
-    lastLogTime = now;
   }
 }

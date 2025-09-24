@@ -7,7 +7,7 @@ internal sealed class KeyMapTests {
   [Test]
   public void AllUiActions_ShouldBeMapped_ByDefaultKeymap() {
     var keymap = new DefaultKeyMap();
-    var allConsoleKeys = Enum.GetValues<ConsoleKey>().Cast<ConsoleKey>();
+    var allConsoleKeys = Enum.GetValues<ConsoleKey>();
 
     var mappedActions = allConsoleKeys
       .Select( key => keymap.Map( key ) )

@@ -2,8 +2,20 @@ using Spectre.Console;
 
 namespace Drift.Cli.Presentation.Console.Managers.Abstractions;
 
-internal partial interface INormalOutput {
-  #region Verbose
+internal interface INormalOutput {
+  public void WriteVeryVerbose(
+    string text,
+    ConsoleColor? foreground = ConsoleColor.DarkGray,
+    ConsoleColor? background = null
+  );
+
+  public void WriteLineVeryVerbose();
+
+  public void WriteLineVeryVerbose(
+    string text,
+    ConsoleColor? foreground = ConsoleColor.DarkGray,
+    ConsoleColor? background = null
+  );
 
   public void WriteVerbose(
     string text,
@@ -18,10 +30,6 @@ internal partial interface INormalOutput {
     ConsoleColor? foreground = ConsoleColor.DarkGray,
     ConsoleColor? background = null
   );
-
-  #endregion
-
-  #region Info
 
   public void Write(
     string text,
@@ -51,13 +59,6 @@ internal partial interface INormalOutput {
     ConsoleColor? background = null
   );
 
-  #endregion
-
-  //TODO move note
-  // Note: warnings go to std out
-
-  #region Warning
-
   public void WriteWarning(
     string text,
     ConsoleColor? foreground = ConsoleColor.Yellow,
@@ -71,13 +72,6 @@ internal partial interface INormalOutput {
     ConsoleColor? foreground = ConsoleColor.Yellow,
     ConsoleColor? background = null
   );
-
-  #endregion
-
-  //TODO move note
-  // Note: errors go to err out
-
-  #region Error
 
   public void WriteError(
     string text,
@@ -93,11 +87,5 @@ internal partial interface INormalOutput {
     ConsoleColor? background = null
   );
 
-  #endregion
-
-  #region AnsiConsole
-
   IAnsiConsole GetAnsiConsole();
-
-  #endregion
 }

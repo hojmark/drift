@@ -14,5 +14,6 @@ public class WriterReaderBridge {
   }
 
   public TextWriter Writer => _writer;
+
   public TextReader Reader => _reader;
 }

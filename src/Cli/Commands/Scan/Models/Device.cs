@@ -24,8 +24,9 @@ internal class Device {
     init;
   }
 
-  public string Note {
+  // TODO e.g. "Last seen 5 hours ago""
+  /*public string Note {
     get;
     init;
-  } //TODO e.g. "Last seen 5 hours ago""
+  } */
 }

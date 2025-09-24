@@ -28,7 +28,7 @@ internal class InventoryCommand : Command {
     Subcommands.Add( diffCmd );
 
     var showCmd =
-      new Command( "show", "Show full detail for a specific resource by ID, name, or IP." ); //TODO at least by ID...
+      new Command( "show", "Show full detail for a specific resource by ID, name, or IP." ); // TODO at least by ID...
     showCmd.Arguments.Add( new Argument<string>( "resource-id"
     ) { Description = "The ID of the resource to show." } ); // Note: resource id != device id
   }

@@ -6,8 +6,9 @@ namespace Drift.Common;
 
 public class ToolWrapper( string toolPath, Dictionary<string, string?>? environment = null ) {
   private readonly string _toolPath = toolPath ?? throw new ArgumentNullException( nameof(toolPath) );
-  
+
   public event DataReceivedEventHandler? OutputDataReceived;
+
   public event DataReceivedEventHandler? ErrorDataReceived;
 
   public async Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> ExecuteAsync(

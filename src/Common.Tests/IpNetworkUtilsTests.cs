@@ -5,7 +5,7 @@ using Drift.Domain;
 namespace Drift.Common.Tests;
 
 internal sealed class IpNetworkUtilsTests {
-  //TODO test all cases - there's not that many
+  // TODO test all cases - there's not that many
   [TestCase( "0.0.0.0", 0 )]
   [TestCase( "128.0.0.0", 1 )]
   [TestCase( "255.0.0.0", 8 )]
@@ -26,11 +26,10 @@ internal sealed class IpNetworkUtilsTests {
     Assert.That( subnet, Is.EqualTo( IPAddress.Parse( mask ) ) );
   }
 
-
   // TODO revise implementation, the three largest ranges take a long time
-  //[TestCase( "0.0.0.0", 4294967296L, 4294967294L )]
-  //[TestCase( "128.0.0.0", 2147483648L, 2147483646L )]
-  //[TestCase( "255.0.0.0", 16777216L, 16777214L )]
+  // [TestCase( "0.0.0.0", 4294967296L, 4294967294L )]
+  // [TestCase( "128.0.0.0", 2147483648L, 2147483646L )]
+  // [TestCase( "255.0.0.0", 16777216L, 16777214L )]
   [TestCase( "255.255.0.0", 65536L, 65534L )]
   [TestCase( "255.255.255.0", 256L, 254L )]
   [TestCase( "255.255.255.128", 128L, 126L )]
@@ -56,6 +55,5 @@ internal sealed class IpNetworkUtilsTests {
     }
   }
 
-
-  //TODO test other methods
+  // TODO test other methods
 }

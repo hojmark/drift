@@ -1,9 +1,6 @@
 namespace Drift.Cli.Presentation.Console.Managers.Outputs;
 
 internal partial class NormalOutput {
-  // Use of banned Console APIs is OK. Main point is to centralize usage to this class.
-#pragma warning disable RS0030
-
   public void WriteVeryVerbose(
     string text,
     ConsoleColor? foreground = ConsoleColor.DarkGray,
@@ -29,6 +26,4 @@ internal partial class NormalOutput {
       WriteLineInternal( stdOut, 0, text, foreground, background );
     }
   }
-
-#pragma warning restore RS0030
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Drift.Diff.Domain;
@@ -15,14 +16,14 @@ namespace Drift.Diff.Tests;
 internal sealed class DiffTest {
   private static readonly NetworkScanResult ScanResult1 = new() {
     Metadata = new Metadata {
-      StartedAt = DateTime.Parse( "2025-04-24T12:20:08.4219405+02:00" ).ToUniversalTime(),
-      EndedAt = DateTime.Parse( "2023-01-01" )
+      StartedAt = DateTime.Parse( "2025-04-24T12:20:08.4219405+02:00", CultureInfo.InvariantCulture ).ToUniversalTime(),
+      EndedAt = DateTime.Parse( "2023-01-01", CultureInfo.InvariantCulture )
     },
     Status = ScanResultStatus.Success,
     Subnets = [
       new SubnetScanResult {
         CidrBlock = new CidrBlock( "192.168.0.0/24" ),
-        Metadata = null,
+        Metadata = new Metadata { StartedAt = default, EndedAt = default },
         Status = ScanResultStatus.Success,
         DiscoveredDevices = [
           new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
@@ -39,14 +40,14 @@ internal sealed class DiffTest {
 
   private static readonly NetworkScanResult ScanResult2 = new() {
     Metadata = new Metadata {
-      StartedAt = DateTime.Parse( "2025-04-24T12:20:08.4219405+02:00" ).ToUniversalTime(),
-      EndedAt = DateTime.Parse( "2023-01-01" )
+      StartedAt = DateTime.Parse( "2025-04-24T12:20:08.4219405+02:00", CultureInfo.InvariantCulture ).ToUniversalTime(),
+      EndedAt = DateTime.Parse( "2023-01-01", CultureInfo.InvariantCulture )
     },
     Status = ScanResultStatus.Success,
     Subnets = [
       new SubnetScanResult {
         CidrBlock = new CidrBlock( "192.168.0.0/24" ),
-        Metadata = null,
+        Metadata = new Metadata { StartedAt = default, EndedAt = default },
         Status = ScanResultStatus.Success,
         DiscoveredDevices = [
           new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
@@ -85,11 +86,10 @@ internal sealed class DiffTest {
     );
 
     // Assert
-    //Print( diffs );
+    // Print( diffs );
     var diffsAsJson = JsonConverter.Serialize( diffs );
     return Verify( diffsAsJson );
   }
-
 
   [Test]
   public Task IpAsKeySelectorTest() {
@@ -125,7 +125,7 @@ internal sealed class DiffTest {
 
     var updated = new List<DiscoveredDevice> {
       new() { Addresses = [new IpV4Address( "192.168.0.10" )] },
-      //  new() { Addresses = [new IPv4Address( "192.168.0.21" ), new MacAddress( "DEF" )], Ports = [22, 443, 80] },
+      // new() { Addresses = [new IPv4Address( "192.168.0.21" ), new MacAddress( "DEF" )], Ports = [22, 443, 80] },
       // new() { Addresses = [new IPv4Address( "192.168.0.150" )] }
     }.ToDiffDevices();
 
@@ -153,7 +153,7 @@ internal sealed class DiffTest {
 
     var updated = new List<DiscoveredDevice> {
       new() { Addresses = [new IpV4Address( "192.168.0.10" )] },
-      //  new() { Addresses = [new IPv4Address( "192.168.0.21" ), new MacAddress( "DEF" )], Ports = [22, 443, 80] },
+      // new() { Addresses = [new IPv4Address( "192.168.0.21" ), new MacAddress( "DEF" )], Ports = [22, 443, 80] },
       // new() { Addresses = [new IPv4Address( "192.168.0.150" )] }
     }.ToDiffDevices();
 
@@ -174,13 +174,13 @@ internal sealed class DiffTest {
       .SetDiffTypesAll();
 
     var original = new List<DiscoveredDevice> {
-      //new() { Addresses = [new IPv4Address( "192.168.0.10" )] },
+      // new() { Addresses = [new IPv4Address( "192.168.0.10" )] },
       new() { Addresses = [new IpV4Address( "192.168.0.21" )], Ports = [443, 80] },
       // new() { Addresses = [new IPv4Address( "192.168.0.22" ), new MacAddress( "abcdefghijklmnopqrstu" )] }
     }.ToDiffDevices();
 
     var updated = new List<DiscoveredDevice> {
-      //new() { Addresses = [new IPv4Address( "192.168.0.10" )] },
+      // new() { Addresses = [new IPv4Address( "192.168.0.10" )] },
       new() { Addresses = [new IpV4Address( "192.168.0.21" )], Ports = [22, 443, 80] },
       // new() { Addresses = [new IPv4Address( "192.168.0.150" )] }
     }.ToDiffDevices();
@@ -231,12 +231,11 @@ internal sealed class DiffTest {
 
     var original = declaredDevices.ToDiffDevices();
     var updated = discoveredDevices.ToDiffDevices();
+    var options = new DiffOptions { IgnorePaths = ["Device[*].Addresses[*].Required"] }
+      .ConfigureDiffDeviceKeySelectors( declaredDevices )
+      .SetDiffTypesAll();
 
-    var diffs = ObjectDiffEngine.Compare( original, updated, "Device",
-      new DiffOptions { IgnorePaths = ["Device[*].Addresses[*].Required"] }
-        .ConfigureDiffDeviceKeySelectors( declaredDevices )
-        .SetDiffTypesAll()
-    );
+    var diffs = ObjectDiffEngine.Compare( original, updated, "Device", options );
 
     Print( diffs );
     var diffsAsJson = JsonConverter.Serialize( diffs );
@@ -250,11 +249,14 @@ internal sealed class DiffTest {
   }
 
   private sealed class IpAddressConverter : JsonConverter<System.Net.IPAddress> {
-    public override System.Net.IPAddress Read( ref Utf8JsonReader reader, Type typeToConvert,
-      JsonSerializerOptions options ) {
+    public override System.Net.IPAddress Read(
+      ref Utf8JsonReader reader,
+      Type typeToConvert,
+      JsonSerializerOptions options
+    ) {
       string? ip = reader.GetString();
       var ipAddress = ( ip == null ) ? null : System.Net.IPAddress.Parse( ip );
-      return ipAddress ?? throw new Exception( "Cannot read" ); //System.Net.IPAddress.None;
+      return ipAddress ?? throw new Exception( "Cannot read" ); // System.Net.IPAddress.None;
     }
 
     public override void Write( Utf8JsonWriter writer, System.Net.IPAddress value, JsonSerializerOptions options ) {

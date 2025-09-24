@@ -11,12 +11,12 @@ public class DefaultNetworkScanner( ISubnetScannerFactory subnetScannerFactory )
 
   public async Task<NetworkScanResult> ScanAsync(
     NetworkScanOptions options,
-    ILogger? logger = null,
+    ILogger logger,
     CancellationToken cancellationToken = default
   ) {
     var startedAt = DateTime.Now;
 
-    logger?.LogDebug( "Starting network scan at {StartedAt}", startedAt.ToString( CultureInfo.InvariantCulture ) );
+    logger.LogDebug( "Starting network scan at {StartedAt}", startedAt.ToString( CultureInfo.InvariantCulture ) );
 
     var subnetScanners = CreateScanners( options ); // TODO create scanner tasks that encapsulates logic better
     var subnetIntermediateResults = new ConcurrentDictionary<CidrBlock, SubnetScanResult>();
@@ -51,9 +51,10 @@ public class DefaultNetworkScanner( ISubnetScannerFactory subnetScannerFactory )
       Subnets = subnetScanTasks.Select( t => t.Result ).ToList()
     };
 
-    ResultUpdated?.Invoke( null, result );
+    ResultUpdated?.Invoke( this, result );
 
-    logger?.LogDebug( "Finished network scan at {StartedAt} in {Elapsed}",
+    logger?.LogDebug(
+      "Finished network scan at {StartedAt} in {Elapsed}",
       finishedAt.ToString( CultureInfo.InvariantCulture ),
       elapsed
     );
@@ -66,7 +67,7 @@ public class DefaultNetworkScanner( ISubnetScannerFactory subnetScannerFactory )
     ISubnetScanner scanner,
     uint pingsPerSecond,
     Action<SubnetScanResult> onProgress,
-    ILogger? logger,
+    ILogger logger,
     CancellationToken cancellationToken
   ) {
     void Handler( object? sender, SubnetScanResult result ) => onProgress( result );
@@ -105,9 +106,8 @@ public class DefaultNetworkScanner( ISubnetScannerFactory subnetScannerFactory )
       Subnets = subnetResults.ToList()
     };
 
-    ResultUpdated?.Invoke( null, inProgressResult );
+    ResultUpdated?.Invoke( this, inProgressResult );
   }
-
 
   private List<(CidrBlock Cidr, ISubnetScanner Scanner)> CreateScanners( NetworkScanOptions options ) {
     return options.Cidrs

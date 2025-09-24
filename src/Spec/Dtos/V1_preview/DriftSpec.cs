@@ -5,12 +5,15 @@ namespace Drift.Spec.Dtos.V1_preview;
 
 [Title( "Drift spec schema" )]
 [Description( "JSON schema for validating Drift specs" )]
-[AdditionalProperties( false )] //TODO set to false
-//TODO rename to DriftSpecV1Preview?
+[AdditionalProperties( false )] // TODO set to false
+// TODO rename to DriftSpecV1Preview?
 public record DriftSpec {
   [property: Const(
+    // Jusification: formatting issue
+#pragma warning disable SA1114
     // TODO both spec and mapper should get version constant from elsewhere
     Mapper.VersionConstant
+#pragma warning restore SA1114
   )]
   [property: Required]
   public string Version {
@@ -31,8 +34,8 @@ public record DriftSpec {
   }*/
 }
 
-//[Title( "Network declaration" )]
-[AdditionalProperties( false )] //TODO set to false
+// [Title( "Network declaration" )]
+[AdditionalProperties( false )] // TODO set to false
 public record Network {
   public List<Subnet>? Subnets {
     get;

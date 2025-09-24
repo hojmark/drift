@@ -3,7 +3,7 @@ using YamlDotNet.Serialization;
 namespace Drift.Spec.Serialization;
 
 [YamlStaticContext]
-//TODO rely on attributes on the individual types instead?
+// TODO rely on attributes on the individual types instead?
 [YamlSerializable( typeof(Dtos.V1_preview.DriftSpec) )]
 [YamlSerializable( typeof(Dtos.V1_preview.Network) )]
 [YamlSerializable( typeof(Dtos.V1_preview.Subnet) )]

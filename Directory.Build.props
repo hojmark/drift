@@ -6,8 +6,23 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <!-- TODO valdiate approach
+    Make sure any documentation comments which are included in code get checked for syntax during the build, but do
+    not report warnings for missing comments.
+    
+    CS1573: Parameter 'parameter' has no matching param tag in the XML comment for 'parameter' (but other parameters do)
+    CS1591: Missing XML comment for publicly visible type or member 'Type_or_Member'
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PublishDocumentationFile>false</PublishDocumentationFile>
+    <NoWarn>$(NoWarn);CS1573;CS1591;SA1601;SA1611;SA1615</NoWarn>
     <!-- TODO try to enable
     <AnalysisMode>All</AnalysisMode>
     -->
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" />
+    <PackageReference Include="SonarAnalyzer.CSharp" />
+  </ItemGroup>
 </Project>

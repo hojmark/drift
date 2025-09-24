@@ -3,8 +3,8 @@
 namespace Drift.Domain;
 
 public record Network {
-  //TODO required?
-  public NetworkId Id {
+  // TODO required?
+  public NetworkId? Id {
     get;
     set;
   }

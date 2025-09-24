@@ -4,9 +4,9 @@ using Drift.Domain.Device.Addresses;
 
 namespace Drift.Diff.Domain;
 
-//TODO reintroduce outcommented plus configure diffengine:
-//diffEngine.IgnoreProperty<DeviceForDiff>(d => d.Id);
-//diffEngine.IgnoreProperty<DeviceForDiff>(d => d.Origin);
+// TODO reintroduce outcommented plus configure diffengine:
+// diffEngine.IgnoreProperty<DeviceForDiff>(d => d.Id);
+// diffEngine.IgnoreProperty<DeviceForDiff>(d => d.Origin);
 public record DiffDevice : IAddressableDevice {
   /*public string? Id {
     get;

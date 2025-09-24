@@ -1,8 +1,14 @@
+using System.Diagnostics.CodeAnalysis;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Spectre.Console;
 
 namespace Drift.Cli.Presentation.Console.Managers.Outputs;
 
+[SuppressMessage(
+  "ApiDesign",
+  "RS0030:Do not use banned APIs",
+  Justification = "Main point is to centralize usage of the banned APIs to this class"
+)]
 internal partial class NormalOutput(
   TextWriter stdOut,
   TextWriter errOut,
@@ -10,137 +16,8 @@ internal partial class NormalOutput(
   bool verbose = false,
   bool veryVerbose = false
 ) : INormalOutput {
-  //TODO test
-  private static bool markupOutput = false;
-
-  // Use of banned Console APIs is OK. Main point is to centralize usage to this class.
-#pragma warning disable RS0030
-
-  #region Verbose
-
-  public void WriteVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
-  ) {
-    if ( verbose ) {
-      WriteInternal( stdOut, 0, text, foreground, background );
-    }
-  }
-
-  public void WriteLineVerbose() {
-    if ( verbose ) {
-      stdOut.WriteLine();
-    }
-  }
-
-  public void WriteLineVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
-  ) {
-    if ( verbose ) {
-      WriteLineInternal( stdOut, 0, text, foreground, background );
-    }
-  }
-
-  #endregion
-
-  #region Info
-
-  public void Write(
-    string text,
-    ConsoleColor? foreground = null,
-    ConsoleColor? background = null
-  ) {
-    WriteInternal( stdOut, 0, text, foreground, background );
-  }
-
-  public void Write(
-    int level,
-    string text,
-    ConsoleColor? foreground = null,
-    ConsoleColor? background = null
-  ) {
-    WriteInternal( stdOut, level, text, foreground, background );
-  }
-
-  public void WriteLine() {
-    stdOut.WriteLine();
-  }
-
-  public void WriteLine(
-    string text,
-    ConsoleColor? foreground = null,
-    ConsoleColor? background = null
-  ) {
-    WriteLineInternal( stdOut, 0, text, foreground, background );
-  }
-
-  public void WriteLine(
-    int level,
-    string text,
-    ConsoleColor? foreground = null,
-    ConsoleColor? background = null
-  ) {
-    WriteLineInternal( stdOut, level, text, foreground, background );
-  }
-
-  #endregion
-
-  // Note: warnings go to std out
-
-  #region Warning
-
-  public void WriteWarning(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.Yellow,
-    ConsoleColor? background = null
-  ) {
-    WriteInternal( stdOut, 0, text, foreground, background );
-  }
-
-  public void WriteLineWarning() {
-    stdOut.WriteLine();
-  }
-
-  public void WriteLineWarning(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.Yellow,
-    ConsoleColor? background = null
-  ) {
-    WriteLineInternal( stdOut, 0, text, foreground, background );
-  }
-
-  #endregion
-
-  // Note: errors go to err out
-
-  #region Error
-
-  public void WriteError(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.Red,
-    ConsoleColor? background = null
-  ) {
-    WriteInternal( errOut, 0, text, foreground, background );
-  }
-
-  public void WriteLineError() {
-    errOut.WriteLine();
-  }
-
-  public void WriteLineError(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.Red,
-    ConsoleColor? background = null
-  ) {
-    WriteLineInternal( errOut, 0, text, foreground, background );
-  }
-
-  #endregion
-
-  #region AnsiConsole
+  // TODO test
+  private const bool MarkupOutput = false;
 
   public IAnsiConsole GetAnsiConsole() {
     var settings = new AnsiConsoleSettings { Out = new AnsiConsoleOutput( stdOut ) };
@@ -155,11 +32,6 @@ internal partial class NormalOutput(
     return customAnsiConsole;
   }
 
-  #endregion
-
-
-  # region COMMON
-
   private static void WriteInternal(
     TextWriter textWriter,
     int level,
@@ -169,14 +41,20 @@ internal partial class NormalOutput(
   ) {
     textWriter.Write( new string( ' ', level * 2 ) );
 
-    if ( foreground.HasValue ) System.Console.ForegroundColor = foreground.Value;
-    if ( background.HasValue ) System.Console.BackgroundColor = background.Value;
+    if ( foreground.HasValue ) {
+      System.Console.ForegroundColor = foreground.Value;
+    }
+
+    if ( background.HasValue ) {
+      System.Console.BackgroundColor = background.Value;
+    }
 
     textWriter.Write( text );
 
     System.Console.ResetColor();
   }
 
+#pragma warning disable CS0162 // Unreachable code detected
   private static void WriteLineInternal(
     TextWriter textWriter,
     int level,
@@ -185,25 +63,42 @@ internal partial class NormalOutput(
     ConsoleColor? background = null
   ) {
     var lines = text.Split( '\n' );
-    if ( lines[^1] == "" ) lines = lines.Take( lines.Length - 1 ).ToArray();
+    if ( lines[^1] == string.Empty ) {
+      lines = lines.Take( lines.Length - 1 ).ToArray();
+    }
+
     foreach ( var line in lines ) {
       textWriter.Write( new string( ' ', level * 2 ) );
 
-      if ( markupOutput ) {
-        if ( foreground.HasValue ) textWriter.Write( $"[{foreground.Value}]" );
+      if ( MarkupOutput ) {
+        if ( foreground.HasValue ) {
+          textWriter.Write( $"[{foreground.Value}]" );
+        }
+
         if ( background.HasValue ) {
+          // ... on bgcolor]
         }
       }
       else {
-        if ( foreground.HasValue ) System.Console.ForegroundColor = foreground.Value;
-        if ( background.HasValue ) System.Console.BackgroundColor = background.Value;
+        if ( foreground.HasValue ) {
+          System.Console.ForegroundColor = foreground.Value;
+        }
+
+        if ( background.HasValue ) {
+          System.Console.BackgroundColor = background.Value;
+        }
       }
 
       textWriter.Write( line );
 
-      if ( markupOutput ) {
-        if ( foreground.HasValue ) textWriter.Write( "[/]" );
-        if ( background.HasValue ) System.Console.BackgroundColor = background.Value;
+      if ( MarkupOutput ) {
+        if ( foreground.HasValue ) {
+          textWriter.Write( "[/]" );
+        }
+
+        if ( background.HasValue ) {
+          System.Console.BackgroundColor = background.Value;
+        }
       }
       else {
         System.Console.ResetColor();
@@ -212,8 +107,5 @@ internal partial class NormalOutput(
       textWriter.WriteLine();
     }
   }
-
-  #endregion
-
-#pragma warning restore RS0030
 }
+#pragma warning restore CS0162 // Unreachable code detected

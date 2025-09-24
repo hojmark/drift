@@ -1,6 +1,6 @@
 namespace Drift.Cli.Presentation.Rendering;
 
 internal enum IdMarkingStyle {
-  Text = 1,
+  Color = 1,
   Dot = 2
 }

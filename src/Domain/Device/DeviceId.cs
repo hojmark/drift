@@ -7,13 +7,11 @@ namespace Drift.Domain.Device;
 /// A discovered device (on the network) will only match a declared device (in the spec) if the device ID matches.
 /// One or more addresses can be marked with <see cref="IDeviceAddress.IsId"/> <c>true</c> to indicate that it should contribute to the device ID.
 /// </summary>
-/// <param name="addresses">Addresses that potentially make up the device ID. Only addresses where <see cref="IDeviceAddress.IsId"/> is <c>true</c>  will be used</param>
+/// <param name="addresses">Addresses that potentially make up the device ID. Only addresses where <see cref="IDeviceAddress.IsId"/> is <c>true</c> will be used.</param>
 public class DeviceId( List<IDeviceAddress> addresses ) {
   private List<IDeviceAddress> Addresses {
     get;
   } = addresses.Where( a => a.IsId != false ).ToList();
-
-  public bool Contributes( AddressType type ) => Addresses.Any( a => a.Type == type && a.IsId != false );
 
   /// <summary>
   /// Determines whether this <see cref="DeviceId"/> is equivalent to another.
@@ -30,6 +28,8 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
   /// <seealso cref="op_Equality"/>
   public static bool operator !=( DeviceId? left, DeviceId? right )
     => !Equals( left, right );
+
+  public bool Contributes( AddressType type ) => Addresses.Any( a => a.Type == type && a.IsId != false );
 
   /*[Obsolete]
   public bool Contains( DeviceId other ) {
@@ -61,7 +61,30 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
     }
   }*/
 
-  private bool IsSame( DeviceId other ) {
+  public override bool Equals( object? obj ) {
+    return IsSame( obj as DeviceId );
+  }
+
+  public override int GetHashCode() {
+    return ToString().GetHashCode();
+  }
+
+  /// <summary>
+  /// Returns a string representation of the <see cref="DeviceId"/>, consisting of the identifying addresses
+  /// (those which has <see cref="IDeviceAddress.IsId"/> being <c>true</c>).
+  /// If none are marked as identifiers, all addresses are included.
+  /// </summary>
+  /// <returns>
+  /// A string representing the identifier for the device.
+  /// </returns>
+  public override string ToString() {
+    var idAddresses = Addresses.Where( a => a.IsId == true ).ToList();
+    var addressesToUse = idAddresses.Any() ? idAddresses : Addresses;
+
+    return string.Join( "|", addressesToUse.OrderBy( a => a.Type ).Select( a => $"{a.Type}={a.Value}" ) );
+  }
+
+  private bool IsSame( DeviceId? other ) {
     if ( other is null ) {
       return false;
     }
@@ -95,28 +118,5 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
         ? string.Empty
         : value.ToUpperInvariant();
     }
-  }
-
-  public override bool Equals( object? obj ) {
-    return IsSame( obj as DeviceId );
-  }
-
-  public override int GetHashCode() {
-    return ToString().GetHashCode();
-  }
-
-  /// <summary>
-  /// Returns a string representation of the <see cref="DeviceId"/>, consisting of the identifying addresses
-  /// (those which has <see cref="IDeviceAddress.IsId"/> being <c>true</c>).
-  /// If none are marked as identifiers, all addresses are included.
-  /// </summary>
-  /// <returns>
-  /// A string representing the identifier for the device.
-  /// </returns>
-  public override string ToString() {
-    var idAddresses = Addresses.Where( a => a.IsId == true ).ToList();
-    var addressesToUse = idAddresses.Any() ? idAddresses : Addresses;
-
-    return string.Join( "|", addressesToUse.OrderBy( a => a.Type ).Select( a => $"{a.Type}={a.Value}" ) );
   }
 }

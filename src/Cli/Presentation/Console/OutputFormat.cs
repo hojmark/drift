@@ -1,6 +1,7 @@
 namespace Drift.Cli.Presentation.Console;
 
 // TODO consider grep?
+
 /// <summary>
 /// Formats for console output.
 /// </summary>
@@ -15,9 +16,11 @@ internal enum OutputFormat {
   /// </summary>
   Log = 2
 
-  //TODO support
+  // TODO support
+  /*
   /// <summary>
   /// JSON format console output.
   /// </summary>
-  //Json = 3,
+  // Json = 3,
+  */
 }

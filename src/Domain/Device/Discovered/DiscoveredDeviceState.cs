@@ -5,6 +5,6 @@ public enum DiscoveredDeviceState {
 
   // A discovered device can't really be offline, but it is convenient to have this state
   Offline,
-  //Unreachable,
-  //Unknown
+  // Unreachable,
+  // Unknown
 }

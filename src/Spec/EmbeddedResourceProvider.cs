@@ -5,10 +5,11 @@ namespace Drift.Spec;
 
 // TODO DUPLICATE: move to shared project
 internal static class EmbeddedResourceProvider {
-  private static Assembly Assembly => typeof(EmbeddedResourceProvider).Assembly;
   private const string ResourcePrefix = "embedded_resources";
 
-  //TODO NUKE style paths?
+  private static Assembly Assembly => typeof(EmbeddedResourceProvider).Assembly;
+
+  // TODO NUKE style paths?
   internal static Stream GetStream( string path ) {
     var resolvedPath = ConvertPath( path );
 

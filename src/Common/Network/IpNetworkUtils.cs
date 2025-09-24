@@ -20,8 +20,9 @@ public static class IpNetworkUtils {
     var maskBytes = mask.GetAddressBytes();
     var subnetBytes = new byte[ipBytes.Length];
 
-    for ( int i = 0; i < ipBytes.Length; i++ )
+    for ( int i = 0; i < ipBytes.Length; i++ ) {
       subnetBytes[i] = (byte) ( ipBytes[i] & maskBytes[i] );
+    }
 
     return new IPAddress( subnetBytes );
   }
@@ -30,7 +31,7 @@ public static class IpNetworkUtils {
   /// Calculates the CIDR (Classless Inter-Domain Routing) prefix length of a subnet mask.
   /// </summary>
   /// <param name="mask">The subnet mask.</param>
-  /// <returns>The prefix length (i.e., the number of leading one-bits in the binary representation of the mask)</returns>
+  /// <returns>The prefix length (i.e., the number of leading one-bits in the binary representation of the mask).</returns>
   public static int GetCidrPrefixLength( IPAddress mask ) {
     return mask.GetAddressBytes()
       // Count the number of bits set to 1 in each byte
@@ -62,8 +63,9 @@ public static class IpNetworkUtils {
       throw new ArgumentException( "IPv6 addresses are not supported.", nameof(ip) );
     }
 
-    if ( ip.AddressFamily != AddressFamily.InterNetwork )
+    if ( ip.AddressFamily != AddressFamily.InterNetwork ) {
       return false;
+    }
 
     var ipBytes = ip.GetAddressBytes();
 
@@ -74,17 +76,17 @@ public static class IpNetworkUtils {
   }
 
   /// <summary>
-  /// Calculates the total number of IP addresses within a given subnet, based on the provided subnet mask.
+  /// Calculates the total number of IP addresses within a given subnet, based on the provided <see cref="CidrBlock"/>.
   /// </summary>
-  /// <param name="mask">The subnet mask.</param>
+  /// <param name="cidr">The CIDR block.</param>
   /// <param name="usable">Specifies whether to exclude the network and broadcast addresses from the count. Defaults to true.</param>
   /// <returns>
   /// The total number of IP addresses in the subnet, adjusted for usability if specified.
   /// </returns>
   public static long GetIpRangeCount( CidrBlock cidr, bool usable = true ) {
-    return IPNetwork2
+    return (long) IPNetwork2
       .Parse( cidr.ToString() )
       .ListIPAddress( usable ? Filter.Usable : Filter.All )
-      .Count();
+      .Count;
   }
 }

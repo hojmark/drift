@@ -9,7 +9,7 @@ internal class ConfigCommand : Command {
       new Argument<string>( "value" ) { Description = "The value to assign" }
     };
     setCommand.SetAction( _ => {
-      //Console.WriteLine( $"Setting {key} to {value}" );
+      // Console.WriteLine( $"Setting {key} to {value}" );
     } );
 
     var getCommand =
@@ -17,12 +17,12 @@ internal class ConfigCommand : Command {
         new Argument<string>( "key" ) { Description = "The config key to get" }
       };
     getCommand.SetAction( _ => {
-      //Console.WriteLine( $"Getting value for {key}" );});
+      // Console.WriteLine( $"Getting value for {key}" );});
     } );
 
     var listCommand = new Command( "list", "List all configuration values" );
     listCommand.SetAction( _ => {
-      //Console.WriteLine( "Listing all config values..." );
+      // Console.WriteLine( "Listing all config values..." );
     } );
 
     var unsetCommand =
@@ -30,7 +30,7 @@ internal class ConfigCommand : Command {
         new Argument<string>( "key" ) { Description = "The config key to unset" }
       };
     unsetCommand.SetAction( _ => {
-      //Console.WriteLine( $"Unsetting value for {key}" );
+      // Console.WriteLine( $"Unsetting value for {key}" );
     } );
 
     Subcommands.Add( setCommand );

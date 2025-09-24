@@ -12,10 +12,10 @@ public static class SpecValidator {
   }
 
   private static ValidationResult Validate( string yaml, string jsonSchema ) {
-    //try {
+    // try {
     // Read YAML and convert to JSON
     var yamlObject = YamlConverter.DeserializeToDto( yaml );
-    //var yamlLineNumbers = GetYamlLineNumbers( yamlContent );
+    // var yamlLineNumbers = GetYamlLineNumbers( yamlContent );
     var jsonString = YamlConverter.SerializeToDto( yamlObject, true );
     var jsonDocument = JsonDocument.Parse( jsonString );
 
@@ -23,7 +23,8 @@ public static class SpecValidator {
     var schema = JsonSchema.FromText( jsonSchema );
 
     // Validate
-    var validationResults = schema.Evaluate( jsonDocument.RootElement,
+    var validationResults = schema.Evaluate(
+      jsonDocument.RootElement,
       new EvaluationOptions { OutputFormat = OutputFormat.Hierarchical }
     );
 
@@ -45,7 +46,9 @@ public static class SpecValidator {
   }
 
   private static IEnumerable<ValidationError> ExtractErrors( EvaluationResults results ) {
-    if ( results.IsValid ) yield break;
+    if ( results.IsValid ) {
+      yield break;
+    }
 
     if ( results.Errors?.Count > 0 ) {
       foreach ( var error in results.Errors ) {

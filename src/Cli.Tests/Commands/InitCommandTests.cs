@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init.Helpers;
@@ -19,20 +20,25 @@ using NetworkInterface = Drift.Scanning.Subnets.Interface.NetworkInterface;
 namespace Drift.Cli.Tests.Commands;
 
 internal sealed class InitCommandTests {
-  const string SpecNameWithDiscovery = "myNetworkWithDiscovery";
-  const string SpecNameWithoutDiscovery = "myNetworkWithoutDiscovery";
+  private const string SpecNameWithDiscovery = "myNetworkWithDiscovery";
+  private const string SpecNameWithoutDiscovery = "myNetworkWithoutDiscovery";
 
   private static readonly NetworkScanResult ScanResult = new() {
     Metadata =
-      new Domain.Scan.Metadata {
-        StartedAt = DateTime.Parse( "2025-06-11T12:20:08.4219405+02:00" ).ToUniversalTime(),
-        EndedAt = DateTime.Parse( "2025-06-11" )
+      new Metadata {
+        StartedAt =
+          DateTime.Parse( "2025-06-11T12:20:08.4219405+02:00", CultureInfo.InvariantCulture ).ToUniversalTime(),
+        EndedAt = DateTime.Parse( "2025-06-11", CultureInfo.InvariantCulture )
       },
     Status = ScanResultStatus.Success,
     Subnets = [
       new SubnetScanResult {
         CidrBlock = new CidrBlock( "192.168.0.0/24" ),
-        Metadata = null,
+        Metadata = new Metadata {
+          StartedAt =
+            DateTime.Parse( "2025-06-11T12:20:08.4219405+02:00", CultureInfo.InvariantCulture ).ToUniversalTime(),
+          EndedAt = DateTime.Parse( "2025-06-11", CultureInfo.InvariantCulture )
+        },
         Status = ScanResultStatus.Success,
         DiscoveredDevices = [
           new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
@@ -112,11 +118,11 @@ internal sealed class InitCommandTests {
         await verifyOutputTask;
       }
 
-      //await Verify( await File.ReadAllTextAsync( $"{specName}.spec.yaml" ) ).UseTextForParameters( "spec" );
+      // await Verify( await File.ReadAllTextAsync( $"{specName}.spec.yaml" ) ).UseTextForParameters( "spec" );
     }
   }
 
-// TODO merge with previous test? 
+// TODO merge with previous test?
   [Test]
   public async Task GenerateSpecWithoutDiscoverySuccess() {
     // Arrange
@@ -148,7 +154,7 @@ internal sealed class InitCommandTests {
     SpecFactory.CreateFromScan( ScanResult, path );
     var yaml = await File.ReadAllTextAsync( path );
 
-    //Assert
+    // Assert
     var validationResult = SpecValidator.Validate( yaml, SpecVersion.V1_preview );
 
     using ( Assert.EnterMultipleScope() ) {
@@ -166,7 +172,7 @@ internal sealed class InitCommandTests {
     SpecFactory.CreateFromTemplate( path );
     var yaml = await File.ReadAllTextAsync( path );
 
-    //Assert
+    // Assert
     var validationResult = SpecValidator.Validate( yaml, SpecVersion.V1_preview );
 
     using ( Assert.EnterMultipleScope() ) {

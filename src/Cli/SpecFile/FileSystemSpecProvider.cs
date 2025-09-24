@@ -26,7 +26,11 @@ internal class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvid
     catch ( FileNotFoundException exception ) {
       output.Log.LogError( exception, "Network spec not found: {SpecPath}", specFile?.FullName );
       output.Normal.WriteLineError( exception.Message );
-      throw;
+      throw new FileNotFoundException(
+        "A file with the provided name could not be found",
+        specFile?.FullName,
+        exception
+      );
     }
 
     if ( filePath != null ) {
@@ -40,15 +44,15 @@ internal class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvid
 
       output.Normal.WriteLineValidity( valid );
 
-      //output.Normal.WriteLine();
+      // output.Normal.WriteLine();
 
       spec = YamlConverter.Deserialize( filePath );
       spec.Network.Id = GetNetworkId( filePath );
-      
+
       output.Log.LogDebug( "Network ID: {ID}", spec.Network.Id );
       output.Normal.WriteVerbose( "Network ID: " );
       output.Normal.WriteLineVerbose( $"{spec.Network.Id}", ConsoleColor.Cyan );
-      
+
       output.Normal.WriteLine();
     }
 

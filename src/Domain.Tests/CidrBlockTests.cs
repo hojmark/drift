@@ -15,9 +15,9 @@ internal sealed class CidrBlockTests {
   [TestCase( "192 .168.123.0/24" )]
   [TestCase( "192.168.123.0" )]
   [TestCase( "192.168.123.0/-24" )]
-  //TODO ipv6
+  // TODO ipv6
   public void InvalidCidrThrowsTest( string cidr ) {
-    //TODO more specific exception
+    // TODO more specific exception
     Assert.Catch( () => _ = new CidrBlock( cidr ) );
   }
 }

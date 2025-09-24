@@ -56,18 +56,18 @@ public record MyRootRecord {
 
     // Run in multiple passes to ensure attribute is available
     GeneratorDriver driver = CSharpGeneratorDriver.Create(specRootGenerator);
-    
+
     // First pass: Generate the attribute
     driver = driver.RunGenerators(compilation);
     var firstResult = driver.GetRunResult();
-    
+
     // Update compilation with generated attribute
     var updatedCompilation = compilation.AddSyntaxTrees(firstResult.GeneratedTrees);
-    
+
     // Second pass: Run the main generator with attribute available
     driver = CSharpGeneratorDriver.Create(generator);
     driver = driver.RunGenerators(updatedCompilation);
-    
+
     var res = driver.GetRunResult();
 
 

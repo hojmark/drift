@@ -63,6 +63,18 @@
     }
   },
   {
+    "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24].Metadata",
+    "DiffType": "unchanged",
+    "Original": {
+      "StartedAt": "0001-01-01T00:00:00",
+      "EndedAt": null
+    },
+    "Updated": {
+      "StartedAt": "0001-01-01T00:00:00",
+      "EndedAt": null
+    }
+  },
+  {
     "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24]",
     "DiffType": "unchanged",
     "Original": {
@@ -100,7 +112,10 @@
         }
       ],
       "DiscoveryAttempts": [],
-      "Metadata": null,
+      "Metadata": {
+        "StartedAt": "0001-01-01T00:00:00",
+        "EndedAt": null
+      },
       "Status": "success",
       "Progress": {
         "Value": 0
@@ -136,7 +151,10 @@
         }
       ],
       "DiscoveryAttempts": [],
-      "Metadata": null,
+      "Metadata": {
+        "StartedAt": "0001-01-01T00:00:00",
+        "EndedAt": null
+      },
       "Status": "success",
       "Progress": {
         "Value": 0
@@ -195,7 +213,10 @@
             }
           ],
           "DiscoveryAttempts": [],
-          "Metadata": null,
+          "Metadata": {
+            "StartedAt": "0001-01-01T00:00:00",
+            "EndedAt": null
+          },
           "Status": "success",
           "Progress": {
             "Value": 0
@@ -243,7 +264,10 @@
             }
           ],
           "DiscoveryAttempts": [],
-          "Metadata": null,
+          "Metadata": {
+            "StartedAt": "0001-01-01T00:00:00",
+            "EndedAt": null
+          },
           "Status": "success",
           "Progress": {
             "Value": 0

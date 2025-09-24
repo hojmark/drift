@@ -16,7 +16,7 @@ internal sealed class NamingTests : DriftArchitectureFixture {
     rule.Check( DriftArchitecture );
   }
 
-  [Explicit( "Fix architecture" )] //TODO
+  [Explicit( "Fix architecture" )] // TODO
   [Test]
   public void TestClassesShouldEndWithTests() {
     /*
@@ -38,7 +38,10 @@ internal sealed class NamingTests : DriftArchitectureFixture {
     rule.Check( DriftArchitecture );
   }
 
+  // Justification: for debugging
+#pragma warning disable S1144
   private static void PrintTypes( IObjectProvider<IType> types ) {
+#pragma warning restore S1144
     var classes = types.GetObjects( DriftArchitecture ).ToList();
 
     if ( classes.Count == 0 ) {

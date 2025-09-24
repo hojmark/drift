@@ -73,36 +73,6 @@ internal sealed class ScanCommandTests {
     }
   }
 
-  [OneTimeSetUp]
-  public void SetupOnce() {
-    // Easier to validate in snapshots
-    DeviceIdHighlighter.Style = IdMarkingStyle.Dot;
-  }
-
-  //[Combinatorial]
-  [TestCaseSource( nameof(DiscoveredDeviceLists) )]
-  public async Task WithoutSpec_Success_Test(
-    List<DiscoveredDevice> discoveredDevices,
-    List<INetworkInterface> interfaces
-    /*, [Values( "", "normal", "log" )] string outputFormat */
-  ) {
-    // Arrange
-    var serviceConfig = ConfigureServices( interfaces, discoveredDevices );
-
-    // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan", serviceConfig );
-    //var exitCode = await config.InvokeAsync( $"scan -o {outputFormat}" );
-
-    // Assert
-    using ( Assert.EnterMultipleScope() ) {
-      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-      await Verify( output.ToString() + error )
-        .UseFileName(
-          $"{nameof(ScanCommandTests)}.{nameof(WithoutSpec_Success_Test)}.{TestContext.CurrentContext.Test.Name}"
-        );
-    }
-  }
-
   private static IEnumerable<TestCaseData> WithSpecList {
     get {
       yield return new TestCaseData( new NetworkBuilder().Build(), new List<DiscoveredDevice>() )
@@ -183,6 +153,36 @@ internal sealed class ScanCommandTests {
     }
   }
 
+  [OneTimeSetUp]
+  public void SetupOnce() {
+    // Easier to validate in snapshots
+    DeviceIdHighlighter.Style = IdMarkingStyle.Dot;
+  }
+
+  // [Combinatorial]
+  [TestCaseSource( nameof(DiscoveredDeviceLists) )]
+  public async Task WithoutSpec_Success_Test(
+    List<DiscoveredDevice> discoveredDevices,
+    List<INetworkInterface> interfaces
+    /*, [Values( "", "normal", "log" )] string outputFormat */
+  ) {
+    // Arrange
+    var serviceConfig = ConfigureServices( interfaces, discoveredDevices );
+
+    // Act
+    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan", serviceConfig );
+    // var exitCode = await config.InvokeAsync( $"scan -o {outputFormat}" );
+
+    // Assert
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
+      await Verify( output.ToString() + error )
+        .UseFileName(
+          $"{nameof(ScanCommandTests)}.{nameof(WithoutSpec_Success_Test)}.{TestContext.CurrentContext.Test.Name}"
+        );
+    }
+  }
+
   [TestCaseSource( nameof(WithSpecList) )]
   public async Task WithSpec_Success_Test(
     Network network,
@@ -227,7 +227,7 @@ internal sealed class ScanCommandTests {
 
   private static Action<IServiceCollection> ConfigureServices(
     List<INetworkInterface> interfaces,
-    List<DiscoveredDevice>? discoveredDevices = null,
+    List<DiscoveredDevice> discoveredDevices,
     Inventory? inventory = null
   ) {
     return services => {
@@ -243,16 +243,18 @@ internal sealed class ScanCommandTests {
 
       services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
           new NetworkScanResult {
-            Metadata = new Domain.Scan.Metadata { StartedAt = default, EndedAt = default },
+            Metadata = new Metadata { StartedAt = default, EndedAt = default },
             Status = ScanResultStatus.Success,
             Subnets = [
               new SubnetScanResult {
                 CidrBlock = DefaultInterface.UnicastAddress!.Value,
-                DiscoveredDevices = discoveredDevices ?? [],
-                Metadata = null,
+                DiscoveredDevices = discoveredDevices,
+                Metadata = new Metadata { StartedAt = default, EndedAt = default },
                 Status = ScanResultStatus.Success,
                 // TODO could/should also include ip's of non-discovered devices?
-                DiscoveryAttempts = discoveredDevices.Select( d => new IpV4Address( d.Get( AddressType.IpV4 ) ) )
+                DiscoveryAttempts = discoveredDevices.Select( d =>
+                    new IpV4Address( d.Get( AddressType.IpV4 ) ?? throw new Exception( "Device had no IPv4" ) )
+                  )
                   .ToImmutableHashSet()
               }
             ]

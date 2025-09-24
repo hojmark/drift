@@ -1,45 +1,66 @@
+using System.Collections;
 using Drift.Cli.Commands.Scan.Interactive.Models;
+using Drift.Domain;
 using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-internal class TreeRenderer {
-  public const int ScrollAmount = 3;
-  private readonly int _statusWidth = "Offline".Length;
+internal class SubnetViewPort( uint viewPortHeight ) : IEnumerable<Tree> {
+  private static readonly int StatusWidth = "Offline".Length;
+  private readonly Lock _subnetLock = new();
 
-  public int GetTotalHeight( List<Subnet> subnets )
-    => subnets.Select( ( _, i ) => GetTreeHeight( i, subnets ) ).Sum();
+  private List<Subnet> _subnets = [];
 
-  public IEnumerable<Tree> RenderTrees( int scrollOffset, int maxRows, int selectedIndex, List<Subnet> subnets ) {
+  public List<Subnet> Subnets {
+    set {
+      lock ( _subnetLock ) _subnets = value;
+    }
+  }
+
+  private uint MaxScrollOffset => (uint) Math.Max( 0, GetHeight( _subnets ) - viewPortHeight );
+
+  private uint ScrollOffset => 0;
+
+  private CidrBlock? Selected {
+    get;
+    set;
+  }
+
+  private static IEnumerable<Tree> Render(
+    List<Subnet> subnets,
+    CidrBlock? selected,
+    uint viewPortHeight,
+    uint scrollOffset
+  ) {
     var trees = new List<Tree>();
     int currentRow = 0;
     int renderedRows = 0;
 
-    for ( int i = 0; i < subnets.Count && renderedRows < maxRows; i++ ) {
-      int treeHeight = GetTreeHeight( i, subnets );
-      bool isSelected = i == selectedIndex;
+    foreach ( var subnet in subnets ) {
+      int treeHeight = GetHeight( subnet );
+      bool isSelected = subnet.Cidr == selected;
 
       // Check if this tree starts within the visible area
-      if ( currentRow + treeHeight > scrollOffset && currentRow < scrollOffset + maxRows ) {
+      if ( currentRow + treeHeight > scrollOffset && currentRow < scrollOffset + viewPortHeight ) {
         // Calculate how many rows of this tree we can show
-        int treeStartRow = Math.Max( 0, scrollOffset - currentRow );
-        int remainingRows = maxRows - renderedRows;
+        int treeStartRow = (int) Math.Max( 0, scrollOffset - currentRow );
+        int remainingRows = (int) ( viewPortHeight - renderedRows );
         int maxDeviceRows = Math.Min( remainingRows - 1, treeHeight - 1 - treeStartRow ); // -1 for header
 
         if ( treeStartRow == 0 ) {
           // Show the full tree header
           if ( maxDeviceRows >= 0 ) {
-            trees.Add( BuildTree( i, isSelected, subnets, maxDeviceRows ) );
+            trees.Add( BuildTree( subnet, subnets, isSelected, maxDeviceRows ) );
             renderedRows += Math.Min( treeHeight, remainingRows );
           }
         }
-        else if ( treeStartRow < treeHeight && subnets[i].IsExpanded ) {
+        else if ( treeStartRow < treeHeight && subnet.IsExpanded ) {
           // Show partial tree (skip header, show some devices)
           int devicesToSkip = treeStartRow - 1; // -1 because we're skipping the header
-          int devicesToShow = Math.Min( maxDeviceRows, subnets[i].Devices.Count - devicesToSkip );
+          int devicesToShow = Math.Min( maxDeviceRows, subnet.Devices.Count - devicesToSkip );
 
           if ( devicesToShow > 0 ) {
-            trees.Add( BuildPartialTree( i, isSelected, subnets, devicesToSkip, devicesToShow ) );
+            trees.Add( BuildPartialTree( subnet, subnets, devicesToSkip, devicesToShow ) );
             renderedRows += devicesToShow;
           }
         }
@@ -51,9 +72,7 @@ internal class TreeRenderer {
     return trees;
   }
 
-  private Tree BuildPartialTree( int index, bool isSelected, List<Subnet> subnets, int skipDevices, int maxDevices ) {
-    var subnet = subnets[index];
-
+  private static Tree BuildPartialTree( Subnet subnet, List<Subnet> subnets, int skipDevices, int maxDevices ) {
     // Create a tree with an empty header since we're showing a continuation
     var tree = new Tree( "" ).Guide( TreeGuide.Line );
 
@@ -66,7 +85,7 @@ internal class TreeRenderer {
       string line =
         $"[white]{device.Ip.PadRight( GetIpWidth( subnets ) )}[/]  " +
         $"[grey]{device.Mac.PadRight( GetMacWidth( subnets ) )}[/]  " +
-        $"[{statusColor}]{statusText.PadRight( _statusWidth )}[/]";
+        $"[{statusColor}]{statusText.PadRight( StatusWidth )}[/]";
 
       tree.AddNode( line );
     }
@@ -74,9 +93,7 @@ internal class TreeRenderer {
     return tree;
   }
 
-
-  private Tree BuildTree( int index, bool isSelected, List<Subnet> subnets, int? maxDeviceCount = null ) {
-    var subnet = subnets[index];
+  private static Tree BuildTree( Subnet subnet, List<Subnet> subnets, bool isSelected, int? maxDeviceCount = null ) {
     var symbol = subnet.IsExpanded ? "▾" : "▸";
 
     string summary =
@@ -84,7 +101,7 @@ internal class TreeRenderer {
       $"{subnet.Devices.Count( d => d.IsOnline )} online, " +
       $"{subnet.Devices.Count( d => !d.IsOnline )} offline)[/]";
 
-    string header = $"{symbol} {subnet.Address}";
+    string header = $"{symbol} {subnet.Cidr}";
     string formattedHeader = isSelected
       ? $"[black on yellow]{header}[/] {summary}"
       : $"[blue]{header}[/] {summary}";
@@ -103,7 +120,7 @@ internal class TreeRenderer {
         string line =
           $"[white]{device.Ip.PadRight( GetIpWidth( subnets ) )}[/]  " +
           $"[grey]{device.Mac.PadRight( GetMacWidth( subnets ) )}[/]  " +
-          $"[{statusColor}]{statusText.PadRight( _statusWidth )}[/]";
+          $"[{statusColor}]{statusText.PadRight( StatusWidth )}[/]";
 
         tree.AddNode( line );
       }
@@ -117,14 +134,31 @@ internal class TreeRenderer {
     return tree;
   }
 
-  private int GetTreeHeight( int index, List<Subnet> subnets )
-    => subnets[index].IsExpanded ? 1 + subnets[index].Devices.Count : 1;
 
-  private int GetIpWidth( List<Subnet> subnets ) {
+  // TODO below methods should be extension methods
+  private static int GetHeight( List<Subnet> subnets ) => subnets.Sum( GetHeight );
+
+  private static int GetHeight( Subnet subnet )
+    => 1 + ( subnet.IsExpanded
+      ? subnet.Devices.Count
+      : 0 );
+
+  private static int GetIpWidth( List<Subnet> subnets ) {
     return subnets.SelectMany( s => s.Devices ).Max( d => d.Ip.Length );
   }
 
-  private int GetMacWidth( List<Subnet> subnets ) {
+  private static int GetMacWidth( List<Subnet> subnets ) {
     return subnets.SelectMany( s => s.Devices ).Max( d => d.Mac.Length );
+  }
+
+  public IEnumerator<Tree> GetEnumerator() {
+    lock ( _subnetLock ) {
+      var snapshot = _subnets.ToList();
+      return Render( snapshot, Selected, viewPortHeight, ScrollOffset ).GetEnumerator();
+    }
+  }
+
+  IEnumerator IEnumerable.GetEnumerator() {
+    return GetEnumerator();
   }
 }

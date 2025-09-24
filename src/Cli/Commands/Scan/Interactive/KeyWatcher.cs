@@ -5,14 +5,14 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
-internal sealed class AsyncKeyInputWatcher : IAsyncDisposable {
+internal sealed class KeyWatcher : IAsyncDisposable {
   private readonly ConcurrentQueue<ConsoleKey> _keyBuffer = new();
   private readonly CancellationTokenSource _cts = new();
   private readonly Task _listenerTask;
 
   private TaskCompletionSource? _waiter;
 
-  public AsyncKeyInputWatcher() {
+  public KeyWatcher() {
     _listenerTask = Task.Run( ListenLoopAsync );
   }
 
@@ -24,7 +24,7 @@ internal sealed class AsyncKeyInputWatcher : IAsyncDisposable {
     }
   }
 
-  public Task WaitForNextKeyAsync() {
+  public Task WaitForKeyAsync() {
     if ( !_keyBuffer.IsEmpty )
       return Task.CompletedTask;
 

@@ -10,7 +10,7 @@ internal sealed class KeyMapTests {
     var allConsoleKeys = Enum.GetValues<ConsoleKey>().Cast<ConsoleKey>();
 
     var mappedActions = allConsoleKeys
-      .Select( key => keymap.MapKey( key ) )
+      .Select( key => keymap.Map( key ) )
       .Where( action => action != UiAction.None )
       .Distinct()
       .ToHashSet();

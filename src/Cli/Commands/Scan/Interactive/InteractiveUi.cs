@@ -53,7 +53,7 @@ internal class InteractiveUi : IAsyncDisposable {
     _logReader = new LogReader( _outputManager );
     _logReader.LogUpdated += OnLogUpdated;
 
-    SubnetView = new SubnetView( () => _layout.GetAvailableRows() );
+    SubnetView = new SubnetView( () => _layout.AvailableRows );
   }
 
   private SubnetView SubnetView {
@@ -91,9 +91,10 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   private void ProcessInput() {
-    var key = _inputWatcher.ConsumeKey();
+    var key = _inputWatcher.Consume();
     if ( key != null ) {
-      HandleInput( key.Value );
+      var action = _keyMap.Map( key.Value );
+      Handle( action );
     }
   }
 
@@ -122,9 +123,7 @@ internal class InteractiveUi : IAsyncDisposable {
     _layout.SetProgress( _progress );
   }
 
-  private void HandleInput( ConsoleKey key ) {
-    var action = _keyMap.MapKey( key );
-
+  private void Handle( UiAction action ) {
     switch ( action ) {
       case UiAction.Quit:
         _running.Cancel();
@@ -136,10 +135,10 @@ internal class InteractiveUi : IAsyncDisposable {
         SubnetView.ScrollOffset += ScrollAmount;
         break;
       case UiAction.ScrollUpPage:
-        SubnetView.ScrollOffset -= (int) _layout.GetAvailableRows();
+        SubnetView.ScrollOffset -= (int) _layout.AvailableRows;
         break;
       case UiAction.ScrollDownPage:
-        SubnetView.ScrollOffset += (int) _layout.GetAvailableRows();
+        SubnetView.ScrollOffset += (int) _layout.AvailableRows;
         break;
       case UiAction.MoveUp:
         SubnetView.SelectPrevious();

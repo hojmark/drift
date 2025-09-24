@@ -6,7 +6,19 @@ using Spectre.Console;
 using Spectre.Console.Rendering;
 
 internal class ScanLayout {
-  private readonly Layout _layout;
+  private readonly Layout _layout = new Layout( "Root" )
+    .SplitRows(
+      new Layout( "Header", BuildHeader() ) { Size = 1 },
+      new Layout( "MainPanel" ).SplitColumns(
+        new Layout( "ScanTree" ),
+        new Layout( "Log" ) { IsVisible = false }
+      ),
+      new Layout( "Debug" ) { Size = 1, IsVisible = false },
+      new Layout( "Progress", BuildProgressBar( Percentage.Zero ) ) { Size = 1 },
+      new Layout( "Footer", BuildFooter() ) { Size = 1 }
+    );
+
+  public IRenderable Renderable => _layout;
 
   public bool ShowLogs {
     get => _layout["Log"].IsVisible;
@@ -20,29 +32,20 @@ internal class ScanLayout {
     get => _layout["Debug"].IsVisible;
     set {
       _layout["Debug"].IsVisible = value;
-      _layout["Debug"].Update( _layout["Debug"] );
+      //_layout["Debug"].Update( _layout["Debug"] );
+      // Re-render mainpanel, as there is now more room available
+      _layout["MainPanel"].Update( _layout["MainPanel"] );
     }
   }
 
-  public ScanLayout() {
-    _layout = new Layout( "Root" )
-      .SplitRows(
-        new Layout( "Header" ) { Size = 1 },
-        new Layout( "MainPanel" ).SplitColumns(
-          new Layout( "ScanTree" ),
-          new Layout( "Log" ) { IsVisible = false }
-        ),
-        new Layout( "Debug" ) { Size = 1, IsVisible = false },
-        new Layout( "Progress" ) { Size = 1 },
-        new Layout( "Footer" ) { Size = 1 }
-      );
-
-    _layout["Header"].Update( BuildHeader() );
-    SetProgress( Percentage.Zero );
-    _layout["Footer"].Update( BuildFooter() );
+  public uint AvailableRows {
+    get {
+      var rows = AnsiConsole.Console.Profile.Height -
+                 // header + data (optional) + footer + progress + padding
+                 1 - ( _layout["Debug"].IsVisible ? 1 : 0 ) - 1 - 1 - 2;
+      return (uint) Math.Max( 0, rows );
+    }
   }
-
-  public IRenderable Renderable => _layout;
 
   public void SetScanTree( IEnumerable<Tree> content ) {
     _layout["ScanTree"].Update(
@@ -62,14 +65,9 @@ internal class ScanLayout {
     _layout["Log"].Update( new Panel( new Text( text ) ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 ) );
   }
 
-  internal uint GetAvailableRows() {
-    var rows = AnsiConsole.Console.Profile.Height -
-               // header + data (optional) + footer + progress + padding
-               1 - ( _layout["Debug"].IsVisible ? 1 : 0 ) - 1 - 1 - 2;
-    return (uint) Math.Max( 0, rows );
-  }
 
   private static Markup BuildHeader() {
+    //TODO update with actual path
     return new Markup( "[grey]/home/hojmark/[/][yellow bold]fh47[/][grey].spec.yaml[/]  [green]✔[/]" );
   }
 
@@ -77,11 +75,15 @@ internal class ScanLayout {
     var progressValue = $" {progress}";
 
     return new Layout( "ProgressComponents" ).SplitColumns(
-      new Layout( new Text( progress.Value switch {
-        0 => "Idle",
-        100 => "Completed",
-        _ => "Scanning..."
-      } ) ) { Size = "Scanning...".Length + 1 },
+      new Layout(
+        new Text(
+          progress.Value switch {
+            0 => "Idle",
+            100 => "Completed",
+            _ => "Scanning..."
+          }
+        )
+      ) { Size = "Scanning...".Length + 1 },
       new Layout(
         new BreakdownChart()
           .HideTags()

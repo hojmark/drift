@@ -5,7 +5,7 @@ using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
 
-internal class SubnetViewPort( uint viewPortHeight ) : IEnumerable<Tree> {
+internal class SubnetViewport( uint height ) : IEnumerable<Tree> {
   private static readonly int StatusWidth = "Offline".Length;
   private readonly Lock _subnetLock = new();
 
@@ -13,17 +13,86 @@ internal class SubnetViewPort( uint viewPortHeight ) : IEnumerable<Tree> {
 
   public List<Subnet> Subnets {
     set {
-      lock ( _subnetLock ) _subnets = value;
+      lock ( _subnetLock ) {
+        _subnets = value;
+        if ( _subnets.FirstOrDefault( s => s.Cidr == Selected ) == null ) {
+          Selected = _subnets.FirstOrDefault()?.Cidr;
+        }
+      }
     }
   }
 
-  private uint MaxScrollOffset => (uint) Math.Max( 0, GetHeight( _subnets ) - viewPortHeight );
+  private uint MaxScrollOffset => (uint) Math.Max( 0, GetHeight( _subnets ) - height );
 
-  private uint ScrollOffset => 0;
+  private uint _scrollOffset;
+
+  internal uint ScrollOffset {
+    get {
+      return _scrollOffset;
+    }
+    set {
+      _scrollOffset = Math.Clamp( value, 0, MaxScrollOffset );
+    }
+  }
 
   private CidrBlock? Selected {
     get;
     set;
+  }
+
+  public string DebugData {
+    get {
+      var selectedCidr = _subnets.FirstOrDefault( s => s.Cidr == Selected );
+      var selectedIndex = -1;
+
+      if ( selectedCidr != null ) {
+        selectedIndex = _subnets.IndexOf( selectedCidr );
+      }
+
+      return
+        $"ScrollOffset: {ScrollOffset}, MaxScroll: {MaxScrollOffset}, TotalHeight: {GetHeight( _subnets )}, ViewportHeight: {height}, SelectedIndex: {selectedIndex}";
+    }
+  }
+
+  public void ToggleSelected() {
+    lock ( _subnetLock ) {
+      var subnet = _subnets.FirstOrDefault( s => s.Cidr == Selected );
+      if ( subnet != null ) {
+        subnet.IsExpanded = !subnet.IsExpanded;
+      }
+    }
+  }
+
+  public void SelectNext() {
+    lock ( _subnetLock ) {
+      var subnet = _subnets.FirstOrDefault( s => s.Cidr == Selected );
+      if ( subnet == null ) {
+        return;
+      }
+
+      var index = _subnets.IndexOf( subnet );
+      var nextIndex = index + 1;
+
+      if ( nextIndex < _subnets.Count ) {
+        Selected = _subnets[nextIndex].Cidr;
+      }
+    }
+  }
+
+  public void SelectPrevious() {
+    lock ( _subnetLock ) {
+      var subnet = _subnets.FirstOrDefault( s => s.Cidr == Selected );
+      if ( subnet == null ) {
+        return;
+      }
+
+      var index = _subnets.IndexOf( subnet );
+      var previousIndex = index - 1;
+
+      if ( previousIndex >= 0 ) {
+        Selected = _subnets[previousIndex].Cidr;
+      }
+    }
   }
 
   private static IEnumerable<Tree> Render(
@@ -154,7 +223,7 @@ internal class SubnetViewPort( uint viewPortHeight ) : IEnumerable<Tree> {
   public IEnumerator<Tree> GetEnumerator() {
     lock ( _subnetLock ) {
       var snapshot = _subnets.ToList();
-      return Render( snapshot, Selected, viewPortHeight, ScrollOffset ).GetEnumerator();
+      return Render( snapshot, Selected, height, ScrollOffset ).GetEnumerator();
     }
   }
 

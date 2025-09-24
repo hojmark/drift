@@ -21,7 +21,10 @@ internal class InteractiveUi : IAsyncDisposable {
   private readonly IOutputManager _outputManager;
   private readonly INetworkScanner _scanner;
   private readonly ScanLayout _layout = new();
+
   private readonly CancellationTokenSource _running = new();
+
+  //TODO should get IDisposable warning?
   private readonly AsyncKeyInputWatcher _inputWatcher = new();
   private readonly List<Subnet> _subnets = [];
   private readonly NetworkScanOptions _scanRequest;
@@ -32,10 +35,9 @@ internal class InteractiveUi : IAsyncDisposable {
   private readonly bool _logEnabled = true;
   private readonly ILogReader? _logReader;
   private readonly StringBuilder _logBuilder = new();
-  private TaskCompletionSource<bool>? _logUpdateSignal;
+  private TaskCompletionSource? _logUpdateSignal;
 
-
-  //TODO should get IDisposable warning?
+  private TaskCompletionSource? _restartSignal;
 
   public InteractiveUi(
     IOutputManager outputManager,
@@ -48,16 +50,17 @@ internal class InteractiveUi : IAsyncDisposable {
     _keyMap = keyMap;
     _outputManager = outputManager;
     _scanner.ResultUpdated += OnScanResultUpdated;
+
     if ( _logEnabled ) {
       _logReader = new LogReader( _outputManager );
       _logReader.LogUpdated += OnLogUpdated;
     }
 
     int availableRows = _layout.GetAvailableRows();
-    SubnetViewPort = new SubnetViewPort( (uint) availableRows );
+    SubnetViewport = new SubnetViewport( (uint) availableRows );
   }
 
-  private SubnetViewPort SubnetViewPort {
+  private SubnetViewport SubnetViewport {
     get;
     set;
   }
@@ -75,13 +78,14 @@ internal class InteractiveUi : IAsyncDisposable {
       .StartAsync( async ctx => {
           while ( !_running.IsCancellationRequested ) {
             _logUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            _restartSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var delayTask = Task.Delay( RenderRefreshIntervalMs );
             var keyTask = _inputWatcher.WaitForNextKeyAsync();
             var logTask = _logEnabled ? _logUpdateSignal.Task : Task.Delay( -1 );
+            var restartTask = _restartSignal?.Task ?? Task.Delay( -1 );
 
-            await Task.WhenAny( delayTask, keyTask, logTask );
-            _logUpdateSignal = null;
+            await Task.WhenAny( delayTask, keyTask, logTask, restartTask );
 
             ProcessInput();
 
@@ -111,37 +115,26 @@ internal class InteractiveUi : IAsyncDisposable {
       if ( _logBuilder.Length > 0 )
         _logBuilder.Append( '\n' );
       _logBuilder.Append( line );
+      _logUpdateSignal?.TrySetResult();
+      _logUpdateSignal = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
     }
-
-    _logUpdateSignal?.TrySetResult( true );
   }
 
   private async Task RenderAsync() {
-    _layout.UpdateData( "DUMMY" );
-    /*int totalHeight = subnetViewPort.GetTotalHeight( _subnets );
-    int maxScroll = Math.Max( 0, totalHeight - availableRows );
-
-    // Debug information (remove after fixing)
-    _layout.UpdateData(
-      $"ScrollOffset: {_scrollOffset}, MaxScroll: {maxScroll}, TotalHeight: {totalHeight}, AvailableRows: {availableRows}" );
-
     if ( _logEnabled && _logReader != null ) {
       lock ( _logBuilder ) {
-        _layout.UpdateLog( _logBuilder.ToString() );
+        _layout.SetLog( _logBuilder.ToString() );
       }
     }
 
-    _scrollOffset = Math.Clamp( _scrollOffset, 0, maxScroll );*/
-    SubnetViewPort.Subnets = _subnets;
+    SubnetViewport.Subnets = _subnets;
 
-    //var trees = subnetViewPort.RenderTrees( _subnets );
-    if ( _subnets.Count > 0 ) {
-      Console.WriteLine( "hi" );
-    }
+    // Debug information (remove after fixing)
+    _layout.SetData( SubnetViewport.DebugData );
 
-    _layout.UpdateScanTree( SubnetViewPort );
+    _layout.SetScanTree( SubnetViewport );
 
-    _layout.UpdateProgress( _progress );
+    _layout.SetProgress( _progress );
   }
 
   private void HandleInput( ConsoleKey key ) {
@@ -152,23 +145,26 @@ internal class InteractiveUi : IAsyncDisposable {
         _running.Cancel();
         break;
       case UiAction.ScrollUp:
-        //_scrollOffset -= SubnetViewPort.ScrollAmount;
+        SubnetViewport.ScrollOffset -= ScrollAmount;
         break;
       case UiAction.ScrollDown:
-        //_scrollOffset += SubnetViewPort.ScrollAmount;
+        SubnetViewport.ScrollOffset += ScrollAmount;
         break;
       case UiAction.MoveUp:
-        //_selectedIndex = Math.Max( 0, _selectedIndex - 1 );
+        SubnetViewport.SelectPrevious();
         break;
       case UiAction.MoveDown:
-        //_selectedIndex = Math.Min( _subnets.Count - 1, _selectedIndex + 1 );
+        SubnetViewport.SelectNext();
         break;
       case UiAction.ToggleSubnet:
-        //_subnets[_selectedIndex].IsExpanded = !_subnets[_selectedIndex].IsExpanded;
+        SubnetViewport.ToggleSelected();
         break;
       case UiAction.RestartScan:
         _subnets.Clear();
         StartScanAsync();
+        //TODO wrap below two statements in lock
+        _restartSignal?.SetResult();
+        _restartSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
         //_selectedIndex = 0;
         //_scrollOffset = 0;
         break;
@@ -182,36 +178,35 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   private void OnScanResultUpdated( object? sender, NetworkScanResult scanResult ) {
-    _progress = scanResult.Progress;
+    lock ( _subnets ) {
+      _progress = scanResult.Progress;
 
-    var currentSubnets = scanResult.Subnets
-      .Select( kvp => new Subnet {
-        Cidr = kvp.CidrBlock,
-        Devices = kvp.DiscoveredDevices.Select( dd =>
-          new Device {
-            Ip = dd.Get( AddressType.IpV4 ) ?? "n/a", Mac = dd.Get( AddressType.Mac ) ?? "n/a", IsOnline = true
-          } ).ToList()
-      } ).ToList();
+      var currentSubnets = scanResult.Subnets
+        .Select( kvp => new Subnet {
+          Cidr = kvp.CidrBlock,
+          Devices = kvp.DiscoveredDevices.Select( dd =>
+            new Device {
+              Ip = dd.Get( AddressType.IpV4 ) ?? "n/a", Mac = dd.Get( AddressType.Mac ) ?? "n/a", IsOnline = true
+            } ).ToList()
+        } ).ToList();
 
-    // Same logic as before, but triggered by events
-    var existingSubnetsMap = _subnets.ToDictionary( s => s.Cidr );
-    var updatedUiSubnets = new List<Subnet>();
+      // Same logic as before, but triggered by events
+      var existingSubnetsMap = _subnets.ToDictionary( s => s.Cidr );
+      var updatedUiSubnets = new List<Subnet>();
 
-    foreach ( var subnet in currentSubnets ) {
-      if ( existingSubnetsMap.TryGetValue( subnet.Cidr, out var existingUiSubnet ) ) {
-        subnet.IsExpanded = existingUiSubnet.IsExpanded;
-        updatedUiSubnets.Add( subnet );
+      foreach ( var subnet in currentSubnets ) {
+        if ( existingSubnetsMap.TryGetValue( subnet.Cidr, out var existingUiSubnet ) ) {
+          subnet.IsExpanded = existingUiSubnet.IsExpanded;
+          updatedUiSubnets.Add( subnet );
+        }
+        else {
+          updatedUiSubnets.Add( subnet );
+        }
       }
-      else {
-        updatedUiSubnets.Add( subnet );
-      }
+
+      _subnets.Clear();
+      _subnets.AddRange( updatedUiSubnets );
     }
-
-    _subnets.Clear();
-    _subnets.AddRange( updatedUiSubnets );
-
-    /*if ( _selectedIndex >= _subnets.Count )
-      _selectedIndex = Math.Max( 0, _subnets.Count - 1 );*/
   }
 
   public async ValueTask DisposeAsync() {

@@ -45,7 +45,7 @@ public class DefaultNetworkScanner( SubnetScannerFactory subnetScannerFactory ) 
         Metadata = new Metadata { StartedAt = startedAt, EndedAt = DateTime.Now },
         Status = ScanResultStatus.Success,
         Progress = Percentage.Hundred,
-        Subnets = scannerTasks.Select( t => t.Result )
+        Subnets = scannerTasks.Select( t => t.Result ).ToList()
       };
 
       ResultUpdated?.Invoke( null, result );

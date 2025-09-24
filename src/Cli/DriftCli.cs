@@ -35,7 +35,7 @@ internal static class DriftCli {
       await error.WriteAsync( $"{Chars.Cross} " );
       Console.ForegroundColor = ConsoleColor.Red;
       await error.WriteLineAsync( e.Message );
-      Console.ForegroundColor = ConsoleColor.DarkGray;
+      Console.ForegroundColor = ConsoleColor.Gray;
       await error.WriteLineAsync( e.StackTrace );
       Console.ResetColor();
 

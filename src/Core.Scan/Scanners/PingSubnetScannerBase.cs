@@ -8,8 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Core.Scan.Scanners;
 
-public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
+public abstract class PingSubnetScannerBase : ISubnetScanner {
   public event EventHandler<SubnetScanResult>? ResultUpdated;
+
+  protected abstract Task<bool> PingAsync( IPAddress ip, ILogger logger, CancellationToken cancellationToken );
 
   public async Task<SubnetScanResult> ScanAsync(
     SubnetScanOptions options,
@@ -42,7 +44,7 @@ public class LocalSubnetScanner( IPingTool pingTool ) : ISubnetScanner {
       await throttler.WaitAsync( cancellationToken );
 
       try {
-        var success = ( await pingTool.PingAsync( ip, logger, cancellationToken ) ).Success;
+        var success = await PingAsync( ip, logger, cancellationToken );
         string? hostname = "";
         if ( success ) {
           logger?.LogDebug( "Got reply from {Ip}", ip );

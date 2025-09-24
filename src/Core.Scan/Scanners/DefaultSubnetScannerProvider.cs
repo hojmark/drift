@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Drift.Domain;
 using Drift.Domain.Scan;
 
@@ -8,10 +9,18 @@ public class DefaultSubnetScannerProvider(
   /*IAgentClient agentClient,*/
   //IEnumerable<CidrBlock> localSubnets
 ) : ISubnetScannerProvider {
+  private const bool UseFping = false;
+
   public ISubnetScanner GetScanner( CidrBlock cidr ) {
     /*return localSubnets.Contains( cidr )
       ? new LocalSubnetScanner( _pingTool )
       : new RemoteSubnetScanner( _agentClient );*/
-    return new LocalSubnetScanner( pingTool );
+
+    return
+      RuntimeInformation.IsOSPlatform( OSPlatform.Linux )
+        ? UseFping ? new LinuxFpingSubnetScanner() : new LinuxPingSubnetScanner( pingTool )
+        : RuntimeInformation.IsOSPlatform( OSPlatform.Windows )
+          ? new WindowsPingSubnetScanner()
+          : throw new PlatformNotSupportedException();
   }
 }

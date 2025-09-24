@@ -79,9 +79,7 @@ known devices.
 
 ### ▸ Is there any documentation?
 
-Try using `--help` on the various commands and subcommands to explore functionality. If you run into trouble, feel free
-to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a). There’s no official documentation
-site yet.
+Use `--help` on each command to explore functionality.
 
 There’s a JSON Schema available for the network spec file.
 To enable auto-completion and validation in your editor, add the following line at the top of your spec file:
@@ -92,6 +90,10 @@ To enable auto-completion and validation in your editor, add the following line 
 network:
   ...
 ```
+
+There’s no official documentation site yet.
+
+If you run into trouble, feel free to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a).
 
 ### ▸ Is this useful for: _my homelab_?
 

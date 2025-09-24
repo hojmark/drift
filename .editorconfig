@@ -9,7 +9,7 @@ root = true
 indent_style = space
 
 # Code files
-[*.{cs,csx,json,props}]
+[*.{cs,csproj,json,props}]
 indent_size          = 2
 insert_final_newline = false
 charset              = utf-8

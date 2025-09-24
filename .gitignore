@@ -3,7 +3,7 @@ obj/
 .nuke/temp
 .nuke/parameters.local.json
 *.user
-*.idea
+#*.idea
 *.DotSettings
 *.received.*
 artifacts/

@@ -61,8 +61,8 @@ internal class ScanLayout {
     _layout["Debug"].Update( new Text( text ) );
   }
 
-  public void SetLog( string text ) {
-    _layout["Log"].Update( new Panel( new Text( text ) ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 ) );
+  public void SetLog( IRenderable text ) {
+    _layout["Log"].Update( new Panel( text ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 ) );
   }
 
 

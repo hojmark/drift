@@ -27,7 +27,7 @@ internal class InteractiveUi : IAsyncDisposable {
   //TODO should get IDisposable warning?
   private readonly KeyWatcher _keyWatcher = new();
   private readonly ConsoleResizeWatcher _resizeWatcher = new();
-  
+
   private readonly List<Subnet> _subnets = [];
   private readonly NetworkScanOptions _scanRequest;
   private readonly IKeyMap _keyMap;
@@ -35,8 +35,8 @@ internal class InteractiveUi : IAsyncDisposable {
   private Percentage _progress = Percentage.Zero;
 
   private readonly ILogReader _logReader;
-  private readonly StringBuilder _logBuilder = new();
   private TaskCompletionSource _logUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
+  private readonly LogView _logView;
 
   private TaskCompletionSource _scanUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -56,6 +56,7 @@ internal class InteractiveUi : IAsyncDisposable {
     _logReader.LogUpdated += OnLogUpdated;
 
     SubnetView = new SubnetView( () => _layout.AvailableRows );
+    _logView = new LogView( () => _layout.AvailableRows );
   }
 
   private SubnetView SubnetView {
@@ -64,8 +65,8 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   public async Task<int> RunAsync() {
+    // TODO Async scan and log reading started using different patterns
     _ = StartScanAsync();
-
     await _logReader.StartAsync( _running.Token );
 
     await AnsiConsole
@@ -106,22 +107,15 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   private void OnLogUpdated( object? sender, string line ) {
-    lock ( _logBuilder ) {
-      if ( _logBuilder.Length > 0 )
-        _logBuilder.Append( '\n' );
-      _logBuilder.Append( line );
-      _logUpdateSignal.TrySetResult();
-      _logUpdateSignal = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
-    }
+    _logView.AddLine( line );
+    _logUpdateSignal.TrySetResult();
+    _logUpdateSignal = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
   }
 
   private async Task RenderAsync() {
-    lock ( _logBuilder ) {
-      _layout.SetLog( _logBuilder.ToString() );
-    }
-
     SubnetView.Subnets = _subnets;
     _layout.SetDebug( SubnetView.DebugData );
+    _layout.SetLog( _logView );
     _layout.SetScanTree( SubnetView );
     _layout.SetProgress( _progress );
   }
@@ -133,15 +127,21 @@ internal class InteractiveUi : IAsyncDisposable {
         break;
       case UiAction.ScrollUp:
         SubnetView.ScrollOffset -= ScrollAmount;
+        //TODO should be separately scrollable
+        _logView.ScrollOffset -= ScrollAmount;
         break;
       case UiAction.ScrollDown:
         SubnetView.ScrollOffset += ScrollAmount;
+        //TODO should be separately scrollable
+        _logView.ScrollOffset += ScrollAmount;
         break;
       case UiAction.ScrollUpPage:
         SubnetView.ScrollOffset -= (int) _layout.AvailableRows;
+        _logView.ScrollOffset -= (int) _layout.AvailableRows;
         break;
       case UiAction.ScrollDownPage:
         SubnetView.ScrollOffset += (int) _layout.AvailableRows;
+        _logView.ScrollOffset += (int) _layout.AvailableRows;
         break;
       case UiAction.MoveUp:
         SubnetView.SelectPrevious();

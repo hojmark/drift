@@ -11,4 +11,8 @@
     <AnalysisMode>All</AnalysisMode>
     -->
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" />
+  </ItemGroup>
 </Project>

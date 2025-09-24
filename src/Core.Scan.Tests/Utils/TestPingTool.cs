@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Core.Scan.Tests.Utils;

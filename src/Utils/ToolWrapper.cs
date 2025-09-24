@@ -6,6 +6,9 @@ namespace Drift.Utils;
 
 public class ToolWrapper( string toolPath, Dictionary<string, string?>? environment = null ) {
   private readonly string _toolPath = toolPath ?? throw new ArgumentNullException( nameof(toolPath) );
+  
+  public event DataReceivedEventHandler? OutputDataReceived;
+  public event DataReceivedEventHandler? ErrorDataReceived;
 
   public async Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> ExecuteAsync(
     string arguments,
@@ -33,16 +36,18 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
     var output = new StringBuilder();
     var error = new StringBuilder();
 
-    process.OutputDataReceived += ( sender, args ) => {
+    process.OutputDataReceived += ( _, args ) => {
       if ( args.Data != null ) {
         output.AppendLine( args.Data );
       }
     };
-    process.ErrorDataReceived += ( sender, args ) => {
+    process.OutputDataReceived += OutputDataReceived;
+    process.ErrorDataReceived += ( _, args ) => {
       if ( args.Data != null ) {
         error.AppendLine( args.Data );
       }
     };
+    process.ErrorDataReceived += ErrorDataReceived;
 
     logger?.LogDebug( "Executing: {Tool} {Arguments}", _toolPath, arguments );
 

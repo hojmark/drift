@@ -30,27 +30,27 @@ internal class ScanLayout {
       );
 
     _layout["Header"].Update( BuildHeader() );
-    UpdateProgress( Percentage.Zero );
+    SetProgress( Percentage.Zero );
     _layout["Footer"].Update( BuildFooter() );
   }
 
   public IRenderable Renderable => _layout;
 
-  public void UpdateScanTree( IEnumerable<Tree> content ) {
+  public void SetScanTree( IEnumerable<Tree> content ) {
     _layout["ScanTree"].Update(
       new Panel( new Rows( content ) ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 )
     );
   }
 
-  public void UpdateProgress( Percentage progress ) {
+  public void SetProgress( Percentage progress ) {
     _layout["Progress"].Update( BuildProgressBar( progress ) );
   }
 
-  public void UpdateData( string text ) {
+  public void SetData( string text ) {
     _layout["Data"].Update( new Text( text ) );
   }
 
-  public void UpdateLog( string text ) {
+  public void SetLog( string text ) {
     _layout["Log"].Update( new Panel( new Text( text ) ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 ) );
   }
 

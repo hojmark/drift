@@ -54,8 +54,10 @@ internal class ScanLayout {
     _layout["Log"].Update( new Panel( new Text( text ) ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 ) );
   }
 
-  internal int GetAvailableRows()
-    => AnsiConsole.Console.Profile.Height - 1 - 1 - 1 - 1 - 2; // header + data + footer + progress + padding
+  internal uint GetAvailableRows() {
+    var rows = AnsiConsole.Console.Profile.Height - 1 - 1 - 1 - 1 - 2; // header + data + footer + progress + padding
+    return (uint) Math.Max( 0, rows );
+  }
 
   private static Markup BuildHeader() {
     return new Markup( "[grey]/home/hojmark/[/][yellow bold]fh47[/][grey].spec.yaml[/]  [green]✔[/]" );
@@ -91,7 +93,7 @@ internal class ScanLayout {
       { "q", "quit" },
       { "r", "restart" },
       { "↑/↓" /*"/←/→"*/, "navigate" },
-      { "space", "expansion" },
+      { "space", "toggle" },
       { "w/s", "scroll" },
       // TODO { "l", "log" },
       { "h", "help" }

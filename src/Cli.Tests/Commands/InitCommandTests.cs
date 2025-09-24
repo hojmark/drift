@@ -143,7 +143,7 @@ internal sealed class InitCommandTests {
   public async Task GeneratedSpecWithDiscoveryIsValid() {
     // Arrange
     var subnets = new List<CidrBlock> { new("192.168.0.0/24") };
-    var subnetProvider = new DeclaredSubnetProvider( subnets.Select( CidrBlockExtensions.ToDeclared ) );
+    var subnetProvider = new PredefinedSubnetProvider( subnets.Select( CidrBlockExtensions.ToDeclared ) );
 
     var path = Path.GetTempFileName();
 

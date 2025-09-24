@@ -79,7 +79,7 @@ internal class ScanCommandHandler(
 
     var subnetProviders = new List<ISubnetProvider> { interfaceSubnetProvider };
     if ( network != null ) {
-      subnetProviders.Add( new DeclaredSubnetProvider( network.Subnets ) );
+      subnetProviders.Add( new PredefinedSubnetProvider( network.Subnets ) );
     }
 
     var subnetProvider = new CompositeSubnetProvider( subnetProviders );

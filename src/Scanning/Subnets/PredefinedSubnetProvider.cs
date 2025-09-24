@@ -2,7 +2,7 @@ using Drift.Domain;
 
 namespace Drift.Scanning.Subnets;
 
-public class DeclaredSubnetProvider( IEnumerable<DeclaredSubnet> subnets ) : ISubnetProvider {
+public class PredefinedSubnetProvider( IEnumerable<DeclaredSubnet> subnets ) : ISubnetProvider {
   public List<CidrBlock> Get() {
     return subnets
       .Where( s => s.Enabled ?? true )

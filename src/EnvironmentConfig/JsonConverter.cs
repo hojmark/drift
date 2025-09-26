@@ -23,7 +23,15 @@ public static class JsonConverter {
     //return JsonSerializer.Deserialize<T>( stream, SerializerOptions );
   }
 
-  public static string Serialize( object environment ) {
-    return JsonSerializer.Serialize( environment, SerializerOptions );
+  public static string Serialize( object environment,
+    System.Text.Json.Serialization.JsonConverter? extraConverter = null ) {
+    //TODO hack
+    var options = SerializerOptions;
+    if ( extraConverter != null ) {
+      options = new JsonSerializerOptions( SerializerOptions );
+      options.Converters.Add( extraConverter );
+    }
+
+    return JsonSerializer.Serialize( environment, options );
   }
 }

@@ -1,7 +1,13 @@
 namespace Drift.Cli.Output.Abstractions;
 
 // Internal?
-public interface IOutputManager {
+internal interface IOutputManager {
+  /// <summary>
+  /// Gets a <see cref="TextReader"/> that can be used to read from both the <see cref="Normal"/> and <see cref="Log"/>
+  /// outputs, depending on the configured output format.
+  /// </summary>
+  internal TextReader GetReader();
+
   internal ILogOutput Log {
     get;
   }

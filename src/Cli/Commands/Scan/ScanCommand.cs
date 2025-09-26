@@ -1,17 +1,18 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
-using Drift.Cli.Commands.Init;
+using Drift.Cli.Commands.Scan.Interactive;
+using Drift.Cli.Commands.Scan.Interactive.KeyMaps;
 using Drift.Cli.Commands.Scan.Rendering;
-using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Logging;
 using Drift.Cli.Renderer;
-using Drift.Cli.Scan;
+using Drift.Common;
 using Drift.Domain;
-using Drift.Domain.Progress;
 using Drift.Domain.Scan;
-using Drift.Utils;
+using Drift.Scanning.Subnets;
+using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
@@ -27,11 +28,11 @@ namespace Drift.Cli.Commands.Scan;
  *   Monitor mode:
  *     drift monitor --reference declared.yaml --interval 10m --notify slack,email,log,webhook
  */
-internal class ScanCommand( IServiceProvider provider ) : CommandBase<ScanParameters, ScanCommandHandler>(
-  "scan",
-  "Scan the network and detect drift",
-  provider
-) {
+internal class ScanCommand : CommandBase<ScanParameters, ScanCommandHandler> {
+  public ScanCommand( IServiceProvider provider ) : base( "scan", "Scan the network and detect drift", provider ) {
+    Add( ScanParameters.Options.Interactive );
+  }
+
   private enum ShowMode {
     All = 1,
     Changed = 2,
@@ -58,7 +59,7 @@ internal class ScanCommand( IServiceProvider provider ) : CommandBase<ScanParame
   }
 }
 
-public class ScanCommandHandler(
+internal class ScanCommandHandler(
   IOutputManager output,
   INetworkScanner scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider,
@@ -78,7 +79,7 @@ public class ScanCommandHandler(
 
     var subnetProviders = new List<ISubnetProvider> { interfaceSubnetProvider };
     if ( network != null ) {
-      subnetProviders.Add( new DeclaredSubnetProvider( network.Subnets ) );
+      subnetProviders.Add( new PredefinedSubnetProvider( network.Subnets ) );
     }
 
     var subnetProvider = new CompositeSubnetProvider( subnetProviders );
@@ -88,6 +89,8 @@ public class ScanCommandHandler(
 
     var subnets = subnetProvider.Get();
 
+    var scanRequest = new NetworkScanOptions { Cidrs = subnets };
+
     output.Normal.WriteLine( 0,
       $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : "" )}" ); // TODO many more varieties
     foreach ( var cidr in subnets ) {
@@ -96,48 +99,65 @@ public class ScanCommandHandler(
       output.Normal.WriteLine(
         " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
         " addresses, estimated scan time is " +
-        InitCommandHandler.CalculateScanDuration(
-          cidr,
-          PingNetworkScanner.MaxPingsPerSecond
-        ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
+        scanRequest.EstimatedDuration(
+          cidr ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
         ")", ConsoleColor.DarkGray );
     }
 
     output.Log.LogInformation(
-      "Scanning {SubnetCount} subnet(s): {SubnetList}", subnets.Count,
+      "Scanning {SubnetCount} subnet(s): {SubnetList}",
+      subnets.Count,
       string.Join( ", ", subnets )
     );
 
-    ScanResult? scanResult = null;
+    if ( parameters.Interactive ) {
+      var ui = new InteractiveUi( output, network, scanner, scanRequest, new DefaultKeyMap(), parameters.ShowLogPanel );
+      return await ui.RunAsync();
+    }
+
+    NetworkScanResult? scanResult = null;
 
     if ( output.Is( OutputFormat.Normal ) ) {
-      var dCol = new TaskDescriptionColumn();
-      dCol.Alignment = Justify.Right;
-      var pCol = new PercentageColumn();
-      pCol.Style = new Style( Color.Cyan1 );
-      pCol.CompletedStyle = new Style( Color.Green1 );
+      var dCol = new TaskDescriptionColumn { Alignment = Justify.Right };
+      var pCol = new PercentageColumn { Style = new Style( Color.Cyan1 ), CompletedStyle = new Style( Color.Green1 ) };
       scanResult = await AnsiConsole.Progress()
         .AutoClear( true )
         .Columns( dCol, pCol )
         .StartAsync( async ctx => {
-          var progressBars = new Dictionary<string, ProgressTask>();
-          progressBars["Ping Scan"] = ctx.AddTask( "Ping Scan" );
-          //progressBars["DNS resolution"] = ctx.AddTask( "DNS resolution" );
-          //progressBars["Connect Scan"] = ctx.AddTask( "Connect Scan" );
+          var progressBar = ctx.AddTask( "Ping Scan" );
 
-          return await scanner.ScanAsync( subnets, onProgress: progressReport => {
-            UpdateProgressBar( progressReport, ctx, progressBars );
-          }, cancellationToken: CancellationToken.None );
+          EventHandler<NetworkScanResult> updater = ( _, r ) => {
+            progressBar.Value = r.Progress;
+          };
+
+          scanner.ResultUpdated += updater;
+
+          try {
+            return await scanner.ScanAsync( scanRequest, output.GetLogger(),
+              cancellationToken: CancellationToken.None );
+          }
+          finally {
+            scanner.ResultUpdated -= updater;
+          }
         } );
     }
 
     if ( output.Is( OutputFormat.Log ) ) {
       var lastLogTime = DateTime.MinValue;
-      var completedTasks = new HashSet<string>();
 
-      scanResult = await scanner.ScanAsync( subnets, onProgress: progressReport => {
-        UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
-      }, cancellationToken: CancellationToken.None );
+      EventHandler<NetworkScanResult> updater = ( _, r ) => {
+        UpdateProgressLog( r.Progress, output, ref lastLogTime );
+      };
+
+      scanner.ResultUpdated += updater;
+
+      try {
+        scanResult =
+          await scanner.ScanAsync( scanRequest, output.GetLogger(), cancellationToken: CancellationToken.None );
+      }
+      finally {
+        scanner.ResultUpdated -= updater;
+      }
     }
 
     if ( scanResult == null ) {
@@ -159,68 +179,33 @@ public class ScanCommandHandler(
 
     renderer.Render(
       new ScanRenderData {
-        DevicesDiscovered = scanResult.DiscoveredDevices,
+        DevicesDiscovered = scanResult.Subnets.SelectMany( s => s.DiscoveredDevices ),
         DevicesDeclared = network == null ? [] : network.Devices.Where( d => d.Enabled ?? true )
-      } /*, output.Log*/
+      }
     );
 
     output.Log.LogDebug( "Scan command completed" );
 
     return ExitCodes.Success;
-
-    void UpdateProgressBar(
-      ProgressReport progressReport,
-      ProgressContext context,
-      Dictionary<string, ProgressTask> progressBars
-    ) {
-      foreach ( var taskProgress in progressReport.Tasks ) {
-        //TODO hack
-        var transformedTaskName = taskProgress.TaskName.Contains( "DNS" ) ? "DNS resolution" : taskProgress.TaskName;
-
-        if ( !progressBars.TryGetValue( transformedTaskName, out var bar ) ) {
-          bar = context.AddTask( $"{transformedTaskName}" );
-          progressBars[transformedTaskName] = bar;
-        }
-
-        if ( !bar.IsFinished ) {
-          // Spectre's max value is 100 by default
-          bar.Value = Math.Min( taskProgress.CompletionPct, 100 );
-        }
-      }
-    }
   }
-
 
   //TODO make private
   internal static void UpdateProgressLog(
-    ProgressReport progressReport,
+    Percentage progress,
     IOutputManager output,
-    ref DateTime lastLogTime,
-    ref HashSet<string> completedTasks
+    ref DateTime lastLogTime
   ) {
     var now = DateTime.UtcNow;
-    bool shouldLog = ( now - lastLogTime ).TotalSeconds >= 1;
+    bool shouldLog = ( now - lastLogTime ).TotalSeconds >= 1 ||
+                     // Always log start/end
+                     progress == Percentage.Zero ||
+                     progress == Percentage.Hundred;
 
-    if ( shouldLog ) {
-      foreach ( var taskProgress in progressReport.Tasks ) {
-        //TODO hack
-        var transformedTaskName = taskProgress.TaskName.Contains( "DNS" ) ? "DNS resolution" : taskProgress.TaskName;
-        if ( completedTasks.Contains( transformedTaskName ) ) {
-          continue;
-        }
-
-        output.Log.LogInformation( "{TaskName}: {CompletionPct}%", transformedTaskName, taskProgress.CompletionPct );
-
-        if ( taskProgress.CompletionPct >= 100 ) {
-          completedTasks.Add( transformedTaskName );
-        }
-
-        Thread.Sleep( 500 ); //TODO remove
-      }
+    if ( !shouldLog ) {
+      return;
     }
 
-    if ( shouldLog ) {
-      lastLogTime = now;
-    }
+    output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress );
+    lastLogTime = now;
   }
 }

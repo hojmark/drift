@@ -1,8 +1,8 @@
-﻿using Drift.Utils;
+﻿using Drift.Common;
 
 namespace Drift.Cli.Tests;
 
-public class ToolWrapperTests {
+internal sealed class ToolWrapperTests {
   [Test]
   public async Task StdOutTest() {
     var echo = new ToolWrapper( "echo" );

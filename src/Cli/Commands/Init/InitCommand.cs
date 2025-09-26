@@ -1,20 +1,19 @@
 using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan;
-using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Output.Logging;
 using Drift.Cli.Output.Normal;
-using Drift.Cli.Scan;
+using Drift.Common;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
-using Drift.Utils;
+using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.Logging;
 using NaturalSort.Extension;
 using Spectre.Console;
@@ -65,7 +64,7 @@ internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
   }
 }
 
-public class InitCommandHandler(
+internal class InitCommandHandler(
   IOutputManager output,
   INetworkScanner scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider
@@ -191,7 +190,9 @@ public class InitCommandHandler(
       // SCAN
       var subnets = interfaceSubnetProvider.Get().ToList();
 
-      ScanResult? scanResult = null;
+      var scanRequest = new NetworkScanOptions { Cidrs = subnets };
+
+      NetworkScanResult? scanResult = null;
 
       //TODO create unit test for this
       output.Normal.WriteLineVerbose(
@@ -199,10 +200,7 @@ public class InitCommandHandler(
           subnets.Select( cidr =>
             cidr + " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
             " addresses, " +
-            CalculateScanDuration(
-              cidr,
-              PingNetworkScanner.MaxPingsPerSecond
-            ) /* TODO .Humanize( 2, CultureInfo.InvariantCulture )*/ +
+            scanRequest.EstimatedDuration( cidr ) /* TODO .Humanize( 2, CultureInfo.InvariantCulture )*/ +
             " estimated scan time" +
             ")"
           )
@@ -214,7 +212,7 @@ public class InitCommandHandler(
           await AnsiConsole
             .Status()
             .StartAsync( "Scanning network ...", async ctx => {
-              scanResult = await scanner.ScanAsync( subnets );
+              scanResult = await scanner.ScanAsync( scanRequest, output.GetLogger() );
               await Task.Delay( 1500 );
             } );
         }
@@ -222,11 +220,19 @@ public class InitCommandHandler(
         if ( output.Is( OutputFormat.Log ) ) {
           output.Log.LogInformation( "Scanning network..." );
           var lastLogTime = DateTime.MinValue;
-          var completedTasks = new HashSet<string>();
 
-          scanResult = await scanner.ScanAsync( subnets, onProgress: progressReport => {
-            ScanCommandHandler.UpdateProgressLog( progressReport, output, ref lastLogTime, ref completedTasks );
-          }, cancellationToken: CancellationToken.None );
+          EventHandler<NetworkScanResult> updater = ( _, r ) => {
+            ScanCommandHandler.UpdateProgressLog( r.Progress, output, ref lastLogTime );
+          };
+
+          scanner.ResultUpdated += updater;
+
+          try {
+            scanResult = await scanner.ScanAsync( scanRequest, cancellationToken: CancellationToken.None );
+          }
+          finally {
+            scanner.ResultUpdated -= updater;
+          }
         }
 
         if ( scanResult == null ) {
@@ -236,7 +242,9 @@ public class InitCommandHandler(
         }
 
         output.Log.LogInformation( "Scan completed" );
-        output.Log.LogDebug( "Found {Count} devices", scanResult.DiscoveredDevices.Count() );
+        output.Log.LogDebug( "Found {Count} devices",
+          scanResult.Subnets.Select( subnet => subnet.DiscoveredDevices.Count() ).Sum()
+        );
 
         output.Log.LogInformation( "Writing spec..." );
 
@@ -274,22 +282,16 @@ public class InitCommandHandler(
     }
   }
 
-  //TODO move somewhere else
-  internal static TimeSpan CalculateScanDuration( CidrBlock cidr, double scansPerSecond ) {
-    double hostCount = IpNetworkUtils.GetIpRangeCount( cidr );
-    double totalSeconds = hostCount / scansPerSecond;
-    return TimeSpan.FromSeconds( totalSeconds );
-  }
-
   internal static void CreateSpecWithDiscovery(
-    ScanResult? scanResult,
+    NetworkScanResult? scanResult,
     List<CidrBlock> subnets,
     string specPath
   ) {
-    var devices = scanResult?.DiscoveredDevices.ToDeclared() ?? [];
+    var devices = scanResult?.Subnets.SelectMany( subnet => subnet.DiscoveredDevices ).ToDeclared() ?? [];
     CreateSpec( subnets, devices, specPath );
   }
 
+  //TODO consider "dropdown" for different templates
   internal static void CreateSpecWithoutDiscovery( string specPath ) {
     var networkBuilder = new NetworkBuilder();
 

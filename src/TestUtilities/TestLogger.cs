@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.TestUtilities;
 
-public class TestLogger : ILogger {
+internal sealed class TestLogger : ILogger {
   private readonly string _categoryName;
 
   public TestLogger( string categoryName = "" ) {

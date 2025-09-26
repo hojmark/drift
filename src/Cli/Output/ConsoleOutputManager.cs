@@ -9,16 +9,22 @@ internal class ConsoleOutputManager(
   TextWriter normalStdOut,
   TextWriter normalErrOut,
   bool normalVerbose,
+  bool normalVeryVerbose,
   OutputFormat outputFormat,
-  bool plainConsole
+  bool plainConsole,
+  TextReader reader
 ) : IOutputManager {
+  public TextReader GetReader() {
+    return reader;
+  }
+
   public ILogOutput Log {
     get;
   } = new LogOutput( consoleLogger );
 
   public INormalOutput Normal {
     get;
-  } = new NormalOutput( normalStdOut, normalErrOut, plainConsole, normalVerbose );
+  } = new NormalOutput( normalStdOut, normalErrOut, plainConsole, normalVerbose, normalVeryVerbose );
 
   public IJsonOutput Json {
     get;

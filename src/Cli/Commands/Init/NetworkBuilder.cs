@@ -8,7 +8,7 @@ using Network = Drift.Domain.Network;
 namespace Drift.Cli.Commands.Init;
 
 // Network is only part of the spec...
-public class NetworkBuilder {
+internal class NetworkBuilder {
   private readonly Network _network;
   //private readonly ISerializer _yamlSerializer;
 

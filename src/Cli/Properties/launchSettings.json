@@ -18,9 +18,15 @@
       "dotnetRunMessages": true,
       "environmentVariables": {}
     },
-    "scan (home)": {
+    "scan ~": {
       "commandName": "Project",
       "commandLineArgs": "scan ~",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    },
+    "scan ~ -i": {
+      "commandName": "Project",
+      "commandLineArgs": "scan ~ -i",
       "dotnetRunMessages": true,
       "environmentVariables": {}
     },

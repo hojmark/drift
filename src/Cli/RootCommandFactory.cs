@@ -4,12 +4,13 @@ using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Scan;
-using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output;
 using Drift.Cli.Output.Abstractions;
-using Drift.Cli.Scan;
-using Drift.Cli.Tools;
+using Drift.Cli.Output.Logging;
 using Drift.Domain.Scan;
+using Drift.Scanning;
+using Drift.Scanning.Scanners;
+using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli;
@@ -77,7 +78,9 @@ internal static class RootCommandFactory {
   }
 
   private static void ConfigureSubnetProvider( IServiceCollection services ) {
-    services.AddScoped<IInterfaceSubnetProvider, PhysicalInterfaceSubnetProvider>();
+    services.AddScoped<IInterfaceSubnetProvider>( sp =>
+      new PhysicalInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>().GetLogger() )
+    );
   }
 
   private static void ConfigureBuiltInCommandHandlers( IServiceCollection services ) {
@@ -103,8 +106,9 @@ internal static class RootCommandFactory {
   }
 
   private static void ConfigureNetworkScanner( IServiceCollection services ) {
-    services.AddSingleton<IPingTool, OsPingTool>();
-    services.AddScoped<INetworkScanner, PingNetworkScanner>();
+    services.AddSingleton<IPingTool, LinuxPingTool>();
+    services.AddScoped<SubnetScannerFactory>();
+    services.AddScoped<INetworkScanner, DefaultNetworkScanner>();
   }
 
   private static void AddFigletHeaderToHelpCommand( RootCommand rootCommand ) {

@@ -1,36 +1,45 @@
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init;
-using Drift.Cli.Commands.Scan.Subnet;
 using Drift.Cli.Output.Abstractions;
-using Drift.Cli.Tests.Utils;
+using Drift.Cli.Output.Logging;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Scan;
+using Drift.Scanning.Subnets;
+using Drift.Scanning.Subnets.Interface;
+using Drift.Scanning.Tests.Utils;
 using Drift.Spec.Schema;
 using Drift.Spec.Validation;
 using Drift.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using NetworkInterface = Drift.Cli.Commands.Scan.Subnet.NetworkInterface;
+using NetworkInterface = Drift.Scanning.Subnets.Interface.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 
-public class InitCommandTests {
+internal sealed class InitCommandTests {
   const string SpecNameWithDiscovery = "myNetworkWithDiscovery";
   const string SpecNameWithoutDiscovery = "myNetworkWithoutDiscovery";
 
-  private static readonly ScanResult ScanResult = new() {
+  private static readonly NetworkScanResult ScanResult = new() {
     Metadata =
       new Metadata {
         StartedAt = DateTime.Parse( "2025-06-11T12:20:08.4219405+02:00" ).ToUniversalTime(),
         EndedAt = DateTime.Parse( "2025-06-11" )
       },
     Status = ScanResultStatus.Success,
-    DiscoveredDevices = [
-      new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
-      new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.11" )] },
-      new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.12" )] }
+    Subnets = [
+      new SubnetScanResult {
+        CidrBlock = new CidrBlock( "192.168.0.0/24" ),
+        Metadata = null,
+        Status = ScanResultStatus.Success,
+        DiscoveredDevices = [
+          new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.10" )] },
+          new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.11" )] },
+          new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.12" )] }
+        ]
+      }
     ]
   };
 
@@ -82,7 +91,7 @@ public class InitCommandTests {
     var serviceConfig = ( IServiceCollection services ) => {
       services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
       services.AddScoped<IInterfaceSubnetProvider>( sp =>
-        new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), Interfaces )
+        new PredefinedInterfaceSubnetProvider( Interfaces, sp.GetRequiredService<IOutputManager>().GetLogger() )
       );
     };
 
@@ -134,7 +143,7 @@ public class InitCommandTests {
   public async Task GeneratedSpecWithDiscoveryIsValid() {
     // Arrange
     var subnets = new List<CidrBlock> { new("192.168.0.0/24") };
-    var subnetProvider = new DeclaredSubnetProvider( subnets.Select( CidrBlockExtensions.ToDeclared ) );
+    var subnetProvider = new PredefinedSubnetProvider( subnets.Select( CidrBlockExtensions.ToDeclared ) );
 
     var path = Path.GetTempFileName();
 

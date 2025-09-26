@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <Using Include="NUnit.Framework"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Diff\Diff.csproj"/>
         <ProjectReference Include="..\EnvironmentConfig\EnvironmentConfig.csproj"/>
         <ProjectReference Include="..\Spec\Spec.csproj"/>
@@ -8,16 +12,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="coverlet.collector"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
         <PackageReference Include="NUnit"/>
         <PackageReference Include="NUnit.Analyzers"/>
         <PackageReference Include="NUnit3TestAdapter"/>
         <PackageReference Include="Verify.NUnit"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Using Include="NUnit.Framework"/>
     </ItemGroup>
 
 </Project>

@@ -109,8 +109,9 @@ internal class ScanLayout( NetworkId? networkId ) {
       { "↑/↓" /*"/←/→"*/, "navigate" },
       { "space", "toggle" },
       { "w/s", "scroll" },
-      // TODO { "l", "log" },
-      { "h", "help" }
+      { "l", "log" },
+      //{ "v", "view" },
+      //{ "h", "help" }
     };
 
     var footerParts = new List<string>();

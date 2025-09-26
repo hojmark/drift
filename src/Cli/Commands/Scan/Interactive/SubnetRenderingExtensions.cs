@@ -18,4 +18,8 @@ internal static class SubnetRenderingExtensions {
   internal static int GetIdWidth( this List<Subnet> subnets ) {
     return subnets.SelectMany( s => s.Devices ).Max( d => d.IdRaw.Length );
   }
+  internal static int GetStateTextWidth( this List<Subnet> subnets ) {
+    //TODO raw version does not exist
+    return subnets.SelectMany( s => s.Devices ).Max( d => d.StateText.Length );
+  }
 }

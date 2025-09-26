@@ -35,32 +35,16 @@ internal class LogScanRenderer( ILogOutput log ) : DiffRendererBase {
         _ => throw new Exception( "øv" )
       };
 
-      var portDiffs = GetPortDifferences( differences, diff.PropertyPath );
-
-      foreach ( var portDiff in portDiffs ) {
-        logger?.LogTrace( "Port diff: {Action} {Path}", portDiff.DiffType, portDiff.PropertyPath );
-      }
-
-      var ports = portDiffs.Select( p => {
-        return p.DiffType switch {
-          DiffType.Unchanged => ( (Port) p.Original! ),
-          DiffType.Removed => ( (Port) p.Original! ),
-          DiffType.Added => ( (Port) p.Updated! ),
-          _ => throw new Exception( "øv" )
-        };
-      } ).ToList();
-
       var hostname = device.Get( AddressType.Hostname );
       var mac = device.Get( AddressType.Mac );
 
       log.Log(
         state == DiffType.Unchanged ? LogLevel.Information : LogLevel.Warning,
-        "{State}: IPv4: {Get}, hostname: {Hostname}, MAC: {Mac}, ports: {Ports}",
+        "{State}: IPv4: {Get}, hostname: {Hostname}, MAC: {Mac}",
         state.ToString().ToUpperInvariant(),
         device.Get( AddressType.IpV4 ),
         hostname?.ToLowerInvariant() ?? "",
-        mac?.ToUpperInvariant() ?? "",
-        string.Join( ",", ports.Select( x => x.Value ) )
+        mac?.ToUpperInvariant() ?? ""
       );
     }
   }

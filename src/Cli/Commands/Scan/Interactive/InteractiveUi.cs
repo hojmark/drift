@@ -281,7 +281,7 @@ internal class InteractiveUi : IAsyncDisposable {
             ), AddressType.Mac, deviceIdDeclared
           ),
           IdRaw = declaredDevice?.Id ?? "",
-          Id = "[grey]" + ( declaredDevice?.Id ?? "" ) + "[/]",
+          Id = "[blue]" + ( declaredDevice?.Id ?? "" ) + "[/]",
           StateText = textStatus
         };
 

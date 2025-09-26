@@ -32,13 +32,6 @@ internal abstract class DiffRendererBase : IRenderer<ScanRenderData> {
       .ToList();
   }
 
-  protected static List<ObjectDiff> GetPortDifferences( List<ObjectDiff> differences, string propertyPath ) {
-    return differences.Where( d =>
-        Regex.IsMatch( d.PropertyPath, $@"^{Regex.Escape( propertyPath )}\.Ports\[[^\]]+?\]$" ) )
-      .OrderBy( d => d.PropertyPath )
-      .ToList();
-  }
-
   protected abstract void Render( List<ObjectDiff> differences, IEnumerable<DeclaredDevice> declaredDevices,
     // TODO Delete ILogger parameter
     ILogger? logger = null

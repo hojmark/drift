@@ -108,21 +108,6 @@ internal class NormalScanRenderer( INormalOutput console ) : DiffRendererBase {
       var textStatus =
         GetStatusText( declaredDeviceState, discoveredDeviceState, state == DiffType.Added, allowUnknownDevices );
 
-      var portDiffs = GetPortDifferences( differences, diff.PropertyPath );
-
-      foreach ( var portDiff in portDiffs ) {
-        logger?.LogTrace( "Port diff: {Action} {Path}", portDiff.DiffType, portDiff.PropertyPath );
-      }
-
-      var ports = portDiffs.Select( p => {
-        return p.DiffType switch {
-          DiffType.Unchanged => ( (Port) p.Original! ),
-          DiffType.Removed => ( (Port) p.Original! ),
-          DiffType.Added => ( (Port) p.Updated! ),
-          _ => throw new Exception( "øv" )
-        };
-      } ).ToList();
-
       var mac = device.Get( AddressType.Mac );
 
       var deviceId = device.GetDeviceId();

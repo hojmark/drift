@@ -38,7 +38,10 @@ internal static class TreeRenderer {
         else if ( treeStartRow < treeHeight && subnet.IsExpanded ) {
           // Show partial tree (skip header, show some devices)
           int devicesToSkip = treeStartRow - 1; // -1 because we're skipping the header
-          int devicesToShow = Math.Min( maxDeviceRows + 1, subnet.Devices.Count - devicesToSkip ); // +1 because the header is not shown (makes room for additional device)
+          int devicesToShow =
+            Math.Min( maxDeviceRows + 1,
+              subnet.Devices.Count -
+              devicesToSkip ); // +1 because the header is not shown (makes room for additional device)
 
           if ( devicesToShow > 0 ) {
             trees.Add( BuildPartialTree( subnet, subnets, devicesToSkip ) );
@@ -55,7 +58,7 @@ internal static class TreeRenderer {
 
   private static Tree BuildPartialTree( Subnet subnet, List<Subnet> subnets, int skipDevices ) {
     // Create a tree with an empty header since we're showing a continuation
-    var tree = new Tree( "" ).Guide( TreeGuide.Line );
+    var tree = new Tree( "" ).DefaultStyle();
 
     var devices = subnet.Devices
       .Skip( skipDevices )
@@ -69,20 +72,24 @@ internal static class TreeRenderer {
     return tree;
   }
 
+  private static Tree DefaultStyle( this Tree tree ) {
+    return tree.Guide( TreeGuide.Line );
+  }
+
   private static Tree BuildTree( Subnet subnet, List<Subnet> subnets, bool isSelected, int? maxDeviceCount = null ) {
     var symbol = subnet.IsExpanded ? "▾" : "▸";
 
     string summary =
-      $"[grey]({subnet.Devices.Count} devices: " +
-      $"{subnet.Devices.Count( d => d.IsOnline )} online, " +
-      $"{subnet.Devices.Count( d => !d.IsOnline )} offline)[/]";
+      $"[grey]({subnet.Devices.Count} devices: " + "[/]"; // +
+    //$"{subnet.Devices.Count( d => d.IsOnline )} online, " +
+    //$"{subnet.Devices.Count( d => !d.IsOnline )} offline)[/]";
 
     string header = $"{symbol} {subnet.Cidr}";
     string formattedHeader = isSelected
       ? $"[black on yellow]{header}[/] {summary}"
       : $"[blue]{header}[/] {summary}";
 
-    var tree = new Tree( formattedHeader ).Guide( TreeGuide.Line );
+    var tree = new Tree( formattedHeader ).DefaultStyle();
 
     if ( subnet.IsExpanded ) {
       var devices = subnet.Devices;
@@ -94,7 +101,7 @@ internal static class TreeRenderer {
         tree.AddNode( deviceString );
       }
 
-      // Optionally show ellipsis if tree was truncated
+      // Show ellipsis if tree was truncated
       if ( maxDeviceCount is not null && maxDeviceCount < subnet.Devices.Count ) {
         tree.AddNode( "[grey]...[/]" );
       }
@@ -104,12 +111,21 @@ internal static class TreeRenderer {
   }
 
   private static string RenderDevice( Device device, List<Subnet> subnets ) {
-    string statusColor = device.IsOnline ? "green" : "red";
-    string statusText = device.IsOnline ? "Online" : "Offline";
-
     return
-      $"[white]{device.Ip.PadRight( subnets.GetIpWidth() )}[/]  " +
-      $"[grey]{device.Mac.PadRight( subnets.GetMacWidth() )}[/]  " +
-      $"[{statusColor}]{statusText.PadRight( StatusWidth )}[/]";
+      //device.Status + " " +
+      $"{device.Ip.PadRightLocal( device.IpRaw.Length, subnets.GetIpWidth() )}  " +
+      $"{device.Mac.PadRightLocal( device.MacRaw.Length, subnets.GetMacWidth() )}  " +
+      $"{device.Id.PadRightLocal( device.IdRaw.Length, subnets.GetIdWidth() )}  " +
+      device.StatusText;
+  }
+
+  private static string PadRightLocal( this string str, int length, int totalWidth ) {
+    int oldLength = length;
+    int count = totalWidth - oldLength;
+
+    var padding = new char[count];
+    new Span<char>( padding ).Fill( ' ' );
+
+    return str + new string( padding );
   }
 }

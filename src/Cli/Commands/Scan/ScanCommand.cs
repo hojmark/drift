@@ -105,13 +105,13 @@ internal class ScanCommandHandler(
     }
 
     output.Log.LogInformation(
-      "Scanning {SubnetCount} subnet(s): {SubnetList}", 
+      "Scanning {SubnetCount} subnet(s): {SubnetList}",
       subnets.Count,
       string.Join( ", ", subnets )
     );
 
     if ( parameters.Interactive ) {
-      var ui = new InteractiveUi( output, scanner, scanRequest, new DefaultKeyMap(), parameters.ShowLogPanel );
+      var ui = new InteractiveUi( output, network, scanner, scanRequest, new DefaultKeyMap(), parameters.ShowLogPanel );
       return await ui.RunAsync();
     }
 

@@ -36,6 +36,18 @@ internal class NullOutputManager : IOutputManager {
 }
 
 internal class NullOutput : INormalOutput, ILogOutput, IJsonOutput {
+  public void WriteVeryVerbose( string text, ConsoleColor? foreground, ConsoleColor? background = null ) {
+    // No-op
+  }
+
+  public void WriteLineVeryVerbose() {
+    // No-op
+  }
+
+  public void WriteLineVeryVerbose( string text, ConsoleColor? foreground, ConsoleColor? background = null ) {
+    // No-op
+  }
+
   public void WriteVerbose( string text, ConsoleColor? foreground, ConsoleColor? background = null ) {
     // No-op
   }

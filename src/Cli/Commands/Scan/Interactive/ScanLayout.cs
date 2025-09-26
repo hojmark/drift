@@ -68,7 +68,7 @@ internal class ScanLayout {
 
   private static Markup BuildHeader() {
     //TODO update with actual path
-    return new Markup( "[grey]/home/hojmark/[/][yellow bold]fh47[/][grey].spec.yaml[/]  [green]✔[/]" );
+    return new Markup( "[grey]/home/hojmark/[/][blue bold]fh47[/][grey].spec.yaml[/]  [green]✔[/]" );
   }
 
   private static Layout BuildProgressBar( Percentage progress ) {

@@ -91,11 +91,6 @@ internal class ScanCommandHandler(
 
     var scanRequest = new NetworkScanOptions { Cidrs = subnets };
 
-    if ( parameters.Interactive ) {
-      var ui = new InteractiveUi( output, scanner, scanRequest, new DefaultKeyMap(), parameters.ShowLogPanel );
-      return await ui.RunAsync();
-    }
-
     output.Normal.WriteLine( 0,
       $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : "" )}" ); // TODO many more varieties
     foreach ( var cidr in subnets ) {
@@ -110,9 +105,15 @@ internal class ScanCommandHandler(
     }
 
     output.Log.LogInformation(
-      "Scanning {SubnetCount} subnet(s): {SubnetList}", subnets.Count,
+      "Scanning {SubnetCount} subnet(s): {SubnetList}", 
+      subnets.Count,
       string.Join( ", ", subnets )
     );
+
+    if ( parameters.Interactive ) {
+      var ui = new InteractiveUi( output, scanner, scanRequest, new DefaultKeyMap(), parameters.ShowLogPanel );
+      return await ui.RunAsync();
+    }
 
     NetworkScanResult? scanResult = null;
 

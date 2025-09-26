@@ -116,7 +116,7 @@ internal static class TreeRenderer {
       $"{device.Ip.PadRightLocal( device.IpRaw.Length, subnets.GetIpWidth() )}  " +
       $"{device.Mac.PadRightLocal( device.MacRaw.Length, subnets.GetMacWidth() )}  " +
       $"{device.Id.PadRightLocal( device.IdRaw.Length, subnets.GetIdWidth() )}  " +
-      device.StatusText;
+      device.StateText;
   }
 
   private static string PadRightLocal( this string str, int length, int totalWidth ) {

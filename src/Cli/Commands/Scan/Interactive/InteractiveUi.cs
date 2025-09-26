@@ -266,7 +266,7 @@ internal class InteractiveUi : IAsyncDisposable {
         var deviceIdDeclared = ( declaredDevice as IAddressableDevice )?.GetDeviceId();
 
         var d = new Device {
-          Status = status,
+          State = status,
           IpRaw = device.Get( AddressType.IpV4 ) ?? "",
           Ip = MarkId( device.Get( AddressType.IpV4 ) ?? "", AddressType.IpV4, deviceIdDeclared ),
           MacRaw = mac != null
@@ -281,7 +281,7 @@ internal class InteractiveUi : IAsyncDisposable {
           ),
           IdRaw = declaredDevice?.Id ?? "",
           Id = "[grey]" + ( declaredDevice?.Id ?? "" ) + "[/]",
-          StatusText = textStatus
+          StateText = textStatus
         };
 
         devices.Add( d );
@@ -416,9 +416,9 @@ internal class InteractiveUi : IAsyncDisposable {
 
     // Unknown device
     if ( isUnknown && !unknownAllowed )
-      return "[red]Unknown device[/]";
+      return "[red]Online (unknown)[/]";
     if ( isUnknown && unknownAllowed )
-      return "[yellow]Unknown device[/]";
+      return "[yellow]Online (unknown)[/]";
 
     // Fallback/Undefined
     return "[yellow]Unknown or undefined[/]";

@@ -32,13 +32,18 @@ internal class Device {
     set;
   }
 
-  public required string Status {
+  public required string State {
     get;
     set;
   }
 
-  public required string StatusText {
+  public required string StateText {
     get;
     set;
   }
+  
+  public string Note {
+    get;
+    set;
+  } //TODO e.g. "Last seen 5 hours ago""
 }

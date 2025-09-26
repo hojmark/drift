@@ -31,7 +31,7 @@ internal class InteractiveUi : IAsyncDisposable {
   private readonly IOutputManager _outputManager;
   private readonly Network? _network;
   private readonly INetworkScanner _scanner;
-  private readonly ScanLayout _layout = new();
+  private readonly ScanLayout _layout;
 
   private readonly CancellationTokenSource _running = new();
 
@@ -62,6 +62,7 @@ internal class InteractiveUi : IAsyncDisposable {
     _scanner = scanner;
     _scanRequest = scanRequest;
     _keyMap = keyMap;
+    _layout = new ScanLayout( network?.Id );
     _outputManager = outputManager;
     _network = network;
     _scanner.ResultUpdated += OnScanResultUpdated;
@@ -416,9 +417,9 @@ internal class InteractiveUi : IAsyncDisposable {
 
     // Unknown device
     if ( isUnknown && !unknownAllowed )
-      return "[red]Online (unknown)[/]";
+      return "[red]Online (unknown device)[/]";
     if ( isUnknown && unknownAllowed )
-      return "[yellow]Online (unknown)[/]";
+      return "[yellow]Online (unknown device)[/]";
 
     // Fallback/Undefined
     return "[yellow]Unknown or undefined[/]";

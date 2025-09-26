@@ -5,10 +5,10 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
-internal class ScanLayout {
+internal class ScanLayout( NetworkId? networkId ) {
   private readonly Layout _layout = new Layout( "Root" )
     .SplitRows(
-      new Layout( "Header", BuildHeader() ) { Size = 1 },
+      new Layout( "Header", BuildHeader( networkId ) ) { Size = 1 },
       new Layout( "MainPanel" ).SplitColumns(
         new Layout( "ScanTree" ),
         new Layout( "Log" ) { IsVisible = false }
@@ -66,9 +66,11 @@ internal class ScanLayout {
   }
 
 
-  private static Markup BuildHeader() {
+  private static Markup BuildHeader( NetworkId? id ) {
     //TODO update with actual path
-    return new Markup( "[grey]/home/hojmark/[/][blue bold]fh47[/][grey].spec.yaml[/]  [green]✔[/]" );
+    return id == null
+      ? new Markup( "[yellow bold]unknown network[/]" )
+      : new Markup( $"[blue bold]{id.Value}[/] [green]✔[/]" ) { Justification = Justify.Left };
   }
 
   private static Layout BuildProgressBar( Percentage progress ) {

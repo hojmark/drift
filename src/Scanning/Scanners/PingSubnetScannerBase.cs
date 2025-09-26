@@ -57,10 +57,11 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
         Interlocked.Increment( ref completed );
 
         if ( success ) {
+          var arpCache = ArpHelper.GetSystemCachedIpToMacMap();
           var intermediateResult = new SubnetScanResult {
             Metadata = new Metadata { StartedAt = startedAt },
             Status = ScanResultStatus.InProgress,
-            DiscoveredDevices = ToDiscoveredDevices( pingReplies, null ),
+            DiscoveredDevices = ToDiscoveredDevices( pingReplies, arpCache ),
             Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
             CidrBlock = cidr
           };

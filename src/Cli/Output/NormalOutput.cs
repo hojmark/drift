@@ -3,12 +3,16 @@ using Spectre.Console;
 
 namespace Drift.Cli.Output;
 
-internal class NormalOutput(
+internal partial class NormalOutput(
   TextWriter stdOut,
   TextWriter errOut,
   bool plainOutput = false,
-  bool verbose = false
+  bool verbose = false,
+  bool veryVerbose = false
 ) : INormalOutput {
+  //TODO test
+  private static bool markupOutput = false;
+
   // Use of banned Console APIs is OK. Main point is to centralize usage to this class.
 #pragma warning disable RS0030
 
@@ -185,12 +189,27 @@ internal class NormalOutput(
     foreach ( var line in lines ) {
       textWriter.Write( new string( ' ', level * 2 ) );
 
-      if ( foreground.HasValue ) Console.ForegroundColor = foreground.Value;
-      if ( background.HasValue ) Console.BackgroundColor = background.Value;
+      if ( markupOutput ) {
+        if ( foreground.HasValue ) textWriter.Write( $"[{foreground.Value}]" );
+        if ( background.HasValue ) {
+        }
+      }
+      else {
+        if ( foreground.HasValue ) Console.ForegroundColor = foreground.Value;
+        if ( background.HasValue ) Console.BackgroundColor = background.Value;
+      }
 
-      textWriter.WriteLine( line );
+      textWriter.Write( line );
 
-      Console.ResetColor();
+      if ( markupOutput ) {
+        if ( foreground.HasValue ) textWriter.Write( "[/]" );
+        if ( background.HasValue ) Console.BackgroundColor = background.Value;
+      }
+      else {
+        Console.ResetColor();
+      }
+
+      textWriter.WriteLine();
     }
   }
 

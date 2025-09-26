@@ -9,6 +9,7 @@ internal class ConsoleOutputManager(
   TextWriter normalStdOut,
   TextWriter normalErrOut,
   bool normalVerbose,
+  bool normalVeryVerbose,
   OutputFormat outputFormat,
   bool plainConsole,
   TextReader reader
@@ -23,7 +24,7 @@ internal class ConsoleOutputManager(
 
   public INormalOutput Normal {
     get;
-  } = new NormalOutput( normalStdOut, normalErrOut, plainConsole, normalVerbose );
+  } = new NormalOutput( normalStdOut, normalErrOut, plainConsole, normalVerbose, normalVeryVerbose );
 
   public IJsonOutput Json {
     get;

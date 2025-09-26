@@ -2,7 +2,7 @@ using Spectre.Console;
 
 namespace Drift.Cli.Output.Abstractions;
 
-internal interface INormalOutput {
+internal partial interface INormalOutput {
   #region Verbose
 
   public void WriteVerbose(

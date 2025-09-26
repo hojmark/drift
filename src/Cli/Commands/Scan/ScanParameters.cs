@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Drift.Cli.Commands.Common;
 
 namespace Drift.Cli.Commands.Scan;
 
@@ -11,9 +12,15 @@ internal record ScanParameters : DefaultParameters {
 
   internal ScanParameters( ParseResult parseResult ) : base( parseResult ) {
     Interactive = parseResult.GetValue( Options.Interactive );
+    ShowLogPanel = parseResult.GetValue( CommonParameters.Options.Verbose ) ||
+                      parseResult.GetValue( CommonParameters.Options.VeryVerbose );
   }
 
   internal bool Interactive {
+    get;
+  }
+
+  internal bool ShowLogPanel {
     get;
   }
 }

@@ -1,4 +1,3 @@
-using System.Text;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Scan.Interactive.KeyMaps;
 using Drift.Cli.Commands.Scan.Interactive.Models;
@@ -13,9 +12,8 @@ using Spectre.Console;
 namespace Drift.Cli.Commands.Scan.Interactive;
 
 // TODO keymaps: default, vim, emacs, etc.
-// TODO themes: nocolor, default, etc.
+// TODO themes: nocolor i.e. black/white, monochrome, default, etc.
 internal class InteractiveUi : IAsyncDisposable {
-  private const int RenderRefreshIntervalMs = 1000;
   private const int ScrollAmount = 1;
 
   private readonly IOutputManager _outputManager;
@@ -44,7 +42,8 @@ internal class InteractiveUi : IAsyncDisposable {
     IOutputManager outputManager,
     INetworkScanner scanner,
     NetworkScanOptions scanRequest,
-    IKeyMap keyMap
+    IKeyMap keyMap,
+    bool initialLogExpansion
   ) {
     _scanner = scanner;
     _scanRequest = scanRequest;
@@ -57,6 +56,7 @@ internal class InteractiveUi : IAsyncDisposable {
 
     SubnetView = new SubnetView( () => _layout.AvailableRows );
     _logView = new LogView( () => _layout.AvailableRows );
+    _layout.ShowLogs = initialLogExpansion;
   }
 
   private SubnetView SubnetView {
@@ -65,16 +65,16 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   public async Task<int> RunAsync() {
-    // TODO Async scan and log reading started using different patterns
-    _ = StartScanAsync();
-    await _logReader.StartAsync( _running.Token );
-
     await AnsiConsole
       .Live( _layout.Renderable )
       .AutoClear( true )
       .StartAsync( async ctx => {
           await RenderAsync();
           ctx.Refresh();
+
+          // TODO Async scan and log reading started using different patterns
+          _ = StartScanAsync();
+          await _logReader.StartAsync( _running.Token );
 
           while ( !_running.IsCancellationRequested ) {
             var keyTask = _keyWatcher.WaitForKeyAsync();

@@ -1,4 +1,3 @@
-using Serilog;
 using Spectre.Console.Rendering;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
@@ -38,6 +37,6 @@ internal sealed class LogView( Func<uint> height ) : IRenderable {
   }
 
   public IEnumerable<Segment> Render( RenderOptions options, int maxWidth ) {
-    return _logLines.Skip( (int) ScrollOffset ).Select( l => new Segment( l + Environment.NewLine ) );
+    return _logLines.Skip( ScrollOffset ).Select( l => new Segment( l + Environment.NewLine ) );
   }
 }

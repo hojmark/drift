@@ -25,8 +25,10 @@ internal class NormalOutputLoggerAdapter( INormalOutput normalOutput ) : ILogger
         normalOutput.WriteLine( message );
         break;
       case LogLevel.Debug:
-      case LogLevel.Trace:
         normalOutput.WriteLineVerbose( message );
+        break;
+      case LogLevel.Trace:
+        normalOutput.WriteLineVeryVerbose( message );
         break;
       case LogLevel.None:
         break;

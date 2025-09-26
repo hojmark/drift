@@ -1,6 +1,7 @@
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Scan;
 using Drift.Cli.Output.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -25,7 +26,9 @@ internal class OutputManagerFactory(
   public IOutputManager Create( ParseResult parseResult, bool plainConsole ) {
     var outputFormat = parseResult.GetValue( CommonParameters.Options.OutputFormat );
     var verbose = parseResult.GetValue( CommonParameters.Options.Verbose );
-    //var veryVerboseValue = bindingContext.ParseResult.GetValueForOption( GlobalParameters.Options.VeryVerbose );
+    var veryVerbose = parseResult.GetValue( CommonParameters.Options.VeryVerbose );
+
+    var interactiveOutputOnly = parseResult.GetValue( ScanParameters.Options.Interactive );
 
     // Even though the option has a default value, it is not set when the option is not added to a command.
     // Instead, we get 0, which indicates a developer mistake.
@@ -38,44 +41,58 @@ internal class OutputManagerFactory(
     var consoleOut = parseResult.Configuration.Output;
     var consoleErr = parseResult.Configuration.Error;
 
-    return Create( outputFormat, verbose, consoleOut, consoleErr, plainConsole );
+    return Create( outputFormat, verbose, veryVerbose, interactiveOutputOnly, consoleOut, consoleErr, plainConsole );
   }
 
-  public IOutputManager Create(
-    OutputFormat outputFormat,
+  public IOutputManager Create( OutputFormat outputFormat,
     bool verbose,
+    bool veryVerbose,
+    bool interactiveOutputOnly,
     TextWriter consoleOut,
     TextWriter consoleErr,
     bool plainConsole
   ) {
     var bridge = new WriterReaderBridge();
-    var outWrapper = new CompoundTextWriter( consoleOut, bridge.Writer );
-    var errWrapper = new CompoundTextWriter( consoleErr, bridge.Writer );
+    var outWrapper = new CompoundTextWriter();
+    outWrapper.Writers.Add( bridge.Writer );
+    if ( !interactiveOutputOnly ) {
+      outWrapper.Writers.Add( consoleOut );
+    }
+
+    var errWrapper = new CompoundTextWriter();
+    errWrapper.Writers.Add( bridge.Writer );
+    if ( !interactiveOutputOnly ) {
+      errWrapper.Writers.Add( consoleErr );
+    }
 
     var consoleOuts = GetConsoleOuts(
       outputFormat,
       verbose,
+      veryVerbose,
       outWrapper,
       errWrapper,
       plainConsole,
       bridge.Reader
     );
 
-    var logger = GetLogger( outputFormat, verbose, outWrapper, errWrapper, toConsole );
+    var logger = GetLogger( outputFormat, verbose, veryVerbose, outWrapper, errWrapper, toConsole );
 
     return new ConsoleOutputManager(
       logger,
       consoleOuts.StdOut,
       consoleOuts.ErrOut,
       verbose,
+      veryVerbose,
       outputFormat,
       plainConsole,
       bridge.Reader
     );
   }
 
-  private static (TextWriter StdOut, TextWriter ErrOut) GetConsoleOuts( OutputFormat outputFormat,
-    bool verboseValue,
+  private static (TextWriter StdOut, TextWriter ErrOut) GetConsoleOuts(
+    OutputFormat outputFormat,
+    bool verbose,
+    bool veryVerbose,
     TextWriter consoleOut,
     TextWriter consoleErr,
     bool plainConsole,
@@ -89,7 +106,8 @@ internal class OutputManagerFactory(
       NullLogger.Instance,
       consoleOut,
       consoleErr,
-      verboseValue /*|| veryVerboseValue*/,
+      verbose,
+      veryVerbose,
       outputFormat,
       plainConsole,
       outputReader
@@ -102,9 +120,9 @@ internal class OutputManagerFactory(
     return ( consoleOut, consoleErr );
   }
 
-  private static ILogger GetLogger(
-    OutputFormat outputFormatValue,
-    bool verboseValue,
+  private static ILogger GetLogger( OutputFormat outputFormatValue,
+    bool verbose,
+    bool veryVerbose,
     TextWriter consoleOut,
     TextWriter consoleErr,
     // TODO try to remove
@@ -115,10 +133,10 @@ internal class OutputManagerFactory(
     }
 
     var loglevel =
-      //veryVerboseValue ? LogLevel.Trace :
-      verboseValue ? LogLevel.Debug : LogLevel.Information;
+      veryVerbose ? LogLevel.Trace :
+      verbose ? LogLevel.Debug : LogLevel.Information;
 
-    // Default console rneder uses `OutputTemplateRenderer`, which is internal. Only differnece detected is that MessageTemplateTextFormatter auto single quotes  non strings e.g. enum values.
+    // The default Serilog console render uses `OutputTemplateRenderer`, which is internal. The only difference detected is that MessageTemplateTextFormatter auto single quotes  non strings e.g., enum values.
     // Fix is to call myEnum.ToString()
     var formatter = new MessageTemplateTextFormatter(
       "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
@@ -127,7 +145,7 @@ internal class OutputManagerFactory(
     var loggerConfig = new LoggerConfiguration()
       .Enrich.FromLogContext();
 
-    if ( verboseValue ) {
+    if ( verbose ) {
       loggerConfig.MinimumLevel.Debug();
     }
     else {
@@ -163,8 +181,11 @@ internal class OutputManagerFactory(
     //TODO still getting '[0]' in the output. Should probably create custom logger.
     var logger = loggerFactory.CreateLogger( "" );
 
-    logger.LogDebug( "Output format is '{OutputFormat}' using log level '{LogLevel}'", outputFormatValue.ToString(),
-      loglevel.ToString() );
+    logger.LogDebug(
+      "Output format is '{OutputFormat}' using log level '{LogLevel}'",
+      outputFormatValue.ToString(),
+      loglevel.ToString()
+    );
 
     return logger;
   }

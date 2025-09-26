@@ -11,7 +11,8 @@ internal class FigletHeaderHelpAction( HelpAction action ) : SynchronousCommandL
     var consoleOut = parseResult.Configuration.Output;
     var consoleErr = parseResult.Configuration.Error;
 
-    var outputManager = new OutputManagerFactory().Create( OutputFormat.Normal, false, consoleOut, consoleErr, false );
+    var outputManager =
+      new OutputManagerFactory().Create( OutputFormat.Normal, false, false, false, consoleOut, consoleErr, false );
 
     outputManager.Normal.GetAnsiConsole().Write(
       new FigletText( FigletFont.Load( EmbeddedResourceProvider.GetStream( "small.flf" ) ), "Drift" )

@@ -1,7 +1,6 @@
 using Drift.Cli.Output.Abstractions;
 using Drift.Diff;
 using Drift.Diff.Domain;
-using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Extensions;

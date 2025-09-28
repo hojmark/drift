@@ -1,20 +1,10 @@
-using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Scan.Interactive.KeyMaps;
 using Drift.Cli.Commands.Scan.Interactive.Models;
-using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Logging;
-using Drift.Diff;
-using Drift.Diff.Domain;
 using Drift.Domain;
-using Drift.Domain.Device;
-using Drift.Domain.Device.Addresses;
-using Drift.Domain.Device.Declared;
-using Drift.Domain.Device.Discovered;
-using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
-using NaturalSort.Extension;
 using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Interactive;
@@ -23,10 +13,6 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 // TODO themes: nocolor i.e. black/white, monochrome, default, etc.
 internal class InteractiveUi : IAsyncDisposable {
   private const int ScrollAmount = 1;
-
-  // Anonymising MACs e.g. for GitHub screenshot
-  //TODO replace with more generic data simulation
-  private const bool FakeMac = false;
 
   private readonly IOutputManager _outputManager;
   private readonly Network? _network;
@@ -188,125 +174,12 @@ internal class InteractiveUi : IAsyncDisposable {
     lock ( _subnets ) {
       _progress = scanResult.Progress;
 
-      var original = _network == null ? [] : _network.Devices.Where( d => d.IsEnabled() ).ToList();
-      var declaredDevices = original;
-      var updated1 = scanResult.Subnets.First().DiscoveredDevices;
-
-      var differences = ObjectDiffEngine.Compare(
-        original.ToDiffDevices(),
-        updated1.ToDiffDevices(),
-        "Device",
-        new DiffOptions()
-          .ConfigureDiffDeviceKeySelectors( original.ToList() )
-          // Includes Unchanged, which makes for an easier table population
-          .SetDiffTypesAll()
-        //, logger //TODO support ioutputmanager or create ilogger adapter?
-      );
-
-      var directDeviceDifferences = GetDirectDeviceDifferences( differences );
-
-      var devices = new List<Device>();
-
-      foreach ( var diff in directDeviceDifferences ) {
-        //logger?.LogTrace( "Device diff: {Action} {Path}", diff.DiffType, diff.PropertyPath );
-        // Console.WriteLine( $"{diff.DiffType + ":",-10} {diff.PropertyPath}" );
-
-        var state = diff.DiffType;
-
-        IAddressableDevice device = state switch {
-          // Note: may be unchanged based on device id, but other value may be updated in which case we'd like to show the updated values... but this is debatable... maybe both or a merge should be shown
-          DiffType.Unchanged => ( (DiffDevice) diff.Updated! ),
-          DiffType.Removed => ( (DiffDevice) diff.Original! ),
-          DiffType.Added => ( (DiffDevice) diff.Updated! ),
-          _ => throw new Exception( "øv" )
-        };
-
-        /*
-         * TODO target status:
-         *
-         * Icon:
-         * - Closed circle: online
-         * - Open circle: offline
-         * - Question mark: unknown device (not in spec)
-         * - Exclamation mark: unknown device (not in spec) that has been disallowed by general setting (unknown devices not allowed)
-         *
-         * Color:
-         * - Green: expected state
-         * - Red: opposite of expected state
-         * - Yellow: undefined state (Q: both because the device is unknown AND because the state of a known device hasn't been specified)
-         * Note: could have option for treating unknown devices as disallowed, thus red instead of default yellow
-         *
-         */
-
-        var declaredDeviceMultiple = declaredDevices.Where( d =>
-          ( (IAddressableDevice) d ).GetDeviceId() == device.GetDeviceId()
-        ).ToList();
-
-        if ( declaredDeviceMultiple.Count > 1 ) {
-          // TODO review error message
-          throw new Exception( "Multiple declared devices have the same ID: " +
-                               string.Join( ", ", declaredDeviceMultiple.Select( d => d.Id ) )
-          );
-        }
-
-        var declaredDevice = declaredDeviceMultiple.SingleOrDefault();
-        var declaredDeviceState = declaredDevice?.State;
-        var discoveredDeviceState =
-          state == DiffType.Removed ? DiscoveredDeviceState.Offline : DiscoveredDeviceState.Online;
-
-        const bool allowUnknownDevices = true;
-        var status =
-          GetStatusIcon( declaredDeviceState, discoveredDeviceState, state == DiffType.Added, allowUnknownDevices );
-        var textStatus =
-          GetStatusText( declaredDeviceState, discoveredDeviceState, state == DiffType.Added, allowUnknownDevices,
-            onlyDrifted: false );
-
-        var mac = device.Get( AddressType.Mac );
-
-        var deviceId = device.GetDeviceId();
-        var deviceIdDeclared = ( declaredDevice as IAddressableDevice )?.GetDeviceId();
-
-        var d = new Device {
-          State = status,
-          IpRaw = device.Get( AddressType.IpV4 ) ?? "",
-          Ip = MarkId( device.Get( AddressType.IpV4 ) ?? "", AddressType.IpV4, deviceIdDeclared ),
-          MacRaw = mac != null
-            ? ( FakeMac ? GenerateMacAddress() : mac.ToUpperInvariant() )
-            : "",
-          Mac = MarkId(
-            (
-              mac != null
-                ? ( FakeMac ? GenerateMacAddress() : mac.ToUpperInvariant() )
-                : ""
-            ), AddressType.Mac, deviceIdDeclared
-          ),
-          IdRaw = declaredDevice?.Id ?? "",
-          Id = "[blue]" + ( declaredDevice?.Id ?? "" ) + "[/]",
-          StateText = textStatus
-        };
-
-        devices.Add( d );
-      }
-
-      // Order by IP
-      devices = devices.OrderBy( dev => dev.IpRaw, StringComparer.OrdinalIgnoreCase.WithNaturalSort() ).ToList();
-
-      var currentSubnets = scanResult.Subnets
-        .Select( subnet => new Subnet {
-          Cidr = subnet.CidrBlock, Devices = devices
-
-          /*subnet.DiscoveredDevices.Select( device =>
-          new Device {
-            Ip = device.Get( AddressType.IpV4 ) ?? "n/a",
-            Mac = device.Get( AddressType.Mac ) ?? "n/a",
-            Hostname = device.Get( AddressType.Mac ) ?? "n/a"
-          } ).ToList()*/
-        } ).ToList();
+      var subnets = NetworkScanResultProcessor.Process( scanResult, _network );
 
       var existing = _subnets.ToDictionary( s => s.Cidr );
       var updated = new List<Subnet>();
 
-      foreach ( var subnet in currentSubnets ) {
+      foreach ( var subnet in subnets ) {
         if ( existing.TryGetValue( subnet.Cidr, out var existingSubnet ) ) {
           subnet.IsExpanded = existingSubnet.IsExpanded;
         }
@@ -321,134 +194,6 @@ internal class InteractiveUi : IAsyncDisposable {
     }
   }
 
-  private static List<ObjectDiff> GetDirectDeviceDifferences( List<ObjectDiff> differences ) {
-    return differences
-      .Where( d => Regex.IsMatch( d.PropertyPath, @"^Device\[[^\]]+?\]$" ) )
-      .OrderBy( d => d.PropertyPath, StringComparison.OrdinalIgnoreCase.WithNaturalSort() )
-      .ToList();
-  }
-
-
-  /**
-   * - [green]●[/] — Online and should be online
-   * - [green]○[/] — Should be offline and is offline
-   * - [red]●[/] — Should be offline but is online
-   * - [red]○[/] — Should be online but is offline
-   * - [yellow]?[/] — Unknown device (allowed) (or undefined state???)
-   * - [red]![/] — Unknown device (not allowed/disallowed)
-   */
-  private static string GetStatusIcon(
-    DeclaredDeviceState? declared,
-    DiscoveredDeviceState? discovered,
-    bool isUnknown,
-    bool unknownAllowed
-  ) {
-    // Unicode icons
-    const string ClosedCircle = "\u25CF"; // ●
-    const string OpenCircle = "\u25CB"; // ○
-    const string QuestionMark = "\u003F"; // ?
-    const string Exclamation = "\u0021"; // !
-    const string ClosedDiamond = "\u25C6"; // ◆
-    const string OpenDiamond = "\u25C7"; // ◇
-
-    // Known device
-    if ( !isUnknown ) {
-      return declared switch {
-        // expecting up, is up
-        DeclaredDeviceState.Up when discovered == DiscoveredDeviceState.Online => $"[green]{ClosedCircle}[/]",
-        // expecting up, is down
-        DeclaredDeviceState.Up when discovered == DiscoveredDeviceState.Offline => $"[red]{OpenCircle}[/]",
-        // expecting down, is up
-        DeclaredDeviceState.Down when discovered == DiscoveredDeviceState.Online => $"[red]{ClosedCircle}[/]",
-        // expecting down, is down
-        DeclaredDeviceState.Down when discovered == DiscoveredDeviceState.Offline => $"[green]{OpenCircle}[/]",
-        // expecting either, is up
-        DeclaredDeviceState.Dynamic when discovered ==
-                                         DiscoveredDeviceState
-                                           .Online => $"[darkgreen]{ClosedDiamond}[/]", //TODO or yellow
-        // expecting either, is down
-        DeclaredDeviceState.Dynamic when discovered ==
-                                         DiscoveredDeviceState
-                                           .Offline => $"[darkgreen]{OpenDiamond}[/]", //TODO or yellow
-        _ => $"[yellow][bold]{QuestionMark}[/][/]"
-      };
-      // State not specified/undefined (yellow)
-    }
-
-    // Unknown device
-    if ( isUnknown && !unknownAllowed )
-      return $"[red][bold]{Exclamation}[/][/]"; // Disallowed: red exclamation
-    if ( isUnknown && unknownAllowed )
-      return $"[yellow][bold]{QuestionMark}[/][/]"; // Allowed: yellow question
-
-    // Fallback/Undefined
-    return $"[yellow][bold]{QuestionMark}[/][/]";
-  }
-
-  private static string GetStatusText(
-    DeclaredDeviceState? declared,
-    DiscoveredDeviceState? discovered,
-    bool isUnknown,
-    bool unknownAllowed,
-    bool onlyDrifted = true
-  ) {
-    // Known device
-    if ( !isUnknown ) {
-      return declared switch {
-        DeclaredDeviceState.Up when discovered == DiscoveredDeviceState.Online => onlyDrifted
-          ? ""
-          : "[green]Online[/]",
-        DeclaredDeviceState.Up when discovered == DiscoveredDeviceState.Offline => "[red]Offline[/]",
-        DeclaredDeviceState.Down when discovered == DiscoveredDeviceState.Online => "[red]Online[/]",
-        DeclaredDeviceState.Down when discovered ==
-                                      DiscoveredDeviceState.Offline =>
-          onlyDrifted ? "" : "[green]Offline[/]",
-        DeclaredDeviceState.Dynamic when discovered ==
-                                         DiscoveredDeviceState.Online => onlyDrifted
-          ? ""
-          : "[green]Online[/]",
-        DeclaredDeviceState.Dynamic when discovered ==
-                                         DiscoveredDeviceState.Offline => onlyDrifted
-          ? ""
-          : "[green]Offline[/]",
-        _ => "[yellow]State unknown or unspecified[/]"
-      };
-    }
-
-    // Unknown device
-    if ( isUnknown && !unknownAllowed )
-      return "[red]Online (unknown device)[/]";
-    if ( isUnknown && unknownAllowed )
-      return "[yellow]Online (unknown device)[/]";
-
-    // Fallback/Undefined
-    return "[yellow]Unknown or undefined[/]";
-  }
-
-
-  internal static IdMarkingStyle IdMarkingStyle = IdMarkingStyle.Text;
-
-  private static string MarkId( string text, AddressType type, DeviceId? idDeclared ) {
-    if ( idDeclared != null && idDeclared.Contributes( type ) ) {
-      //return "[bold]" + text + "[/]";
-      return IdMarkingStyle switch {
-        IdMarkingStyle.Text => text,
-        IdMarkingStyle.Dot => $"{text} [blue]•[/]", // ◦•
-        _ => throw new ArgumentOutOfRangeException()
-      };
-    }
-
-    return idDeclared == null
-      ? $"[gray]{text}[/]" // TODO use yellow?
-      : $"[gray]{text}[/]";
-  }
-
-  private static string GenerateMacAddress() {
-    var rand = new Random();
-    byte[] macBytes = new byte[6];
-    rand.NextBytes( macBytes );
-    return string.Join( ":", macBytes.Select( b => b.ToString( "X2" ) ) );
-  }
 
   public async ValueTask DisposeAsync() {
     _scanner.ResultUpdated -= OnScanResultUpdated;

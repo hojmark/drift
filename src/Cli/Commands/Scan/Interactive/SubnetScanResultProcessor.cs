@@ -1,0 +1,163 @@
+using System.Text.RegularExpressions;
+using Drift.Cli.Commands.Scan.Interactive.Models;
+using Drift.Diff;
+using Drift.Diff.Domain;
+using Drift.Domain;
+using Drift.Domain.Device;
+using Drift.Domain.Device.Addresses;
+using Drift.Domain.Device.Discovered;
+using Drift.Domain.Extensions;
+using Drift.Domain.Scan;
+using NaturalSort.Extension;
+
+namespace Drift.Cli.Commands.Scan.Interactive;
+
+internal static class NetworkScanResultProcessor {
+  internal static List<Subnet> Process( NetworkScanResult scanResult, Network? network ) {
+    var currentSubnets = scanResult.Subnets
+      .Select( subnet =>
+        new Subnet { Cidr = subnet.CidrBlock, Devices = SubnetScanResultProcessor.Process( subnet, network ), }
+      ).ToList();
+
+    return currentSubnets;
+  }
+}
+
+internal static class SubnetScanResultProcessor {
+  // Anonymising MACs e.g. for GitHub screenshot
+  //TODO replace with more generic data simulation
+  private const bool FakeMac = false;
+
+  internal static List<Device> Process( SubnetScanResult scanResult, Network? network ) {
+    var original = network == null ? [] : network.Devices.Where( d => d.IsEnabled() ).ToList();
+    var declaredDevices = original;
+    var updated1 = scanResult.DiscoveredDevices;
+
+    var differences = ObjectDiffEngine.Compare(
+      original.ToDiffDevices(),
+      updated1.ToDiffDevices(),
+      "Device",
+      new DiffOptions()
+        .ConfigureDiffDeviceKeySelectors( original.ToList() )
+        // Includes Unchanged, which makes for an easier table population
+        .SetDiffTypesAll()
+      //, logger //TODO support ioutputmanager or create ilogger adapter?
+    );
+
+    var directDeviceDifferences = GetDirectDeviceDifferences( differences );
+
+    var devices = new List<Device>();
+
+    foreach ( var diff in directDeviceDifferences ) {
+      //logger?.LogTrace( "Device diff: {Action} {Path}", diff.DiffType, diff.PropertyPath );
+      // Console.WriteLine( $"{diff.DiffType + ":",-10} {diff.PropertyPath}" );
+
+      var state = diff.DiffType;
+
+      IAddressableDevice device = state switch {
+        // Note: may be unchanged based on device id, but other value may be updated in which case we'd like to show the updated values... but this is debatable... maybe both or a merge should be shown
+        DiffType.Unchanged => ( (DiffDevice) diff.Updated! ),
+        DiffType.Removed => ( (DiffDevice) diff.Original! ),
+        DiffType.Added => ( (DiffDevice) diff.Updated! ),
+        _ => throw new Exception( "øv" )
+      };
+
+      /*
+       * TODO target status:
+       *
+       * Icon:
+       * - Closed circle: online
+       * - Open circle: offline
+       * - Question mark: unknown device (not in spec)
+       * - Exclamation mark: unknown device (not in spec) that has been disallowed by general setting (unknown devices not allowed)
+       *
+       * Color:
+       * - Green: expected state
+       * - Red: opposite of expected state
+       * - Yellow: undefined state (Q: both because the device is unknown AND because the state of a known device hasn't been specified)
+       * Note: could have option for treating unknown devices as disallowed, thus red instead of default yellow
+       *
+       */
+
+      var declaredDeviceMultiple = declaredDevices.Where( d =>
+        ( (IAddressableDevice) d ).GetDeviceId() == device.GetDeviceId()
+      ).ToList();
+
+      if ( declaredDeviceMultiple.Count > 1 ) {
+        // TODO review error message
+        throw new Exception(
+          "Multiple declared devices have the same ID: " +
+          string.Join( ", ", declaredDeviceMultiple.Select( d => d.Id ) )
+        );
+      }
+
+      var declaredDevice = declaredDeviceMultiple.SingleOrDefault();
+      var declaredDeviceState = declaredDevice?.State;
+      var discoveredDeviceState = state == DiffType.Removed
+        ? DiscoveredDeviceState.Offline
+        : DiscoveredDeviceState.Online;
+
+      const bool unknownAllowed = true;
+      var status =
+        DeviceStateIndicator.GetIcon(
+          declaredDeviceState,
+          discoveredDeviceState,
+          state == DiffType.Added,
+          unknownAllowed
+        );
+      var textStatus =
+        DeviceStateIndicator.GetText(
+          declaredDeviceState,
+          discoveredDeviceState,
+          state == DiffType.Added,
+          unknownAllowed,
+          onlyDrifted: false
+        );
+
+      var mac = device.Get( AddressType.Mac );
+
+      var deviceId = device.GetDeviceId();
+      var deviceIdDeclared = ( declaredDevice as IAddressableDevice )?.GetDeviceId();
+
+      var d = new Device {
+        State = status,
+        IpRaw = device.Get( AddressType.IpV4 ) ?? "",
+        Ip = DeviceIdHighlighter.Mark( device.Get( AddressType.IpV4 ) ?? "", AddressType.IpV4, deviceIdDeclared ),
+        MacRaw = mac != null
+          ? ( FakeMac ? GenerateMacAddress() : mac.ToUpperInvariant() )
+          : "",
+        Mac = DeviceIdHighlighter.Mark(
+          (
+            mac != null
+              ? ( FakeMac ? GenerateMacAddress() : mac.ToUpperInvariant() )
+              : ""
+          ), AddressType.Mac, deviceIdDeclared
+        ),
+        IdRaw = declaredDevice?.Id ?? "",
+        Id = "[blue]" + ( declaredDevice?.Id ?? "" ) + "[/]",
+        StateText = textStatus
+      };
+
+      devices.Add( d );
+    }
+
+    // Order by IP
+    devices = devices.OrderBy( dev => dev.IpRaw, StringComparer.OrdinalIgnoreCase.WithNaturalSort() ).ToList();
+
+    return devices;
+  }
+
+  private static List<ObjectDiff> GetDirectDeviceDifferences( List<ObjectDiff> differences ) {
+    return differences
+      .Where( d => Regex.IsMatch( d.PropertyPath, @"^Device\[[^\]]+?\]$" ) )
+      .OrderBy( d => d.PropertyPath, StringComparison.OrdinalIgnoreCase.WithNaturalSort() )
+      .ToList();
+  }
+
+  private static string GenerateMacAddress() {
+    var rand = new Random();
+    byte[] macBytes = new byte[6];
+    rand.NextBytes( macBytes );
+    return string.Join( ":", macBytes.Select( b => b.ToString( "X2" ) ) );
+  }
+}

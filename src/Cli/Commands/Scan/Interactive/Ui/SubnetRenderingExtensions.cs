@@ -1,6 +1,6 @@
 using Drift.Cli.Commands.Scan.Interactive.Models;
 
-namespace Drift.Cli.Commands.Scan.Interactive;
+namespace Drift.Cli.Commands.Scan.Interactive.Ui;
 
 internal static class SubnetRenderingExtensions {
   internal static int GetHeight( this List<Subnet> subnets ) => subnets.Sum( GetHeight );

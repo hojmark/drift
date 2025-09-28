@@ -1,9 +1,6 @@
-namespace Drift.Cli.Commands.Scan.Interactive;
-
-using System;
 using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
+
+namespace Drift.Cli.Commands.Scan.Interactive.Input;
 
 internal sealed class KeyWatcher : IAsyncDisposable {
   private readonly ConcurrentQueue<ConsoleKey> _keyBuffer = new();

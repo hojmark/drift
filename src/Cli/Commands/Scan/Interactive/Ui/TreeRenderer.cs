@@ -2,11 +2,9 @@ using Drift.Cli.Commands.Scan.Interactive.Models;
 using Drift.Domain;
 using Spectre.Console;
 
-namespace Drift.Cli.Commands.Scan.Interactive;
+namespace Drift.Cli.Commands.Scan.Interactive.Ui;
 
 internal static class TreeRenderer {
-  private static readonly int StatusWidth = "Offline".Length;
-
   internal static IEnumerable<Tree> Render(
     List<Subnet> subnets,
     CidrBlock? selected,

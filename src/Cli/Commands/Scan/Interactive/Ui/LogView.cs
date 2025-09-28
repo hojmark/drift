@@ -1,6 +1,6 @@
 using Spectre.Console.Rendering;
 
-namespace Drift.Cli.Commands.Scan.Interactive;
+namespace Drift.Cli.Commands.Scan.Interactive.Ui;
 
 internal sealed class LogView( Func<uint> height ) : IRenderable {
   private bool _autoScroll = true;

@@ -2,7 +2,7 @@ using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Domain.Device;
 using Drift.Domain.Device.Addresses;
 
-namespace Drift.Cli.Commands.Scan.Interactive;
+namespace Drift.Cli.Commands.Scan.Interactive.ScanResultProcessors;
 
 internal static class DeviceIdHighlighter {
   private const IdMarkingStyle Style = IdMarkingStyle.Text;

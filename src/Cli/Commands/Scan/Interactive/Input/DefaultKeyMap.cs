@@ -1,4 +1,4 @@
-namespace Drift.Cli.Commands.Scan.Interactive.KeyMaps;
+namespace Drift.Cli.Commands.Scan.Interactive.Input;
 
 internal class DefaultKeyMap : IKeyMap {
   public UiAction Map( ConsoleKey key ) => key switch {

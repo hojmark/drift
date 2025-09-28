@@ -1,5 +1,5 @@
 using Drift.Cli.Commands.Scan.Interactive;
-using Drift.Cli.Commands.Scan.Interactive.KeyMaps;
+using Drift.Cli.Commands.Scan.Interactive.Input;
 
 namespace Drift.Cli.Tests;
 

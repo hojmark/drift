@@ -3,7 +3,7 @@ using Drift.Cli.Commands.Scan.Interactive.Models;
 using Drift.Domain;
 using Spectre.Console;
 
-namespace Drift.Cli.Commands.Scan.Interactive;
+namespace Drift.Cli.Commands.Scan.Interactive.Ui;
 
 internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
   private readonly Lock _subnetLock = new();

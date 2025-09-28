@@ -1,7 +1,7 @@
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 
-namespace Drift.Cli.Commands.Scan.Interactive;
+namespace Drift.Cli.Commands.Scan.Interactive.ScanResultProcessors;
 
 internal static class DeviceStateIndicator {
   // Unicode icons

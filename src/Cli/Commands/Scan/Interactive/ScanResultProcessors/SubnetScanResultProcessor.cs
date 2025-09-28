@@ -10,18 +10,7 @@ using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
 using NaturalSort.Extension;
 
-namespace Drift.Cli.Commands.Scan.Interactive;
-
-internal static class NetworkScanResultProcessor {
-  internal static List<Subnet> Process( NetworkScanResult scanResult, Network? network ) {
-    var currentSubnets = scanResult.Subnets
-      .Select( subnet =>
-        new Subnet { Cidr = subnet.CidrBlock, Devices = SubnetScanResultProcessor.Process( subnet, network ), }
-      ).ToList();
-
-    return currentSubnets;
-  }
-}
+namespace Drift.Cli.Commands.Scan.Interactive.ScanResultProcessors;
 
 internal static class SubnetScanResultProcessor {
   // Anonymising MACs e.g. for GitHub screenshot

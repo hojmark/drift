@@ -1,6 +1,8 @@
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Scan.Interactive.KeyMaps;
+using Drift.Cli.Commands.Scan.Interactive.Input;
 using Drift.Cli.Commands.Scan.Interactive.Models;
+using Drift.Cli.Commands.Scan.Interactive.ScanResultProcessors;
+using Drift.Cli.Commands.Scan.Interactive.Ui;
 using Drift.Cli.Output.Abstractions;
 using Drift.Cli.Output.Logging;
 using Drift.Domain;
@@ -31,7 +33,7 @@ internal class InteractiveUi : IAsyncDisposable {
 
   private Percentage _progress = Percentage.Zero;
 
-  private readonly ILogReader _logReader;
+  private readonly ILogReader _logWatcher;
   private TaskCompletionSource _logUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
   private readonly LogView _logView;
 
@@ -53,8 +55,8 @@ internal class InteractiveUi : IAsyncDisposable {
     _network = network;
     _scanner.ResultUpdated += OnScanResultUpdated;
 
-    _logReader = new LogReader( _outputManager );
-    _logReader.LogUpdated += OnLogUpdated;
+    _logWatcher = new LogWatcher( _outputManager );
+    _logWatcher.LogUpdated += OnLogUpdated;
 
     SubnetView = new SubnetView( () => _layout.AvailableRows );
     _logView = new LogView( () => _layout.AvailableRows );
@@ -76,7 +78,7 @@ internal class InteractiveUi : IAsyncDisposable {
 
           // TODO Async scan and log reading started using different patterns
           _ = StartScanAsync();
-          await _logReader.StartAsync( _running.Token );
+          await _logWatcher.StartAsync( _running.Token );
 
           while ( !_running.IsCancellationRequested ) {
             var keyTask = _keyWatcher.WaitForKeyAsync();
@@ -199,6 +201,6 @@ internal class InteractiveUi : IAsyncDisposable {
     _scanner.ResultUpdated -= OnScanResultUpdated;
     _running.Dispose();
     await _keyWatcher.DisposeAsync();
-    _logReader.LogUpdated -= OnLogUpdated;
+    _logWatcher.LogUpdated -= OnLogUpdated;
   }
 }

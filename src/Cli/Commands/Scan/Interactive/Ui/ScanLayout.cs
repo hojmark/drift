@@ -1,9 +1,8 @@
 using Drift.Domain;
-
-namespace Drift.Cli.Commands.Scan.Interactive;
-
 using Spectre.Console;
 using Spectre.Console.Rendering;
+
+namespace Drift.Cli.Commands.Scan.Interactive.Ui;
 
 internal class ScanLayout( NetworkId? networkId ) {
   private readonly Layout _layout = new Layout( "Root" )

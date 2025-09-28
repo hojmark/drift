@@ -1,13 +1,13 @@
 using Drift.Cli.Output.Abstractions;
 
-namespace Drift.Cli.Commands.Scan.Interactive;
+namespace Drift.Cli.Commands.Scan.Interactive.Input;
 
 internal interface ILogReader {
   event EventHandler<string>? LogUpdated;
   Task StartAsync( CancellationToken cancellationToken );
 }
 
-internal class LogReader( IOutputManager outputManager ) : ILogReader {
+internal class LogWatcher( IOutputManager outputManager ) : ILogReader {
   private Task? _readTask;
   public event EventHandler<string>? LogUpdated;
 

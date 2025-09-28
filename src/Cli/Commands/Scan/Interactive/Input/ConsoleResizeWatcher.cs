@@ -1,8 +1,4 @@
-namespace Drift.Cli.Commands.Scan.Interactive;
-
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+namespace Drift.Cli.Commands.Scan.Interactive.Input;
 
 internal sealed class ConsoleResizeWatcher : IDisposable {
   private int _lastWidth;

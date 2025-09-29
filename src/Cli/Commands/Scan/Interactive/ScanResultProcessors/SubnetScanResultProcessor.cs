@@ -128,7 +128,7 @@ internal static class SubnetScanResultProcessor {
           ), AddressType.Mac, deviceIdDeclared
         ),
         IdRaw = declaredDevice?.Id ?? "",
-        Id = "[blue]" + ( declaredDevice?.Id ?? "" ) + "[/]",
+        Id = "[cyan]" + ( declaredDevice?.Id ?? "" ) + "[/]",
         StateText = textStatus
       };
 

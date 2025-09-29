@@ -9,7 +9,8 @@ internal static class TreeRenderer {
     List<Subnet> subnets,
     CidrBlock? selected,
     uint viewPortHeight,
-    uint scrollOffset
+    uint scrollOffset,
+    bool showAccordionSymbols = true
   ) {
     var trees = new List<Tree>();
     int currentRow = 0;
@@ -29,7 +30,7 @@ internal static class TreeRenderer {
         if ( treeStartRow == 0 ) {
           // Show the full tree header
           if ( maxDeviceRows >= 0 ) {
-            trees.Add( BuildTree( subnet, subnets, isSelected, maxDeviceRows ) );
+            trees.Add( BuildTree( subnet, subnets, isSelected, showAccordionSymbols, maxDeviceRows ) );
             renderedRows += Math.Min( treeHeight, remainingRows );
           }
         }
@@ -74,18 +75,26 @@ internal static class TreeRenderer {
     return tree.Guide( TreeGuide.Line );
   }
 
-  private static Tree BuildTree( Subnet subnet, List<Subnet> subnets, bool isSelected, int? maxDeviceCount = null ) {
-    var symbol = subnet.IsExpanded ? "▾" : "▸";
+  private static Tree BuildTree(
+    Subnet subnet,
+    List<Subnet> subnets,
+    bool isSelected,
+    bool showAccordionSymbols,
+    int? maxDeviceCount = null
+  ) {
+    var symbol = showAccordionSymbols
+      ? ( subnet.IsExpanded ? "▾ " : "▸ " )
+      : "";
 
     string summary =
-      $"[grey]({subnet.Devices.Count} devices: " + "[/]"; // +
+      $"[grey]({subnet.Devices.Count} devices)[/]"; // +
     //$"{subnet.Devices.Count( d => d.IsOnline )} online, " +
     //$"{subnet.Devices.Count( d => !d.IsOnline )} offline)[/]";
 
-    string header = $"{symbol} {subnet.Cidr}";
+    string header = $"{symbol}{subnet.Cidr}";
     string formattedHeader = isSelected
       ? $"[black on yellow]{header}[/] {summary}"
-      : $"[blue]{header}[/] {summary}";
+      : $"[cyan]{header}[/] {summary}";
 
     var tree = new Tree( formattedHeader ).DefaultStyle();
 

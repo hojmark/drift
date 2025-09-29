@@ -222,7 +222,11 @@ internal class InitCommandHandler(
           var lastLogTime = DateTime.MinValue;
 
           EventHandler<NetworkScanResult> updater = ( _, r ) => {
-            ScanCommandHandler.UpdateProgressLog( r.Progress, output, ref lastLogTime );
+            ScanCommandHandler.UpdateProgressDebounced(
+              r.Progress,
+              progress => output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress ),
+              ref lastLogTime
+            );
           };
 
           scanner.ResultUpdated += updater;

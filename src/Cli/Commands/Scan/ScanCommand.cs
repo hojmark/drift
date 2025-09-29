@@ -205,7 +205,7 @@ internal class ScanCommandHandler(
   }
 
   //TODO make private
-  private static void UpdateProgressDebounced(
+  internal static void UpdateProgressDebounced(
     Percentage progress,
     Action<Percentage> output,
     ref DateTime lastLogTime

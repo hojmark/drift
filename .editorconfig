@@ -184,6 +184,10 @@ dotnet_diagnostic.SA1127.severity = silent
 dotnet_diagnostic.SA1128.severity = silent
 # Closing square bracket should be followed by a space.
 dotnet_diagnostic.SA1011.severity = silent # Conflicts with SA1018 e.g. 'MyType[]?'
+# Complete the task associated to this 'TODO' comment.
+dotnet_diagnostic.S1135.severity = suggestion
+# Remove this commented out code.
+dotnet_diagnostic.S125.severity = suggestion
 
 # TODO remove below lines when fixed
 dotnet_diagnostic.SA1005.severity = suggestion

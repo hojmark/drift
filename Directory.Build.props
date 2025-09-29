@@ -14,5 +14,6 @@
 
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" />
+    <PackageReference Include="SonarAnalyzer.CSharp" />
   </ItemGroup>
 </Project>

@@ -14,6 +14,10 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 // TODO keymaps: default, vim, emacs, etc.
 // TODO themes: nocolor i.e. black/white, monochrome, default, etc.
 internal class InteractiveUi : IAsyncDisposable {
+  // Anonymising MACs etc. for GitHub screenshot
+  //TODO replace with more generic data simulation
+  internal const bool FakeData = false;
+  
   private const int ScrollAmount = 1;
 
   private readonly IOutputManager _outputManager;

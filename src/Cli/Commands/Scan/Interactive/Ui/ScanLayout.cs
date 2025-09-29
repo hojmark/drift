@@ -69,7 +69,9 @@ internal class ScanLayout( NetworkId? networkId ) {
     //TODO update with actual path
     return id == null
       ? new Markup( "[yellow bold]unknown network[/]" )
-      : new Markup( $"[blue bold]{id.Value}[/] [green]✔[/]" ) { Justification = Justify.Left };
+      : new Markup( $"[bold]{( InteractiveUi.FakeData ? "main-site" : id.Value )}[/] [green]✔[/]" ) {
+        Justification = Justify.Left
+      };
   }
 
   private static Layout BuildProgressBar( Percentage progress ) {
@@ -89,7 +91,8 @@ internal class ScanLayout( NetworkId? networkId ) {
         new BreakdownChart()
           .HideTags()
           //.Width( AnsiConsole.Console.Profile.Width )
-          .AddItem( "Good", progress, Color.Green )
+          .AddItem( "Completed", progress, Color.White )
+          //.AddItem( "Good", progress, Color.Green )
           //.AddItem("Unknown", 5, Color.Yellow)
           //.AddItem("Bad", 2, Color.Red)
           .AddItem( "Remaining", Percentage.Hundred.Value - progress, Color.Grey ).Expand()
@@ -99,7 +102,7 @@ internal class ScanLayout( NetworkId? networkId ) {
   }
 
   private static Markup BuildFooter(  /*int scroll, int maxScroll, int selectedIndex, List<UiSubnet> subnets */ ) {
-    const string keyColor = "blue";
+    const string keyColor = "bold";
     const string actionColor = "";
 
     var keyActions = new Dictionary<string, string> {
@@ -116,12 +119,12 @@ internal class ScanLayout( NetworkId? networkId ) {
     var footerParts = new List<string>();
 
     foreach ( var kvp in keyActions ) {
-      footerParts.Add( $"[{keyColor}]{kvp.Key}[/] [{actionColor}]{kvp.Value}[/]" );
+      footerParts.Add( $"[{keyColor}]{kvp.Key}[/][{actionColor}] {kvp.Value}[/]" );
     }
 
     //footerParts.Add( $"[grey]Scroll: {scroll}/{maxScroll}[/]" );
     //footerParts.Add( $"[grey]Selected: {selectedIndex + 1}/{subnets.Count}[/]" );
 
-    return new Markup( string.Join( "   ", footerParts ) );
+    return new Markup( string.Join( $"[{actionColor}]   [/]", footerParts ) );
   }
 }

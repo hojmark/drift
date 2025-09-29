@@ -13,10 +13,6 @@ using NaturalSort.Extension;
 namespace Drift.Cli.Commands.Scan.Interactive.ScanResultProcessors;
 
 internal static class SubnetScanResultProcessor {
-  // Anonymising MACs e.g. for GitHub screenshot
-  //TODO replace with more generic data simulation
-  private const bool FakeMac = false;
-
   internal static List<Device> Process( SubnetScanResult scanResult, Network? network ) {
     //TODO test throw new Exception( "ads" );
     var original = network == null ? [] : network.Devices.Where( d => d.IsEnabled() ).ToList();
@@ -109,26 +105,29 @@ internal static class SubnetScanResultProcessor {
         : "[grey bold]Unknown[/]";
 
       var mac = device.Get( AddressType.Mac );
+      var id = InteractiveUi.FakeData ? GenerateDeviceId() : declaredDevice?.Id ?? "";
 
       var deviceId = device.GetDeviceId();
       var deviceIdDeclared = ( declaredDevice as IAddressableDevice )?.GetDeviceId();
 
+      var na = "n/a";
+
       var d = new Device {
         State = status,
-        IpRaw = device.Get( AddressType.IpV4 ) ?? "",
-        Ip = DeviceIdHighlighter.Mark( device.Get( AddressType.IpV4 ) ?? "", AddressType.IpV4, deviceIdDeclared ),
+        IpRaw = ip ?? na,
+        Ip = DeviceIdHighlighter.Mark( ip ?? na, AddressType.IpV4, deviceIdDeclared ),
         MacRaw = mac != null
-          ? ( FakeMac ? GenerateMacAddress() : mac.ToUpperInvariant() )
-          : "",
+          ? ( InteractiveUi.FakeData ? GenerateMacAddress() : mac.ToUpperInvariant() )
+          : na,
         Mac = DeviceIdHighlighter.Mark(
           (
             mac != null
-              ? ( FakeMac ? GenerateMacAddress() : mac.ToUpperInvariant() )
-              : ""
+              ? ( InteractiveUi.FakeData ? GenerateMacAddress() : mac.ToUpperInvariant() )
+              : na
           ), AddressType.Mac, deviceIdDeclared
         ),
-        IdRaw = declaredDevice?.Id ?? "",
-        Id = "[cyan]" + ( declaredDevice?.Id ?? "" ) + "[/]",
+        IdRaw = id,
+        Id = "[cyan]" + ( id ) + "[/]",
         StateText = textStatus
       };
 
@@ -152,6 +151,13 @@ internal static class SubnetScanResultProcessor {
     var rand = new Random();
     byte[] macBytes = new byte[6];
     rand.NextBytes( macBytes );
-    return string.Join( ":", macBytes.Select( b => b.ToString( "X2" ) ) );
+    return string.Join( "-", macBytes.Select( b => b.ToString( "X2" ) ) );
+  }
+
+  private static int _deviceIdCounter = 0;
+
+  private static string GenerateDeviceId() {
+    _deviceIdCounter++;
+    return "device-" + _deviceIdCounter;
   }
 }

@@ -13,6 +13,7 @@ internal static class CommonParameters {
   /// </summary>
   internal static class Arguments {
     internal static readonly Argument<FileInfo?> Spec = new("spec") {
+      // TODO different commands warrant different descriptions
       Description = "The network spec file to process.", Arity = ArgumentArity.ZeroOrOne
     };
   }

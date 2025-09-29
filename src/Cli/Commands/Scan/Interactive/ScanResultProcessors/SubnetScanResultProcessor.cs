@@ -18,6 +18,7 @@ internal static class SubnetScanResultProcessor {
   private const bool FakeMac = false;
 
   internal static List<Device> Process( SubnetScanResult scanResult, Network? network ) {
+    //TODO test throw new Exception( "ads" );
     var original = network == null ? [] : network.Devices.Where( d => d.IsEnabled() ).ToList();
     var declaredDevices = original;
     var updated1 = scanResult.DiscoveredDevices;
@@ -94,14 +95,18 @@ internal static class SubnetScanResultProcessor {
           state == DiffType.Added,
           unknownAllowed
         );
-      var textStatus =
-        DeviceStateIndicator.GetText(
+
+      var ip = device.Get( AddressType.IpV4 );
+
+      var textStatus = ip == null || scanResult.DiscoveryAttempts.Contains( new IpV4Address( ip ) )
+        ? DeviceStateIndicator.GetText(
           declaredDeviceState,
           discoveredDeviceState,
           state == DiffType.Added,
           unknownAllowed,
           onlyDrifted: false
-        );
+        )
+        : "[grey bold]Unknown[/]";
 
       var mac = device.Get( AddressType.Mac );
 

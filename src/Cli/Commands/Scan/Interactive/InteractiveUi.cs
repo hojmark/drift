@@ -173,29 +173,36 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   private void OnScanResultUpdated( object? sender, NetworkScanResult scanResult ) {
-    lock ( _subnets ) {
-      _progress = scanResult.Progress;
+    try {
+      lock ( _subnets ) {
+        _progress = scanResult.Progress;
 
-      var subnets = NetworkScanResultProcessor.Process( scanResult, _network );
+        var subnets = NetworkScanResultProcessor.Process( scanResult, _network );
 
-      var existing = _subnets.ToDictionary( s => s.Cidr );
-      var updated = new List<Subnet>();
+        var existing = _subnets.ToDictionary( s => s.Cidr );
+        var updated = new List<Subnet>();
 
-      foreach ( var subnet in subnets ) {
-        if ( existing.TryGetValue( subnet.Cidr, out var existingSubnet ) ) {
-          subnet.IsExpanded = existingSubnet.IsExpanded;
+        foreach ( var subnet in subnets ) {
+          if ( existing.TryGetValue( subnet.Cidr, out var existingSubnet ) ) {
+            subnet.IsExpanded = existingSubnet.IsExpanded;
+          }
+
+          updated.Add( subnet );
         }
 
-        updated.Add( subnet );
+        _subnets.Clear();
+        _subnets.AddRange( updated );
+        _scanUpdateSignal.TrySetResult();
+        _scanUpdateSignal = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
       }
-
-      _subnets.Clear();
-      _subnets.AddRange( updated );
-      _scanUpdateSignal.TrySetResult();
-      _scanUpdateSignal = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
+    }
+    catch ( Exception e ) {
+      _running.Cancel();
+      // TODO 
+      //_outputManager.Normal.WriteLineError( e.ToString() ); //being redirected
+      Console.Error.WriteLine( e );
     }
   }
-
 
   public async ValueTask DisposeAsync() {
     _scanner.ResultUpdated -= OnScanResultUpdated;

@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Net;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -62,6 +64,7 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
             Metadata = new Metadata { StartedAt = startedAt },
             Status = ScanResultStatus.InProgress,
             DiscoveredDevices = ToDiscoveredDevices( pingReplies, arpCache ),
+            DiscoveryAttempts = ToDiscoveryAttemps( ipRange, completed ),
             Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
             CidrBlock = cidr
           };
@@ -94,10 +97,13 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
 
     var endedAt = DateTime.Now;
 
+    Debug.Assert( completed == ipRange.Count );
+
     var result = new SubnetScanResult {
       Metadata = new Metadata { StartedAt = startedAt, EndedAt = endedAt },
       Status = ScanResultStatus.Success,
       DiscoveredDevices = ToDiscoveredDevices( pingReplies, arpCache ),
+      DiscoveryAttempts = ToDiscoveryAttemps( ipRange, (uint) ipRange.Count ),
       Progress = Percentage.Hundred,
       CidrBlock = cidr
     };
@@ -107,6 +113,10 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
     logger?.LogDebug( "Finished ping scan for CIDR block {Cidr}", cidr );
 
     return result;
+  }
+
+  private static ImmutableHashSet<IpV4Address> ToDiscoveryAttemps( List<IPAddress> ipRange, uint completed ) {
+    return ipRange.Take( (int) completed ).Select( ip => new IpV4Address( ip ) ).ToImmutableHashSet();
   }
 
   private static IEnumerable<DiscoveredDevice> ToDiscoveredDevices(

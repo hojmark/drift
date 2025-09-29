@@ -31,9 +31,8 @@ internal class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvid
 
     if ( filePath != null ) {
       output.Log.LogDebug( "Using network spec: {Spec}", filePath );
-      output.Normal.Write( "Using network spec " );
-      output.Normal.Write( $"{filePath}  ", ConsoleColor.Cyan );
-
+      output.Normal.WriteLine( "Using network spec " );
+      output.Normal.Write( $"  {filePath}  ", ConsoleColor.Cyan );
 
       var specFileContents = await new StreamReader( filePath.Open( FileMode.Open, FileAccess.Read, FileShare.Read ) )
         .ReadToEndAsync();

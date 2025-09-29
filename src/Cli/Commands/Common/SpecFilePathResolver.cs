@@ -121,7 +121,7 @@ internal class SpecFilePathResolver {
           string.Join( ", ", specFiles )
         );
         _output.Normal.WriteLineWarning(
-          $"Found multiple spec files in directory: {string.Join( ", ", specFiles )}"
+          $"Found multiple spec files in directory\n  {string.Join( "\n  ", specFiles )}"
         );
       }
 

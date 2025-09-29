@@ -121,6 +121,7 @@ internal class ScanCommandHandler(
     if ( output.Is( OutputFormat.Normal ) ) {
       var dCol = new TaskDescriptionColumn { Alignment = Justify.Right };
       var pCol = new PercentageColumn { Style = new Style( Color.Cyan1 ), CompletedStyle = new Style( Color.Green1 ) };
+
       scanResult = await AnsiConsole.Progress()
         .AutoClear( true )
         .Columns( dCol, pCol )
@@ -147,7 +148,11 @@ internal class ScanCommandHandler(
       var lastLogTime = DateTime.MinValue;
 
       EventHandler<NetworkScanResult> updater = ( _, r ) => {
-        UpdateProgressLog( r.Progress, output, ref lastLogTime );
+        UpdateProgressDebounced(
+          r.Progress,
+          progress => output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress ),
+          ref lastLogTime
+        );
       };
 
       scanner.ResultUpdated += updater;
@@ -180,7 +185,8 @@ internal class ScanCommandHandler(
 
     output.Normal.WriteLine();
 
-    if ( true ) { //TODO
+    if ( true ) {
+      //TODO
       var rend = new NormalScanRendererNeo( output.Normal );
       rend.Render( sns );
     }
@@ -199,9 +205,9 @@ internal class ScanCommandHandler(
   }
 
   //TODO make private
-  internal static void UpdateProgressLog(
+  private static void UpdateProgressDebounced(
     Percentage progress,
-    IOutputManager output,
+    Action<Percentage> output,
     ref DateTime lastLogTime
   ) {
     var now = DateTime.UtcNow;
@@ -214,7 +220,7 @@ internal class ScanCommandHandler(
       return;
     }
 
-    output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress );
+    output( progress );
     lastLogTime = now;
   }
 }

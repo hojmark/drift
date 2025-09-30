@@ -98,6 +98,7 @@
           "Timestamp": "0001-01-01T00:00:00"
         }
       ],
+      "DiscoveryAttempts": [],
       "Metadata": null,
       "Status": "success",
       "Progress": {
@@ -133,6 +134,7 @@
           "Timestamp": "0001-01-01T00:00:00"
         }
       ],
+      "DiscoveryAttempts": [],
       "Metadata": null,
       "Status": "success",
       "Progress": {
@@ -191,6 +193,7 @@
               "Timestamp": "0001-01-01T00:00:00"
             }
           ],
+          "DiscoveryAttempts": [],
           "Metadata": null,
           "Status": "success",
           "Progress": {
@@ -238,6 +241,7 @@
               "Timestamp": "0001-01-01T00:00:00"
             }
           ],
+          "DiscoveryAttempts": [],
           "Metadata": null,
           "Status": "success",
           "Progress": {

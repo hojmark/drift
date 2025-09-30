@@ -252,6 +252,7 @@ internal sealed class ScanCommandTests {
                 DiscoveredDevices = discoveredDevices ?? [],
                 Metadata = null,
                 Status = ScanResultStatus.Success,
+                // TODO could/should also include ip's of non-discovered devices?
                 DiscoveryAttempts = discoveredDevices.Select( d => new IpV4Address( d.Get( AddressType.IpV4 ) ) )
                   .ToImmutableHashSet()
               }

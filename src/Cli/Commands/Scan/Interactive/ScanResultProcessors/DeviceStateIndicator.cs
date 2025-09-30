@@ -38,13 +38,9 @@ internal static class DeviceStateIndicator {
         // expecting down, is down
         DeclaredDeviceState.Down when discovered == DiscoveredDeviceState.Offline => $"[green]{OpenCircle}[/]",
         // expecting either, is up
-        DeclaredDeviceState.Dynamic when discovered ==
-                                         DiscoveredDeviceState
-                                           .Online => $"[darkgreen]{ClosedDiamond}[/]",
+        DeclaredDeviceState.Dynamic when discovered == DiscoveredDeviceState.Online => $"[darkgreen]{ClosedDiamond}[/]",
         // expecting either, is down
-        DeclaredDeviceState.Dynamic when discovered ==
-                                         DiscoveredDeviceState
-                                           .Offline => $"[darkgreen]{OpenDiamond}[/]",
+        DeclaredDeviceState.Dynamic when discovered == DiscoveredDeviceState.Offline => $"[darkgreen]{OpenDiamond}[/]",
         _ => $"[yellow][bold]{QuestionMark}[/][/]"
       };
       // State not specified/undefined (yellow)
@@ -75,15 +71,13 @@ internal static class DeviceStateIndicator {
           : "[green]Online[/]",
         DeclaredDeviceState.Up when discovered == DiscoveredDeviceState.Offline => "[red]Offline[/]",
         DeclaredDeviceState.Down when discovered == DiscoveredDeviceState.Online => "[red]Online[/]",
-        DeclaredDeviceState.Down when discovered ==
-                                      DiscoveredDeviceState.Offline =>
-          onlyDrifted ? "" : "[green]Offline[/]",
-        DeclaredDeviceState.Dynamic when discovered ==
-                                         DiscoveredDeviceState.Online => onlyDrifted
+        DeclaredDeviceState.Down when discovered == DiscoveredDeviceState.Offline => onlyDrifted
+          ? ""
+          : "[green]Offline[/]",
+        DeclaredDeviceState.Dynamic when discovered == DiscoveredDeviceState.Online => onlyDrifted
           ? ""
           : "[green]Online[/]",
-        DeclaredDeviceState.Dynamic when discovered ==
-                                         DiscoveredDeviceState.Offline => onlyDrifted
+        DeclaredDeviceState.Dynamic when discovered == DiscoveredDeviceState.Offline => onlyDrifted
           ? ""
           : "[green]Offline[/]",
         _ => "[yellow]State unknown or unspecified[/]"
@@ -97,6 +91,6 @@ internal static class DeviceStateIndicator {
       return "[yellow]Online (unknown device)[/]";
 
     // Fallback/Undefined
-    return "[yellow]Unknown or undefined[/]";
+    return "[purple]Undefined[/]";
   }
 }

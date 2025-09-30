@@ -14,17 +14,18 @@ public class DefaultNetworkScanner( SubnetScannerFactory subnetScannerFactory ) 
     CancellationToken cancellationToken = default
   ) {
     var startedAt = DateTime.Now;
+
     logger?.LogDebug( "Starting network scan at {StartedAt}", startedAt.ToString( CultureInfo.InvariantCulture ) );
+
+    var scanners = CreateScanners( request ); // TODO create scanner tasks that encapsulates logic better
 
     EventHandler<SubnetScanResult> eventHandler = ( ( _, result ) => ResultUpdated?.Invoke( null,
       new NetworkScanResult {
         Metadata = new Metadata { StartedAt = startedAt },
         Status = ScanResultStatus.InProgress,
-        Progress = result.Progress, //TODO not right
+        Progress = result.Progress, //TODO should aggregate
         Subnets = [result]
       } ) );
-
-    var scanners = CreateScanners( request ); // TODO create scanner tasks that encapsulates logic better
 
     try {
       foreach ( var (_, scanner) in scanners ) {

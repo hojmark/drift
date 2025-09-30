@@ -73,7 +73,7 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
         }
       }
       finally {
-        _ = Task.Delay( (int) ( 1000u / options.PingsPerSecond ), cancellationToken )
+        _ = Task.Delay( 1000 / (int) options.PingsPerSecond, cancellationToken )
           .ContinueWith( _ => {
             try {
               throttler.Release();

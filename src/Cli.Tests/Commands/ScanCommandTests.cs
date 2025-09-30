@@ -1,7 +1,9 @@
+using System.Collections.Immutable;
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
+using Drift.Cli.Commands.Scan.Interactive.ScanResultProcessors;
 using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Cli.Tests.Utils;
 using Drift.Domain;
@@ -249,7 +251,9 @@ internal sealed class ScanCommandTests {
                 CidrBlock = DefaultInterface.UnicastAddress!.Value,
                 DiscoveredDevices = discoveredDevices ?? [],
                 Metadata = null,
-                Status = ScanResultStatus.Success
+                Status = ScanResultStatus.Success,
+                DiscoveryAttempts = discoveredDevices.Select( d => new IpV4Address( d.Get( AddressType.IpV4 ) ) )
+                  .ToImmutableHashSet()
               }
             ]
           }

@@ -12,6 +12,7 @@ internal class NormalScanRendererNeo( INormalOutput console ) {
     var trees = TreeRenderer.Render( subnets, null, 100000, 0, showAccordionSymbols: false );
     foreach ( var tree in trees ) {
       console.GetAnsiConsole().Write( tree );
+      console.GetAnsiConsole().WriteLine();
     }
   }
 }

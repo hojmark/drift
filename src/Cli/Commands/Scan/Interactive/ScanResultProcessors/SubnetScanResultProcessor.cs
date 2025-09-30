@@ -98,7 +98,8 @@ internal static class SubnetScanResultProcessor {
         : "[grey bold]Unknown[/]";
 
       var mac = device.Get( AddressType.Mac );
-      var id = InteractiveUi.FakeData ? GenerateDeviceId() : declaredDevice?.Id ?? "";
+      var id = InteractiveUi.FakeData ? GenerateDeviceId() : declaredDevice?.Id;
+      id = id == null ? "[grey][/]" : ( $"[cyan]{id}[/]" );
 
       var deviceId = device.GetDeviceId();
       var deviceIdDeclared = ( declaredDevice as IAddressableDevice )?.GetDeviceId();
@@ -121,7 +122,7 @@ internal static class SubnetScanResultProcessor {
             deviceIdDeclared
           )
         ),
-        Id = new DisplayValue( "[cyan]" + ( id ) + "[/]" ),
+        Id = new DisplayValue( id ),
       };
 
       devices.Add( d );

@@ -3,7 +3,6 @@
   192.168.32.0/20 (4094 addresses, estimated scan time is 00:01:21.8800000)
   172.19.0.0/16 (65534 addresses, estimated scan time is 00:21:50.6800000)
 
-────────────────────────────────────────────────────────────────────────────────
 192.168.0.0/24 (4 devices)
 ├── 172.19.0.10    n/a                  Online (unknown device)  
 ├── 192.168.32.10  n/a                  Online (unknown device)  

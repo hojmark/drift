@@ -1,7 +1,6 @@
 ﻿Scanning 1 subnet
   192.168.0.0/24 (254 addresses, estimated scan time is 00:00:05.0800000)
 
-────────────────────────────────────────────────────────────────────────────────
 192.168.0.0/24 (3 devices)
 ├── 192.168.0.10  n/a                  Online (unknown device)  
 ├── 192.168.0.20  7D-FB-D0-E6-80-AE    Online (unknown device)  

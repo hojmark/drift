@@ -3,6 +3,23 @@ using Drift.Domain.Device.Discovered;
 
 namespace Drift.Cli.Commands.Scan.Interactive.ScanResultProcessors;
 
+/*
+ * TODO target status:
+ *
+ * Icon:
+ * - Closed circle: online
+ * - Open circle: offline
+ * - Question mark: unknown device (not in spec)
+ * - Exclamation mark: unknown device (not in spec) that has been disallowed by general setting (unknown devices not allowed)
+ *
+ * Color:
+ * - Green: expected state
+ * - Red: opposite of expected state
+ * - Yellow: undefined state (Q: both because the device is unknown AND because the state of a known device hasn't been specified)
+ * Note: could have option for treating unknown devices as disallowed, thus red instead of default yellow
+ *
+ */
+
 internal static class DeviceStateIndicator {
   // Unicode icons
   const string ClosedCircle = "\u25CF"; // ●

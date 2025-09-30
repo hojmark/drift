@@ -48,6 +48,8 @@ internal class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvid
       output.Log.LogDebug( "Network ID: {ID}", spec.Network.Id );
       output.Normal.WriteVerbose( "Network ID: " );
       output.Normal.WriteLineVerbose( $"{spec.Network.Id}", ConsoleColor.Cyan );
+      
+      output.Normal.WriteLine();
     }
 
     return spec;

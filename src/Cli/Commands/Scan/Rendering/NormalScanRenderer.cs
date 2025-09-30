@@ -13,7 +13,7 @@ using Spectre.Console;
 namespace Drift.Cli.Commands.Scan.Rendering;
 
 //TODO use NormalOutput instead of Spectre directly
-[Obsolete]
+[Obsolete( $"Use {nameof(NormalScanRendererNeo)} instead" )]
 internal class NormalScanRenderer( INormalOutput console ) : DiffRendererBase {
   // Anonymising MACs e.g. for GitHub screenshot
   //TODO replace with more generic data simulation

@@ -92,7 +92,6 @@ internal class ScanCommandHandler(
 
     var scanRequest = new NetworkScanOptions { Cidrs = subnets };
 
-    output.Normal.WriteLine();
     output.Normal.WriteLine( 0,
       $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : "" )}" ); // TODO many more varieties
     foreach ( var cidr in subnets ) {

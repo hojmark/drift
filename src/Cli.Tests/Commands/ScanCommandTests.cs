@@ -75,7 +75,7 @@ internal sealed class ScanCommandTests {
   [OneTimeSetUp]
   public void SetupOnce() {
     // Easier to validate in snapshots
-    NormalScanRenderer.IdMarkingStyle = IdMarkingStyle.Dot;
+    DeviceIdHighlighter.Style = IdMarkingStyle.Dot;
   }
 
   //[Combinatorial]

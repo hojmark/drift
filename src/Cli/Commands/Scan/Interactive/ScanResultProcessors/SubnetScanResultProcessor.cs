@@ -129,7 +129,8 @@ internal static class SubnetScanResultProcessor {
     }
 
     // Order by IP
-    devices = devices.OrderBy( dev => dev.Ip.Value, StringComparer.OrdinalIgnoreCase.WithNaturalSort() ).ToList();
+    devices = devices.OrderBy( dev => dev.Ip.WithoutMarkup, StringComparer.OrdinalIgnoreCase.WithNaturalSort() )
+      .ToList();
 
     return devices;
   }

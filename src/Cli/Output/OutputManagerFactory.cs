@@ -75,7 +75,15 @@ internal class OutputManagerFactory(
       bridge.Reader
     );
 
-    var logger = GetLogger( outputFormat, verbose, veryVerbose, outWrapper, errWrapper, toConsole );
+    var logger = GetLogger(
+      outputFormat,
+      verbose,
+      veryVerbose,
+      outWrapper,
+      errWrapper,
+      // TODO Get rid of this crappy logic
+      !interactiveOutputOnly && toConsole
+    );
 
     return new ConsoleOutputManager(
       logger,

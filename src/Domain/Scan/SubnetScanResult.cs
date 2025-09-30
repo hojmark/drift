@@ -10,13 +10,13 @@ public class SubnetScanResult : ScanResultBase {
     init;
   }
 
-  public IEnumerable<DiscoveredDevice> DiscoveredDevices {
+  public IReadOnlyCollection<DiscoveredDevice> DiscoveredDevices {
     get;
     init;
   } = [];
 
-  public ImmutableHashSet<IpV4Address> DiscoveryAttempts {
+  public IReadOnlySet<IpV4Address> DiscoveryAttempts {
     get;
     init;
-  } = [];
+  } = ImmutableHashSet<IpV4Address>.Empty;
 }

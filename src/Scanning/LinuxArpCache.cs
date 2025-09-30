@@ -1,12 +1,41 @@
 using System.Diagnostics;
 using System.Net;
+using System.Runtime.Versioning;
 using Drift.Domain.Device.Addresses;
 
 namespace Drift.Scanning;
 
-//TODO read from /proc/net/arp instead
-internal static class ArpHelper {
-  public static Dictionary<IPAddress, string> GetSystemCachedIpToMacMap() {
+//TODO read from /proc/net/arp instead of spawning processes
+[SupportedOSPlatform( "linux" )]
+internal static class LinuxArpCache {
+  private static readonly Lock CacheLock = new();
+  private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds( 1 );
+  private static Dictionary<IPAddress, string> _cachedMap = new();
+  private static DateTime _lastUpdated = DateTime.MinValue;
+
+  public static Dictionary<IPAddress, string> GetCachedTable() {
+    return GetTable( forceRefresh: false );
+  }
+
+  public static Dictionary<IPAddress, string> GetFreshTable() {
+    return GetTable( forceRefresh: true );
+  }
+
+  private static Dictionary<IPAddress, string> GetTable( bool forceRefresh ) {
+    lock ( CacheLock ) {
+      var now = DateTime.UtcNow;
+
+      if ( !forceRefresh && ( now - _lastUpdated ) < CacheTtl ) {
+        return _cachedMap;
+      }
+
+      _cachedMap = ReadArpCache();
+      _lastUpdated = now;
+      return _cachedMap;
+    }
+  }
+
+  public static Dictionary<IPAddress, string> ReadArpCache() {
     var map = new Dictionary<IPAddress, string>();
 
     var startInfo = new ProcessStartInfo {

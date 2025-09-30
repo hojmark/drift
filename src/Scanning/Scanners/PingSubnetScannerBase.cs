@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net;
+using System.Threading.RateLimiting;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
@@ -24,8 +25,7 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
     var cidr = options.Cidr;
     var ipRange = IPNetwork2
       .Parse( cidr.ToString() )
-      .ListIPAddress( FilterEnum.Usable )
-      .Select( ip => ip )
+      .ListIPAddress( Filter.Usable )
       .ToList();
 
     var total = ipRange.Count;
@@ -40,12 +40,22 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
 
     var startedAt = DateTime.Now;
 
-    using var throttler = new SemaphoreSlim( (int) options.PingsPerSecond );
+    await using var rateLimiter = new TokenBucketRateLimiter( new TokenBucketRateLimiterOptions() {
+      AutoReplenishment = true,
+      QueueLimit = int.MaxValue,
+      QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+      ReplenishmentPeriod = TimeSpan.FromSeconds( 1 ),
+      TokenLimit = (int) options.PingsPerSecond,
+      TokensPerPeriod = (int) options.PingsPerSecond
+    } );
 
     var pingTasks = ipRange.Select( async ip => {
-      await throttler.WaitAsync( cancellationToken );
-
       try {
+        var lease = await rateLimiter.AcquireAsync( 1, cancellationToken );
+        if ( !lease.IsAcquired ) {
+          throw new Exception( "Could not acquire lease" );
+        }
+
         var success = await PingAsync( ip, logger, cancellationToken );
         string? hostname = "";
         if ( success ) {
@@ -58,34 +68,19 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
 
         Interlocked.Increment( ref completed );
 
-        if ( success ) {
-          var arpCache = ArpHelper.GetSystemCachedIpToMacMap();
-          var intermediateResult = new SubnetScanResult {
-            Metadata = new Metadata { StartedAt = startedAt },
-            Status = ScanResultStatus.InProgress,
-            DiscoveredDevices = ToDiscoveredDevices( pingReplies, arpCache ),
-            DiscoveryAttempts = ToDiscoveryAttemps( ipRange, completed ),
-            Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
-            CidrBlock = cidr
-          };
+        var intermediateResult = new SubnetScanResult {
+          Metadata = new Metadata { StartedAt = startedAt },
+          Status = ScanResultStatus.InProgress,
+          DiscoveredDevices = ToDiscoveredDevices( pingReplies, LinuxArpCache.GetCachedTable() ),
+          DiscoveryAttempts = ToDiscoveryAttempts( ipRange, completed ),
+          Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
+          CidrBlock = cidr
+        };
 
-          ResultUpdated?.Invoke( null, intermediateResult );
-        }
+        ResultUpdated?.Invoke( null, intermediateResult );
       }
-      finally {
-        _ = Task.Delay( 1000 / (int) options.PingsPerSecond, cancellationToken )
-          .ContinueWith( _ => {
-            try {
-              throttler.Release();
-            }
-            // Justification: enable when throttler is fixed
-#pragma warning disable CS0168 // Variable is declared but never used
-            catch ( Exception ex ) {
-#pragma warning restore CS0168 // Variable is declared but never used
-              //Console.WriteLine(ex);
-              //TODO throttler not working!!!
-            }
-          }, cancellationToken );
+      catch ( Exception e ) {
+        logger?.LogError( e, "Error while pinging {Ip}", ip );
       }
     } ).ToList();
 
@@ -93,7 +88,7 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
 
     logger?.LogDebug( "Reading ARP cache" );
 
-    var arpCache = ArpHelper.GetSystemCachedIpToMacMap();
+    var arpCache = LinuxArpCache.GetFreshTable();
 
     var endedAt = DateTime.Now;
 
@@ -103,7 +98,7 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
       Metadata = new Metadata { StartedAt = startedAt, EndedAt = endedAt },
       Status = ScanResultStatus.Success,
       DiscoveredDevices = ToDiscoveredDevices( pingReplies, arpCache ),
-      DiscoveryAttempts = ToDiscoveryAttemps( ipRange, (uint) ipRange.Count ),
+      DiscoveryAttempts = ToDiscoveryAttempts( ipRange, (uint) ipRange.Count ),
       Progress = Percentage.Hundred,
       CidrBlock = cidr
     };
@@ -115,17 +110,17 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
     return result;
   }
 
-  private static ImmutableHashSet<IpV4Address> ToDiscoveryAttemps( List<IPAddress> ipRange, uint completed ) {
+  private static ImmutableHashSet<IpV4Address> ToDiscoveryAttempts( List<IPAddress> ipRange, uint completed ) {
     return ipRange.Take( (int) completed ).Select( ip => new IpV4Address( ip ) ).ToImmutableHashSet();
   }
 
-  private static IEnumerable<DiscoveredDevice> ToDiscoveredDevices(
+  private static List<DiscoveredDevice> ToDiscoveredDevices(
     ConcurrentBag<( IPAddress Ip, bool Success, string? Hostname)> pingReplies,
     Dictionary<IPAddress, string>? ipToMac
   ) {
     return pingReplies.Where( r => r.Success ).Select( pingReply =>
       new DiscoveredDevice { Addresses = CreateAddresses( pingReply ) }
-    );
+    ).ToList();
 
     List<IDeviceAddress> CreateAddresses( ( IPAddress Ip, bool Success, string? Hostname) pingReply ) {
       var list = new List<IDeviceAddress> { new IpV4Address( pingReply.Ip ) };

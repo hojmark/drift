@@ -10,7 +10,7 @@ namespace Drift.Scanning;
 internal static class LinuxArpCache {
   private static readonly Lock CacheLock = new();
   private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds( 1 );
-  private static Dictionary<IPAddress, string> _cachedMap = new();
+  private static Dictionary<IPAddress, string> _arpCache = new();
   private static DateTime _lastUpdated = DateTime.MinValue;
 
   public static Dictionary<IPAddress, string> GetCachedTable() {
@@ -26,16 +26,16 @@ internal static class LinuxArpCache {
       var now = DateTime.UtcNow;
 
       if ( !forceRefresh && ( now - _lastUpdated ) < CacheTtl ) {
-        return _cachedMap;
+        return _arpCache;
       }
 
-      _cachedMap = ReadArpCache();
+      _arpCache = ReadSystemArpCache();
       _lastUpdated = now;
-      return _cachedMap;
+      return _arpCache;
     }
   }
 
-  public static Dictionary<IPAddress, string> ReadArpCache() {
+  private static Dictionary<IPAddress, string> ReadSystemArpCache() {
     var map = new Dictionary<IPAddress, string>();
 
     var startInfo = new ProcessStartInfo {

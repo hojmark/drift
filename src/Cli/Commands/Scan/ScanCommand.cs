@@ -177,7 +177,7 @@ internal class ScanCommandHandler(
 
     IRenderer<ScanRenderData> renderer =
       parameters.OutputFormat switch {
-        OutputFormat.Normal => new NormalScanRenderer( output.Normal ),
+        //OutputFormat.Normal => new NormalScanRenderer( output.Normal ),
         OutputFormat.Log => new LogScanRenderer( output.Log ),
         _ => new NullRenderer<ScanRenderData>()
       };

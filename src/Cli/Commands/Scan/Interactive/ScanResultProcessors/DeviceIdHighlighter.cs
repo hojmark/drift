@@ -5,7 +5,7 @@ using Drift.Domain.Device.Addresses;
 namespace Drift.Cli.Commands.Scan.Interactive.ScanResultProcessors;
 
 internal static class DeviceIdHighlighter {
-  private const IdMarkingStyle Style = IdMarkingStyle.Text;
+  internal static IdMarkingStyle Style = IdMarkingStyle.Text;
 
   internal static string Mark( string text, AddressType type, DeviceId? idDeclared ) {
     if ( idDeclared != null && idDeclared.Contributes( type ) ) {

@@ -1,33 +1,17 @@
 namespace Drift.Cli.Commands.Scan.Interactive.Models;
 
 internal class Device {
-  // TODO get rid of the double fields
-  public required string Ip {
+  public required DisplayValue Ip {
     get;
     set;
   }
 
-  public required string IpRaw {
+  public required DisplayValue Mac {
     get;
     set;
   }
 
-  public required string Mac {
-    get;
-    set;
-  }
-
-  public required string MacRaw {
-    get;
-    set;
-  }
-  
-  public required string Id {
-    get;
-    set;
-  }
-  
-  public required string IdRaw {
+  public required DisplayValue Id {
     get;
     set;
   }
@@ -41,7 +25,7 @@ internal class Device {
     get;
     set;
   }
-  
+
   public string Note {
     get;
     set;

@@ -84,13 +84,6 @@ internal static class SubnetScanResultProcessor {
         : DiscoveredDeviceState.Online;
 
       const bool unknownAllowed = true;
-      var status =
-        DeviceStateIndicator.GetIcon(
-          declaredDeviceState,
-          discoveredDeviceState,
-          state == DiffType.Added,
-          unknownAllowed
-        );
 
       var ip = device.Get( AddressType.IpV4 );
 
@@ -113,29 +106,29 @@ internal static class SubnetScanResultProcessor {
       var na = "n/a";
 
       var d = new Device {
-        State = status,
-        IpRaw = ip ?? na,
-        Ip = DeviceIdHighlighter.Mark( ip ?? na, AddressType.IpV4, deviceIdDeclared ),
-        MacRaw = mac != null
-          ? ( InteractiveUi.FakeData ? GenerateMacAddress() : mac.ToUpperInvariant() )
-          : na,
-        Mac = DeviceIdHighlighter.Mark(
-          (
-            mac != null
-              ? ( InteractiveUi.FakeData ? GenerateMacAddress() : mac.ToUpperInvariant() )
-              : na
-          ), AddressType.Mac, deviceIdDeclared
+        State = DeviceStateIndicator.GetIcon(
+          declaredDeviceState,
+          discoveredDeviceState,
+          state == DiffType.Added,
+          unknownAllowed
         ),
-        IdRaw = id,
-        Id = "[cyan]" + ( id ) + "[/]",
-        StateText = textStatus
+        StateText = textStatus,
+        Ip = new DisplayValue( DeviceIdHighlighter.Mark( ip ?? na, AddressType.IpV4, deviceIdDeclared ) ),
+        Mac = new DisplayValue(
+          DeviceIdHighlighter.Mark(
+            mac != null ? ( InteractiveUi.FakeData ? GenerateMacAddress() : mac ) : na,
+            AddressType.Mac,
+            deviceIdDeclared
+          )
+        ),
+        Id = new DisplayValue( "[cyan]" + ( id ) + "[/]" ),
       };
 
       devices.Add( d );
     }
 
     // Order by IP
-    devices = devices.OrderBy( dev => dev.IpRaw, StringComparer.OrdinalIgnoreCase.WithNaturalSort() ).ToList();
+    devices = devices.OrderBy( dev => dev.Ip.Value, StringComparer.OrdinalIgnoreCase.WithNaturalSort() ).ToList();
 
     return devices;
   }

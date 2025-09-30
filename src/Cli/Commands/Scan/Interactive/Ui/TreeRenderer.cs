@@ -120,22 +120,12 @@ internal static class TreeRenderer {
   private static string RenderDevice( Device device, List<Subnet> subnets ) {
     return
       //device.Status + " " +
-      $"{device.Ip.PadRightLocal( device.IpRaw.Length, subnets.GetIpWidth() )}  " +
-      $"{device.Mac.PadRightLocal( device.MacRaw.Length, subnets.GetMacWidth() )}  " +
-      $"{device.Id.PadRightLocal( device.IdRaw.Length, subnets.GetIdWidth() )}  " +
+      $"{device.Ip.PadRight( subnets.GetIpWidth() )}  " +
+      $"{device.Mac.PadRight( subnets.GetMacWidth() )}  " +
+      $"{device.Id.PadRight( subnets.GetIdWidth() )}  " +
       //TODO note not raw version
       //$"{device.StateText.PadRightLocal( device.StateText.Length, subnets.GetStateTextWidth() )}  " +
       device.StateText + "  ";
     //"[grey]Few seconds ago[/]";
-  }
-
-  private static string PadRightLocal( this string str, int length, int totalWidth ) {
-    int oldLength = length;
-    int count = totalWidth - oldLength;
-
-    var padding = new char[count];
-    new Span<char>( padding ).Fill( ' ' );
-
-    return str + new string( padding );
   }
 }

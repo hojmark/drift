@@ -1,6 +1,7 @@
 ﻿[
   {
     "PropertyPath": "NetworkScanResult[DiffDevice_IpV4=192.168.0.22|Mac=22-22-22-22-22-22]",
+    "DiffType": "removed",
     "Original": {
       "Addresses": [
         {
@@ -16,11 +17,11 @@
       ],
       "Ports": []
     },
-    "Updated": null,
-    "DiffType": "removed"
+    "Updated": null
   },
   {
     "PropertyPath": "NetworkScanResult[DiffDevice_IpV4=192.168.0.150]",
+    "DiffType": "added",
     "Original": null,
     "Updated": {
       "Addresses": [
@@ -31,7 +32,6 @@
         }
       ],
       "Ports": []
-    },
-    "DiffType": "added"
+    }
   }
 ]

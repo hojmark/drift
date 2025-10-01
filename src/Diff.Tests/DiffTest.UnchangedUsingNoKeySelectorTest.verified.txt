@@ -1,6 +1,7 @@
 ﻿[
   {
     "PropertyPath": "NetworkScanResult[0]",
+    "DiffType": "unchanged",
     "Original": {
       "Addresses": [
         {
@@ -20,7 +21,6 @@
         }
       ],
       "Ports": []
-    },
-    "DiffType": "unchanged"
+    }
   }
 ]

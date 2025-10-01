@@ -1,6 +1,7 @@
 ﻿[
   {
     "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.10]",
+    "DiffType": "unchanged",
     "Original": {
       "Addresses": [
         {
@@ -22,11 +23,11 @@
       ],
       "Ports": [],
       "Timestamp": "0001-01-01T00:00:00"
-    },
-    "DiffType": "unchanged"
+    }
   },
   {
     "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.22]",
+    "DiffType": "removed",
     "Original": {
       "Addresses": [
         {
@@ -43,11 +44,11 @@
       "Ports": [],
       "Timestamp": "0001-01-01T00:00:00"
     },
-    "Updated": null,
-    "DiffType": "removed"
+    "Updated": null
   },
   {
     "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.150]",
+    "DiffType": "added",
     "Original": null,
     "Updated": {
       "Addresses": [
@@ -59,11 +60,11 @@
       ],
       "Ports": [],
       "Timestamp": "0001-01-01T00:00:00"
-    },
-    "DiffType": "added"
+    }
   },
   {
     "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24]",
+    "DiffType": "unchanged",
     "Original": {
       "CidrBlock": {
         "NetworkAddress": "192.168.0.0",
@@ -140,11 +141,11 @@
       "Progress": {
         "Value": 0
       }
-    },
-    "DiffType": "unchanged"
+    }
   },
   {
     "PropertyPath": "NetworkScanResult.Metadata",
+    "DiffType": "unchanged",
     "Original": {
       "StartedAt": "2025-04-24T10:20:08.4219405Z",
       "EndedAt": "2023-01-01T00:00:00"
@@ -152,11 +153,11 @@
     "Updated": {
       "StartedAt": "2025-04-24T10:20:08.4219405Z",
       "EndedAt": "2023-01-01T00:00:00"
-    },
-    "DiffType": "unchanged"
+    }
   },
   {
     "PropertyPath": "NetworkScanResult",
+    "DiffType": "unchanged",
     "Original": {
       "Subnets": [
         {
@@ -257,7 +258,6 @@
       "Progress": {
         "Value": 0
       }
-    },
-    "DiffType": "unchanged"
+    }
   }
 ]

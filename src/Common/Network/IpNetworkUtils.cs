@@ -84,7 +84,7 @@ public static class IpNetworkUtils {
   public static long GetIpRangeCount( CidrBlock cidr, bool usable = true ) {
     return IPNetwork2
       .Parse( cidr.ToString() )
-      .ListIPAddress( usable ? FilterEnum.Usable : FilterEnum.All )
+      .ListIPAddress( usable ? Filter.Usable : Filter.All )
       .Count();
   }
 }

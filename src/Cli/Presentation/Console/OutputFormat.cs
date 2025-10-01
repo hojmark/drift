@@ -1,4 +1,4 @@
-namespace Drift.Cli.Presentation.Output;
+namespace Drift.Cli.Presentation.Console;
 
 // TODO consider grep?
 /// <summary>

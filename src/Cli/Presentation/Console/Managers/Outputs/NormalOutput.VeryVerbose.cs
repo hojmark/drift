@@ -1,4 +1,4 @@
-namespace Drift.Cli.Presentation.Output.Managers;
+namespace Drift.Cli.Presentation.Console.Managers.Outputs;
 
 internal partial class NormalOutput {
   // Use of banned Console APIs is OK. Main point is to centralize usage to this class.

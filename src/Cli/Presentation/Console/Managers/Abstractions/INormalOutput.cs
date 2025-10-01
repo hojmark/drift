@@ -1,6 +1,6 @@
 using Spectre.Console;
 
-namespace Drift.Cli.Presentation.Output.Abstractions;
+namespace Drift.Cli.Presentation.Console.Managers.Abstractions;
 
 internal partial interface INormalOutput {
   #region Verbose

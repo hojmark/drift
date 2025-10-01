@@ -1,8 +1,8 @@
-using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
-namespace Drift.Cli.Presentation.Output.Managers;
+namespace Drift.Cli.Presentation.Console.Managers;
 
 internal class NullOutputManager : IOutputManager {
   public TextReader GetReader() {

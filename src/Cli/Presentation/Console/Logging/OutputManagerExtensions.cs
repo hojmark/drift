@@ -1,7 +1,8 @@
-using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Microsoft.Extensions.Logging;
+using Drift.Common.Logging;
 
-namespace Drift.Cli.Presentation.Output.Logging;
+namespace Drift.Cli.Presentation.Console.Logging;
 
 internal static class OutputManagerExtensions {
   /// <summary>

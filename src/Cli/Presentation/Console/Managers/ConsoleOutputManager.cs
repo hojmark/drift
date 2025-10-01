@@ -1,7 +1,8 @@
-using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
+using Drift.Cli.Presentation.Console.Managers.Outputs;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Presentation.Output.Managers;
+namespace Drift.Cli.Presentation.Console.Managers;
 
 internal class ConsoleOutputManager(
   //TODO mixed parameter levels

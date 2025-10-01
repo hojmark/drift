@@ -1,4 +1,4 @@
-using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Diff;
 using Drift.Diff.Domain;
 using Drift.Domain.Device.Addresses;

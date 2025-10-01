@@ -1,4 +1,4 @@
-using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Spectre.Console;
 
 namespace Drift.Cli.Presentation.Rendering;

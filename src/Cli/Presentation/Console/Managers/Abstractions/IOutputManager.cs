@@ -1,4 +1,4 @@
-namespace Drift.Cli.Presentation.Output.Abstractions;
+namespace Drift.Cli.Presentation.Console.Managers.Abstractions;
 
 // Internal?
 internal interface IOutputManager {

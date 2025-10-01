@@ -1,7 +1,7 @@
-using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Spectre.Console;
 
-namespace Drift.Cli.Presentation.Output.Managers;
+namespace Drift.Cli.Presentation.Console.Managers.Outputs;
 
 internal partial class NormalOutput(
   TextWriter stdOut,
@@ -169,12 +169,12 @@ internal partial class NormalOutput(
   ) {
     textWriter.Write( new string( ' ', level * 2 ) );
 
-    if ( foreground.HasValue ) Console.ForegroundColor = foreground.Value;
-    if ( background.HasValue ) Console.BackgroundColor = background.Value;
+    if ( foreground.HasValue ) System.Console.ForegroundColor = foreground.Value;
+    if ( background.HasValue ) System.Console.BackgroundColor = background.Value;
 
     textWriter.Write( text );
 
-    Console.ResetColor();
+    System.Console.ResetColor();
   }
 
   private static void WriteLineInternal(
@@ -195,18 +195,18 @@ internal partial class NormalOutput(
         }
       }
       else {
-        if ( foreground.HasValue ) Console.ForegroundColor = foreground.Value;
-        if ( background.HasValue ) Console.BackgroundColor = background.Value;
+        if ( foreground.HasValue ) System.Console.ForegroundColor = foreground.Value;
+        if ( background.HasValue ) System.Console.BackgroundColor = background.Value;
       }
 
       textWriter.Write( line );
 
       if ( markupOutput ) {
         if ( foreground.HasValue ) textWriter.Write( "[/]" );
-        if ( background.HasValue ) Console.BackgroundColor = background.Value;
+        if ( background.HasValue ) System.Console.BackgroundColor = background.Value;
       }
       else {
-        Console.ResetColor();
+        System.Console.ResetColor();
       }
 
       textWriter.WriteLine();

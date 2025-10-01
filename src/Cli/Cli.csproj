@@ -49,8 +49,4 @@
       <AdditionalFiles Include="BannedSymbols.txt" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Presentation\Output\Normal\" />
-    </ItemGroup>
-
 </Project>

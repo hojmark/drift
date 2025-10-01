@@ -2,8 +2,8 @@ using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan;
-using Drift.Cli.Presentation.Output.Abstractions;
-using Drift.Cli.Presentation.Output.Managers;
+using Drift.Cli.Presentation.Console.Managers;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Common.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,7 +12,7 @@ using Serilog.Events;
 using Serilog.Formatting.Display;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-namespace Drift.Cli.Presentation.Output;
+namespace Drift.Cli.Presentation.Console;
 
 internal interface IOutputManagerFactory {
   IOutputManager Create( ParseResult result, bool plainConsole );

@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Infrastructure;
-using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
 
 namespace Drift.Cli.Tests;
 

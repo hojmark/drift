@@ -1,4 +1,4 @@
-using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
 
 namespace Drift.Cli.Commands.Scan.Interactive.Input;
 

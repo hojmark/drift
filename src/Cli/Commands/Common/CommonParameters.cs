@@ -1,5 +1,5 @@
 using System.CommandLine;
-using Drift.Cli.Presentation.Output;
+using Drift.Cli.Presentation.Console;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
@@ -38,7 +38,7 @@ internal static class CommonParameters {
 
     internal static readonly Option<OutputFormat> OutputFormat =
       new("--output", "-o") {
-        DefaultValueFactory = _ => Presentation.Output.OutputFormat.Normal,
+        DefaultValueFactory = _ => Presentation.Console.OutputFormat.Normal,
         Description = "Output format",
         Required = false,
         Arity = ArgumentArity.ExactlyOne

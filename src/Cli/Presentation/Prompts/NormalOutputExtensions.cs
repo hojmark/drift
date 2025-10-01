@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
 
 namespace Drift.Cli.Presentation.Prompts;
@@ -14,7 +14,7 @@ internal static class NormalOutputExtensions {
     while ( true ) {
       WritePrompt();
 
-      var value = Console.ReadLine()?.Trim();
+      var value = System.Console.ReadLine()?.Trim();
 
       if ( string.IsNullOrWhiteSpace( value ) ) {
         DeletePreviousLine();
@@ -48,7 +48,7 @@ internal static class NormalOutputExtensions {
     while ( true ) {
       WritePrompt();
 
-      var value = Console.ReadLine()?.Trim().ToLowerInvariant();
+      var value = System.Console.ReadLine()?.Trim().ToLowerInvariant();
 
       if ( string.IsNullOrWhiteSpace( value ) ) {
         DeletePreviousLine();
@@ -86,6 +86,6 @@ internal static class NormalOutputExtensions {
   }
 
   private static void DeletePreviousLine() {
-    Console.SetCursorPosition( 0, Console.CursorTop - 1 );
+    System.Console.SetCursorPosition( 0, System.Console.CursorTop - 1 );
   }
 }

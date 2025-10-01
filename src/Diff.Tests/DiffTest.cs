@@ -107,7 +107,7 @@ internal sealed class DiffTest {
     // Assert
     Print( diffs );
     // TODO custom serializer that skips properties not directly defined on the object (e.g. lists, objects)
-    var diffsAsJson = JsonConverter.Serialize( diffs, new IPAddressConverter() );
+    var diffsAsJson = JsonConverter.Serialize( diffs, new IpAddressConverter() );
     return Verify( diffsAsJson );
   }
 
@@ -249,7 +249,7 @@ internal sealed class DiffTest {
     }
   }
 
-  internal sealed class IPAddressConverter : JsonConverter<System.Net.IPAddress> {
+  private sealed class IpAddressConverter : JsonConverter<System.Net.IPAddress> {
     public override System.Net.IPAddress Read( ref Utf8JsonReader reader, Type typeToConvert,
       JsonSerializerOptions options ) {
       string? ip = reader.GetString();

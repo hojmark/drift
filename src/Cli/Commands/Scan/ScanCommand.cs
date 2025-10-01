@@ -3,8 +3,8 @@ using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Interactive.Input;
-using Drift.Cli.Commands.Scan.Interactive.ResultProcessors;
 using Drift.Cli.Commands.Scan.Rendering;
+using Drift.Cli.Commands.Scan.ResultProcessors;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
@@ -188,7 +188,7 @@ internal class ScanCommandHandler(
 
     if ( true ) {
       //TODO
-      var rend = new NormalScanRendererNeo( output.Normal );
+      var rend = new NormalScanRenderer( output.Normal );
       rend.Render( sns );
     }
     else {

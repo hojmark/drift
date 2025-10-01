@@ -1,7 +1,7 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
-using Drift.Cli.Commands.Lint.Rendering;
+using Drift.Cli.Commands.Lint.Presentation;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
@@ -29,7 +29,8 @@ internal class LintCommandHandler( IOutputManager output ) : ICommandHandler<Lin
 
     FileInfo? filePath;
     try {
-      filePath = new SpecFilePathResolver( output, parameters.SpecFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
+      filePath = new SpecFilePathResolver( output,
+          parameters.SpecFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
         .Resolve( parameters.SpecFile?.Name, throwsOnNotFound: true );
     }
     catch ( FileNotFoundException exception ) {
@@ -57,6 +58,8 @@ internal class LintCommandHandler( IOutputManager output ) : ICommandHandler<Lin
 
     renderer.Render( result );
 
-    return result.IsValid ? ExitCodes.Success : ExitCodes.SpecValidationError;
+    return result.IsValid
+      ? ExitCodes.Success
+      : ExitCodes.SpecValidationError;
   }
 }

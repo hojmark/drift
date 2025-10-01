@@ -8,7 +8,7 @@ internal class ConfigCommand : Command {
       new Argument<string>( "key" ) { Description = "The config key to set" },
       new Argument<string>( "value" ) { Description = "The value to assign" }
     };
-    setCommand.SetAction( r => {
+    setCommand.SetAction( _ => {
       //Console.WriteLine( $"Setting {key} to {value}" );
     } );
 
@@ -16,12 +16,12 @@ internal class ConfigCommand : Command {
       new Command( "get", "Get a configuration value" ) {
         new Argument<string>( "key" ) { Description = "The config key to get" }
       };
-    getCommand.SetAction( r => {
+    getCommand.SetAction( _ => {
       //Console.WriteLine( $"Getting value for {key}" );});
     } );
 
     var listCommand = new Command( "list", "List all configuration values" );
-    listCommand.SetAction( r => {
+    listCommand.SetAction( _ => {
       //Console.WriteLine( "Listing all config values..." );
     } );
 
@@ -29,7 +29,7 @@ internal class ConfigCommand : Command {
       new Command( "unset", "Unset a configuration value" ) {
         new Argument<string>( "key" ) { Description = "The config key to unset" }
       };
-    unsetCommand.SetAction( r => {
+    unsetCommand.SetAction( _ => {
       //Console.WriteLine( $"Unsetting value for {key}" );
     } );
 

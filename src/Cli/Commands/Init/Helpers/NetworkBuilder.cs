@@ -5,7 +5,7 @@ using Drift.Domain.Device.Declared;
 using Drift.Spec.Serialization;
 using Network = Drift.Domain.Network;
 
-namespace Drift.Cli.Commands.Init;
+namespace Drift.Cli.Commands.Init.Helpers;
 
 // Network is only part of the spec...
 internal class NetworkBuilder {

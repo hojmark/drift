@@ -1,6 +1,7 @@
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init;
+using Drift.Cli.Commands.Init.Helpers;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Domain;
@@ -142,13 +143,10 @@ internal sealed class InitCommandTests {
   [Test]
   public async Task GeneratedSpecWithDiscoveryIsValid() {
     // Arrange
-    var subnets = new List<CidrBlock> { new("192.168.0.0/24") };
-    var subnetProvider = new PredefinedSubnetProvider( subnets.Select( CidrBlockExtensions.ToDeclared ) );
-
     var path = Path.GetTempFileName();
 
     // Act
-    InitCommandHandler.CreateSpecWithDiscovery( ScanResult, subnetProvider.Get(), path );
+    SpecFactory.CreateFromScan( ScanResult, path );
     var yaml = await File.ReadAllTextAsync( path );
 
     //Assert
@@ -166,7 +164,7 @@ internal sealed class InitCommandTests {
     var path = Path.GetTempFileName();
 
     // Act
-    InitCommandHandler.CreateSpecWithoutDiscovery( path );
+    SpecFactory.CreateFromTemplate( path );
     var yaml = await File.ReadAllTextAsync( path );
 
     //Assert

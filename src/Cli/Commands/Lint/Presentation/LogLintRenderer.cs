@@ -3,7 +3,7 @@ using Drift.Cli.Presentation.Rendering;
 using Drift.Spec.Validation;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Commands.Lint.Rendering;
+namespace Drift.Cli.Commands.Lint.Presentation;
 
 internal class LogLintRenderer( ILogOutput output ) : IRenderer<ValidationResult> {
   public void Render( ValidationResult result ) {

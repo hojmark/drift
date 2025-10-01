@@ -7,6 +7,6 @@
 [<time> INF] Ping Scan: 100%
 [<time> INF] Scan completed
 [<time> DBG] Found 3 devices
-[<time> INF] Writing spec...
-[<time> INF] Created spec: {CurrentDirectory}myNetworkWithDiscovery.spec.yaml
+[<time> INF] Writing spec: {CurrentDirectory}myNetworkWithDiscovery.spec.yaml
+[<time> INF] Spec created: {CurrentDirectory}myNetworkWithDiscovery.spec.yaml
 [<time> DBG] init command completed

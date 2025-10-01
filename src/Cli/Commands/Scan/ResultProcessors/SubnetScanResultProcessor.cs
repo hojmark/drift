@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
-using Drift.Cli.Commands.Scan.Interactive.Models;
+using Drift.Cli.Commands.Scan.Interactive;
+using Drift.Cli.Commands.Scan.Models;
 using Drift.Cli.Presentation.Rendering;
 using Drift.Diff;
 using Drift.Diff.Domain;
@@ -12,7 +13,7 @@ using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
 using NaturalSort.Extension;
 
-namespace Drift.Cli.Commands.Scan.Interactive.ResultProcessors;
+namespace Drift.Cli.Commands.Scan.ResultProcessors;
 
 internal static class SubnetScanResultProcessor {
   internal static List<Device> Process( SubnetScanResult scanResult, Network? network ) {

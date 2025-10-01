@@ -1,6 +1,6 @@
 using Drift.Domain.Device.Declared;
 
-namespace Drift.Cli.Commands.Scan.Interactive;
+namespace Drift.Cli.Commands.Scan.ResultProcessors;
 
 //TODO location?
 internal static class DeclaredDeviceExtensions {

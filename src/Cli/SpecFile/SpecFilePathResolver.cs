@@ -40,7 +40,6 @@ internal class SpecFilePathResolver {
       return ResolveByDefaults( home );
     }
 
-    
     var file = name != null ? ResolveByName( _baseDirectory, name ) : ResolveByDefaults( _baseDirectory );
 
     if ( file != null ) {
@@ -123,6 +122,7 @@ internal class SpecFilePathResolver {
         _output.Normal.WriteLineWarning(
           $"Found multiple spec files in directory\n  {string.Join( "\n  ", specFiles )}"
         );
+        _output.Normal.WriteLineWarning();
       }
 
       return new FileInfo( asteriskSpecPath );

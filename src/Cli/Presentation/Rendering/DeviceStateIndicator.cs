@@ -70,7 +70,7 @@ internal static class DeviceStateIndicator {
       return $"[yellow][bold]{QuestionMark}[/][/]"; // Allowed: yellow question
 
     // Fallback/Undefined
-    return $"[yellow][bold]{QuestionMark}[/][/]";
+    return $"[purple][bold]{QuestionMark}[/][/]";
   }
 
   internal static string GetText(

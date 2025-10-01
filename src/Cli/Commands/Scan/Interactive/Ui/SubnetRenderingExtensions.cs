@@ -1,4 +1,4 @@
-using Drift.Cli.Commands.Scan.Interactive.Models;
+using Drift.Cli.Commands.Scan.Models;
 
 namespace Drift.Cli.Commands.Scan.Interactive.Ui;
 

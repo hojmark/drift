@@ -1,6 +1,6 @@
 using Drift.Cli.Presentation.Rendering;
 
-namespace Drift.Cli.Commands.Scan.Interactive.Models;
+namespace Drift.Cli.Commands.Scan.Models;
 
 internal class Device {
   public required DisplayValue Ip {

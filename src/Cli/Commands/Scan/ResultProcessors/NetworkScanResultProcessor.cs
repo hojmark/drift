@@ -1,8 +1,8 @@
-using Drift.Cli.Commands.Scan.Interactive.Models;
+using Drift.Cli.Commands.Scan.Models;
 using Drift.Domain;
 using Drift.Domain.Scan;
 
-namespace Drift.Cli.Commands.Scan.Interactive.ResultProcessors;
+namespace Drift.Cli.Commands.Scan.ResultProcessors;
 
 internal static class NetworkScanResultProcessor {
   internal static List<Subnet> Process( NetworkScanResult scanResult, Network? network ) {

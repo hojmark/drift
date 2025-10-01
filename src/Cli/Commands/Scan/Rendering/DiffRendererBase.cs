@@ -8,6 +8,7 @@ using NaturalSort.Extension;
 
 namespace Drift.Cli.Commands.Scan.Rendering;
 
+[Obsolete]
 internal abstract class DiffRendererBase : IRenderer<ScanRenderData> {
   public void Render( ScanRenderData data ) {
     var differences = ObjectDiffEngine.Compare(

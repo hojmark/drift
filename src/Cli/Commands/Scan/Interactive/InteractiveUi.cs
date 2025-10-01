@@ -1,8 +1,8 @@
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Scan.Interactive.Input;
-using Drift.Cli.Commands.Scan.Interactive.Models;
-using Drift.Cli.Commands.Scan.Interactive.ResultProcessors;
 using Drift.Cli.Commands.Scan.Interactive.Ui;
+using Drift.Cli.Commands.Scan.Models;
+using Drift.Cli.Commands.Scan.ResultProcessors;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Domain;

@@ -1,6 +1,7 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Init.Helpers;
 using Drift.Cli.Commands.Scan;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
@@ -70,6 +71,7 @@ internal class InitCommandHandler(
   INetworkScanner scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider
 ) : ICommandHandler<InitParameters> {
+  // TODO skip emojis in output if redirected?
   public async Task<int> Invoke( InitParameters parameters, CancellationToken cancellationToken ) {
     var isInteractive = IsInteractiveMode(
       parameters.ForceMode,
@@ -83,7 +85,6 @@ internal class InitCommandHandler(
     }
 
     output.Log.LogDebug( "Running init command" );
-    // TODO skip emojis in output if redirected?
 
     var initOptions = isInteractive
       ? RunInteractive( output.Normal )
@@ -99,9 +100,9 @@ internal class InitCommandHandler(
       return ExitCodes.GeneralError;
     }
 
-    if ( success && isInteractive ) {
+    if ( isInteractive ) {
       output.Normal.WriteLine();
-      output.Normal.WriteLineCTA( $"{Chars.Bulb} Next: Try", $"drift scan {initOptions.Name}" );
+      output.Normal.WriteLineCTA( $"{Chars.Bulb} Next step: Run", $"drift scan {initOptions.Name}" );
     }
 
     output.Log.LogDebug( "init command completed" );
@@ -124,44 +125,42 @@ internal class InitCommandHandler(
   }
 
   private static InitOptions RunInteractive( INormalOutput console ) {
+    //TODO first run logic
     var driftStatePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.UserProfile ), ".drift" );
 
     console.WriteLine();
-
-    console.GetAnsiConsole()
+    console
+      .GetAnsiConsole()
       .MarkupLine( $"[bold]{Chars.SatelliteAntenna} Welcome to Drift! Let's set up a new spec.[/]" );
-
     console.WriteLine();
 
-    var name = console.PromptString( $"{Chars.Globe} What should your network be called?", "main-site" );
-
+    var name = console.PromptString( $"{Chars.Globe} Name your network", "main-site" );
     //var withEnv = PromptBool( "🗃\uFE0F  Create environment file too?", defaultOption: PromptOption.Yes );
-
     var discover = console.PromptBool(
-      $"{Chars.MagnifyingGlass} Run discovery scan to pre-fill with devices and subnets?",
+      $"{Chars.MagnifyingGlass} Run a discovery scan to auto-fill with devices and subnets?",
       defaultOption: PromptOption.Yes
     );
 
-    var specPath = Path.Combine( ".", $"{name}.spec.yaml" );
-    var envPath = Path.Combine( ".", $"{name}.env.yaml" );
+    var specPath = GetSpecPath( name );
+    var envPath = GetEnvPath( name );
 
-    var overwrite = false;
-
-    if ( File.Exists( specPath ) || File.Exists( envPath ) ) {
-      overwrite = console.PromptBool(
-        $"{Chars.Warning}  File already exist. Overwrite?", // TODO pluralize when supporting env files too
-        defaultOption: PromptOption.No
-      );
-    }
+    var overwrite = ( File.Exists( specPath ) || File.Exists( envPath ) ) && console.PromptBool(
+      $"{Chars.Warning}  Spec file already exist. Overwrite it?", // TODO pluralize when supporting env files too
+      defaultOption: PromptOption.No
+    );
 
     console.WriteLine();
 
     return new InitOptions { Name = name, Overwrite = overwrite, Discover = discover };
   }
 
-  private static InitOptions?
-    RunNonInteractive( IOutputManager output, string? name, bool? overwrite, bool? discover ) {
-    if ( name == null ) {
+  private static InitOptions? RunNonInteractive(
+    IOutputManager output,
+    string? name,
+    bool? overwrite,
+    bool? discover
+  ) {
+    if ( string.IsNullOrWhiteSpace( name ) ) {
       output.Normal.WriteError( $"{Chars.Cross} Name is required" );
       output.Log.LogError( "Name is required" );
       return null;
@@ -172,110 +171,38 @@ internal class InitCommandHandler(
 
   private async Task<bool> Initialize( InitOptions options ) {
     try {
-      var specPath = Path.GetFullPath( Path.Combine( ".", $"{options.Name}.spec.yaml" ) );
-      var envPath = Path.GetFullPath( Path.Combine( ".", $"{options.Name}.env.yaml" ) );
+      var specPath = GetSpecPath( options.Name );
+      var envPath = GetEnvPath( options.Name );
 
-      if ( File.Exists( specPath ) ) {
-        switch ( options.Overwrite ) {
-          case true:
-            output.Normal.WriteLineVerbose( $"Spec file already exists: {specPath} (overwriting)" );
-            output.Log.LogDebug( "Spec file already exists: {SpecPath} (overwriting)", specPath );
-            break;
-          case false:
-            output.Normal.WriteError( $"{Chars.Cross} Spec file already exists: " );
-            output.Normal.WriteLineError( TextHelper.Bold( $"{specPath}" ) );
-            output.Log.LogError( "Spec file already exists: {SpecPath}", specPath );
-            return false;
-        }
+      if ( !ValidateSpecOverwrite( specPath, options.Overwrite ) ) {
+        return false;
       }
 
-      // SCAN
-      var subnets = interfaceSubnetProvider.Get().ToList();
+      var scanOptions = new NetworkScanOptions { Cidrs = interfaceSubnetProvider.Get().ToList() };
 
-      var scanRequest = new NetworkScanOptions { Cidrs = subnets };
-
-      NetworkScanResult? scanResult = null;
-
-      //TODO create unit test for this
-      output.Normal.WriteLineVerbose(
-        "Found subnets: " + string.Join( ", ",
-          subnets.Select( cidr =>
-            cidr + " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
-            " addresses, " +
-            scanRequest.EstimatedDuration( cidr ) /* TODO .Humanize( 2, CultureInfo.InvariantCulture )*/ +
-            " estimated scan time" +
-            ")"
-          )
-        )
-      );
+      LogSubnetDetails( scanOptions );
 
       if ( options.Discover ) {
-        if ( output.Is( OutputFormat.Normal ) ) {
-          await AnsiConsole
-            .Status()
-            .StartAsync( "Scanning network ...", async ctx => {
-              scanResult = await scanner.ScanAsync( scanRequest, output.GetLogger() );
-              await Task.Delay( 1500 );
-            } );
-        }
-
-        if ( output.Is( OutputFormat.Log ) ) {
-          output.Log.LogInformation( "Scanning network..." );
-          var lastLogTime = DateTime.MinValue;
-
-          EventHandler<NetworkScanResult> updater = ( _, r ) => {
-            ScanCommandHandler.UpdateProgressDebounced(
-              r.Progress,
-              progress => output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress ),
-              ref lastLogTime
-            );
-          };
-
-          scanner.ResultUpdated += updater;
-
-          try {
-            scanResult = await scanner.ScanAsync( scanRequest, cancellationToken: CancellationToken.None );
-          }
-          finally {
-            scanner.ResultUpdated -= updater;
-          }
-        }
-
-        if ( scanResult == null ) {
-          output.Log.LogDebug( "Scan result is null" );
-          output.Normal.WriteLineError( "Scan result is null" );
-          return false;
-        }
+        var scanResult = await PerformScan( scanOptions );
 
         output.Log.LogInformation( "Scan completed" );
         output.Log.LogDebug( "Found {Count} devices",
-          scanResult.Subnets.Select( subnet => subnet.DiscoveredDevices.Count() ).Sum()
+          scanResult.Subnets.Select( subnet => subnet.DiscoveredDevices.Count ).Sum()
         );
+        output.Log.LogInformation( "Writing spec: {SpecPath}", specPath );
 
-        output.Log.LogInformation( "Writing spec..." );
-
-        CreateSpecWithDiscovery( scanResult, subnets, specPath );
+        SpecFactory.CreateFromScan( scanResult, specPath );
       }
       else {
-        output.Log.LogDebug( "No discovery, writing template spec" );
         output.Normal.WriteLineVerbose( "No discovery, writing template spec" );
 
-        output.Log.LogInformation( "Writing spec..." );
+        output.Log.LogDebug( "No discovery, writing template spec" );
+        output.Log.LogInformation( "Writing spec: {SpecPath}", specPath );
 
-        CreateSpecWithoutDiscovery( specPath );
+        SpecFactory.CreateFromTemplate( specPath );
       }
 
-      var fullPath = Path.GetFullPath( specPath );
-
-      if ( output.Is( OutputFormat.Normal ) ) {
-        output.Normal.Write( $"{Chars.Checkmark}", ConsoleColor.Green );
-        output.Normal.Write( "  Created spec " );
-        output.Normal.WriteLine( TextHelper.Bold( $"{fullPath}" ) );
-      }
-
-      if ( output.Is( OutputFormat.Log ) ) {
-        output.Log.LogInformation( "Created spec: {SpecPath}", specPath );
-      }
+      LogSpecCreated( specPath );
 
       return true;
     }
@@ -288,60 +215,82 @@ internal class InitCommandHandler(
     }
   }
 
-  internal static void CreateSpecWithDiscovery(
-    NetworkScanResult? scanResult,
-    List<CidrBlock> subnets,
-    string specPath
-  ) {
-    var devices = scanResult?.Subnets.SelectMany( subnet => subnet.DiscoveredDevices ).ToDeclared() ?? [];
-    CreateSpec( subnets, devices, specPath );
-  }
-
-  //TODO consider "dropdown" for different templates
-  internal static void CreateSpecWithoutDiscovery( string specPath ) {
-    var networkBuilder = new NetworkBuilder();
-
-    networkBuilder.AddSubnet( new CidrBlock( "192.168.1.0/24" ), id: "main-lan" );
-    networkBuilder.AddSubnet( new CidrBlock( "192.168.100.0/24" ), id: "iot" );
-    networkBuilder.AddSubnet( new CidrBlock( "192.168.200.0/24" ), id: "guest" );
-
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.10" )], id: "router", enabled: null, state: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.20" )], id: "nas", enabled: null, state: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.30" )], id: "server", enabled: null, state: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.40" )], id: "desktop", enabled: null, state: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.1.50" )], id: "laptop", enabled: null, state: null );
-
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.10" )], id: "smart-tv", enabled: null, state: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.20" )], id: "security-camera", enabled: null,
-      state: null );
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.100.30" )], id: "smart-switch", enabled: null, state: null );
-
-    networkBuilder.AddDevice( [new IpV4Address( "192.168.200.100" )], id: "guest-device", enabled: null, state: null );
-
-    networkBuilder.WriteToFile( specPath );
-  }
-
-  private static void CreateSpec(
-    List<CidrBlock> subnets,
-    List<DeclaredDevice> devices,
-    string specPath
-  ) {
-    var networkBuilder = new NetworkBuilder();
-
-    foreach ( var subnet in subnets ) {
-      networkBuilder.AddSubnet( subnet );
+  private async Task<NetworkScanResult> PerformScan( NetworkScanOptions request ) {
+    if ( output.Is( OutputFormat.Normal ) ) {
+      return await AnsiConsole.Status().StartAsync(
+        "Scanning network ...",
+        async _ => await scanner.ScanAsync( request, output.GetLogger() )
+      );
     }
 
-    var declaredDevices = devices
-      .OrderBy( d => d.Get( AddressType.IpV4 ), StringComparison.OrdinalIgnoreCase.WithNaturalSort() );
+    if ( output.Is( OutputFormat.Log ) ) {
+      output.Log.LogInformation( "Scanning network..." );
 
-    var no = 1;
-    foreach ( var device in declaredDevices ) {
-      networkBuilder.AddDevice( addresses: [..device.Addresses], id: $"device-{no++}", enabled: null, state: null );
+      var lastLogTime = DateTime.MinValue;
+
+      void LogProgress( object? _, NetworkScanResult r ) {
+        ScanCommandHandler.UpdateProgressDebounced(
+          r.Progress,
+          progress => output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress ),
+          ref lastLogTime
+        );
+      }
+
+      try {
+        scanner.ResultUpdated += LogProgress;
+        return await scanner.ScanAsync( request, output.GetLogger() );
+      }
+      finally {
+        scanner.ResultUpdated -= LogProgress;
+      }
     }
 
-    networkBuilder.WriteToFile( specPath );
+    throw new NotImplementedException();
   }
+
+  private bool ValidateSpecOverwrite( string path, bool overwrite ) {
+    if ( !File.Exists( path ) )
+      return true;
+
+    if ( overwrite ) {
+      output.Normal.WriteLineVerbose( $"Spec file already exists: {path} (overwriting)" );
+      output.Log.LogDebug( "Spec file already exists: {SpecPath} (overwriting)", path );
+      return true;
+    }
+
+    output.Normal.WriteError( $"{Chars.Cross} Spec file already exists:" );
+    output.Normal.WriteLineError( TextHelper.Bold( path ) );
+    output.Log.LogError( "Spec file already exists: {SpecPath}", path );
+    return false;
+  }
+
+  private void LogSpecCreated( string specPath ) {
+    var fullPath = Path.GetFullPath( specPath );
+
+    output.Normal.Write( $"{Chars.Checkmark}", ConsoleColor.Green );
+    output.Normal.Write( "  Spec created " );
+    output.Normal.WriteLine( TextHelper.Bold( $"{fullPath}" ) );
+
+    output.Log.LogInformation( "Spec created: {SpecPath}", specPath );
+  }
+
+  private void LogSubnetDetails( NetworkScanOptions scanOptions ) {
+    //TODO create unit test for this
+    output.Normal.WriteLineVerbose(
+      "Found subnets: " + string.Join( ", ",
+        scanOptions.Cidrs.Select( cidr =>
+          cidr + " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
+          " addresses, " +
+          scanOptions.EstimatedDuration( cidr ) /* TODO .Humanize( 2, CultureInfo.InvariantCulture )*/ +
+          " estimated scan time" +
+          ")"
+        )
+      )
+    );
+  }
+
+  private static string GetSpecPath( string name ) => Path.GetFullPath( $"{name}.spec.yaml" );
+  private static string GetEnvPath( string name ) => Path.GetFullPath( $"{name}.env.yaml" );
 
   private class InitOptions {
     public required string Name {

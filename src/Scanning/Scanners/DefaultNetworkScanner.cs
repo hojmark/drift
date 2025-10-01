@@ -10,7 +10,7 @@ public class DefaultNetworkScanner( SubnetScannerFactory subnetScannerFactory ) 
   public event EventHandler<NetworkScanResult>? ResultUpdated;
 
   public async Task<NetworkScanResult> ScanAsync(
-    NetworkScanOptions request,
+    NetworkScanOptions options,
     ILogger? logger = null,
     CancellationToken cancellationToken = default
   ) {
@@ -18,7 +18,7 @@ public class DefaultNetworkScanner( SubnetScannerFactory subnetScannerFactory ) 
 
     logger?.LogDebug( "Starting network scan at {StartedAt}", startedAt.ToString( CultureInfo.InvariantCulture ) );
 
-    var subnetScanners = CreateScanners( request ); // TODO create scanner tasks that encapsulates logic better
+    var subnetScanners = CreateScanners( options ); // TODO create scanner tasks that encapsulates logic better
     var subnetIntermediateResults = new ConcurrentDictionary<CidrBlock, SubnetScanResult>();
     var subnetScanTasks = new List<Task<SubnetScanResult>>();
 
@@ -26,6 +26,7 @@ public class DefaultNetworkScanner( SubnetScannerFactory subnetScannerFactory ) 
       var task = RunScanAsync(
         cidr,
         scanner,
+        options.PingsPerSecond,
         result => {
           subnetIntermediateResults[cidr] = result;
           UpdateProgress( startedAt, subnetIntermediateResults.Values );
@@ -63,6 +64,7 @@ public class DefaultNetworkScanner( SubnetScannerFactory subnetScannerFactory ) 
   private static async Task<SubnetScanResult> RunScanAsync(
     CidrBlock cidr,
     ISubnetScanner scanner,
+    uint pingsPerSecond,
     Action<SubnetScanResult> onProgress,
     ILogger? logger,
     CancellationToken cancellationToken
@@ -71,7 +73,15 @@ public class DefaultNetworkScanner( SubnetScannerFactory subnetScannerFactory ) 
     scanner.ResultUpdated += Handler;
 
     try {
-      return await scanner.ScanAsync( new SubnetScanOptions { Cidr = cidr }, logger, cancellationToken );
+      return await scanner.ScanAsync(
+        new SubnetScanOptions {
+          Cidr = cidr,
+          // TODO not the right value
+          PingsPerSecond = pingsPerSecond
+        },
+        logger,
+        cancellationToken
+      );
     }
     finally {
       scanner.ResultUpdated -= Handler;

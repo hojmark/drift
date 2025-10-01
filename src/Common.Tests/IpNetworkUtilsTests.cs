@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Drift.Common.Network;
 using Drift.Domain;
 
 namespace Drift.Common.Tests;

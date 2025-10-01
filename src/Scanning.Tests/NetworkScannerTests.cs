@@ -14,16 +14,17 @@ internal sealed class NetworkScannerTests {
   [TestCase( "192.168.0.1/24" )] // TODO should fail
   [TestCase( "192.168.123.0/24" )]
   //[TestCase( "2001:db8::/64" )]
-  [TestCase( "10.255.255.254/32", "192.168.32.0/20", "172.19.0.0/16" )]
+  [TestCase( "10.255.255.254/32", "192.168.32.0/20" /* TODO too slow to run in unit test: , "172.19.0.0/16" */ )]
   public async Task BasicTest( params string[] cidrs ) {
     // Arrange
     var subnets = cidrs.Select( cidr => new CidrBlock( cidr ) ).ToList();
     var successfulIps = subnets.SelectMany( cidr => IPNetwork2
       .Parse( cidr.ToString() )
-      .ListIPAddress( FilterEnum.Usable )
+      .ListIPAddress( Filter.Usable )
       .Select( ip => IPAddress.Parse( ip.ToString() ) )
       .Take( 3 )
     ).ToList();
+
     var pingTool = new TestPingTool( successfulIps );
 
     var logger = new StringLogger();
@@ -32,7 +33,7 @@ internal sealed class NetworkScannerTests {
 
     // Act
     var result = await scanner.ScanAsync(
-      new NetworkScanOptions { Cidrs = subnets, PingsPerSecond = uint.MaxValue } /*, networkProvider*/, logger
+      new NetworkScanOptions { Cidrs = subnets, PingsPerSecond = int.MaxValue } /*, networkProvider*/, logger
     );
 
     // Assert

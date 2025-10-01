@@ -1,4 +1,4 @@
-using Drift.Cli.Commands.Common;
+using Drift.Cli.SpecFile;
 using Drift.Domain;
 
 namespace Drift.Cli.Tests.Utils;

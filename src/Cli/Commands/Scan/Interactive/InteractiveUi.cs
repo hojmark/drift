@@ -1,10 +1,10 @@
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Scan.Interactive.Input;
 using Drift.Cli.Commands.Scan.Interactive.Models;
-using Drift.Cli.Commands.Scan.Interactive.ScanResultProcessors;
+using Drift.Cli.Commands.Scan.Interactive.ResultProcessors;
 using Drift.Cli.Commands.Scan.Interactive.Ui;
-using Drift.Cli.Output.Abstractions;
-using Drift.Cli.Output.Logging;
+using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Output.Logging;
 using Drift.Domain;
 using Drift.Domain.Scan;
 using Spectre.Console;

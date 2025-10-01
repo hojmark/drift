@@ -8,7 +8,7 @@ namespace Drift.Scanning.Tests.Utils;
 public sealed class PredefinedResultNetworkScanner( NetworkScanResult scanResult ) : INetworkScanner {
 #pragma warning restore CA1515
   public Task<NetworkScanResult> ScanAsync(
-    NetworkScanOptions request,
+    NetworkScanOptions options,
     ILogger? logger = null,
     CancellationToken cancellationToken = default
   ) {

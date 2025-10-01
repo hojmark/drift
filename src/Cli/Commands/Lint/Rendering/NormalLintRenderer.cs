@@ -1,6 +1,5 @@
-using Drift.Cli.Output.Abstractions;
-using Drift.Cli.Output.Normal;
-using Drift.Cli.Renderer;
+using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Rendering;
 using Drift.Spec.Validation;
 
 namespace Drift.Cli.Commands.Lint.Rendering;

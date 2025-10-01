@@ -1,4 +1,5 @@
-using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Rendering;
 using Drift.Diff;
 using Drift.Diff.Domain;
 using Drift.Domain.Device;

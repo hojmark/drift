@@ -1,10 +1,9 @@
 using System.Collections.Immutable;
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init;
-using Drift.Cli.Commands.Scan.Interactive.ScanResultProcessors;
-using Drift.Cli.Commands.Scan.Rendering;
+using Drift.Cli.Presentation.Rendering;
+using Drift.Cli.SpecFile;
 using Drift.Cli.Tests.Utils;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -244,7 +243,7 @@ internal sealed class ScanCommandTests {
 
       services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
           new NetworkScanResult {
-            Metadata = new Metadata { StartedAt = default, EndedAt = default },
+            Metadata = new Domain.Scan.Metadata { StartedAt = default, EndedAt = default },
             Status = ScanResultStatus.Success,
             Subnets = [
               new SubnetScanResult {

@@ -1,3 +1,5 @@
+using Drift.Cli.Presentation.Rendering;
+
 namespace Drift.Cli.Commands.Scan.Interactive.Models;
 
 internal class Device {

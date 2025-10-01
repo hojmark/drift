@@ -1,8 +1,8 @@
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init;
-using Drift.Cli.Output.Abstractions;
-using Drift.Cli.Output.Logging;
+using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Output.Logging;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
@@ -24,7 +24,7 @@ internal sealed class InitCommandTests {
 
   private static readonly NetworkScanResult ScanResult = new() {
     Metadata =
-      new Metadata {
+      new Domain.Scan.Metadata {
         StartedAt = DateTime.Parse( "2025-06-11T12:20:08.4219405+02:00" ).ToUniversalTime(),
         EndedAt = DateTime.Parse( "2025-06-11" )
       },

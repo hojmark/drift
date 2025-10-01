@@ -2,11 +2,12 @@ using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan;
-using Drift.Cli.Output;
-using Drift.Cli.Output.Abstractions;
-using Drift.Cli.Output.Logging;
-using Drift.Cli.Output.Normal;
-using Drift.Common;
+using Drift.Cli.Presentation.Output;
+using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Output.Logging;
+using Drift.Cli.Presentation.Prompts;
+using Drift.Cli.Presentation.Rendering;
+using Drift.Common.Network;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -100,7 +101,7 @@ internal class InitCommandHandler(
 
     if ( success && isInteractive ) {
       output.Normal.WriteLine();
-      output.Normal.WriteLineCTA( "💡\uFE0F Next: Try", $"drift scan {initOptions.Name}" );
+      output.Normal.WriteLineCTA( $"{Chars.Bulb} Next: Try", $"drift scan {initOptions.Name}" );
     }
 
     output.Log.LogDebug( "init command completed" );
@@ -127,17 +128,18 @@ internal class InitCommandHandler(
 
     console.WriteLine();
 
-    console.GetAnsiConsole().MarkupLine( "[bold]📡\uFE0F Welcome to Drift! Let's set up a new spec.[/]" );
+    console.GetAnsiConsole()
+      .MarkupLine( $"[bold]{Chars.SatelliteAntenna} Welcome to Drift! Let's set up a new spec.[/]" );
 
     console.WriteLine();
 
-    var name = console.PromptString( "🌐\uFE0F What should your network be called?", "main-site" );
+    var name = console.PromptString( $"{Chars.Globe} What should your network be called?", "main-site" );
 
     //var withEnv = PromptBool( "🗃\uFE0F  Create environment file too?", defaultOption: PromptOption.Yes );
 
     var discover = console.PromptBool(
-      "🔍\uFE0F Run discovery scan to pre-fill with devices and subnets?",
-      defaultOption: NormalOutputExtensions.PromptOption.Yes
+      $"{Chars.MagnifyingGlass} Run discovery scan to pre-fill with devices and subnets?",
+      defaultOption: PromptOption.Yes
     );
 
     var specPath = Path.Combine( ".", $"{name}.spec.yaml" );
@@ -147,8 +149,8 @@ internal class InitCommandHandler(
 
     if ( File.Exists( specPath ) || File.Exists( envPath ) ) {
       overwrite = console.PromptBool(
-        "⚠️\uFE0F  File already exist. Overwrite?", // TODO pluralize when supporting env files too
-        defaultOption: NormalOutputExtensions.PromptOption.No
+        $"{Chars.Warning}  File already exist. Overwrite?", // TODO pluralize when supporting env files too
+        defaultOption: PromptOption.No
       );
     }
 

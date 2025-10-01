@@ -1,6 +1,6 @@
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using Drift.Common;
+using Drift.Common.Network;
 using Drift.Domain;
 using Microsoft.Extensions.Logging;
 

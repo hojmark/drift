@@ -1,4 +1,4 @@
-using Drift.Cli.Renderer;
+using Drift.Cli.Presentation.Rendering;
 
 namespace Drift.Cli.Commands.Scan.Rendering;
 

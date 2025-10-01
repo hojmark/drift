@@ -2,9 +2,10 @@ using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Lint.Rendering;
-using Drift.Cli.Output;
-using Drift.Cli.Output.Abstractions;
-using Drift.Cli.Renderer;
+using Drift.Cli.Presentation.Output;
+using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Rendering;
+using Drift.Cli.SpecFile;
 using Drift.Spec.Validation;
 using Microsoft.Extensions.Logging;
 

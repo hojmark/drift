@@ -5,7 +5,7 @@ namespace Drift.Domain.Scan;
 //TODO belongs to domain?
 public interface INetworkScanner {
   Task<NetworkScanResult> ScanAsync(
-    NetworkScanOptions request,
+    NetworkScanOptions options,
     ILogger? logger = null,
     CancellationToken cancellationToken = default
   );

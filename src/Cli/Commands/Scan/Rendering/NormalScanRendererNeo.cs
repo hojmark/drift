@@ -1,6 +1,6 @@
 using Drift.Cli.Commands.Scan.Interactive.Models;
 using Drift.Cli.Commands.Scan.Interactive.Ui;
-using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Presentation.Output.Abstractions;
 using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.Rendering;

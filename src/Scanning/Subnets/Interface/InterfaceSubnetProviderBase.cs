@@ -1,5 +1,5 @@
 using System.Net.NetworkInformation;
-using Drift.Common;
+using Drift.Common.Network;
 using Drift.Domain;
 using Microsoft.Extensions.Logging;
 

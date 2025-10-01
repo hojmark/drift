@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using Drift.Cli.Renderer;
+using Drift.Cli.Presentation.Rendering;
 using Drift.Diff;
 using Drift.Diff.Domain;
 using Drift.Domain.Device.Declared;

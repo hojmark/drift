@@ -1,9 +1,9 @@
 using System.CommandLine;
 using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands;
 using Drift.Cli.Commands.Common;
-using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Infrastructure;
+using Drift.Cli.Presentation.Output.Abstractions;
 
 namespace Drift.Cli.Tests;
 

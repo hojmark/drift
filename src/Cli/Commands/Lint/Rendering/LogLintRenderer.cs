@@ -1,5 +1,5 @@
-using Drift.Cli.Output.Abstractions;
-using Drift.Cli.Renderer;
+using Drift.Cli.Presentation.Output.Abstractions;
+using Drift.Cli.Presentation.Rendering;
 using Drift.Spec.Validation;
 using Microsoft.Extensions.Logging;
 

@@ -6,6 +6,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="JsonSchema.Net.Generation" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
     </ItemGroup>
 

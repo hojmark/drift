@@ -17,6 +17,12 @@
 
     <ItemGroup>
       <PackageReference Include="IPNetwork2" VersionOverride="3.4.832" />
+      <PackageReference Include="JsonSchema.Net.Generation" VersionOverride="5.1.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" VersionOverride="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging" VersionOverride="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" VersionOverride="9.0.9" />
+    <PackageReference Include="NaturalSort.Extension" VersionOverride="4.4.0" />
+    <PackageReference Include="Spectre.Console.Cli" VersionOverride="0.51.1" />
         <Using Include="NUnit.Framework"/>
     </ItemGroup>
 

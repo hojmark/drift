@@ -17,6 +17,7 @@
 
     <ItemGroup>
       <PackageReference Include="IPNetwork2" VersionOverride="3.4.832" />
+      <PackageReference Include="JsonSchema.Net.Generation" VersionOverride="5.1.1" />
         <Using Include="NUnit.Framework"/>
     </ItemGroup>
 

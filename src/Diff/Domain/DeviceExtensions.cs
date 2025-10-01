@@ -36,7 +36,7 @@ public static class DeviceExtensions {
 
   public static DiffOptions ConfigureDiffDeviceKeySelectors(
     this DiffOptions diffOptions,
-    List<DeclaredDevice> originalDevices
+    IReadOnlyList<DeclaredDevice> originalDevices
   ) => diffOptions
     // TODO maybe the key selectors themselves should not be defined here
     .SetKeySelector<DiffDevice>( obj => {

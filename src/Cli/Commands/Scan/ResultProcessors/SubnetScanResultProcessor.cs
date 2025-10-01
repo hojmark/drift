@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Models;
 using Drift.Cli.Presentation.Rendering;
+using Drift.Cli.Presentation.Rendering.DeviceState;
 using Drift.Diff;
 using Drift.Diff.Domain;
 using Drift.Domain;
@@ -21,19 +22,9 @@ internal static class SubnetScanResultProcessor {
 
     var declaredDevices = network == null ? [] : network.Devices.Where( d => d.IsEnabled() ).ToList();
 
-    var discoveredDevices = scanResult.DiscoveredDevices;
+    var discoveredDevices = scanResult.DiscoveredDevices.ToList();
 
-    var differences = ObjectDiffEngine.Compare(
-      declaredDevices.ToDiffDevices(),
-      discoveredDevices.ToDiffDevices(),
-      "Device",
-      new DiffOptions()
-        .ConfigureDiffDeviceKeySelectors( declaredDevices )
-        // Includes Unchanged, which makes for an easier table population
-        .SetDiffTypesAll()
-    );
-
-    var directDiffs = GetDirectDeviceDifferences( differences );
+    var directDiffs = GetDirectDeviceDifferences( declaredDevices, discoveredDevices );
 
     var result = new List<Device>();
 
@@ -93,13 +84,11 @@ internal static class SubnetScanResultProcessor {
     var na = "n/a";
 
     var textStatus = ip == null || scanResult.DiscoveryAttempts.Contains( new IpV4Address( ip ) )
-      ? DeviceStateIndicator.GetText(
+      ? DeviceRenderState.From(
         declaredState,
         discoveredState,
-        state == DiffType.Added,
-        unknownAllowed,
-        onlyDrifted: false
-      )
+        unknownAllowed
+      ).Text
       : "[grey bold]Unknown[/]";
 
     var id = InteractiveUi.FakeData ? GenerateDeviceId() : declaredDevice?.Id;
@@ -108,7 +97,7 @@ internal static class SubnetScanResultProcessor {
     var declaredDeviceId = ( declaredDevice as IAddressableDevice )?.GetDeviceId();
 
     return new Device {
-      State = DeviceStateIndicator.GetIcon( declaredState, discoveredState, state == DiffType.Added, unknownAllowed ),
+      State = DeviceRenderState.From( declaredState, discoveredState, unknownAllowed ).Icon,
       StateText = textStatus,
       Ip = new DisplayValue( DeviceIdHighlighter.Mark( ip ?? na, AddressType.IpV4, declaredDeviceId ) ),
       Mac = new DisplayValue(
@@ -122,7 +111,20 @@ internal static class SubnetScanResultProcessor {
     };
   }
 
-  private static List<ObjectDiff> GetDirectDeviceDifferences( List<ObjectDiff> differences ) {
+  private static List<ObjectDiff> GetDirectDeviceDifferences(
+    IReadOnlyList<DeclaredDevice> declared,
+    IReadOnlyList<DiscoveredDevice> discovered
+  ) {
+    var differences = ObjectDiffEngine.Compare(
+      declared.ToDiffDevices(),
+      discovered.ToDiffDevices(),
+      "Device",
+      new DiffOptions()
+        .ConfigureDiffDeviceKeySelectors( declared )
+        // Includes Unchanged, which makes for an easier table population
+        .SetDiffTypesAll()
+    );
+
     return differences
       .Where( d => Regex.IsMatch( d.PropertyPath, @"^Device\[[^\]]+?\]$" ) )
       .OrderBy( d => d.PropertyPath, StringComparison.OrdinalIgnoreCase.WithNaturalSort() )

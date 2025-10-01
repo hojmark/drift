@@ -18,7 +18,7 @@ internal sealed class ReadmeWorkflowTests : DriftBinaryFixture {
 
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( initResult.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-        Assert.That( initResult.StdOut, Contains.Substring( "✔  Created spec /" ) );
+        Assert.That( initResult.StdOut, Contains.Substring( "✔  Spec created /" ) );
       }
 
       await Verify( initResult.StdOut )
@@ -40,11 +40,8 @@ internal sealed class ReadmeWorkflowTests : DriftBinaryFixture {
 
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( scanResult.StdOut, Contains.Substring( "Using network spec" ) );
+        Assert.That( scanResult.StdOut, Contains.Substring( "Scanning" ) );
         Assert.That( scanResult.StdOut, Contains.Substring( "Ping Scan" ) );
-        Assert.That( scanResult.StdOut, Contains.Substring( "Indirect ARP Scan" ) );
-        Assert.That( scanResult.StdOut, Contains.Substring( "IP" ) );
-        Assert.That( scanResult.StdOut, Contains.Substring( "ID" ) );
-        Assert.That( scanResult.StdOut, Contains.Substring( "MAC" ) );
       }
 
       await Verify( scanResult.StdOut )

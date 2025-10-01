@@ -25,14 +25,14 @@ internal sealed class NetworkScannerTests {
       .Take( 3 )
     ).ToList();
 
-    var pingTool = new TestPingTool( successfulIps );
+    var subnetScanner = new LinuxPingSubnetScanner( new TestPingTool( successfulIps ) );
 
     var logger = new StringLogger();
 
-    var scanner = new DefaultNetworkScanner( new SubnetScannerFactory( pingTool ) );
+    var networkScanner = new DefaultNetworkScanner( new PredefinedSubnetScannerFactory( subnetScanner ) );
 
     // Act
-    var result = await scanner.ScanAsync(
+    var result = await networkScanner.ScanAsync(
       new NetworkScanOptions { Cidrs = subnets, PingsPerSecond = int.MaxValue } /*, networkProvider*/, logger
     );
 

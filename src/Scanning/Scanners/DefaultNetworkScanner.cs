@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Scanning.Scanners;
 
-public class DefaultNetworkScanner( SubnetScannerFactory subnetScannerFactory ) : INetworkScanner {
+public class DefaultNetworkScanner( ISubnetScannerFactory subnetScannerFactory ) : INetworkScanner {
   public event EventHandler<NetworkScanResult>? ResultUpdated;
 
   public async Task<NetworkScanResult> ScanAsync(
@@ -111,7 +111,7 @@ public class DefaultNetworkScanner( SubnetScannerFactory subnetScannerFactory ) 
 
   private List<(CidrBlock Cidr, ISubnetScanner Scanner)> CreateScanners( NetworkScanOptions options ) {
     return options.Cidrs
-      .Select( cidr => ( Cidr: cidr, Scanner: subnetScannerFactory.GetScanner( cidr ) ) )
+      .Select( cidr => ( Cidr: cidr, Scanner: subnetScannerFactory.Get( cidr ) ) )
       .ToList();
   }
 }

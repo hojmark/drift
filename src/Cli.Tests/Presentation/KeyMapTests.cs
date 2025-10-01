@@ -1,7 +1,7 @@
 using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Interactive.Input;
 
-namespace Drift.Cli.Tests;
+namespace Drift.Cli.Tests.Presentation;
 
 internal sealed class KeyMapTests {
   [Test]

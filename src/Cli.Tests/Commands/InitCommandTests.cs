@@ -3,6 +3,7 @@ using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Init.Helpers;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
+using Drift.Cli.Tests.Utils;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;

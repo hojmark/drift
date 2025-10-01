@@ -1,6 +1,6 @@
 using Drift.Cli.Presentation.Rendering;
 
-namespace Drift.Cli.Tests;
+namespace Drift.Cli.Tests.Presentation;
 
 internal class CharsTests {
   [Test]

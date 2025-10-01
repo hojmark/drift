@@ -1,6 +1,4 @@
-﻿using Drift.Common;
-
-namespace Drift.Cli.Tests;
+﻿namespace Drift.Common.Tests;
 
 internal sealed class ToolWrapperTests {
   [Test]

@@ -4,6 +4,7 @@ using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
+using Drift.Cli.Tests.Utils;
 
 namespace Drift.Cli.Tests;
 

@@ -4,14 +4,14 @@ using Drift.Domain.Scan;
 
 namespace Drift.Scanning.Scanners;
 
-public class SubnetScannerFactory(
+public class DefaultSubnetScannerFactory(
   IPingTool pingTool
   /*IAgentClient agentClient,*/
   //IEnumerable<CidrBlock> localSubnets
-) {
+) : ISubnetScannerFactory {
   private const bool UseFping = false;
 
-  public ISubnetScanner GetScanner( CidrBlock cidr ) {
+  public ISubnetScanner Get( CidrBlock cidr ) {
     /*return localSubnets.Contains( cidr )
       ? new LocalSubnetScanner( _pingTool )
       : new RemoteSubnetScanner( _agentClient );*/

@@ -1,35 +1,31 @@
 using Drift.Cli.Presentation.Rendering;
+using Drift.Cli.Presentation.Rendering.DeviceState;
 
 namespace Drift.Cli.Commands.Scan.Models;
 
 internal class Device {
   public required DisplayValue Ip {
     get;
-    set;
+    init;
   }
 
   public required DisplayValue Mac {
     get;
-    set;
+    init;
   }
 
   public required DisplayValue Id {
     get;
-    set;
+    init;
   }
 
-  public required string State {
+  public required DeviceRenderState State {
     get;
-    set;
-  }
-
-  public required string StateText {
-    get;
-    set;
+    init;
   }
 
   public string Note {
     get;
-    set;
+    init;
   } //TODO e.g. "Last seen 5 hours ago""
 }

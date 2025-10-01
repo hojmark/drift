@@ -28,7 +28,11 @@ namespace Drift.Cli.Presentation.Rendering.DeviceState;
 * - [yellow]?[/] — Unknown device (allowed) (or undefined state???)
 * - [red]![/] — Unknown device (not allowed/disallowed)
 */
-internal class DeviceRenderState( string icon, string text ) {
+internal class DeviceRenderState( DeviceState state, string icon, string text ) {
+  public DeviceState State {
+    get;
+  } = state;
+
   public string Icon {
     get;
   } = icon;
@@ -57,18 +61,48 @@ internal class DeviceRenderState( string icon, string text ) {
 
   internal static DeviceRenderState From( DeviceState state ) {
     return state switch {
-      DeviceState.Undefined => new DeviceRenderState( $"[purple bold]{QuestionMark}[/]", "[purple]Undefined[/]" ),
-      DeviceState.KnownExpectedOnline => new DeviceRenderState( $"[green]{ClosedCircle}[/]", "[green]Online[/]" ),
-      DeviceState.KnownExpectedOffline => new DeviceRenderState( $"[green]{OpenCircle}[/]", "[green]Offline[/]" ),
-      DeviceState.KnownUnexpectedOnline => new DeviceRenderState( $"[red]{ClosedCircle}[/]", "[red]Online[/]" ),
-      DeviceState.KnownUnexpectedOffline => new DeviceRenderState( $"[red]{OpenCircle}[/]", "[red]Offline[/]" ),
-      DeviceState.KnownDynamicOnline => new DeviceRenderState( $"[darkgreen]{ClosedDiamond}[/]", "[green]Online[/]" ),
-      DeviceState.KnownDynamicOffline => new DeviceRenderState( $"[darkgreen]{OpenDiamond}[/]", "[green]Offline[/]" ),
+      DeviceState.Undefined => new DeviceRenderState(
+        state,
+        $"[purple bold]{QuestionMark}[/]",
+        "[purple]Undefined[/]"
+      ),
+      DeviceState.KnownExpectedOnline => new DeviceRenderState(
+        state,
+        $"[green]{ClosedCircle}[/]",
+        "[green]Online[/]"
+      ),
+      DeviceState.KnownExpectedOffline => new DeviceRenderState(
+        state,
+        $"[green]{OpenCircle}[/]",
+        "[green]Offline[/]"
+      ),
+      DeviceState.KnownUnexpectedOnline => new DeviceRenderState(
+        state,
+        $"[red]{ClosedCircle}[/]",
+        "[red]Online[/]"
+      ),
+      DeviceState.KnownUnexpectedOffline => new DeviceRenderState(
+        state,
+        $"[red]{OpenCircle}[/]",
+        "[red]Offline[/]"
+      ),
+      DeviceState.KnownDynamicOnline => new DeviceRenderState(
+        state,
+        $"[darkgreen]{ClosedDiamond}[/]",
+        "[green]Online[/]"
+      ),
+      DeviceState.KnownDynamicOffline => new DeviceRenderState(
+        state,
+        $"[darkgreen]{OpenDiamond}[/]",
+        "[green]Offline[/]"
+      ),
       DeviceState.UnknownAllowed => new DeviceRenderState(
+        state,
         $"[yellow bold]{QuestionMark}[/]",
         "[yellow]Online (unknown device)[/]"
       ),
       DeviceState.UnknownDisallowed => new DeviceRenderState(
+        state,
         $"[red bold]{Exclamation}[/]",
         "[red]Online (unknown device)[/]"
       ),

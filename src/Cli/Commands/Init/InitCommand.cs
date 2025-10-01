@@ -9,15 +9,9 @@ using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Prompts;
 using Drift.Cli.Presentation.Rendering;
 using Drift.Common.Network;
-using Drift.Diff.Domain;
-using Drift.Domain;
-using Drift.Domain.Device.Addresses;
-using Drift.Domain.Device.Declared;
-using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
 using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.Logging;
-using NaturalSort.Extension;
 using Spectre.Console;
 using Environment = System.Environment;
 

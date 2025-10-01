@@ -1,6 +1,5 @@
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Init.Helpers;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
@@ -8,7 +7,6 @@ using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Scan;
-using Drift.Scanning.Subnets;
 using Drift.Scanning.Subnets.Interface;
 using Drift.Scanning.Tests.Utils;
 using Drift.Spec.Schema;

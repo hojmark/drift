@@ -125,7 +125,7 @@ internal static class TreeRenderer {
       $"{device.Id.PadRight( subnets.GetIdWidth() )}  " +
       //TODO note not raw version
       //$"{device.StateText.PadRightLocal( device.StateText.Length, subnets.GetStateTextWidth() )}  " +
-      device.StateText + "  ";
+      device.State.Text + "  ";
     //"[grey]Few seconds ago[/]";
   }
 }

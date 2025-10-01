@@ -17,6 +17,8 @@ using NaturalSort.Extension;
 namespace Drift.Cli.Commands.Scan.ResultProcessors;
 
 internal static class SubnetScanResultProcessor {
+  private const string Na = "n/a";
+
   internal static List<Device> Process( SubnetScanResult scanResult, Network? network ) {
     //TODO test throw new Exception( "ads" );
 
@@ -81,15 +83,11 @@ internal static class SubnetScanResultProcessor {
 
     var ip = device.Get( AddressType.IpV4 );
     var mac = device.Get( AddressType.Mac );
-    var na = "n/a";
 
-    var textStatus = ip == null || scanResult.DiscoveryAttempts.Contains( new IpV4Address( ip ) )
-      ? DeviceRenderState.From(
-        declaredState,
-        discoveredState,
-        unknownAllowed
-      ).Text
-      : "[grey bold]Unknown[/]";
+    var deviceRenderState = DeviceRenderState.From( declaredState, discoveredState, unknownAllowed );
+    deviceRenderState = ip == null || scanResult.DiscoveryAttempts.Contains( new IpV4Address( ip ) )
+      ? deviceRenderState
+      : new DeviceRenderState( deviceRenderState.State, deviceRenderState.Icon, "[grey bold]Unknown[/]" );
 
     var id = InteractiveUi.FakeData ? GenerateDeviceId() : declaredDevice?.Id;
     var displayId = id == null ? "[grey][/]" : ( $"[cyan]{id}[/]" );
@@ -97,12 +95,11 @@ internal static class SubnetScanResultProcessor {
     var declaredDeviceId = ( declaredDevice as IAddressableDevice )?.GetDeviceId();
 
     return new Device {
-      State = DeviceRenderState.From( declaredState, discoveredState, unknownAllowed ).Icon,
-      StateText = textStatus,
-      Ip = new DisplayValue( DeviceIdHighlighter.Mark( ip ?? na, AddressType.IpV4, declaredDeviceId ) ),
+      State = deviceRenderState,
+      Ip = new DisplayValue( DeviceIdHighlighter.Mark( ip ?? Na, AddressType.IpV4, declaredDeviceId ) ),
       Mac = new DisplayValue(
         DeviceIdHighlighter.Mark(
-          mac != null ? ( InteractiveUi.FakeData ? GenerateMacAddress() : mac ) : na,
+          mac != null ? ( InteractiveUi.FakeData ? GenerateMacAddress() : mac ) : Na,
           AddressType.Mac,
           declaredDeviceId
         )

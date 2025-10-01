@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Init.Helpers;
 using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;

@@ -1,50 +1,34 @@
+using Drift.Cli.Commands.Scan.Models;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
-using Drift.Diff;
-using Drift.Diff.Domain;
-using Drift.Domain.Device.Addresses;
-using Drift.Domain.Device.Declared;
-using Drift.Domain.Extensions;
+using Drift.Cli.Presentation.Rendering;
+using Drift.Cli.Presentation.Rendering.DeviceState;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan.Rendering;
 
-internal class LogScanRenderer( ILogOutput log ) : DiffRendererBase {
-  protected override void Render(
-    List<ObjectDiff> differences,
-    IEnumerable<DeclaredDevice> declaredDevices,
-    ILogger? logger = null
-  ) {
-    var directDeviceDifferences = GetDirectDeviceDifferences( differences );
-
-    if ( !differences.Any() ) {
-      log.LogInformation( "No devices found" );
-      return;
-    }
-
-    foreach ( var diff in directDeviceDifferences ) {
-      logger?.LogTrace( "Device diff: {Action} {Path}", diff.DiffType, diff.PropertyPath );
-      // Console.WriteLine( $"{diff.DiffType + ":",-10} {diff.PropertyPath}" );
-
-      var state = diff.DiffType;
-
-      var device = state switch {
-        DiffType.Unchanged => ( (DiffDevice) diff.Original! ),
-        DiffType.Removed => ( (DiffDevice) diff.Original! ),
-        DiffType.Added => ( (DiffDevice) diff.Updated! ),
-        _ => throw new Exception( "øv" )
-      };
-
-      var hostname = device.Get( AddressType.Hostname );
-      var mac = device.Get( AddressType.Mac );
+internal class LogScanRenderer( ILogOutput log ) : IRenderer<List<Subnet>> {
+  public void Render( List<Subnet> subnets ) {
+    foreach ( var subnet in subnets ) {
+      var conformant = subnet.Devices.All( d => d.State.State.IsConformant() );
 
       log.Log(
-        state == DiffType.Unchanged ? LogLevel.Information : LogLevel.Warning,
-        "{State}: IPv4: {Get}, hostname: {Hostname}, MAC: {Mac}",
-        state.ToString().ToUpperInvariant(),
-        device.Get( AddressType.IpV4 ),
-        hostname?.ToLowerInvariant() ?? "",
-        mac?.ToUpperInvariant() ?? ""
+        conformant ? LogLevel.Information : LogLevel.Warning,
+        "Subnet {Cidr} conforms to spec: {Conformant}",
+        subnet.Cidr,
+        conformant
       );
+
+      foreach ( var device in subnet.Devices ) {
+        log.LogWarning( "Device" );
+        log.Log(
+          device.State.State.IsConformant() ? LogLevel.Information : LogLevel.Warning,
+          "IPv4: {Get}, MAC: {Mac}, Conformant: {Conformant}, State: {State}",
+          device.Ip.WithoutMarkup,
+          device.Mac.WithoutMarkup,
+          device.State.State.IsConformant(),
+          device.State.State
+        );
+      }
     }
   }
 }

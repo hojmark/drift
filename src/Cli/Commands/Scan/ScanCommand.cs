@@ -3,6 +3,7 @@ using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Interactive.Input;
+using Drift.Cli.Commands.Scan.Models;
 using Drift.Cli.Commands.Scan.Rendering;
 using Drift.Cli.Commands.Scan.ResultProcessors;
 using Drift.Cli.Presentation.Console;
@@ -173,32 +174,20 @@ internal class ScanCommandHandler(
 
     output.Log.LogInformation( "Scan completed" );
 
-    var sns = NetworkScanResultProcessor.Process( scanResult, network );
+    var uiSubnets = NetworkScanResultProcessor.Process( scanResult, network );
 
-    IRenderer<ScanRenderData> renderer =
+    IRenderer<List<Subnet>> renderer =
       parameters.OutputFormat switch {
-        //OutputFormat.Normal => new NormalScanRenderer( output.Normal ),
+        OutputFormat.Normal => new NormalScanRenderer( output.Normal ),
         OutputFormat.Log => new LogScanRenderer( output.Log ),
-        _ => new NullRenderer<ScanRenderData>()
+        _ => new NullRenderer<IList<Subnet>>()
       };
 
     output.Log.LogDebug( "Render result using {RendererType}", renderer.GetType().Name );
 
     output.Normal.WriteLine();
 
-    if ( true ) {
-      //TODO
-      var rend = new NormalScanRenderer( output.Normal );
-      rend.Render( sns );
-    }
-    else {
-      renderer.Render(
-        new ScanRenderData {
-          DevicesDiscovered = scanResult.Subnets.SelectMany( s => s.DiscoveredDevices ),
-          DevicesDeclared = network == null ? [] : network.Devices.Where( d => d.Enabled ?? true )
-        }
-      );
-    }
+    renderer.Render( uiSubnets );
 
     output.Log.LogDebug( "Scan command completed" );
 

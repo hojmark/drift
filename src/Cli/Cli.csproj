@@ -15,15 +15,16 @@
         <InternalsVisibleTo Include="Drift.Cli.Tests"/>
         <EmbeddedResource Include="embedded_resources\**\*"/>
         <!-- Options: T: type, M: method, P: property -->
+        <AdditionalFiles Include="BannedSymbols.txt"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj"/>
-        <ProjectReference Include="..\Scanning\Scanning.csproj" />
+        <ProjectReference Include="..\Scanning\Scanning.csproj"/>
         <ProjectReference Include="..\Diff\Diff.csproj"/>
         <ProjectReference Include="..\Domain\Domain.csproj"/>
         <ProjectReference Include="..\Spec\Spec.csproj"/>
-        <ProjectReference Include="..\Common\Common.csproj" />
+        <ProjectReference Include="..\Common\Common.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -40,13 +41,9 @@
         <PackageReference Include="NaturalSort.Extension"/>
         <PackageReference Include="Serilog.Extensions.Logging"/>
         <PackageReference Include="Serilog.Sinks.Console"/>
-        <PackageReference Include="Serilog.Sinks.TextWriter" />
+        <PackageReference Include="Serilog.Sinks.TextWriter"/>
         <PackageReference Include="Spectre.Console.Cli"/>
         <PackageReference Include="System.CommandLine"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <AdditionalFiles Include="BannedSymbols.txt" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <InternalsVisibleTo Include="Drift.Scanning.Tests"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Domain\Domain.csproj"/>
         <ProjectReference Include="..\Common\Common.csproj" />
     </ItemGroup>

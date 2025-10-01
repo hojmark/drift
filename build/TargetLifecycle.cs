@@ -2,7 +2,7 @@ using System;
 using Humanizer;
 using Serilog;
 
-internal class TargetLifecycle( string targetName ) : IDisposable {
+internal sealed class TargetLifecycle( string targetName ) : IDisposable {
   private readonly DateTime _startTime = DateTime.Now;
 
   private void Complete() {

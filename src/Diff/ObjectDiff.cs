@@ -8,17 +8,17 @@ public class ObjectDiff {
     init;
   }
 
+  public required DiffType DiffType {
+    get;
+    init;
+  }
+
   public object? Original {
     get;
     init;
   }
 
   public object? Updated {
-    get;
-    init;
-  }
-
-  public required DiffType DiffType {
     get;
     init;
   }

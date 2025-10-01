@@ -1,5 +1,5 @@
 using System.CommandLine;
-using Drift.Cli.Output;
+using Drift.Cli.Presentation.Console;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
@@ -13,6 +13,7 @@ internal static class CommonParameters {
   /// </summary>
   internal static class Arguments {
     internal static readonly Argument<FileInfo?> Spec = new("spec") {
+      // TODO different commands warrant different descriptions
       Description = "The network spec file to process.", Arity = ArgumentArity.ZeroOrOne
     };
   }
@@ -37,7 +38,7 @@ internal static class CommonParameters {
 
     internal static readonly Option<OutputFormat> OutputFormat =
       new("--output", "-o") {
-        DefaultValueFactory = _ => Output.OutputFormat.Normal,
+        DefaultValueFactory = _ => Presentation.Console.OutputFormat.Normal,
         Description = "Output format",
         Required = false,
         Arity = ArgumentArity.ExactlyOne

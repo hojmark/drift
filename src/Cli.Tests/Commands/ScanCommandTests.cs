@@ -1,22 +1,24 @@
+using System.Collections.Immutable;
 using System.Net.NetworkInformation;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Common;
-using Drift.Cli.Commands.Init;
-using Drift.Cli.Commands.Scan.Rendering;
-using Drift.Cli.Commands.Scan.Subnet;
-using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Commands.Init.Helpers;
+using Drift.Cli.Presentation.Rendering;
+using Drift.Cli.SpecFile;
 using Drift.Cli.Tests.Utils;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
+using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
+using Drift.Scanning.Subnets.Interface;
+using Drift.Scanning.Tests.Utils;
 using Microsoft.Extensions.DependencyInjection;
-using NetworkInterface = Drift.Cli.Commands.Scan.Subnet.NetworkInterface;
+using NetworkInterface = Drift.Scanning.Subnets.Interface.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 
-public class ScanCommandTests {
+internal sealed class ScanCommandTests {
   private static readonly INetworkInterface DefaultInterface = new NetworkInterface {
     Description = "eth0", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "192.168.0.0/24" )
   };
@@ -74,7 +76,7 @@ public class ScanCommandTests {
   [OneTimeSetUp]
   public void SetupOnce() {
     // Easier to validate in snapshots
-    NormalScanRenderer.IdMarkingStyle = IdMarkingStyle.Dot;
+    DeviceIdHighlighter.Style = IdMarkingStyle.Dot;
   }
 
   //[Combinatorial]
@@ -108,7 +110,7 @@ public class ScanCommandTests {
 
       yield return new TestCaseData(
           new NetworkBuilder()
-            .AddDevice( [new MacAddress( "10:10:10:10:10:10" , isId: true )], "device1" )
+            .AddDevice( [new MacAddress( "10:10:10:10:10:10", isId: true )], "device1" )
             .AddDevice( [new MacAddress( "20:20:20:20:20:20" ), new IpV4Address( "192.168.0.20" )], "device2" )
             .Build(),
           new List<DiscoveredDevice> {
@@ -229,8 +231,8 @@ public class ScanCommandTests {
     Inventory? inventory = null
   ) {
     return services => {
-      services.AddScoped<IInterfaceSubnetProvider>( sp =>
-        new PredefinedInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>(), interfaces )
+      services.AddScoped<IInterfaceSubnetProvider>( _ =>
+        new PredefinedInterfaceSubnetProvider( interfaces )
       );
 
       if ( inventory != null ) {
@@ -240,10 +242,20 @@ public class ScanCommandTests {
       }
 
       services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
-          new ScanResult {
-            Metadata = new Metadata { StartedAt = default, EndedAt = default },
+          new NetworkScanResult {
+            Metadata = new Domain.Scan.Metadata { StartedAt = default, EndedAt = default },
             Status = ScanResultStatus.Success,
-            DiscoveredDevices = discoveredDevices ?? []
+            Subnets = [
+              new SubnetScanResult {
+                CidrBlock = DefaultInterface.UnicastAddress!.Value,
+                DiscoveredDevices = discoveredDevices ?? [],
+                Metadata = null,
+                Status = ScanResultStatus.Success,
+                // TODO could/should also include ip's of non-discovered devices?
+                DiscoveryAttempts = discoveredDevices.Select( d => new IpV4Address( d.Get( AddressType.IpV4 ) ) )
+                  .ToImmutableHashSet()
+              }
+            ]
           }
         )
       );

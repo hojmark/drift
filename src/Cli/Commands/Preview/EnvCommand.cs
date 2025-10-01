@@ -29,7 +29,7 @@ internal class EnvCommand : Command {
 
     var listEnvs = new Command( "list", "List environments." ); // env list my-agent-cluster
     listEnvs.Arguments.Add( new Argument<string>( "cluster-name" ) { Description = "The cluster name" } );
-    listEnvs.SetAction( r => {
+    listEnvs.SetAction( _ => {
       var envConfigPath = "............ drift-env.json";
       var json = File.ReadAllText( envConfigPath );
       var environment = JsonConverter.Deserialize<Environment>( json );

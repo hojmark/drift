@@ -1,9 +1,10 @@
 using Drift.Cli.Abstractions;
+using Drift.Cli.Tests.Utils;
 using Drift.TestUtilities;
 
 namespace Drift.Cli.Tests.Commands;
 
-public class LintCommandTests {
+internal sealed class LintCommandTests {
   [Test, Combinatorial]
   public async Task LintValidSpec(
     [Values( "network_single_subnet" )] string specName,

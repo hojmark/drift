@@ -4,7 +4,7 @@ using Drift.Domain.Device.Declared;
 
 namespace Drift.Domain.Tests;
 
-public class DeviceIdTests {
+internal sealed class DeviceIdTests {
   private static IEnumerable<TestCaseData> DeviceIds {
     get {
       yield return new TestCaseData(

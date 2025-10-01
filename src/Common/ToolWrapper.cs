@@ -1,0 +1,75 @@
+using System.Diagnostics;
+using System.Text;
+using Microsoft.Extensions.Logging;
+
+namespace Drift.Common;
+
+public class ToolWrapper( string toolPath, Dictionary<string, string?>? environment = null ) {
+  private readonly string _toolPath = toolPath ?? throw new ArgumentNullException( nameof(toolPath) );
+  
+  public event DataReceivedEventHandler? OutputDataReceived;
+  public event DataReceivedEventHandler? ErrorDataReceived;
+
+  public async Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> ExecuteAsync(
+    string arguments,
+    ILogger? logger = null,
+    CancellationToken cancellationToken = default
+  ) {
+    var startInfo = new ProcessStartInfo {
+      FileName = _toolPath,
+      Arguments = arguments,
+      RedirectStandardOutput = true,
+      RedirectStandardError = true,
+      UseShellExecute = false, // Do not use the OS shell
+      CreateNoWindow = true
+    };
+
+    if ( environment != null ) {
+      foreach ( var (key, value) in environment ) {
+        startInfo.Environment[key] = value;
+      }
+    }
+
+    using var process = new Process();
+    process.StartInfo = startInfo;
+
+    var output = new StringBuilder();
+    var error = new StringBuilder();
+
+    process.OutputDataReceived += ( _, args ) => {
+      if ( args.Data != null ) {
+        output.AppendLine( args.Data );
+      }
+    };
+    process.OutputDataReceived += OutputDataReceived;
+    process.ErrorDataReceived += ( _, args ) => {
+      if ( args.Data != null ) {
+        error.AppendLine( args.Data );
+      }
+    };
+    process.ErrorDataReceived += ErrorDataReceived;
+
+    logger?.LogTrace( "Executing: {Tool} {Arguments}", _toolPath, arguments );
+
+    process.Start();
+
+    process.BeginOutputReadLine();
+    process.BeginErrorReadLine();
+
+    int exitCode = int.MinValue;
+    var cancelled = false;
+
+    try {
+      await process.WaitForExitAsync( cancellationToken );
+      exitCode = process.ExitCode;
+    }
+    catch ( OperationCanceledException ) {
+      cancelled = true;
+    }
+
+    process.CancelOutputRead();
+    process.CancelErrorRead();
+
+    return ( output.ToString(), error.ToString(), exitCode, cancelled );
+  }
+}

@@ -1,11 +1,11 @@
-using Drift.Cli.Commands.Common;
-using Drift.Cli.Output.Abstractions;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
+using Drift.Cli.SpecFile;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace Drift.Cli.Tests;
 
-public class SpecFilePathResolverTests {
+internal sealed class SpecFilePathResolverTests {
   private string? _originalHome;
   private string _tempHome;
   private const string _homeEnvVar = "HOME";

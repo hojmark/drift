@@ -1,8 +1,9 @@
 using System.CommandLine;
+using Drift.Cli.Commands.Common;
 
 namespace Drift.Cli.Commands.Lint;
 
-public record LintParameters : DefaultParameters {
+internal record LintParameters : DefaultParameters {
   internal LintParameters( ParseResult parseResult ) : base( parseResult ) {
   }
 }

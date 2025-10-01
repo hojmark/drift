@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="Drift.Spec.Tests"/>
         <EmbeddedResource Include="embedded_resources\**\*"/>
     </ItemGroup>
 

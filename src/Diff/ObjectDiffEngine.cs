@@ -6,37 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Diff;
 
-public class DiffOptions {
-  public HashSet<string> IgnorePaths {
-    get;
-    set;
-  } = new();
 
-  private HashSet<DiffType> _diffTypes = [DiffType.Added, DiffType.Removed, DiffType.Changed];
-
-  public FrozenSet<DiffType> DiffTypes => _diffTypes.ToFrozenSet();
-
-  public DiffOptions SetDiffTypes( params DiffType[] diffTypes ) {
-    this._diffTypes = new HashSet<DiffType>( diffTypes );
-    return this;
-  }
-
-  public DiffOptions SetDiffTypesAll() {
-    SetDiffTypes( Enum.GetValues<DiffType>() );
-    return this;
-  }
-
-  private readonly Dictionary<Type, Func<object, string>> _listKeySelectors = new();
-
-  // Key selectors for list item types i.e., how to identify/destinguish items in a list from each other.
-  public FrozenDictionary<Type, Func<object, string>> ListKeySelectors => _listKeySelectors.ToFrozenDictionary();
-
-  public DiffOptions SetKeySelector<T>( Func<T, string> keySelector ) {
-    // TODO use full type name - otherwise type names may clash
-    this._listKeySelectors[typeof(T)] = obj => typeof(T).Name + "_" + keySelector( (T) obj );
-    return this;
-  }
-}
 
 /*public static class DeviceDiffEngine {
   public static List<ObjectDiff<DiffDevice>> Compare(
@@ -111,7 +81,11 @@ public static class ObjectDiffEngine {
       return diffs;
     }
 
-    if ( original.GetType() != updated.GetType() ) throw new Exception( "Type mismatch" );
+    if ( original.GetType() != updated.GetType() ) {
+      throw new Exception( "Type mismatch in path '" + path + "': " + original.GetType().FullName + " vs " +
+                           updated.GetType().FullName );
+    }
+
     var type = original.GetType();
 
     // Value types (primitives like int and bool, as well as structs and enums; string is treated like a value type for convenience, though it is technically a reference type

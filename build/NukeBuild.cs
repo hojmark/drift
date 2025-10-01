@@ -23,7 +23,7 @@ using ProductHeaderValue = Octokit.ProductHeaderValue;
 // ReSharper disable AllUnderscoreLocalParameterName
 // ReSharper disable UnusedMember.Local
 
-class NukeBuild : Nuke.Common.NukeBuild {
+sealed class NukeBuild : Nuke.Common.NukeBuild {
   public static int Main() => Execute<NukeBuild>( x => x.Build );
 
   private static class Paths {
@@ -122,7 +122,7 @@ class NukeBuild : Nuke.Common.NukeBuild {
   }
 
   //TODO or is it build type? in that case, Default should probably be Other
-  public enum VersionStrategy {
+  internal enum VersionStrategy {
     Default,
     Release,
     ReleaseSpecial

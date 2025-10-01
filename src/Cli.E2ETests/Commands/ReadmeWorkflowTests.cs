@@ -3,7 +3,7 @@ using Drift.Cli.Abstractions;
 
 namespace Drift.Cli.E2ETests.Commands;
 
-public class ReadmeWorkflowTests : DriftBinaryFixture {
+internal sealed class ReadmeWorkflowTests : DriftBinaryFixture {
   //TODO implement
   [Explicit( "Relies on a real network scan. Need to create a mock network." )]
   [Test]
@@ -11,14 +11,14 @@ public class ReadmeWorkflowTests : DriftBinaryFixture {
     try {
       var c = new CancellationTokenSource( TimeSpan.FromSeconds( 30 ) );
       var initResult = await DriftBinary
-        .ExecuteAsync( "init unittest --discover --overwrite -vv", c.Token );
+        .ExecuteAsync( "init unittest --discover --overwrite -vv", null, c.Token );
 
       TestContext.Out.WriteLine( "STD OUT:\n" + initResult.StdOut );
       TestContext.Out.WriteLine( "ERR OUT:\n" + initResult.ErrOut );
 
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( initResult.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-        Assert.That( initResult.StdOut, Contains.Substring( "✔  Created spec /" ) );
+        Assert.That( initResult.StdOut, Contains.Substring( "✔  Spec created /" ) );
       }
 
       await Verify( initResult.StdOut )
@@ -40,11 +40,8 @@ public class ReadmeWorkflowTests : DriftBinaryFixture {
 
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( scanResult.StdOut, Contains.Substring( "Using network spec" ) );
+        Assert.That( scanResult.StdOut, Contains.Substring( "Scanning" ) );
         Assert.That( scanResult.StdOut, Contains.Substring( "Ping Scan" ) );
-        Assert.That( scanResult.StdOut, Contains.Substring( "Indirect ARP Scan" ) );
-        Assert.That( scanResult.StdOut, Contains.Substring( "IP" ) );
-        Assert.That( scanResult.StdOut, Contains.Substring( "ID" ) );
-        Assert.That( scanResult.StdOut, Contains.Substring( "MAC" ) );
       }
 
       await Verify( scanResult.StdOut )

@@ -5,7 +5,7 @@ using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
 namespace Drift.ArchTests;
 
-public class NamingTests : DriftArchitectureFixture {
+internal sealed class NamingTests : DriftArchitectureFixture {
   [Test]
   public void InterfacesShouldStartWithI() {
     var rule = Interfaces()

@@ -3,7 +3,7 @@ using Drift.Spec.Schema.Generation;
 
 namespace Drift.Spec.Tests;
 
-public class SchemaTests {
+internal sealed class SchemaTests {
   [TestCase( SpecVersion.V1_preview )]
   public void EmbeddedSchemaIsUpdated( SpecVersion version ) {
     // Arrange / Act

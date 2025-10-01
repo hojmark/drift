@@ -1,10 +1,10 @@
 using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
-using Drift.Utils;
+using Drift.Common;
 
 namespace Drift.Cli.E2ETests.Installation;
 
-public class InstallTests {
+internal sealed class InstallTests {
   //TODO split test into at least two parts
   [Test]
   public async Task InstallLatestVersion() {

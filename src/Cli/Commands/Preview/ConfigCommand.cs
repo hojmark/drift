@@ -15,7 +15,7 @@ namespace Drift.Cli.Commands.Preview;
 internal class ConfigCommand : Command {
   internal ConfigCommand() : base( "config", "View or change user preferences" ) {
     var showCommand = new Command( "list", "Display all current user settings" );
-    showCommand.SetAction( r => {
+    showCommand.SetAction( _ => {
       var settings = UserSettings.Load();
       //Console.WriteLine(YamlSerializer.Serialize(settings));
     } );
@@ -59,7 +59,7 @@ internal class ConfigCommand : Command {
     Subcommands.Add( setCommand );
 
     var resetCommand = new Command( "reset", "Clear all user settings" );
-    resetCommand.SetAction( r => {
+    resetCommand.SetAction( _ => {
       new UserSettings().Reset();
       //Console.WriteLine( "✅ Settings cleared." );
     } );

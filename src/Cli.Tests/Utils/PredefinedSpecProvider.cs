@@ -1,9 +1,9 @@
-using Drift.Cli.Commands.Common;
+using Drift.Cli.SpecFile;
 using Drift.Domain;
 
 namespace Drift.Cli.Tests.Utils;
 
-public class PredefinedSpecProvider( Dictionary<string, Inventory> inventories ) : ISpecFileProvider {
+internal sealed class PredefinedSpecProvider( Dictionary<string, Inventory> inventories ) : ISpecFileProvider {
   public Task<Inventory?> GetDeserializedAsync( FileInfo? specFile ) {
     return specFile == null
       ? Task.FromResult<Inventory?>( null )

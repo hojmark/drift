@@ -1,10 +1,11 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
-using Drift.Cli.Commands.Lint.Rendering;
-using Drift.Cli.Output;
-using Drift.Cli.Output.Abstractions;
-using Drift.Cli.Renderer;
+using Drift.Cli.Commands.Lint.Presentation;
+using Drift.Cli.Presentation.Console;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
+using Drift.Cli.Presentation.Rendering;
+using Drift.Cli.SpecFile;
 using Drift.Spec.Validation;
 using Microsoft.Extensions.Logging;
 
@@ -22,13 +23,14 @@ internal class LintCommand : CommandBase<LintParameters, LintCommandHandler> {
   }
 }
 
-public class LintCommandHandler( IOutputManager output ) : ICommandHandler<LintParameters> {
+internal class LintCommandHandler( IOutputManager output ) : ICommandHandler<LintParameters> {
   public async Task<int> Invoke( LintParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running lint command" );
 
     FileInfo? filePath;
     try {
-      filePath = new SpecFilePathResolver( output, parameters.SpecFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
+      filePath = new SpecFilePathResolver( output,
+          parameters.SpecFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
         .Resolve( parameters.SpecFile?.Name, throwsOnNotFound: true );
     }
     catch ( FileNotFoundException exception ) {
@@ -56,6 +58,10 @@ public class LintCommandHandler( IOutputManager output ) : ICommandHandler<LintP
 
     renderer.Render( result );
 
-    return result.IsValid ? ExitCodes.Success : ExitCodes.SpecValidationError;
+    output.Log.LogDebug( "lint command completed" );
+
+    return result.IsValid
+      ? ExitCodes.Success
+      : ExitCodes.SpecValidationError;
   }
 }

@@ -1,18 +1,7 @@
 ﻿[
   {
-    "PropertyPath": "ScanResult.Metadata",
-    "Original": {
-      "StartedAt": "2025-04-24T10:20:08.4219405Z",
-      "EndedAt": "2023-01-01T00:00:00"
-    },
-    "Updated": {
-      "StartedAt": "2025-04-24T10:20:08.4219405Z",
-      "EndedAt": "2023-01-01T00:00:00"
-    },
-    "DiffType": "unchanged"
-  },
-  {
-    "PropertyPath": "ScanResult.DiscoveredDevices[DiscoveredDevice_192.168.0.10]",
+    "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.10]",
+    "DiffType": "unchanged",
     "Original": {
       "Addresses": [
         {
@@ -34,11 +23,11 @@
       ],
       "Ports": [],
       "Timestamp": "0001-01-01T00:00:00"
-    },
-    "DiffType": "unchanged"
+    }
   },
   {
-    "PropertyPath": "ScanResult.DiscoveredDevices[DiscoveredDevice_192.168.0.22]",
+    "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.22]",
+    "DiffType": "removed",
     "Original": {
       "Addresses": [
         {
@@ -55,11 +44,11 @@
       "Ports": [],
       "Timestamp": "0001-01-01T00:00:00"
     },
-    "Updated": null,
-    "DiffType": "removed"
+    "Updated": null
   },
   {
-    "PropertyPath": "ScanResult.DiscoveredDevices[DiscoveredDevice_192.168.0.150]",
+    "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24].DiscoveredDevices[DiscoveredDevice_192.168.0.150]",
+    "DiffType": "added",
     "Original": null,
     "Updated": {
       "Addresses": [
@@ -71,17 +60,16 @@
       ],
       "Ports": [],
       "Timestamp": "0001-01-01T00:00:00"
-    },
-    "DiffType": "added"
+    }
   },
   {
-    "PropertyPath": "ScanResult",
+    "PropertyPath": "NetworkScanResult.Subnets[SubnetScanResult_192.168.0.0/24]",
+    "DiffType": "unchanged",
     "Original": {
-      "Metadata": {
-        "StartedAt": "2025-04-24T10:20:08.4219405Z",
-        "EndedAt": "2023-01-01T00:00:00"
+      "CidrBlock": {
+        "NetworkAddress": "192.168.0.0",
+        "PrefixLength": 24
       },
-      "Status": "success",
       "DiscoveredDevices": [
         {
           "Addresses": [
@@ -110,14 +98,19 @@
           "Ports": [],
           "Timestamp": "0001-01-01T00:00:00"
         }
-      ]
+      ],
+      "DiscoveryAttempts": [],
+      "Metadata": null,
+      "Status": "success",
+      "Progress": {
+        "Value": 0
+      }
     },
     "Updated": {
-      "Metadata": {
-        "StartedAt": "2025-04-24T10:20:08.4219405Z",
-        "EndedAt": "2023-01-01T00:00:00"
+      "CidrBlock": {
+        "NetworkAddress": "192.168.0.0",
+        "PrefixLength": 24
       },
-      "Status": "success",
       "DiscoveredDevices": [
         {
           "Addresses": [
@@ -141,8 +134,130 @@
           "Ports": [],
           "Timestamp": "0001-01-01T00:00:00"
         }
-      ]
+      ],
+      "DiscoveryAttempts": [],
+      "Metadata": null,
+      "Status": "success",
+      "Progress": {
+        "Value": 0
+      }
+    }
+  },
+  {
+    "PropertyPath": "NetworkScanResult.Metadata",
+    "DiffType": "unchanged",
+    "Original": {
+      "StartedAt": "2025-04-24T10:20:08.4219405Z",
+      "EndedAt": "2023-01-01T00:00:00"
     },
-    "DiffType": "unchanged"
+    "Updated": {
+      "StartedAt": "2025-04-24T10:20:08.4219405Z",
+      "EndedAt": "2023-01-01T00:00:00"
+    }
+  },
+  {
+    "PropertyPath": "NetworkScanResult",
+    "DiffType": "unchanged",
+    "Original": {
+      "Subnets": [
+        {
+          "CidrBlock": {
+            "NetworkAddress": "192.168.0.0",
+            "PrefixLength": 24
+          },
+          "DiscoveredDevices": [
+            {
+              "Addresses": [
+                {
+                  "Type": "ipV4",
+                  "Value": "192.168.0.10",
+                  "IsId": null
+                }
+              ],
+              "Ports": [],
+              "Timestamp": "0001-01-01T00:00:00"
+            },
+            {
+              "Addresses": [
+                {
+                  "Type": "ipV4",
+                  "Value": "192.168.0.22",
+                  "IsId": null
+                },
+                {
+                  "Type": "mac",
+                  "Value": "22-22-22-22-22-22",
+                  "IsId": null
+                }
+              ],
+              "Ports": [],
+              "Timestamp": "0001-01-01T00:00:00"
+            }
+          ],
+          "DiscoveryAttempts": [],
+          "Metadata": null,
+          "Status": "success",
+          "Progress": {
+            "Value": 0
+          }
+        }
+      ],
+      "Metadata": {
+        "StartedAt": "2025-04-24T10:20:08.4219405Z",
+        "EndedAt": "2023-01-01T00:00:00"
+      },
+      "Status": "success",
+      "Progress": {
+        "Value": 0
+      }
+    },
+    "Updated": {
+      "Subnets": [
+        {
+          "CidrBlock": {
+            "NetworkAddress": "192.168.0.0",
+            "PrefixLength": 24
+          },
+          "DiscoveredDevices": [
+            {
+              "Addresses": [
+                {
+                  "Type": "ipV4",
+                  "Value": "192.168.0.10",
+                  "IsId": null
+                }
+              ],
+              "Ports": [],
+              "Timestamp": "0001-01-01T00:00:00"
+            },
+            {
+              "Addresses": [
+                {
+                  "Type": "ipV4",
+                  "Value": "192.168.0.150",
+                  "IsId": null
+                }
+              ],
+              "Ports": [],
+              "Timestamp": "0001-01-01T00:00:00"
+            }
+          ],
+          "DiscoveryAttempts": [],
+          "Metadata": null,
+          "Status": "success",
+          "Progress": {
+            "Value": 0
+          }
+        }
+      ],
+      "Metadata": {
+        "StartedAt": "2025-04-24T10:20:08.4219405Z",
+        "EndedAt": "2023-01-01T00:00:00"
+      },
+      "Status": "success",
+      "Progress": {
+        "Value": 0
+      }
+    }
   }
 ]

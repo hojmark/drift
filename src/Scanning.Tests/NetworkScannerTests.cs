@@ -25,7 +25,7 @@ internal sealed class NetworkScannerTests {
       .Take( 3 )
     ).ToList();
 
-    var subnetScanner = new LinuxPingSubnetScanner( new TestPingTool( successfulIps ) );
+    var subnetScanner = new LinuxPingSubnetScanner( new PredefinedPingTool( successfulIps ) );
 
     var logger = new StringLogger();
 

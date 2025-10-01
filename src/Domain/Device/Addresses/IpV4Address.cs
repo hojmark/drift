@@ -3,7 +3,7 @@ using System.Net.Sockets;
 
 namespace Drift.Domain.Device.Addresses;
 
-public struct IpV4Address : IDeviceAddress {
+public readonly record struct IpV4Address : IDeviceAddress {
   public AddressType Type => AddressType.IpV4;
 
   public string Value {

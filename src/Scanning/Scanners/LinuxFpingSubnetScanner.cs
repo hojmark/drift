@@ -20,7 +20,7 @@ internal sealed class LinuxFpingSubnetScanner : ISubnetScanner {
   ) {
     var ipRange = IPNetwork2
       .Parse( options.Cidr.ToString() )
-      .ListIPAddress( FilterEnum.Usable )
+      .ListIPAddress( Filter.Usable )
       .Select( ip => ip )
       .ToList();
 

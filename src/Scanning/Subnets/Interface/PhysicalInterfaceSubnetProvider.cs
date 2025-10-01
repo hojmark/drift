@@ -17,6 +17,7 @@ public sealed class PhysicalInterfaceSubnetProvider( ILogger logger ) : Interfac
 
   private static INetworkInterface Map( System.Net.NetworkInformation.NetworkInterface networkInterface ) {
     var unicastAddress = GetIpV4UnicastAddress( networkInterface );
+
     return new NetworkInterface {
       Description = networkInterface.Description,
       OperationalStatus = networkInterface.OperationalStatus,

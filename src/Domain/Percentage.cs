@@ -1,6 +1,6 @@
 namespace Drift.Domain;
 
-public readonly struct Percentage {
+public readonly record struct Percentage {
   public static readonly Percentage Zero = new(0);
   public static readonly Percentage Hundred = new(100);
 

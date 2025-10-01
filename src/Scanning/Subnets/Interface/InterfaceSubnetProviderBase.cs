@@ -11,7 +11,8 @@ public abstract class InterfaceSubnetProviderBase( ILogger? logger ) : IInterfac
   public List<CidrBlock> Get() {
     var interfaces = GetInterfaces();
     var interfaceDescriptions =
-      string.Join( ", ",
+      string.Join(
+        ", ",
         interfaces.Select( i =>
           $"[{i.Description}, {( IsUp( i ) ? "up" : "down" )}, {( ( i.UnicastAddress == null )
             ? "-"
@@ -26,7 +27,8 @@ public abstract class InterfaceSubnetProviderBase( ILogger? logger ) : IInterfac
       .Where( i => i.UnicastAddress != null )
       .Select( i => i.UnicastAddress!.Value )
       .Where( cidrBlock =>
-        IpNetworkUtils.IsPrivateIpV4( cidrBlock.NetworkAddress ) ) //TODO log if non-private networks were filtered
+          IpNetworkUtils.IsPrivateIpV4( cidrBlock.NetworkAddress ) //TODO log if non-private networks were filtered
+      )
       .Distinct() // Maybe return <interface, cidr> tuple?
       .ToList();
 
@@ -34,8 +36,10 @@ public abstract class InterfaceSubnetProviderBase( ILogger? logger ) : IInterfac
     //Console.WriteLine($"Host address: {ipAddress}");
     //Console.WriteLine($"Network address: {networkAddress}/{prefixLength}");
 
-    logger?.LogDebug( "Discovered subnet(s): {DiscoveredSubnets} (RFC1918 addresses only)",
-      string.Join( ", ", cidrs ) );
+    logger?.LogDebug(
+      "Discovered subnet(s): {DiscoveredSubnets} (RFC1918 addresses only)",
+      string.Join( ", ", cidrs )
+    );
 
     return cidrs;
   }

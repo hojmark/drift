@@ -2,7 +2,7 @@ using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Init.Helpers;
-using Drift.Cli.Commands.Scan;
+using Drift.Cli.Commands.Scan.NonInteractive;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
@@ -177,15 +177,15 @@ internal class InitCommandHandler(
       LogSubnetDetails( scanOptions );
 
       if ( options.Discover ) {
-        var scanResult = await PerformScan( scanOptions );
+        var result = await PerformScanAsync( scanOptions );
 
         output.Log.LogInformation( "Scan completed" );
         output.Log.LogDebug( "Found {Count} devices",
-          scanResult.Subnets.Select( subnet => subnet.DiscoveredDevices.Count ).Sum()
+          result.Subnets.Select( subnet => subnet.DiscoveredDevices.Count ).Sum()
         );
         output.Log.LogInformation( "Writing spec: {SpecPath}", specPath );
 
-        SpecFactory.CreateFromScan( scanResult, specPath );
+        SpecFactory.CreateFromScan( result, specPath );
       }
       else {
         output.Normal.WriteLineVerbose( "No discovery, writing template spec" );
@@ -209,7 +209,7 @@ internal class InitCommandHandler(
     }
   }
 
-  private async Task<NetworkScanResult> PerformScan( NetworkScanOptions request ) {
+  private async Task<NetworkScanResult> PerformScanAsync( NetworkScanOptions request ) {
     if ( output.Is( OutputFormat.Normal ) ) {
       return await AnsiConsole.Status().StartAsync(
         "Scanning network ...",
@@ -223,7 +223,7 @@ internal class InitCommandHandler(
       var lastLogTime = DateTime.MinValue;
 
       void LogProgress( object? _, NetworkScanResult r ) {
-        ScanCommandHandler.UpdateProgressDebounced(
+        NonInteractiveUi.UpdateProgressDebounced(
           r.Progress,
           progress => output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress ),
           ref lastLogTime

@@ -58,6 +58,8 @@ internal class LintCommandHandler( IOutputManager output ) : ICommandHandler<Lin
 
     renderer.Render( result );
 
+    output.Log.LogDebug( "lint command completed" );
+
     return result.IsValid
       ? ExitCodes.Success
       : ExitCodes.SpecValidationError;

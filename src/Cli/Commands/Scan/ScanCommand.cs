@@ -3,13 +3,8 @@ using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Interactive.Input;
-using Drift.Cli.Commands.Scan.Models;
-using Drift.Cli.Commands.Scan.Rendering;
-using Drift.Cli.Commands.Scan.ResultProcessors;
-using Drift.Cli.Presentation.Console;
-using Drift.Cli.Presentation.Console.Logging;
+using Drift.Cli.Commands.Scan.NonInteractive;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
-using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
 using Drift.Common.Network;
 using Drift.Domain;
@@ -17,7 +12,6 @@ using Drift.Domain.Scan;
 using Drift.Scanning.Subnets;
 using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.Logging;
-using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan;
 
@@ -113,104 +107,21 @@ internal class ScanCommandHandler(
       string.Join( ", ", subnets )
     );
 
+    Task<int> uiTask;
+
     if ( parameters.Interactive ) {
       var ui = new InteractiveUi( output, network, scanner, scanRequest, new DefaultKeyMap(), parameters.ShowLogPanel );
-      return await ui.RunAsync();
+      uiTask = ui.RunAsync();
+    }
+    else {
+      var ui = new NonInteractiveUi( output, scanner );
+      uiTask = ui.RunAsync( scanRequest, network, parameters.OutputFormat );
     }
 
-    NetworkScanResult? scanResult = null;
+    Task.WaitAll( uiTask );
 
-    if ( output.Is( OutputFormat.Normal ) ) {
-      var dCol = new TaskDescriptionColumn { Alignment = Justify.Right };
-      var pCol = new PercentageColumn { Style = new Style( Color.Cyan1 ), CompletedStyle = new Style( Color.Green1 ) };
-
-      scanResult = await AnsiConsole.Progress()
-        .AutoClear( true )
-        .Columns( dCol, pCol )
-        .StartAsync( async ctx => {
-          var progressBar = ctx.AddTask( "Ping Scan" );
-
-          EventHandler<NetworkScanResult> updater = ( _, r ) => {
-            progressBar.Value = r.Progress;
-          };
-
-          scanner.ResultUpdated += updater;
-
-          try {
-            return await scanner.ScanAsync( scanRequest, output.GetLogger(),
-              cancellationToken: CancellationToken.None );
-          }
-          finally {
-            scanner.ResultUpdated -= updater;
-          }
-        } );
-    }
-
-    if ( output.Is( OutputFormat.Log ) ) {
-      var lastLogTime = DateTime.MinValue;
-
-      EventHandler<NetworkScanResult> updater = ( _, r ) => {
-        UpdateProgressDebounced(
-          r.Progress,
-          progress => output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress ),
-          ref lastLogTime
-        );
-      };
-
-      scanner.ResultUpdated += updater;
-
-      try {
-        scanResult =
-          await scanner.ScanAsync( scanRequest, output.GetLogger(), cancellationToken: CancellationToken.None );
-      }
-      finally {
-        scanner.ResultUpdated -= updater;
-      }
-    }
-
-    if ( scanResult == null ) {
-      throw new Exception( "Scan result is null" );
-    }
-
-    output.Log.LogInformation( "Scan completed" );
-
-    var uiSubnets = NetworkScanResultProcessor.Process( scanResult, network );
-
-    IRenderer<List<Subnet>> renderer =
-      parameters.OutputFormat switch {
-        OutputFormat.Normal => new NormalScanRenderer( output.Normal ),
-        OutputFormat.Log => new LogScanRenderer( output.Log ),
-        _ => new NullRenderer<IList<Subnet>>()
-      };
-
-    output.Log.LogDebug( "Render result using {RendererType}", renderer.GetType().Name );
-
-    output.Normal.WriteLine();
-
-    renderer.Render( uiSubnets );
-
-    output.Log.LogDebug( "Scan command completed" );
+    output.Log.LogDebug( "scan command completed" );
 
     return ExitCodes.Success;
-  }
-
-  //TODO make private
-  internal static void UpdateProgressDebounced(
-    Percentage progress,
-    Action<Percentage> output,
-    ref DateTime lastLogTime
-  ) {
-    var now = DateTime.UtcNow;
-    bool shouldLog = ( now - lastLogTime ).TotalSeconds >= 1 ||
-                     // Always log start/end
-                     progress == Percentage.Zero ||
-                     progress == Percentage.Hundred;
-
-    if ( !shouldLog ) {
-      return;
-    }
-
-    output( progress );
-    lastLogTime = now;
   }
 }

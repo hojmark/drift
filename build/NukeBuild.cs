@@ -474,7 +474,7 @@ sealed class NukeBuild : Nuke.Common.NukeBuild {
   //TODO make static
   private async Task<Release> CreateDraftRelease() {
     var newRelease = new NewRelease( TagName ) {
-      Draft = true, Prerelease = true, Name = VersionHelper.CreateReleaseName( SemVer ), GenerateReleaseNotes = true
+      Draft = true, Prerelease = false, Name = VersionHelper.CreateReleaseName( SemVer ), GenerateReleaseNotes = true
     };
 
     Log.Information( "Creating release {@Release}", newRelease );

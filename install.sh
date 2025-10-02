@@ -128,9 +128,9 @@ if [ -z "$VERSION" ]; then
     -H "X-GitHub-Api-Version: 2022-11-28" \
     "https://api.github.com/repos/hojmark/drift/releases")
 
-  PRERELEASE=$(echo "$RESP" | jq '[.[] | select(.prerelease == true)] | sort_by(.published_at) | reverse | .[0]')
-  VERSION=$(echo "$PRERELEASE" | jq -r '.tag_name')
-  ASSET_ID=$(echo "$PRERELEASE" | jq -r ".assets[] | select(.name | endswith(\"${PLATFORM}.tar.gz\")) | .id")
+  RELEASE=$(echo "$RESP" | jq '[.[] | select(.prerelease == false)] | sort_by(.published_at) | reverse | .[0]')
+  VERSION=$(echo "$RELEASE" | jq -r '.tag_name')
+  ASSET_ID=$(echo "$RELEASE" | jq -r ".assets[] | select(.name | endswith(\"${PLATFORM}.tar.gz\")) | .id")
 
 else
   echo "🔍 Fetching version ${VERSION}..."

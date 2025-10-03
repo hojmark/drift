@@ -7,12 +7,12 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Scanning.Subnets.Interface;
 
 public sealed class PhysicalInterfaceSubnetProvider( ILogger logger ) : InterfaceSubnetProviderBase( logger ) {
-  private static List<System.Net.NetworkInformation.NetworkInterface> GetPhysicalInterfaces() {
-    return System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces().ToList();
-  }
-
   public override List<INetworkInterface> GetInterfaces() {
     return GetPhysicalInterfaces().Select( Map ).ToList();
+  }
+
+  private static List<System.Net.NetworkInformation.NetworkInterface> GetPhysicalInterfaces() {
+    return System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces().ToList();
   }
 
   private static INetworkInterface Map( System.Net.NetworkInformation.NetworkInterface networkInterface ) {

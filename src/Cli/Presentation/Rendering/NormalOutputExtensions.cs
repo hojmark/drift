@@ -4,7 +4,6 @@ using Spectre.Console;
 namespace Drift.Cli.Presentation.Rendering;
 
 internal static class NormalOutputExtensions {
-  
   internal static void WriteLineValidity( this INormalOutput output, bool isValid ) {
     if ( isValid ) {
       output.WriteLine( $"{Chars.Checkmark} Valid", ConsoleColor.Green );

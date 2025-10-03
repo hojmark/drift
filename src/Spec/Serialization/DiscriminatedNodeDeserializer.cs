@@ -4,8 +4,7 @@ using YamlDotNet.Serialization;
 
 namespace Drift.Spec.Serialization;
 
-//PolymorphicNodeDeserializer?
-[Obsolete]
+// PolymorphicNodeDeserializer?
 public class DiscriminatedNodeDeserializer<TNode> : INodeDeserializer {
   private readonly Dictionary<string, Func<Dictionary<string, string>, object>> _typeMapping;
   private readonly INodeDeserializer _wrapped;
@@ -21,35 +20,34 @@ public class DiscriminatedNodeDeserializer<TNode> : INodeDeserializer {
     _typeMapping = typeMapping;
   }
 
-
   public bool Deserialize(
-    IParser parser,
+    IParser reader,
     Type expectedType,
     Func<IParser, Type, object?> nestedObjectDeserializer,
     out object? value,
     ObjectDeserializer rootDeserializer
   ) {
-    //Console.WriteLine( $"Deserializing expectedType: {expectedType}" );
+    // Console.WriteLine( $"Deserializing expectedType: {expectedType}" );
 
     if ( expectedType != typeof(TNode) ) {
-      return _wrapped.Deserialize( parser, expectedType, nestedObjectDeserializer, out value, rootDeserializer );
+      return _wrapped.Deserialize( reader, expectedType, nestedObjectDeserializer, out value, rootDeserializer );
     }
 
-    if ( parser.Current is not MappingStart ) {
+    if ( reader.Current is not MappingStart ) {
       value = null;
       return false;
     }
 
-    parser.MoveNext(); // Move past MappingStart event
+    reader.MoveNext(); // Move past MappingStart event
 
     // Read mapping node into a dictionary (case-insensitive)
     var mapping = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
 
-    while ( parser.Current is Scalar key ) {
-      parser.MoveNext();
-      if ( parser.Current is Scalar val ) {
+    while ( reader.Current is Scalar key ) {
+      reader.MoveNext();
+      if ( reader.Current is Scalar val ) {
         mapping[key.Value] = val.Value;
-        parser.MoveNext();
+        reader.MoveNext();
       }
     }
 
@@ -77,7 +75,7 @@ public class DiscriminatedNodeDeserializer<TNode> : INodeDeserializer {
       _ => throw new InvalidOperationException( $"Unknown type discriminator '{type}'" )
     } );*/
 
-    parser.MoveNext(); // Move past  MappingEnd event
+    reader.MoveNext(); // Move past  MappingEnd event
     return true;
   }
 }

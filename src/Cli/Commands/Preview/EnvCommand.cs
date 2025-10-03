@@ -16,7 +16,7 @@ namespace Drift.Cli.Commands.Preview;
    Agent: Agent-04 [Running, Pending Adoption]
    Agent: Agent-04 [Running, Unknown]
  */
-//TODO or ClusterCommand?
+// TODO or ClusterCommand?
 internal class EnvCommand : Command {
   internal EnvCommand() : base( "env", "Manage agent clusters environments" ) {
     var tokenCmd = new Command( "token", "Create a short-lived JWT that allows an agent to join an environment." );
@@ -39,9 +39,10 @@ internal class EnvCommand : Command {
 
       table.AddColumn( new TableColumn( nameof(Environment.Name) ).Centered() );
       table.AddColumn( new TableColumn( "Agents" ).Centered() );
-      //table.AddColumn( new TableColumn( "" ).Centered() );
+      // table.AddColumn( new TableColumn( "" ).Centered() );
 
-      table.AddRow( environment.Name + ( environment.Active ? "\u26a1 [green]Active[/]" : "" ),
+      table.AddRow(
+        environment.Name + ( environment.Active ? "\u26a1 [green]Active[/]" : string.Empty ),
         string.Join( "\n", environment.Agents.Select( a =>
             a.Address + " " + ( a.Authentication.Type == AuthType.None
               ? "[red]No auth[/]"
@@ -51,7 +52,7 @@ internal class EnvCommand : Command {
       );
 
       AnsiConsole.Write( table );
-      //Ui.WriteLine("config: "+ envConfigPath,ConsoleColor.DarkGray);
+      // Ui.WriteLine("config: "+ envConfigPath,ConsoleColor.DarkGray);
     } );
     Subcommands.Add( listEnvs );
   }

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Scanning;
 
-//TODO should be possible to make internal by adding to dependency injection via this project
+// TODO should be possible to make internal by adding to dependency injection via this project
 [SupportedOSPlatform( "linux" )]
 public class LinuxPingTool : IPingTool {
   public async Task<PingResult> PingAsync(

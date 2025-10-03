@@ -6,13 +6,16 @@ namespace Drift.Scanning.Tests.Utils;
 
 #pragma warning disable CA1515 //TODO try to remove
 public sealed class PredefinedResultNetworkScanner( NetworkScanResult scanResult ) : INetworkScanner {
+  public event EventHandler<NetworkScanResult>? ResultUpdated;
+
 #pragma warning restore CA1515
   public Task<NetworkScanResult> ScanAsync(
     NetworkScanOptions options,
-    ILogger? logger = null,
+    ILogger logger,
     CancellationToken cancellationToken = default
   ) {
-    ResultUpdated?.Invoke( this,
+    ResultUpdated?.Invoke(
+      this,
       new NetworkScanResult {
         Metadata = scanResult.Metadata,
         Status = ScanResultStatus.InProgress,
@@ -31,6 +34,4 @@ public sealed class PredefinedResultNetworkScanner( NetworkScanResult scanResult
 
     return Task.FromResult( finalResult );
   }
-
-  public event EventHandler<NetworkScanResult>? ResultUpdated;
 }

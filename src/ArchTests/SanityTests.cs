@@ -22,5 +22,5 @@ internal sealed class SanityTests : DriftArchitectureFixture {
     );
   }
 
-  //TODO test that all test assemblies have an NUnit category assigned
+  // TODO test that all test assemblies have an NUnit category assigned
 }

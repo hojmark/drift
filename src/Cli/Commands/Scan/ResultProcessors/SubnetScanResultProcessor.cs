@@ -18,9 +18,10 @@ namespace Drift.Cli.Commands.Scan.ResultProcessors;
 
 internal static class SubnetScanResultProcessor {
   private const string Na = "n/a";
+  private static int _deviceIdCounter = 0;
 
   internal static List<Device> Process( SubnetScanResult scanResult, Network? network ) {
-    //TODO test throw new Exception( "ads" );
+    // TODO test throw new Exception( "ads" );
 
     var declaredDevices = network == null ? [] : network.Devices.Where( d => d.IsEnabled() ).ToList();
 
@@ -31,7 +32,7 @@ internal static class SubnetScanResultProcessor {
     var result = new List<Device>();
 
     foreach ( var diff in directDiffs ) {
-      //logger?.LogTrace( "Device diff: {Action} {Path}", diff.DiffType, diff.PropertyPath );
+      // logger?.LogTrace( "Device diff: {Action} {Path}", diff.DiffType, diff.PropertyPath );
       // Console.WriteLine( $"{diff.DiffType + ":",-10} {diff.PropertyPath}" );
 
       var device = GetDevice( diff );
@@ -63,9 +64,9 @@ internal static class SubnetScanResultProcessor {
   private static IAddressableDevice GetDevice( ObjectDiff diff ) {
     return diff.DiffType switch {
       // Note: may be unchanged based on device id, but other value may be updated in which case we'd like to show the updated values... but this is debatable... maybe both or a merge should be shown
-      DiffType.Unchanged => ( (DiffDevice) diff.Updated! ),
-      DiffType.Removed => ( (DiffDevice) diff.Original! ),
-      DiffType.Added => ( (DiffDevice) diff.Updated! ),
+      DiffType.Unchanged => (DiffDevice) diff.Updated!,
+      DiffType.Removed => (DiffDevice) diff.Original!,
+      DiffType.Added => (DiffDevice) diff.Updated!,
       _ => throw new Exception( $"Unexpected {nameof(DiffType)}: {diff.DiffType}" )
     };
   }
@@ -90,7 +91,7 @@ internal static class SubnetScanResultProcessor {
       : new DeviceRenderState( deviceRenderState.State, deviceRenderState.Icon, "[grey bold]Unknown[/]" );
 
     var id = InteractiveUi.FakeData ? GenerateDeviceId() : declaredDevice?.Id;
-    var displayId = id == null ? "[grey][/]" : ( $"[cyan]{id}[/]" );
+    var displayId = id == null ? "[grey][/]" : $"[cyan]{id}[/]";
 
     var declaredDeviceId = ( declaredDevice as IAddressableDevice )?.GetDeviceId();
 
@@ -134,8 +135,6 @@ internal static class SubnetScanResultProcessor {
     rand.NextBytes( macBytes );
     return string.Join( "-", macBytes.Select( b => b.ToString( "X2" ) ) );
   }
-
-  private static int _deviceIdCounter = 0;
 
   private static string GenerateDeviceId() {
     _deviceIdCounter++;

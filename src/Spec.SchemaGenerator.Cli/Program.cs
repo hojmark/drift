@@ -14,10 +14,10 @@ Console.WriteLine( "Arguments: " + string.Join( " ", args ) );
 var outputDir = args[0];
 
 try {
-  //var filePath = Path.GetFullPath( Path.Combine( "embedded_resources/schemas", version.ToJsonSchemaFileName() ) );
+  // var filePath = Path.GetFullPath( Path.Combine( "embedded_resources/schemas", version.ToJsonSchemaFileName() ) );
   var filePath = Path.GetFullPath( Path.Combine( outputDir, version.ToJsonSchemaFileName() ) );
   var serialized = SchemaGenerator.Generate( version );
-  File.WriteAllText( filePath, serialized );
+  await File.WriteAllTextAsync( filePath, serialized );
   Console.ForegroundColor = ConsoleColor.Green;
   Console.WriteLine( $"✔ Generated schema for version {version} ({filePath})" );
   Environment.Exit( 0 );

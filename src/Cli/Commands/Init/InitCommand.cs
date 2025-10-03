@@ -18,7 +18,7 @@ using Environment = System.Environment;
 namespace Drift.Cli.Commands.Init;
 
 internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
-  /// Intended for testing (although I should maybe look into a better way to do this e.g., Linux 'expect')
+  // Intended for testing (although I should maybe look into a better way to do this e.g., Linux 'expect')
   internal static readonly Option<ForceMode?> ForceModeOption = new("--force-mode") {
     Description = "(HIDDEN) Force mode", Arity = ArgumentArity.ZeroOrOne, Hidden = true
   };
@@ -47,7 +47,7 @@ internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
       "Also create an environment config alongside the spec"
     ) { Arity = ArgumentArity.ZeroOrOne };*/
 
-    //TODO support examples
+    // TODO support examples
     /*initCommand.WithExamples(
       "drift init     (interactive)",
       "drift init main-site",
@@ -119,8 +119,8 @@ internal class InitCommandHandler(
   }
 
   private static InitOptions RunInteractive( INormalOutput console ) {
-    //TODO first run logic
-    var driftStatePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.UserProfile ), ".drift" );
+    // TODO first run logic
+    // var driftStatePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.UserProfile ), ".drift" );
 
     console.WriteLine();
     console
@@ -129,7 +129,7 @@ internal class InitCommandHandler(
     console.WriteLine();
 
     var name = console.PromptString( $"{Chars.Globe} Name your network", "main-site" );
-    //var withEnv = PromptBool( "🗃\uFE0F  Create environment file too?", defaultOption: PromptOption.Yes );
+    // var withEnv = PromptBool( "🗃\uFE0F  Create environment file too?", defaultOption: PromptOption.Yes );
     var discover = console.PromptBool(
       $"{Chars.MagnifyingGlass} Run a discovery scan to auto-fill with devices and subnets?",
       defaultOption: PromptOption.Yes
@@ -163,10 +163,14 @@ internal class InitCommandHandler(
     return new InitOptions { Name = name, Overwrite = overwrite ?? false, Discover = discover ?? false };
   }
 
+  private static string GetSpecPath( string name ) => Path.GetFullPath( $"{name}.spec.yaml" );
+
+  private static string GetEnvPath( string name ) => Path.GetFullPath( $"{name}.env.yaml" );
+
   private async Task<bool> Initialize( InitOptions options ) {
     try {
       var specPath = GetSpecPath( options.Name );
-      var envPath = GetEnvPath( options.Name );
+      // var envPath = GetEnvPath( options.Name );
 
       if ( !ValidateSpecOverwrite( specPath, options.Overwrite ) ) {
         return false;
@@ -180,7 +184,8 @@ internal class InitCommandHandler(
         var result = await PerformScanAsync( scanOptions );
 
         output.Log.LogInformation( "Scan completed" );
-        output.Log.LogDebug( "Found {Count} devices",
+        output.Log.LogDebug(
+          "Found {Count} devices",
           result.Subnets.Select( subnet => subnet.DiscoveredDevices.Count ).Sum()
         );
         output.Log.LogInformation( "Writing spec: {SpecPath}", specPath );
@@ -201,7 +206,7 @@ internal class InitCommandHandler(
       return true;
     }
     catch ( Exception e ) {
-      //TODO create generic catch for all commands
+      // TODO create generic catch for all commands
       output.Normal.WriteLineError( "Unexpected error" );
       output.Normal.WriteLineError( e.ToString() );
       output.Log.LogError( e, "Unexpected error" );
@@ -243,8 +248,9 @@ internal class InitCommandHandler(
   }
 
   private bool ValidateSpecOverwrite( string path, bool overwrite ) {
-    if ( !File.Exists( path ) )
+    if ( !File.Exists( path ) ) {
       return true;
+    }
 
     if ( overwrite ) {
       output.Normal.WriteLineVerbose( $"Spec file already exists: {path} (overwriting)" );
@@ -269,9 +275,10 @@ internal class InitCommandHandler(
   }
 
   private void LogSubnetDetails( NetworkScanOptions scanOptions ) {
-    //TODO create unit test for this
+    // TODO create unit test for this
     output.Normal.WriteLineVerbose(
-      "Found subnets: " + string.Join( ", ",
+      "Found subnets: " + string.Join(
+        ", ",
         scanOptions.Cidrs.Select( cidr =>
           cidr + " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
           " addresses, " +
@@ -283,10 +290,7 @@ internal class InitCommandHandler(
     );
   }
 
-  private static string GetSpecPath( string name ) => Path.GetFullPath( $"{name}.spec.yaml" );
-  private static string GetEnvPath( string name ) => Path.GetFullPath( $"{name}.env.yaml" );
-
-  private class InitOptions {
+  private sealed class InitOptions {
     public required string Name {
       get;
       init;

@@ -9,8 +9,9 @@ public readonly record struct Percentage {
   }
 
   public Percentage( byte value ) {
-    if ( value > 100 )
+    if ( value > 100 ) {
       throw new ArgumentOutOfRangeException( nameof(value), "Percentage must be between 0 and 100." );
+    }
 
     Value = value;
   }

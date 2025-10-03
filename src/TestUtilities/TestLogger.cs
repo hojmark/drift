@@ -24,7 +24,7 @@ internal sealed class TestLogger : ILogger {
     Exception? exception,
     Func<TState, Exception?, string> formatter ) {
     TestContext.Out.WriteLine(
-      $"[{ToSerilogStyleLevel( logLevel )}] {_categoryName}: {formatter( state, exception )}{( exception is not null ? " " + exception : "" )}"
+      $"[{ToSerilogStyleLevel( logLevel )}] {_categoryName}: {formatter( state, exception )}{( exception is not null ? " " + exception : string.Empty )}"
     );
   }
 

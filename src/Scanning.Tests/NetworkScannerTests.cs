@@ -13,7 +13,7 @@ internal sealed class NetworkScannerTests {
   [TestCase( "192.168.0.0/24" )]
   [TestCase( "192.168.0.1/24" )] // TODO should fail
   [TestCase( "192.168.123.0/24" )]
-  //[TestCase( "2001:db8::/64" )]
+  // [TestCase( "2001:db8::/64" )]
   [TestCase( "10.255.255.254/32", "192.168.32.0/20" /* TODO too slow to run in unit test: , "172.19.0.0/16" */ )]
   public async Task BasicTest( params string[] cidrs ) {
     // Arrange

@@ -5,13 +5,13 @@ using Drift.TestUtilities;
 namespace Drift.Cli.Tests.Commands;
 
 internal sealed class LintCommandTests {
-  [Test, Combinatorial]
+  [Test]
   public async Task LintValidSpec(
     [Values( "network_single_subnet" )] string specName,
     [Values( "", "normal", "log" )] string outputFormat
   ) {
     // Arrange
-    var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? "" : $" -o {outputFormat}";
+    var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? string.Empty : $" -o {outputFormat}";
 
     // Act
     var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
@@ -26,14 +26,14 @@ internal sealed class LintCommandTests {
     }
   }
 
-  [Test, Combinatorial]
+  [Test]
   public async Task LintInvalidSpec(
     [Values( "network_single_device_host" )]
     string specName,
     [Values( "", "normal", "log" )] string outputFormat
   ) {
     // Arrange
-    var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? "" : $" -o {outputFormat}";
+    var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? string.Empty : $" -o {outputFormat}";
 
     // Act
     var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(

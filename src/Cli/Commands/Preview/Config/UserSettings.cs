@@ -1,6 +1,14 @@
 namespace Drift.Cli.Commands.Preview.Config;
 
 internal class UserSettings {
+  internal static string FilePath =>
+    Path.Combine(
+      Environment.GetFolderPath( Environment.SpecialFolder.UserProfile ),
+      ".config",
+      "drift",
+      "drift.settings.json"
+    );
+
   internal bool Emojis {
     get;
     set;
@@ -11,7 +19,7 @@ internal class UserSettings {
     set;
   } = true;
 
-  //TODO ask during first run
+  // TODO ask during first run
   internal bool Telemetry {
     get;
     set;
@@ -27,24 +35,25 @@ internal class UserSettings {
     set;
   }
 
-  internal static string FilePath =>
-    Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.UserProfile ), ".config", "drift",
-      "drift.settings.json" );
-
   internal static UserSettings Load() {
     var path = FilePath;
-    if ( !File.Exists( path ) ) return new UserSettings();
-    //TODO return YamlSerializer.Deserialize<UserSettings>(File.ReadAllText(path)) ?? new UserSettings();
+    if ( !File.Exists( path ) ) {
+      return new UserSettings();
+    }
+
+    // TODO return YamlSerializer.Deserialize<UserSettings>(File.ReadAllText(path)) ?? new UserSettings();
     return new UserSettings();
   }
 
-  internal void Save() {
+  internal static void Save() {
     var dir = Path.GetDirectoryName( FilePath );
-    if ( dir != null ) Directory.CreateDirectory( dir );
-    //TODO File.WriteAllText(FilePath, YamlSerializer.Serialize(this));
+    if ( dir != null ) {
+      Directory.CreateDirectory( dir );
+    }
+    // TODO File.WriteAllText(FilePath, YamlSerializer.Serialize(this));
   }
 
-  internal void Reset() {
+  internal static void Reset() {
     File.Delete( FilePath );
   }
 }

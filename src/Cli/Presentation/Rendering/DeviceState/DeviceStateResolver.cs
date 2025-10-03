@@ -38,13 +38,16 @@ internal static class DeviceStateResolver {
     }
 
     // Unknown device
-    if ( isUnknown && !unknownAllowed )
+    if ( isUnknown && !unknownAllowed ) {
       return DeviceState.UnknownDisallowed;
-    if ( isUnknown && unknownAllowed )
+    }
+
+    if ( isUnknown && unknownAllowed ) {
       return DeviceState.UnknownAllowed;
+    }
 
     // Fallback/Undefined
-    //TODO log?
+    // TODO log?
     return DeviceState.Undefined;
   }
 }

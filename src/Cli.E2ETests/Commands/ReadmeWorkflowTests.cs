@@ -4,12 +4,12 @@ using Drift.Cli.Abstractions;
 namespace Drift.Cli.E2ETests.Commands;
 
 internal sealed class ReadmeWorkflowTests : DriftBinaryFixture {
-  //TODO implement
+  // TODO implement
   [Explicit( "Relies on a real network scan. Need to create a mock network." )]
   [Test]
   public async Task InitThenScanTest() {
     try {
-      var c = new CancellationTokenSource( TimeSpan.FromSeconds( 30 ) );
+      using var c = new CancellationTokenSource( TimeSpan.FromSeconds( 30 ) );
       var initResult = await DriftBinary
         .ExecuteAsync( "init unittest --discover --overwrite -vv", null, c.Token );
 
@@ -23,12 +23,7 @@ internal sealed class ReadmeWorkflowTests : DriftBinaryFixture {
 
       await Verify( initResult.StdOut )
         .ScrubEmptyLines()
-        .ScrubLinesWithReplace( line =>
-          Regex.Replace(
-            line,
-            @"^.+Scanning network\.\.\.$",
-            ""
-          )
+        .ScrubLinesWithReplace( line => Regex.Replace( line, @"^.+Scanning network\.\.\.$", string.Empty )
         );
 
       var scanResult = await DriftBinary.ExecuteAsync( "scan unittest" );
@@ -46,13 +41,7 @@ internal sealed class ReadmeWorkflowTests : DriftBinaryFixture {
 
       await Verify( scanResult.StdOut )
         .ScrubEmptyLines()
-        .ScrubLinesWithReplace( line =>
-          Regex.Replace(
-            line,
-            @"^.+Scanning network\.\.\.$",
-            ""
-          )
-        );
+        .ScrubLinesWithReplace( line => Regex.Replace( line, @"^.+Scanning network\.\.\.$", string.Empty ) );
     }
     catch ( Exception ex ) {
       Assert.Fail( ex.Message );

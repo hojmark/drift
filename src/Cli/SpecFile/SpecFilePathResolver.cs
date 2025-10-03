@@ -110,7 +110,7 @@ internal class SpecFilePathResolver {
       .ToList();
 
     if ( specFiles.Any() ) {
-      var asteriskSpecPath = specFiles.First();
+      var asteriskSpecPath = specFiles[0];
       _output.Log.LogInformation( "Resolved using *.spec.yaml file: {Path}", asteriskSpecPath );
       _output.Normal.WriteLineVerbose( $"Resolved using *.spec.yaml file: {asteriskSpecPath}" );
 

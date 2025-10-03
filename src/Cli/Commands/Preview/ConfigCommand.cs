@@ -16,8 +16,8 @@ internal class ConfigCommand : Command {
   internal ConfigCommand() : base( "config", "View or change user preferences" ) {
     var showCommand = new Command( "list", "Display all current user settings" );
     showCommand.SetAction( _ => {
-      var settings = UserSettings.Load();
-      //Console.WriteLine(YamlSerializer.Serialize(settings));
+      // var settings = UserSettings.Load();
+      // Console.WriteLine(YamlSerializer.Serialize(settings));
     } );
     Subcommands.Add( showCommand );
 
@@ -60,8 +60,8 @@ internal class ConfigCommand : Command {
 
     var resetCommand = new Command( "reset", "Clear all user settings" );
     resetCommand.SetAction( _ => {
-      new UserSettings().Reset();
-      //Console.WriteLine( "✅ Settings cleared." );
+      UserSettings.Reset();
+      // Console.WriteLine( "✅ Settings cleared." );
     } );
     Subcommands.Add( resetCommand );
   }

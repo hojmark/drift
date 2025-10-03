@@ -15,9 +15,9 @@ namespace Drift.Cli.Commands.Scan.Interactive;
 // TODO themes: nocolor i.e. black/white, monochrome, default, etc.
 internal class InteractiveUi : IAsyncDisposable {
   // Anonymising MACs etc. for GitHub screenshot
-  //TODO replace with more generic data simulation
+  // TODO replace with more generic data simulation
   internal const bool FakeData = false;
-  
+
   private const int ScrollAmount = 1;
 
   private readonly IOutputManager _outputManager;
@@ -27,7 +27,7 @@ internal class InteractiveUi : IAsyncDisposable {
 
   private readonly CancellationTokenSource _running = new();
 
-  //TODO should get IDisposable warning?
+  // TODO should get IDisposable warning?
   private readonly KeyWatcher _keyWatcher = new();
   private readonly ConsoleResizeWatcher _resizeWatcher = new();
 
@@ -35,13 +35,13 @@ internal class InteractiveUi : IAsyncDisposable {
   private readonly NetworkScanOptions _scanRequest;
   private readonly IKeyMap _keyMap;
 
-  private Percentage _progress = Percentage.Zero;
-
-  private readonly ILogReader _logWatcher;
-  private TaskCompletionSource _logUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
+  private readonly LogWatcher _logWatcher;
   private readonly LogView _logView;
+  private TaskCompletionSource _logUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
   private TaskCompletionSource _scanUpdateSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+  private Percentage _progress = Percentage.Zero;
 
   public InteractiveUi(
     IOutputManager outputManager,
@@ -102,6 +102,13 @@ internal class InteractiveUi : IAsyncDisposable {
     return ExitCodes.Success;
   }
 
+  public async ValueTask DisposeAsync() {
+    _scanner.ResultUpdated -= OnScanResultUpdated;
+    _running.Dispose();
+    await _keyWatcher.DisposeAsync();
+    _logWatcher.LogUpdated -= OnLogUpdated;
+  }
+
   private void ProcessInput() {
     var key = _keyWatcher.Consume();
     if ( key != null ) {
@@ -120,12 +127,13 @@ internal class InteractiveUi : IAsyncDisposable {
     _logUpdateSignal = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
   }
 
-  private async Task RenderAsync() {
+  private Task RenderAsync() {
     SubnetView.Subnets = _subnets;
     _layout.SetDebug( SubnetView.DebugData );
     _layout.SetLog( _logView );
     _layout.SetScanTree( SubnetView );
     _layout.SetProgress( _progress );
+    return Task.CompletedTask;
   }
 
   private void Handle( UiAction action ) {
@@ -135,12 +143,12 @@ internal class InteractiveUi : IAsyncDisposable {
         break;
       case UiAction.ScrollUp:
         SubnetView.ScrollOffset -= ScrollAmount;
-        //TODO should be separately scrollable
+        // TODO should be separately scrollable
         _logView.ScrollOffset -= ScrollAmount;
         break;
       case UiAction.ScrollDown:
         SubnetView.ScrollOffset += ScrollAmount;
-        //TODO should be separately scrollable
+        // TODO should be separately scrollable
         _logView.ScrollOffset += ScrollAmount;
         break;
       case UiAction.ScrollUpPage:
@@ -202,16 +210,9 @@ internal class InteractiveUi : IAsyncDisposable {
     }
     catch ( Exception e ) {
       _running.Cancel();
-      // TODO 
-      //_outputManager.Normal.WriteLineError( e.ToString() ); //being redirected
+      // TODO
+      // _outputManager.Normal.WriteLineError( e.ToString() ); //being redirected
       Console.Error.WriteLine( e );
     }
-  }
-
-  public async ValueTask DisposeAsync() {
-    _scanner.ResultUpdated -= OnScanResultUpdated;
-    _running.Dispose();
-    await _keyWatcher.DisposeAsync();
-    _logWatcher.LogUpdated -= OnLogUpdated;
   }
 }

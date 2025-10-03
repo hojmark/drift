@@ -20,15 +20,24 @@ namespace Drift.Cli.Presentation.Rendering.DeviceState;
  *
  */
 
-/**
-* - [green]●[/] — Online and should be online
-* - [green]○[/] — Should be offline and is offline
-* - [red]●[/] — Should be offline but is online
-* - [red]○[/] — Should be online but is offline
-* - [yellow]?[/] — Unknown device (allowed) (or undefined state???)
-* - [red]![/] — Unknown device (not allowed/disallowed)
-*/
+/*
+ * - [green]●[/] — Online and should be online
+ * - [green]○[/] — Should be offline and is offline
+ * - [red]●[/] — Should be offline but is online
+ * - [red]○[/] — Should be online but is offline
+ * - [yellow]?[/] — Unknown device (allowed) (or undefined state???)
+ * - [red]![/] — Unknown device (not allowed/disallowed)
+ */
 internal class DeviceRenderState( DeviceState state, string icon, string text ) {
+  // Unicode icons
+  // TODO move to chars?
+  private const string ClosedCircle = "\u25CF"; // ●
+  private const string OpenCircle = "\u25CB"; // ○
+  private const string ClosedDiamond = "\u25C6"; // ◆
+  private const string OpenDiamond = "\u25C7"; // ◇
+  private const string QuestionMark = "\u003F"; // ?
+  private const string Exclamation = "\u0021"; // !
+
   public DeviceState State {
     get;
   } = state;
@@ -40,15 +49,6 @@ internal class DeviceRenderState( DeviceState state, string icon, string text ) 
   public string Text {
     get;
   } = text;
-
-  // Unicode icons
-  //TODO move to chars?
-  const string ClosedCircle = "\u25CF"; // ●
-  const string OpenCircle = "\u25CB"; // ○
-  const string ClosedDiamond = "\u25C6"; // ◆
-  const string OpenDiamond = "\u25C7"; // ◇
-  const string QuestionMark = "\u003F"; // ?
-  const string Exclamation = "\u0021"; // !
 
   internal static DeviceRenderState From(
     DeclaredDeviceState? declared,

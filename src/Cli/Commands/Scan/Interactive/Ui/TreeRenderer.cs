@@ -38,9 +38,10 @@ internal static class TreeRenderer {
           // Show partial tree (skip header, show some devices)
           int devicesToSkip = treeStartRow - 1; // -1 because we're skipping the header
           int devicesToShow =
-            Math.Min( maxDeviceRows + 1,
-              subnet.Devices.Count -
-              devicesToSkip ); // +1 because the header is not shown (makes room for additional device)
+            Math.Min(
+              maxDeviceRows + 1, // +1 because the header is not shown (makes room for additional device)
+              subnet.Devices.Count - devicesToSkip
+            );
 
           if ( devicesToShow > 0 ) {
             trees.Add( BuildPartialTree( subnet, subnets, devicesToSkip ) );
@@ -57,7 +58,7 @@ internal static class TreeRenderer {
 
   private static Tree BuildPartialTree( Subnet subnet, List<Subnet> subnets, int skipDevices ) {
     // Create a tree with an empty header since we're showing a continuation
-    var tree = new Tree( "" ).DefaultStyle();
+    var tree = new Tree( string.Empty ).DefaultStyle();
 
     var devices = subnet.Devices
       .Skip( skipDevices )
@@ -84,12 +85,12 @@ internal static class TreeRenderer {
   ) {
     var symbol = showAccordionSymbols
       ? ( subnet.IsExpanded ? "▾ " : "▸ " )
-      : "";
+      : string.Empty;
 
     string summary =
       $"[grey]({subnet.Devices.Count} devices)[/]"; // +
-    //$"{subnet.Devices.Count( d => d.IsOnline )} online, " +
-    //$"{subnet.Devices.Count( d => !d.IsOnline )} offline)[/]";
+    // $"{subnet.Devices.Count( d => d.IsOnline )} online, " +
+    // $"{subnet.Devices.Count( d => !d.IsOnline )} offline)[/]";
 
     string header = $"{symbol}{subnet.Cidr}";
     string formattedHeader = isSelected
@@ -100,8 +101,9 @@ internal static class TreeRenderer {
 
     if ( subnet.IsExpanded ) {
       var devices = subnet.Devices;
-      if ( maxDeviceCount is not null )
+      if ( maxDeviceCount is not null ) {
         devices = devices.Take( maxDeviceCount.Value ).ToList();
+      }
 
       foreach ( var device in devices ) {
         var deviceString = RenderDevice( device, subnets );
@@ -119,13 +121,13 @@ internal static class TreeRenderer {
 
   private static string RenderDevice( Device device, List<Subnet> subnets ) {
     return
-      //device.Status + " " +
+      // device.Status + " " +
       $"{device.Ip.PadRight( subnets.GetIpWidth() )}  " +
       $"{device.Mac.PadRight( subnets.GetMacWidth() )}  " +
       $"{device.Id.PadRight( subnets.GetIdWidth() )}  " +
-      //TODO note not raw version
-      //$"{device.StateText.PadRightLocal( device.StateText.Length, subnets.GetStateTextWidth() )}  " +
+      // TODO note not raw version
+      // $"{device.StateText.PadRightLocal( device.StateText.Length, subnets.GetStateTextWidth() )}  " +
       device.State.Text + "  ";
-    //"[grey]Few seconds ago[/]";
+    // "[grey]Few seconds ago[/]";
   }
 }

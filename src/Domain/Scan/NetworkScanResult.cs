@@ -5,5 +5,4 @@ public class NetworkScanResult : ScanResultBase {
     get;
     init;
   } = [];
-
 }

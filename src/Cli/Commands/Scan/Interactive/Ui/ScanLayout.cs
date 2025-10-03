@@ -31,7 +31,7 @@ internal class ScanLayout( NetworkId? networkId ) {
     get => _layout["Debug"].IsVisible;
     set {
       _layout["Debug"].IsVisible = value;
-      //_layout["Debug"].Update( _layout["Debug"] );
+      // _layout["Debug"].Update( _layout["Debug"] );
       // Re-render mainpanel, as there is now more room available
       _layout["MainPanel"].Update( _layout["MainPanel"] );
     }
@@ -64,9 +64,8 @@ internal class ScanLayout( NetworkId? networkId ) {
     _layout["Log"].Update( new Panel( text ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 ) );
   }
 
-
   private static Markup BuildHeader( NetworkId? id ) {
-    //TODO update with actual path
+    // TODO update with actual path
     return id == null
       ? new Markup( "[yellow bold]unknown network[/]" )
       : new Markup( $"[bold]{( InteractiveUi.FakeData ? "main-site" : id.Value )}[/] [green]✔[/]" ) {
@@ -90,18 +89,18 @@ internal class ScanLayout( NetworkId? networkId ) {
       new Layout(
         new BreakdownChart()
           .HideTags()
-          //.Width( AnsiConsole.Console.Profile.Width )
+          // .Width( AnsiConsole.Console.Profile.Width )
           .AddItem( "Completed", progress, Color.White )
-          //.AddItem( "Good", progress, Color.Green )
-          //.AddItem("Unknown", 5, Color.Yellow)
-          //.AddItem("Bad", 2, Color.Red)
+          // .AddItem( "Good", progress, Color.Green )
+          // .AddItem("Unknown", 5, Color.Yellow)
+          // .AddItem("Bad", 2, Color.Red)
           .AddItem( "Remaining", Percentage.Hundred.Value - progress, Color.Grey ).Expand()
       ),
       new Layout( new Text( $" {progressValue}" ) ) { Size = progressValue.Length + 1 }
     );
   }
 
-  private static Markup BuildFooter(  /*int scroll, int maxScroll, int selectedIndex, List<UiSubnet> subnets */ ) {
+  private static Markup BuildFooter( /*int scroll, int maxScroll, int selectedIndex, List<UiSubnet> subnets */ ) {
     const string keyColor = "bold";
     const string actionColor = "";
 
@@ -112,8 +111,8 @@ internal class ScanLayout( NetworkId? networkId ) {
       { "space", "toggle" },
       { "w/s", "scroll" },
       { "l", "log" },
-      //{ "v", "view" },
-      //{ "h", "help" }
+      // { "v", "view" },
+      // { "h", "help" }
     };
 
     var footerParts = new List<string>();
@@ -122,8 +121,8 @@ internal class ScanLayout( NetworkId? networkId ) {
       footerParts.Add( $"[{keyColor}]{kvp.Key}[/][{actionColor}] {kvp.Value}[/]" );
     }
 
-    //footerParts.Add( $"[grey]Scroll: {scroll}/{maxScroll}[/]" );
-    //footerParts.Add( $"[grey]Selected: {selectedIndex + 1}/{subnets.Count}[/]" );
+    // footerParts.Add( $"[grey]Scroll: {scroll}/{maxScroll}[/]" );
+    // footerParts.Add( $"[grey]Selected: {selectedIndex + 1}/{subnets.Count}[/]" );
 
     return new Markup( string.Join( $"[{actionColor}]   [/]", footerParts ) );
   }

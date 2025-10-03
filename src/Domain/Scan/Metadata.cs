@@ -2,7 +2,7 @@ namespace Drift.Domain.Scan;
 
 public class Metadata {
   /// <summary>
-  /// Local time
+  /// Gets the local time the action was started at.
   /// </summary>
   public required DateTime StartedAt {
     get;
@@ -10,7 +10,7 @@ public class Metadata {
   }
 
   /// <summary>
-  /// Local time
+  /// Gets the local time the action was ended at.
   /// </summary>
   public DateTime? EndedAt {
     get;

@@ -12,10 +12,10 @@ public class ValidationResult {
   } = [];
 
   public override string ToString() {
-    return string.Join( "\n",
-      Errors.Count == 0
-        ? new List<string> { "(no error)" }
-        : Errors.Select( e => e.ToString() )
-    );
+    var errors = Errors.Count == 0
+      ? new List<string> { "(no error)" }
+      : Errors.Select( e => e.ToString() );
+
+    return string.Join( "\n", errors );
   }
 }

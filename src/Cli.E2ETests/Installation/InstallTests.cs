@@ -1,11 +1,17 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
 using Drift.Common;
 
 namespace Drift.Cli.E2ETests.Installation;
 
+[SuppressMessage(
+  "Minor Code Smell",
+  "S2325:Methods and properties that don\'t access instance data should be static",
+  Justification = "Unimplemented test methods should not be static"
+)]
 internal sealed class InstallTests {
-  //TODO split test into at least two parts
+  // TODO split test into at least two parts
   [Test]
   public async Task InstallLatestVersion() {
     // Arrange: find the install.sh script
@@ -35,8 +41,9 @@ internal sealed class InstallTests {
       Console.WriteLine( "------------------- install.sh output ----------------------" );
 
       await TestContext.Out.WriteLineAsync( installProcess.StdOut );
-      if ( !string.IsNullOrWhiteSpace( installProcess.ErrOut ) )
+      if ( !string.IsNullOrWhiteSpace( installProcess.ErrOut ) ) {
         await TestContext.Out.WriteLineAsync( $"STDERR: {installProcess.ErrOut}" );
+      }
 
       Console.WriteLine( "------------------------------------------------------------" );
 
@@ -67,8 +74,9 @@ internal sealed class InstallTests {
       Console.WriteLine( "------------------- drift output ----------------------" );
 
       await TestContext.Out.WriteLineAsync( driftProcess.StdOut );
-      if ( !string.IsNullOrWhiteSpace( driftProcess.ErrOut ) )
+      if ( !string.IsNullOrWhiteSpace( driftProcess.ErrOut ) ) {
         await TestContext.Out.WriteLineAsync( $"STDERR: {driftProcess.ErrOut}" );
+      }
 
       Console.WriteLine( "------------------------------------------------------------" );
 
@@ -80,7 +88,6 @@ internal sealed class InstallTests {
         Assert.That( driftProcess.ErrOut, Is.Empty );
       }
     }
-
     finally {
       try {
         Directory.Delete( installDir, true );
@@ -92,25 +99,25 @@ internal sealed class InstallTests {
     }
   }
 
-  //[Test]
+  // [Test]
   public Task InstallSpecificVersion() {
     return Task.CompletedTask;
     // TODO
   }
 
-  //[Test]
+  // [Test]
   public Task InstallNonExistingVersion() {
     return Task.CompletedTask;
     // TODO
   }
 
-  //[Test]
+  // [Test]
   public Task InstallWithVerbose() {
     return Task.CompletedTask;
     // TODO
   }
 
-  //[Test]
+  // [Test]
   public Task InstallWithoutInstallerPrerequisites() {
     return Task.CompletedTask;
     // TODO

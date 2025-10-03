@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.SpecFile;
 using Microsoft.Extensions.Logging;
@@ -5,31 +6,34 @@ using NSubstitute;
 
 namespace Drift.Cli.Tests;
 
+[SuppressMessage(
+  "Minor Code Smell",
+  "S1481:Unused local variables should be removed",
+  Justification = "Serves as code documentation"
+)]
 internal sealed class SpecFilePathResolverTests {
+  private const string HomeEnvVar = "HOME";
   private string? _originalHome;
   private string _tempHome;
-  private const string _homeEnvVar = "HOME";
-  private string? _osUserProfile;
 
   [OneTimeSetUp]
   public void SetupHomeDir() {
     _tempHome = Path.Combine( Path.GetTempPath(), "fake-home-" + Guid.NewGuid().ToString() );
     Directory.CreateDirectory( _tempHome );
 
-    _originalHome = Environment.GetEnvironmentVariable( _homeEnvVar );
-    Environment.SetEnvironmentVariable( _homeEnvVar, _tempHome );
-    _osUserProfile = _tempHome;
+    _originalHome = Environment.GetEnvironmentVariable( HomeEnvVar );
+    Environment.SetEnvironmentVariable( HomeEnvVar, _tempHome );
   }
 
   [OneTimeTearDown]
   public void TeardownHomeDir() {
-    Environment.SetEnvironmentVariable( _homeEnvVar, _originalHome );
+    Environment.SetEnvironmentVariable( HomeEnvVar, _originalHome );
     Directory.Delete( _tempHome, true );
   }
 
-  /**
-   * Checks the environment override used by the test fixture
-   */
+  /// <summary>
+  /// Checks the environment override used by the test fixture.
+  /// </summary>
   [Test]
   public void UserHomeFolderEnv_ResolvesToFakeHomeFolder_AsExpected() {
     var actualHome = Environment.GetFolderPath( Environment.SpecialFolder.UserProfile );
@@ -37,7 +41,6 @@ internal sealed class SpecFilePathResolverTests {
     Assert.That( actualHome, Contains.Substring( "fake-home-" ) );
     Assert.That( Directory.Exists( actualHome ), Is.True );
   }
-
 
   [Test]
   public void Resolve_ExactFileName_ReturnsFile() {
@@ -214,7 +217,7 @@ internal sealed class SpecFilePathResolverTests {
     Directory.CreateDirectory( tempDir );
 
     var one = CreateTempFile( tempDir, "first.spec.yaml" );
-    //var two = CreateTempFile( tempDir, "second.spec.yaml" );
+    // var two = CreateTempFile( tempDir, "second.spec.yaml" );
 
     var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), tempDir );
     var result = resolver.Resolve( null );
@@ -245,7 +248,7 @@ internal sealed class SpecFilePathResolverTests {
   [Test]
   public void EmptyName_ThrowsArgumentException() {
     var resolver = new SpecFilePathResolver( CreateOutputSubstitute(), Directory.GetCurrentDirectory() );
-    var ex = Assert.Throws<ArgumentException>( () => resolver.Resolve( "" ) );
+    var ex = Assert.Throws<ArgumentException>( () => resolver.Resolve( string.Empty ) );
     Assert.That( ex.ParamName, Is.EqualTo( "name" ) );
   }
 
@@ -281,7 +284,7 @@ internal sealed class SpecFilePathResolverTests {
 
     // Check warning was called
     output.Log.ReceivedWithAnyArgs().LogWarning( default, default, default, default, default );
-    output.Normal.ReceivedWithAnyArgs().WriteLineWarning( "" );
+    output.Normal.ReceivedWithAnyArgs().WriteLineWarning( string.Empty );
 
     Directory.Delete( tempDir, true );
   }
@@ -297,6 +300,6 @@ internal sealed class SpecFilePathResolverTests {
     output.Log.Returns( Substitute.For<ILogOutput>() );
     output.Normal.Returns( Substitute.For<INormalOutput>() );
     return output;
-    //return new NullOutputManager();
+    // return new NullOutputManager();
   }
 }

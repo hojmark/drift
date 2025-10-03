@@ -1,13 +1,16 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Common;
 
+[SuppressMessage( "Major Code Smell", "S3264:Events should be invoked", Justification = "False positive" )]
 public class ToolWrapper( string toolPath, Dictionary<string, string?>? environment = null ) {
   private readonly string _toolPath = toolPath ?? throw new ArgumentNullException( nameof(toolPath) );
-  
+
   public event DataReceivedEventHandler? OutputDataReceived;
+
   public event DataReceivedEventHandler? ErrorDataReceived;
 
   public async Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> ExecuteAsync(

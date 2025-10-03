@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Cli.Presentation.Console.Managers;
 
 internal class ConsoleOutputManager(
-  //TODO mixed parameter levels
+  // TODO mixed parameter levels
   ILogger consoleLogger,
   TextWriter normalStdOut,
   TextWriter normalErrOut,
@@ -15,10 +15,6 @@ internal class ConsoleOutputManager(
   bool plainConsole,
   TextReader reader
 ) : IOutputManager {
-  public TextReader GetReader() {
-    return reader;
-  }
-
   public ILogOutput Log {
     get;
   } = new LogOutput( consoleLogger );
@@ -30,6 +26,10 @@ internal class ConsoleOutputManager(
   public IJsonOutput Json {
     get;
   } = default!;
+
+  public TextReader GetReader() {
+    return reader;
+  }
 
   // Could work, but need async option
   public void WithNormalOutput( Action<INormalOutput> action ) {

@@ -21,7 +21,7 @@ internal class FigletHeaderHelpAction( HelpAction action ) : SynchronousCommandL
 
     int result = action.Invoke( parseResult );
 
-    // TODO specific 
+    // TODO specific
     // Console.WriteLine( "USAGE: drift <command> [options]" );
 
     return result;

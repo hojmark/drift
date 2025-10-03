@@ -20,7 +20,7 @@ internal static class SubnetRenderingExtensions {
   }
 
   internal static int GetStateTextWidth( this List<Subnet> subnets ) {
-    //TODO raw version does not exist
+    // TODO raw version does not exist
     return subnets.SelectMany( s => s.Devices ).Max( d => d.State.Text.Length );
   }
 }

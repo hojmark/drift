@@ -17,13 +17,15 @@ public readonly record struct MacAddress : IDeviceAddress {
   public AddressType Type => AddressType.Mac;
 
   public MacAddress( string value, bool? isId = null ) {
-    if ( string.IsNullOrWhiteSpace( value ) )
+    if ( string.IsNullOrWhiteSpace( value ) ) {
       throw new ArgumentException( "MAC address cannot be empty.", nameof(value) );
+    }
 
     var normalized = value.Trim().ToUpperInvariant().Replace( ":", "-" );
 
-    if ( !MacRegex.IsMatch( normalized ) )
+    if ( !MacRegex.IsMatch( normalized ) ) {
       throw new ArgumentException( $"Invalid MAC address format: '{value}'", nameof(value) );
+    }
 
     Value = normalized;
     IsId = isId;

@@ -6,7 +6,8 @@ namespace Drift.Cli;
 
 internal static class NetworkScanOptionsExtensions {
   internal static TimeSpan EstimatedDuration( this NetworkScanOptions scanRequest ) {
-    return scanRequest.Cidrs.Aggregate( TimeSpan.Zero,
+    return scanRequest.Cidrs.Aggregate(
+      TimeSpan.Zero,
       ( current, cidr ) => current + EstimatedDuration( scanRequest, cidr )
     );
   }

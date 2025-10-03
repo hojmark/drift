@@ -5,13 +5,16 @@ namespace Drift.Cli.E2ETests;
 
 [TestFixture]
 internal abstract class DriftBinaryFixture {
-  protected static ToolWrapper DriftBinary;
-  private static string DriftPath;
+  protected static ToolWrapper DriftBinary {
+    get;
+    private set;
+  }
 
   [OneTimeSetUp]
   public void Setup() {
     try {
-      DriftPath = EnvironmentVariable.GetOrThrow( EnvVar.DRIFT_BINARY_PATH );
+      var path = EnvironmentVariable.GetOrThrow( EnvVar.DRIFT_BINARY_PATH );
+      DriftBinary = new ToolWrapper( path );
     }
     catch ( Exception e ) {
       if ( !EnvironmentVariable.IsCi() ) {
@@ -22,7 +25,5 @@ internal abstract class DriftBinaryFixture {
       TestContext.Out.WriteLine( e.StackTrace );
       throw;
     }
-
-    DriftBinary = new ToolWrapper( DriftPath );
   }
 }

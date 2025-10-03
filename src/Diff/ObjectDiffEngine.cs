@@ -1,12 +1,9 @@
 using System.Collections;
-using System.Collections.Frozen;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Diff;
-
-
 
 /*public static class DeviceDiffEngine {
   public static List<ObjectDiff<DiffDevice>> Compare(
@@ -38,15 +35,7 @@ public static class ObjectDiffEngine {
     return Compare( original, updated, path, options ?? new DiffOptions(), [], logger );
   }
 
-  /// <summary>
-  /// Note that a <see cref="string"/> is treated like a value type for convenience, though it is technically a reference type.
-  /// </summary>
-  /// <param name="original"></param>
-  /// <param name="updated"></param>
-  /// <param name="path"></param>
-  /// <param name="options"></param>
-  /// <param name="usedKeySelectorCount"></param>
-  /// <returns></returns>
+  // Note that a <see cref="string"/> is treated like a value type for convenience, though it is technically a reference type.
   private static List<ObjectDiff> Compare(
     object? original,
     object? updated,
@@ -62,8 +51,10 @@ public static class ObjectDiffEngine {
       return diffs;
     }
 
-    if ( original == null && updated == null ) //TODO test. even throw perhaps?
+    if ( original == null && updated == null ) {
+      // TODO test. even throw perhaps?
       return diffs;
+    }
 
     if ( original == null ) {
       if ( options.DiffTypes.Contains( DiffType.Added ) ) {
@@ -91,7 +82,7 @@ public static class ObjectDiffEngine {
     // Value types (primitives like int and bool, as well as structs and enums; string is treated like a value type for convenience, though it is technically a reference type
     if ( type.IsValueType || type == typeof(string) ) {
       if ( Equals( original, updated ) ) {
-        //TODO add unchanged?
+        // TODO add unchanged?
         return diffs;
       }
 
@@ -182,8 +173,9 @@ public static class ObjectDiffEngine {
         .Replace( @"\[", "\\[" )
         .Replace( @"\]", "\\]" ) + "$";
 
-      if ( Regex.IsMatch( path, regexPattern ) )
+      if ( Regex.IsMatch( path, regexPattern ) ) {
         return true;
+      }
     }
 
     return false;

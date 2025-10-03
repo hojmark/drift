@@ -14,7 +14,8 @@ namespace Drift.Cli.Commands.Lint;
 internal class LintCommand : CommandBase<LintParameters, LintCommandHandler> {
   internal LintCommand( IServiceProvider provider ) : base(
     "lint",
-    "Validate a network spec", provider
+    "Validate a network spec",
+    provider
   ) {
   }
 
@@ -29,8 +30,10 @@ internal class LintCommandHandler( IOutputManager output ) : ICommandHandler<Lin
 
     FileInfo? filePath;
     try {
-      filePath = new SpecFilePathResolver( output,
-          parameters.SpecFile?.DirectoryName ?? Directory.GetCurrentDirectory() )
+      filePath = new SpecFilePathResolver(
+          output,
+          parameters.SpecFile?.DirectoryName ?? Directory.GetCurrentDirectory()
+        )
         .Resolve( parameters.SpecFile?.Name, throwsOnNotFound: true );
     }
     catch ( FileNotFoundException exception ) {

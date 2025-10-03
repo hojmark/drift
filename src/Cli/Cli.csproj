@@ -1,49 +1,48 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <RuntimeIdentifiers>linux-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
-        <OutputType>Exe</OutputType>
-        <PublishAot>true</PublishAot>
-        <InvariantGlobalization>true</InvariantGlobalization>
-        <AssemblyName>drift</AssemblyName>
-        <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-        <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault> <!-- todo remove -->
-        <Version>0.0.0-undefined</Version>
-    </PropertyGroup>
+  <PropertyGroup>
+    <RuntimeIdentifiers>linux-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
+    <OutputType>Exe</OutputType>
+    <PublishAot>true</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <AssemblyName>drift</AssemblyName>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault> <!-- todo remove -->
+    <Version>0.0.0-undefined</Version>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <InternalsVisibleTo Include="Drift.Cli.Tests"/>
-        <EmbeddedResource Include="embedded_resources\**\*"/>
-        <!-- Options: T: type, M: method, P: property -->
-        <AdditionalFiles Include="BannedSymbols.txt"/>
-    </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Drift.Cli.Tests" />
+    <EmbeddedResource Include="embedded_resources\**\*" />
+    <!-- Options: T: type, M: method, P: property -->
+    <AdditionalFiles Include="BannedSymbols.txt" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj"/>
-        <ProjectReference Include="..\Scanning\Scanning.csproj"/>
-        <ProjectReference Include="..\Diff\Diff.csproj"/>
-        <ProjectReference Include="..\Domain\Domain.csproj"/>
-        <ProjectReference Include="..\Spec\Spec.csproj"/>
-        <ProjectReference Include="..\Common\Common.csproj"/>
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
+    <ProjectReference Include="..\Scanning\Scanning.csproj" />
+    <ProjectReference Include="..\Diff\Diff.csproj" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Spec\Spec.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Humanizer"/>
-        <PackageReference Include="IPNetwork2"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
-        <PackageReference Include="Microsoft.Extensions.Logging"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Console"/>
-        <PackageReference Include="NaturalSort.Extension"/>
-        <PackageReference Include="Serilog.Extensions.Logging"/>
-        <PackageReference Include="Serilog.Sinks.Console"/>
-        <PackageReference Include="Serilog.Sinks.TextWriter"/>
-        <PackageReference Include="Spectre.Console.Cli"/>
-        <PackageReference Include="System.CommandLine"/>
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Humanizer" />
+    <PackageReference Include="IPNetwork2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="NaturalSort.Extension" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.TextWriter" />
+    <PackageReference Include="Spectre.Console.Cli" />
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
 
 </Project>

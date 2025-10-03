@@ -31,6 +31,6 @@ internal class AgentCommand : Command {
     var statusCmd = new Command( "status", "Show agent status" );
     Subcommands.Add( statusCmd );
 
-    //logs?
+    // logs?
   }
 }

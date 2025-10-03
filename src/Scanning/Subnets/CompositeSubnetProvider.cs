@@ -2,7 +2,7 @@ using Drift.Domain;
 
 namespace Drift.Scanning.Subnets;
 
-//TODO needed?
+// TODO needed?
 public class CompositeSubnetProvider( IEnumerable<ISubnetProvider> providers ) : ISubnetProvider {
   private readonly List<ISubnetProvider> _providers = providers.ToList();
 

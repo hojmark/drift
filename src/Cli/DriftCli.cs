@@ -22,8 +22,12 @@ internal static class DriftCli {
     try {
       await Bootstrapper.BootstrapAsync();
 
-      var rootCommand = RootCommandFactory.Create( toConsole: toConsole, plainConsole: plainConsole, configureServices,
-        customCommands );
+      var rootCommand = RootCommandFactory.Create(
+        toConsole: toConsole,
+        plainConsole: plainConsole,
+        configureServices,
+        customCommands
+      );
       var config = new CommandLineConfiguration( rootCommand ) { EnableDefaultExceptionHandler = false };
 
       configureCommandLineConfig?.Invoke( config );

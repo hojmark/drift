@@ -1,6 +1,6 @@
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
-using Microsoft.Extensions.Logging;
 using Drift.Common.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Presentation.Console.Logging;
 

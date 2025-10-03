@@ -18,19 +18,22 @@ internal interface IOutputManagerFactory {
   IOutputManager Create( ParseResult result, bool plainConsole );
 }
 
-//TODO temporary migration away from BinderBase
-// Justification: this class is part of providing the alternative to the banned APIs
-[SuppressMessage( "ApiDesign", "RS0030:Do not use banned APIs" )]
+// TODO temporary migration away from BinderBase
+[SuppressMessage(
+  "ApiDesign",
+  "RS0030:Do not use banned APIs",
+  Justification = "This class is part of providing the alternative to the banned APIs"
+)]
 internal class OutputManagerFactory(
-  //TODO Inject config instead
+  // TODO Inject config instead
   bool toConsole = true
 ) : IOutputManagerFactory {
-  public IOutputManager Create( ParseResult parseResult, bool plainConsole ) {
-    var outputFormat = parseResult.GetValue( CommonParameters.Options.OutputFormat );
-    var verbose = parseResult.GetValue( CommonParameters.Options.Verbose );
-    var veryVerbose = parseResult.GetValue( CommonParameters.Options.VeryVerbose );
+  public IOutputManager Create( ParseResult result, bool plainConsole ) {
+    var outputFormat = result.GetValue( CommonParameters.Options.OutputFormat );
+    var verbose = result.GetValue( CommonParameters.Options.Verbose );
+    var veryVerbose = result.GetValue( CommonParameters.Options.VeryVerbose );
 
-    var interactiveOutputOnly = parseResult.GetValue( ScanParameters.Options.Interactive );
+    var interactiveOutputOnly = result.GetValue( ScanParameters.Options.Interactive );
 
     // Even though the option has a default value, it is not set when the option is not added to a command.
     // Instead, we get 0, which indicates a developer mistake.
@@ -40,13 +43,14 @@ internal class OutputManagerFactory(
       // outputFormat = OutputFormat.Normal;
     }
 
-    var consoleOut = parseResult.Configuration.Output;
-    var consoleErr = parseResult.Configuration.Error;
+    var consoleOut = result.Configuration.Output;
+    var consoleErr = result.Configuration.Error;
 
     return Create( outputFormat, verbose, veryVerbose, interactiveOutputOnly, consoleOut, consoleErr, plainConsole );
   }
 
-  public IOutputManager Create( OutputFormat outputFormat,
+  public IOutputManager Create(
+    OutputFormat outputFormat,
     bool verbose,
     bool veryVerbose,
     bool interactiveOutputOnly,
@@ -123,14 +127,14 @@ internal class OutputManagerFactory(
       outputReader
     );
 
-    tempOutputManager.Normal.WriteLineVerbose(
-      $"Output format is 'Normal' using '{( /*veryVerboseValue ? "Very Verbose" :*/ "Verbose" )}' output"
-    );
+    tempOutputManager.Normal.WriteLineVerbose( "Output format is 'Normal' using 'Verbose' output" );
+    tempOutputManager.Normal.WriteLineVeryVerbose( "Output format is 'Normal' using 'Very Verbose' output" );
 
     return ( consoleOut, consoleErr );
   }
 
-  private static ILogger GetLogger( OutputFormat outputFormatValue,
+  private static ILogger GetLogger(
+    OutputFormat outputFormatValue,
     bool verbose,
     bool veryVerbose,
     TextWriter consoleOut,
@@ -171,7 +175,7 @@ internal class OutputManagerFactory(
           .WriteTo.TextWriter(
             textWriter: consoleOut,
             formatter: formatter
-            //outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+            // outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
           )
         )
         .WriteTo.Logger( lc => lc
@@ -179,7 +183,7 @@ internal class OutputManagerFactory(
           .WriteTo.TextWriter(
             textWriter: consoleErr,
             formatter: formatter
-            //outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+            // outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
           )
         );
     }
@@ -188,8 +192,8 @@ internal class OutputManagerFactory(
         .SetMinimumLevel( LogLevel.Debug ) // Parse from args?
     );
 
-    //TODO still getting '[0]' in the output. Should probably create custom logger.
-    var logger = loggerFactory.CreateLogger( "" );
+    // TODO still getting '[0]' in the output. Should probably create custom logger.
+    var logger = loggerFactory.CreateLogger( string.Empty );
 
     logger.LogDebug(
       "Output format is '{OutputFormat}' using log level '{LogLevel}'",

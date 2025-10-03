@@ -1,5 +1,6 @@
 using System.CommandLine;
 using System.CommandLine.Help;
+using System.Runtime.InteropServices;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Help;
 using Drift.Cli.Commands.Init;
@@ -53,7 +54,7 @@ internal static class RootCommandFactory {
   }
 
   private static RootCommand CreateRootCommand( IServiceProvider provider ) {
-    //TODO 'from' or 'against'?
+    // TODO 'from' or 'against'?
     var rootCommand =
       new RootCommand( $"{Chars.SatelliteAntenna} Drift CLI — monitor network drift against your declared state" ) {
         new InitCommand( provider ), new ScanCommand( provider ), new LintCommand( provider )
@@ -110,13 +111,19 @@ internal static class RootCommandFactory {
   }
 
   private static void ConfigureNetworkScanner( IServiceCollection services ) {
-    services.AddSingleton<IPingTool, LinuxPingTool>();
-    services.AddScoped<ISubnetScannerFactory,DefaultSubnetScannerFactory>();
+    if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
+      services.AddSingleton<IPingTool, LinuxPingTool>();
+    }
+    else {
+      throw new PlatformNotSupportedException();
+    }
+
+    services.AddScoped<ISubnetScannerFactory, DefaultSubnetScannerFactory>();
     services.AddScoped<INetworkScanner, DefaultNetworkScanner>();
   }
 
   private static void AddFigletHeaderToHelpCommand( RootCommand rootCommand ) {
-    //rootCommand.Add(CommonParameters.Options.OutputFormat );
+    // rootCommand.Add(CommonParameters.Options.OutputFormat );
     foreach ( var t in rootCommand.Options ) {
       // Update the default HelpOption of the RootCommand
       if ( t is HelpOption defaultHelpOption ) {

@@ -7,7 +7,7 @@ public record DeclaredSubnet {
   }
 
   /// <summary>
-  /// Network address in CIDR notation.
+  /// Gets network address in CIDR notation.
   /// </summary>
   /// TODO change string -> Cidr
   public required string Address {
@@ -30,7 +30,7 @@ public record DeclaredSubnet {
     set;
   } = true;
 
-  //TODO should be strongly typed i.e. DeviceId
+  // TODO should be strongly typed i.e. DeviceId
   // Really needed? Can tell subnet from ip, but of course, if that's wrong...
   /*public List<string>? Devices {
     get;

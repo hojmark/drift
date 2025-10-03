@@ -7,8 +7,8 @@ namespace Drift.Cli.Commands.Scan.Interactive.Ui;
 
 internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
   private readonly Lock _subnetLock = new();
-
   private List<Subnet> _subnets = [];
+  private uint _scrollOffset;
 
   public List<Subnet> Subnets {
     set {
@@ -25,25 +25,6 @@ internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
     }
   }
 
-  private uint MaxScrollOffset => (uint) Math.Max( 0, _subnets.GetHeight() - height() );
-
-  private uint _scrollOffset;
-
-  // Note: allow setting negative values; values outside the range will be clamped
-  internal int ScrollOffset {
-    get {
-      return (int) _scrollOffset;
-    }
-    set {
-      _scrollOffset = (uint) Math.Clamp( value, 0, MaxScrollOffset );
-    }
-  }
-
-  private CidrBlock? Selected {
-    get;
-    set;
-  }
-
   public string DebugData {
     get {
       var selectedCidr = _subnets.FirstOrDefault( s => s.Cidr == Selected );
@@ -56,6 +37,24 @@ internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
       return
         $"{nameof(ScrollOffset)}: {ScrollOffset}, {nameof(MaxScrollOffset)}: {MaxScrollOffset}, TotalHeight: {_subnets.GetHeight()}, ViewportHeight: {height()}, SelectedIndex: {selectedIndex}";
     }
+  }
+
+  // Note: allow setting negative values; values outside the range will be clamped
+  internal int ScrollOffset {
+    get {
+      return (int) _scrollOffset;
+    }
+
+    set {
+      _scrollOffset = (uint) Math.Clamp( value, 0, MaxScrollOffset );
+    }
+  }
+
+  private uint MaxScrollOffset => (uint) Math.Max( 0, _subnets.GetHeight() - height() );
+
+  private CidrBlock? Selected {
+    get;
+    set;
   }
 
   public void ToggleSelected() {

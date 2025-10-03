@@ -30,19 +30,19 @@ internal class ScanCommand : CommandBase<ScanParameters, ScanCommandHandler> {
     Add( ScanParameters.Options.Interactive );
   }
 
-  private enum ShowMode {
+ /* private enum ShowMode {
     All = 1,
     Changed = 2,
     Unchanged = 3
-  }
+  }*/
 
-  //var monitorOption = new Option<bool>( "--monitor", "Continually scan network(s) until manually stopped." );
-  //AddOption( monitorOption );
-  //var monitorIntervalOption = new Option<TimeSpan>( "--interval", "Scan interval when in monitor mode." );
-  //AddOption( monitorIntervalOption );
-  //var monitorNotifyOption = new Option<string>( "--notify", "Notification channels when in monitor mode." );
+  // var monitorOption = new Option<bool>( "--monitor", "Continually scan network(s) until manually stopped." );
+  // AddOption( monitorOption );
+  // var monitorIntervalOption = new Option<TimeSpan>( "--interval", "Scan interval when in monitor mode." );
+  // AddOption( monitorIntervalOption );
+  // var monitorNotifyOption = new Option<string>( "--notify", "Notification channels when in monitor mode." );
   // "save" or "update" instead?
-  //AddOption( new Option<bool>( "--write", "Create or update reference with discovered resources (devices, subnets etc.)." ) );
+  // AddOption( new Option<bool>( "--write", "Create or update reference with discovered resources (devices, subnets etc.)." ) );
   // Combine with option to change the default
   // Alternative: --changed [all|skip|only]
   /*var changed = new Option<ShowMode>(
@@ -88,10 +88,10 @@ internal class ScanCommandHandler(
 
     var scanRequest = new NetworkScanOptions { Cidrs = subnets };
 
-    output.Normal.WriteLine( 0,
-      $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : "" )}" ); // TODO many more varieties
+    // TODO many more varieties
+    output.Normal.WriteLine( 0, $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : string.Empty )}" );
     foreach ( var cidr in subnets ) {
-      //TODO write name if from spec: Ui.WriteLine( 1, $"{subnet.Id}: {subnet.Network}" );
+      // TODO write name if from spec: Ui.WriteLine( 1, $"{subnet.Id}: {subnet.Network}" );
       output.Normal.Write( 1, $"{cidr}", ConsoleColor.Cyan );
       output.Normal.WriteLine(
         " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +

@@ -10,7 +10,7 @@ namespace Drift.Cli.Commands.Init.Helpers;
 // Network is only part of the spec...
 internal class NetworkBuilder {
   private readonly Network _network;
-  //private readonly ISerializer _yamlSerializer;
+  // private readonly ISerializer _yamlSerializer;
 
   public NetworkBuilder() {
     _network = new Network();
@@ -38,7 +38,7 @@ internal class NetworkBuilder {
   }
 
   public Network Build() {
-    //TODO check if valid using JSON schema
+    // TODO check if valid using JSON schema
     return _network;
   }
 

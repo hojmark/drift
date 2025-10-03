@@ -15,7 +15,6 @@ public record Environment {
     init;
   }
 
-
   public bool Active {
     get;
     set;
@@ -32,7 +31,6 @@ public record Agent {
     get;
     set;
   }
-
 
   /*public IpAddress Address {
     //TODO support hostname too, maybe even mac!?
@@ -56,7 +54,7 @@ public record AgentAuthentication {
   public AuthType Type {
     get;
     set;
-  } 
+  }
 }
 
 public enum AuthType {

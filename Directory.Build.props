@@ -6,12 +6,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <!-- TODO valdiate approach
+    <!--
     Make sure any documentation comments which are included in code get checked for syntax during the build, but do
     not report warnings for missing comments.
     
     CS1573: Parameter 'parameter' has no matching param tag in the XML comment for 'parameter' (but other parameters do)
     CS1591: Missing XML comment for publicly visible type or member 'Type_or_Member'
+    SA1601: A C# partial element is missing a documentation header.
+    SA1611: A C# method, constructor, delegate or indexer element is missing documentation for one or more of its parameters.
+    SA1615: A C# element is missing documentation for its return value.
     -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishDocumentationFile>false</PublishDocumentationFile>

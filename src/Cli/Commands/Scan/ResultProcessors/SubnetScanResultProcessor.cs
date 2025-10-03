@@ -136,7 +136,6 @@ internal static class SubnetScanResultProcessor {
     return string.Join( "-", macBytes.Select( b => b.ToString( "X2" ) ) );
   }
 
-
   private static string GenerateDeviceId() {
     _deviceIdCounter++;
     return "device-" + _deviceIdCounter;

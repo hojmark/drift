@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <RuntimeIdentifiers>linux-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
     <PublishAot>true</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
     <InvariantGlobalization>true</InvariantGlobalization>
     <AssemblyName>drift</AssemblyName>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
@@ -20,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
+    <ProjectReference Include="..\Networking\Networking.csproj" />
     <ProjectReference Include="..\Scanning\Scanning.csproj" />
     <ProjectReference Include="..\Diff\Diff.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />

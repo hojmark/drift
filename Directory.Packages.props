@@ -4,6 +4,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Google.Protobuf" Version="3.32.1" />
+    <PackageVersion Include="Grpc.AspNetCore" Version="2.71.0" />
+    <PackageVersion Include="Grpc.Core" Version="2.46.6" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.71.0" />
+    <PackageVersion Include="Grpc.Tools" Version="2.72.0" />
     <PackageVersion Include="Humanizer" Version="2.14.1" />
     <PackageVersion Include="IPNetwork2" Version="3.4.832" />
     <PackageVersion Include="JsonSchema.Net" Version="7.4.0" />

@@ -51,6 +51,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scanning", "src\Scanning\Sc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scanning.Tests", "src\Scanning.Tests\Scanning.Tests.csproj", "{B52EA4A2-8D92-4575-8632-A438805BB4F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networking", "src\Networking\Networking.csproj", "{8ED3FF22-90D2-4F08-A079-55FE7127D1C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networking.GrpcPeer", "src\Networking.GrpcPeer\Networking.GrpcPeer.csproj", "{D2C72942-9A99-4DE8-AB28-6584D8D29B6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networking.Grpc.StreamingPeer", "Networking.Grpc.StreamingPeer\Networking.Grpc.StreamingPeer.csproj", "{2F7A466E-27F9-40FE-8A9D-EACE07F0B588}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +141,18 @@ Global
 		{B52EA4A2-8D92-4575-8632-A438805BB4F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B52EA4A2-8D92-4575-8632-A438805BB4F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B52EA4A2-8D92-4575-8632-A438805BB4F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8ED3FF22-90D2-4F08-A079-55FE7127D1C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8ED3FF22-90D2-4F08-A079-55FE7127D1C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8ED3FF22-90D2-4F08-A079-55FE7127D1C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8ED3FF22-90D2-4F08-A079-55FE7127D1C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2C72942-9A99-4DE8-AB28-6584D8D29B6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2C72942-9A99-4DE8-AB28-6584D8D29B6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2C72942-9A99-4DE8-AB28-6584D8D29B6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2C72942-9A99-4DE8-AB28-6584D8D29B6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F7A466E-27F9-40FE-8A9D-EACE07F0B588}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F7A466E-27F9-40FE-8A9D-EACE07F0B588}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F7A466E-27F9-40FE-8A9D-EACE07F0B588}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F7A466E-27F9-40FE-8A9D-EACE07F0B588}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

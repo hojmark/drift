@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcServerApp";
+
+import "google/protobuf/empty.proto"; // ✅ Required for Empty
+
+package chat;
+
+// Chat service with bidirectional streaming
+service ChatService {
+  rpc ChatStream (stream ChatMessage) returns (stream ChatMessage);
+  rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty);
+}
+
+// Chat message format
+message ChatMessage {
+  string user = 1;
+  string message = 2;
+}

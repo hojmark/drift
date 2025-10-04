@@ -1,10 +1,13 @@
 using System.CommandLine;
+using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Lint;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
 
-namespace Drift.Cli.Commands.Preview;
+namespace Drift.Cli.Commands.Preview.Agent;
 
-internal class AgentCommand : Command {
-  internal AgentCommand() : base( "agent", "Manage the local Drift agent" ) {
-    var runCmd = new Command( "run", "Start the agent process" );
+internal class AgentCommand : CommandBase<AgentParameters, AgentCommandHandler> {
+  internal AgentCommand( IServiceProvider provider ) : base( "agent", "Manage the local Drift agent", provider ) {
+    /*var runCmd = new Command( "start", "Start the agent process" );
     runCmd.Options.Add( new Option<bool>( "--adoptable" ) {
       Description = "Allow this agent to be adopted by another peer in the distributed agent network"
     } );
@@ -29,8 +32,16 @@ internal class AgentCommand : Command {
     Subcommands.Add( uninstallCmd );
 
     var statusCmd = new Command( "status", "Show agent status" );
-    Subcommands.Add( statusCmd );
+    Subcommands.Add( statusCmd );*/
+  }
 
-    // logs?
+  protected override AgentParameters CreateParameters( ParseResult result ) {
+    return new AgentParameters( result );
+  }
+}
+
+internal class AgentCommandHandler( IOutputManager output ) : ICommandHandler<AgentParameters> {
+  public Task<int> Invoke( AgentParameters parameters, CancellationToken cancellationToken ) {
+    throw new NotImplementedException();
   }
 }

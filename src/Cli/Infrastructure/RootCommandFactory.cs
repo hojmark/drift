@@ -5,6 +5,8 @@ using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Help;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
+using Drift.Cli.Commands.Preview.Agent;
+using Drift.Cli.Commands.Preview.Agent.Subcommands;
 using Drift.Cli.Commands.Scan;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
@@ -57,7 +59,10 @@ internal static class RootCommandFactory {
     // TODO 'from' or 'against'?
     var rootCommand =
       new RootCommand( $"{Chars.SatelliteAntenna} Drift CLI — monitor network drift against your declared state" ) {
-        new InitCommand( provider ), new ScanCommand( provider ), new LintCommand( provider )
+        new InitCommand( provider ),
+        new ScanCommand( provider ),
+        new LintCommand( provider ),
+        new AgentCommand( provider ) { new AgentStartCommand( provider ) }
       };
 
     rootCommand.TreatUnmatchedTokensAsErrors = true;
@@ -92,6 +97,8 @@ internal static class RootCommandFactory {
     services.AddScoped<InitCommandHandler>();
     services.AddScoped<ScanCommandHandler>();
     services.AddScoped<LintCommandHandler>();
+    services.AddScoped<AgentCommandHandler>();
+    services.AddScoped<AgentStartCommandHandler>();
   }
 
   private static void ConfigureDynamicCommands( IServiceCollection services, CommandRegistration[] commands ) {

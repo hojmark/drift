@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "PeerA": {
+      "commandName": "Project",
+      "commandLineArgs": "50052 50051",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    },
+    "PeerB": {
+      "commandName": "Project",
+      "commandLineArgs": "50051 50052",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    }
+  }
+}

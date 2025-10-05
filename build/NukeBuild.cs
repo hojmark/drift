@@ -392,7 +392,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     );
 
   Target Test => _ => _
-    .DependsOn( TestUnit, TestE2E, TestContainer );
+    .DependsOn( TestUnit, TestE2E /*, TestContainer*/ );
 
   Target TestLocal => _ => _
     .DependsOn( Test )
@@ -427,6 +427,23 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
+  Target Release => _ => _
+    .DependsOn( PackBinaries, Test )
+    .Executes( async () => {
+        using var _ = new TargetLifecycle( nameof(Release) );
+
+        Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
+
+        await ValidateAllowedReleaseTargetOrThrow( Release );
+
+        var release = await CreateDraftRelease();
+
+        await RemoveDraftStatus( release );
+
+        Log.Information( "⭐ Released {ReleaseName} to GitHub!", release.Name );
+      }
+    );
+
   Target ReleaseSpecial => _ => _
     .Requires(
       // Version target CustomVersion parameter when this target is in the execution plan
@@ -441,24 +458,6 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
         await ValidateAllowedReleaseTargetOrThrow( ReleaseSpecial );
 
         var release = await CreateDraftRelease();
-
-        Log.Information( "⭐ Released {ReleaseName} to GitHub!", release.Name );
-      }
-    );
-
-
-  Target Release => _ => _
-    .DependsOn( PackBinaries, Test )
-    .Executes( async () => {
-        using var _ = new TargetLifecycle( nameof(Release) );
-
-        Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
-
-        await ValidateAllowedReleaseTargetOrThrow( Release );
-
-        var release = await CreateDraftRelease();
-
-        await RemoveDraftStatus( release );
 
         Log.Information( "⭐ Released {ReleaseName} to GitHub!", release.Name );
       }

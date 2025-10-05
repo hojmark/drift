@@ -3,8 +3,8 @@ using Drift.ArchTests.Fixtures;
 namespace Drift.ArchTests;
 
 internal sealed class SanityTests : DriftArchitectureFixture {
-  private const uint ExpectedAssemblyCount = 20;
-  private const uint ExpectedAssemblyCountTolerance = 3;
+  private const uint ExpectedAssemblyCount = 25;
+  private const uint ExpectedAssemblyCountTolerance = 5;
 
   [Test]
   public void FindManyAssemblies() {

@@ -1,17 +1,18 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Common.Commands;
 using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Interactive.Input;
 using Drift.Cli.Commands.Scan.NonInteractive;
+using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.SpecFile;
 using Drift.Common.Network;
 using Drift.Domain;
 using Drift.Domain.Scan;
+using Drift.Networking.Clustering;
 using Drift.Scanning.Subnets;
 using Drift.Scanning.Subnets.Interface;
-using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan;
 
@@ -60,23 +61,35 @@ internal class ScanCommandHandler(
   IOutputManager output,
   INetworkScanner scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider,
-  ISpecFileProvider specProvider
+  ISpecFileProvider specProvider,
+  ICluster cluster
 ) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running scan command" );
 
-    Network? network;
+    Inventory? inventory;
 
     try {
-      network = ( await specProvider.GetDeserializedAsync( parameters.SpecFile ) )?.Network;
+      inventory = await specProvider.GetDeserializedAsync( parameters.SpecFile );
     }
     catch ( FileNotFoundException ) {
       return ExitCodes.GeneralError;
     }
 
     var subnetProviders = new List<ISubnetProvider> { interfaceSubnetProvider };
-    if ( network != null ) {
-      subnetProviders.Add( new PredefinedSubnetProvider( network.Subnets ) );
+    if ( inventory?.Network != null ) {
+      subnetProviders.Add( new PredefinedSubnetProvider( inventory.Network.Subnets ) );
+    }
+
+    if ( inventory?.Agents.Any() ?? false ) {
+      subnetProviders.Add(
+        new AgentSubnetProvider(
+          output.GetLogger(),
+          inventory.Agents,
+          cluster,
+          cancellationToken
+        )
+      );
     }
 
     var subnetProvider = new CompositeSubnetProvider( subnetProviders );
@@ -84,7 +97,7 @@ internal class ScanCommandHandler(
     output.Normal.WriteLineVerbose( $"Using {subnetProvider.GetType().Name}" );
     output.Log.LogDebug( "Using {SubnetProviderType}", subnetProvider.GetType().Name );
 
-    var subnets = subnetProvider.Get();
+    var subnets = await subnetProvider.GetAsync();
 
     var scanRequest = new NetworkScanOptions { Cidrs = subnets };
 
@@ -110,12 +123,19 @@ internal class ScanCommandHandler(
     Task<int> uiTask;
 
     if ( parameters.Interactive ) {
-      var ui = new InteractiveUi( output, network, scanner, scanRequest, new DefaultKeyMap(), parameters.ShowLogPanel );
+      var ui = new InteractiveUi(
+        output,
+        inventory?.Network,
+        scanner,
+        scanRequest,
+        new DefaultKeyMap(),
+        parameters.ShowLogPanel
+      );
       uiTask = ui.RunAsync();
     }
     else {
       var ui = new NonInteractiveUi( output, scanner );
-      uiTask = ui.RunAsync( scanRequest, network, parameters.OutputFormat );
+      uiTask = ui.RunAsync( scanRequest, inventory?.Network, parameters.OutputFormat );
     }
 
     Task.WaitAll( uiTask );

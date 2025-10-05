@@ -5,7 +5,7 @@ namespace Drift.Cli;
 
 internal static class ExecutionEnvironment {
   internal static DriftExecutionEnvironment GetCurrent() {
-    var envVar = System.Environment.GetEnvironmentVariable( nameof(EnvVar.DRIFT_EXECUTION__ENVIRONMENT) );
+    var envVar = Environment.GetEnvironmentVariable( nameof(EnvVar.DRIFT_EXECUTION__ENVIRONMENT) );
 
     return Get( envVar );
   }

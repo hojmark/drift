@@ -79,14 +79,13 @@ internal partial class NormalOutput(
           // ... on bgcolor]
         }
       }
-      else {
-        if ( foreground.HasValue ) {
-          System.Console.ForegroundColor = foreground.Value;
-        }
 
-        if ( background.HasValue ) {
-          System.Console.BackgroundColor = background.Value;
-        }
+      if ( foreground.HasValue ) {
+        System.Console.ForegroundColor = foreground.Value;
+      }
+
+      if ( background.HasValue ) {
+        System.Console.BackgroundColor = background.Value;
       }
 
       textWriter.Write( line );
@@ -100,9 +99,8 @@ internal partial class NormalOutput(
           System.Console.BackgroundColor = background.Value;
         }
       }
-      else {
-        System.Console.ResetColor();
-      }
+
+      System.Console.ResetColor();
 
       textWriter.WriteLine();
     }

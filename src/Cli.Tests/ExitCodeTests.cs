@@ -1,7 +1,8 @@
 using System.CommandLine;
 using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Common.Commands;
+using Drift.Cli.Commands.Common.Parameters;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Tests.Utils;
@@ -71,37 +72,42 @@ internal sealed class ExitCodeTests {
   }
 
   private sealed class ExitCodeTestCommand( IServiceProvider provider )
-    : CommandBase<DefaultParameters, ExitCodeCommandHandler>(
+    : CommandBase<DummyParameters, ExitCodeCommandHandler>(
       ExitCodeCommand,
       "Command that returns a specific exit code",
       provider
     ) {
-    protected override DefaultParameters CreateParameters( ParseResult result ) {
-      return new DefaultParameters( result );
+    protected override DummyParameters CreateParameters( ParseResult result ) {
+      return new DummyParameters( result );
     }
   }
 
-  private sealed class ExitCodeCommandHandler( IOutputManager output ) : ICommandHandler<DefaultParameters> {
-    public Task<int> Invoke( DefaultParameters parameters, CancellationToken cancellationToken ) {
+  private sealed class ExitCodeCommandHandler( IOutputManager output ) : ICommandHandler<DummyParameters> {
+    public Task<int> Invoke( DummyParameters parameters, CancellationToken cancellationToken ) {
       output.Normal.Write( $"Output from command '{ExitCodeCommand}'" );
       return Task.FromResult( ExitCodeCommandExitCode );
     }
   }
 
   private sealed class ExceptionTestCommand( IServiceProvider provider )
-    : CommandBase<DefaultParameters, ExceptionCommandHandler>(
+    : CommandBase<DummyParameters, ExceptionCommandHandler>(
       ExceptionThrowingCommand,
       "Command that throws an exception",
       provider
     ) {
-    protected override DefaultParameters CreateParameters( ParseResult result ) {
-      return new DefaultParameters( result );
+    protected override DummyParameters CreateParameters( ParseResult result ) {
+      return new DummyParameters( result );
     }
   }
 
-  private sealed class ExceptionCommandHandler : ICommandHandler<DefaultParameters> {
-    public Task<int> Invoke( DefaultParameters parameters, CancellationToken cancellationToken ) {
+  private sealed class ExceptionCommandHandler : ICommandHandler<DummyParameters> {
+    public Task<int> Invoke( DummyParameters parameters, CancellationToken cancellationToken ) {
       throw new Exception( $"This exception was thrown from {nameof(ExceptionCommandHandler)}" );
+    }
+  }
+
+  private sealed record DummyParameters : BaseParameters {
+    public DummyParameters( ParseResult parseResult ) : base( parseResult ) {
     }
   }
 }

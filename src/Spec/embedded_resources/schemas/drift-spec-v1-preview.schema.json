@@ -102,6 +102,21 @@
         }
       },
       "additionalProperties": false
+    },
+    "agents": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
     }
   },
   "required": [

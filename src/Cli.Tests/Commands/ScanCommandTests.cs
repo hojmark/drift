@@ -214,6 +214,77 @@ internal sealed class ScanCommandTests {
   }
 
   [Test]
+  public async Task RemoteScan() {
+    // Arrange
+    var serviceConfigScan = ConfigureServices(
+      [
+        new NetworkInterface {
+          Description = "eth1",
+          OperationalStatus = OperationalStatus.Up,
+          UnicastAddress = new CidrBlock( "192.168.0.0/24" )
+        }
+      ],
+      [
+        new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.100" ), new MacAddress( "11:11:11:11:11:11" )] }
+      ],
+      new Inventory { Network = new Network(), Agents = [new Domain.Agent { Address = "http://localhost:51515" }] }
+    );
+
+    var serviceConfigAgent = ConfigureServices(
+      [
+        new NetworkInterface {
+          Description = "eth1",
+          OperationalStatus = OperationalStatus.Up,
+          UnicastAddress = new CidrBlock( "192.168.100.0/24" )
+        }
+      ],
+      [
+        new DiscoveredDevice {
+          Addresses = [new IpV4Address( "192.168.100.200" ), new MacAddress( "22:22:22:22:22:22" )]
+        }
+      ]
+    );
+
+    var cts = new CancellationTokenSource( TimeSpan.FromSeconds( 800 ) );
+
+    // Act
+    Console.WriteLine( "Invoking agent start" );
+    var agentTask = DriftTestCli.InvokeFromTestAsync(
+      "agent start --adoptable -v",
+      serviceConfigAgent,
+      cancellationToken: cts.Token
+    );
+    await Task.Delay( 3000, cts.Token );
+    Console.WriteLine( "Invoking scan" );
+    var (scanExitCode, scanOutput, scanError) = await DriftTestCli.InvokeFromTestAsync(
+      "scan unittest",
+      serviceConfigScan,
+      cancellationToken: cts.Token
+    );
+    Console.WriteLine( "Scan finished" );
+    Console.WriteLine( "----------------" );
+    Console.WriteLine( scanOutput.ToString() + scanError );
+    Console.WriteLine( "----------------" );
+
+    Console.WriteLine( "Cancelling token" );
+    await cts.CancelAsync();
+    cts.Dispose();
+    Console.WriteLine( "Waiting for agent to shut down" );
+
+    var (agentExitCode, agentOutput, agentError) = await agentTask;
+
+    Console.WriteLine( "Agent finished" );
+    Console.WriteLine( "----------------" );
+    Console.WriteLine( agentOutput.ToString() + agentError );
+    Console.WriteLine( "----------------" );
+
+    // Assert
+    Assert.That( agentExitCode, Is.EqualTo( ExitCodes.Success ) );
+    Assert.That( scanExitCode, Is.EqualTo( ExitCodes.Success ) );
+    await Verify( scanOutput.ToString() + scanError );
+  }
+
+  [Test]
   public async Task NonExistingSpecOption() {
     // Arrange / Act
     var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan blah_spec.yaml" );

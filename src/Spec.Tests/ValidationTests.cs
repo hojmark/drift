@@ -1,3 +1,4 @@
+using Drift.Spec.Schema;
 using Drift.Spec.Validation;
 using Drift.TestUtilities;
 using Json.Schema;
@@ -89,7 +90,7 @@ internal sealed class ValidationTests {
   )]
   public void YamlIsInvalidTest( int caseNo, string yaml, params string[] errors ) {
     // Arrange / Act
-    var result = SpecValidator.Validate( yaml, Schema.SpecVersion.V1_preview );
+    var result = SpecValidator.Validate( yaml, SpecVersion.V1_preview );
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( result.IsValid, Is.False, "Expected YAML to be invalid, but it was not" );
       Assert.That( result.Errors, Is.Not.Empty );
@@ -132,7 +133,7 @@ internal sealed class ValidationTests {
     """ )]
   public void YamlIsValidTest( int caseNo, string yaml ) {
     // Arrange / Act
-    var result = SpecValidator.Validate( yaml, Schema.SpecVersion.V1_preview );
+    var result = SpecValidator.Validate( yaml, SpecVersion.V1_preview );
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( result.IsValid, Is.True, result.ToUnitTestMessage() );
       Assert.That( result.Errors, Is.Empty );

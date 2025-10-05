@@ -6,7 +6,8 @@ namespace Drift.Scanning.Subnets;
 public class CompositeSubnetProvider( IEnumerable<ISubnetProvider> providers ) : ISubnetProvider {
   private readonly List<ISubnetProvider> _providers = providers.ToList();
 
-  public List<CidrBlock> Get() {
-    return _providers.SelectMany( p => p.Get() ).Distinct().ToList();
+  public async Task<List<CidrBlock>> GetAsync() {
+    var results = await Task.WhenAll( _providers.Select( p => p.GetAsync() ) );
+    return results.SelectMany( x => x ).Distinct().ToList();
   }
 }

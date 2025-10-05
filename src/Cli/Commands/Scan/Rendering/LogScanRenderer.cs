@@ -2,7 +2,6 @@ using Drift.Cli.Commands.Scan.Models;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.Presentation.Rendering.DeviceState;
-using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan.Rendering;
 

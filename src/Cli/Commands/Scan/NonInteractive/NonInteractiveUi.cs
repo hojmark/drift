@@ -8,7 +8,6 @@ using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
 using Drift.Domain;
 using Drift.Domain.Scan;
-using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.NonInteractive;

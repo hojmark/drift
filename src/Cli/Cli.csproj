@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <RuntimeIdentifiers>linux-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
@@ -9,6 +9,11 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault> <!-- todo remove -->
     <Version>0.0.0-undefined</Version>
+    <!--
+    https://github.com/NuGet/Home/issues/12814#issuecomment-2459432666
+    https://github.com/dotnet/aspnetcore/issues/41149
+    -->
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
+    <ProjectReference Include="..\Networking\Networking.csproj" />
     <ProjectReference Include="..\Scanning\Scanning.csproj" />
     <ProjectReference Include="..\Diff\Diff.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />

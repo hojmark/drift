@@ -1,0 +1,8 @@
+﻿Requesting subnets from agent agentid_local1 (http://localhost:51515)
+Received subnet(s) from agent agentid_local1 (http://localhost:51515): 192.168.0.0/24
+
+Scanning 1 subnet
+  192.168.0.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via agentid_local1, local
+
+192.168.0.0/24 (1 devices)
+└── 192.168.0.100  11-11-11-11-11-11    Online (unknown device)  

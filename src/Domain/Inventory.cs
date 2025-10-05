@@ -5,4 +5,9 @@ public record Inventory {
     get;
     init;
   }
+
+  public List<Agent> Agents {
+    get;
+    set;
+  } = [];
 }

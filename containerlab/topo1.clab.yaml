@@ -1,0 +1,23 @@
+name: drift-topo1
+topology:
+  nodes:
+    switch|bp1:
+      kind: bridge
+      network-mode: container:bp1
+    bp1:
+      kind: linux
+      image: alpine:latest
+    pc1:
+      kind: linux
+      image: hojmark/drift
+      cmd: scan -i
+    pc2:
+      kind: linux
+      image: agent start --adoptable
+    pc3:
+      kind: linux
+      image: agent start --adoptable
+  links:
+    - endpoints: [ "pc1:eth1", "switch|bp1:eth1" ]
+    - endpoints: [ "pc2:eth1", "switch|bp1:eth2" ]
+    - endpoints: [ "pc3:eth1", "switch|bp1:eth3" ]

@@ -21,7 +21,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          dotnet run
+          dotnet run \
             --project ./build/_build.csproj \
             --target Release \
             --commit ${{ github.sha }} \

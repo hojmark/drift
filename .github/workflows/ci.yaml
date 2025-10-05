@@ -35,7 +35,7 @@ jobs:
 
       - name: Run tests
         run: |
-          dotnet run
+          dotnet run \
           --project ./build/_build.csproj \
           --target Test \
           --commit ${{ github.sha }} \
@@ -49,6 +49,6 @@ jobs:
       - name: Check for warnings
         continue-on-error: true # TODO remove
         run: |
-          dotnet run
-          --project ./build/_build.csproj
+          dotnet run \
+          --project ./build/_build.csproj \
           --target CheckWarnings

@@ -3,7 +3,27 @@ namespace Drift.Spec.Dtos.V1_preview.Mappers;
 public static partial class Mapper {
   public static Domain.Inventory ToDomain( DriftSpec dto ) {
     // ArgumentNullException.ThrowIfNull( dto.Address );
-    return new Domain.Inventory { Network = Map( dto.Network ) };
+    var spec = new Domain.Inventory { Network = Map( dto.Network ) };
+
+    if ( dto.Agents != null ) {
+      spec.Agents = Map( dto.Agents );
+    }
+
+    return spec;
+  }
+
+  private static List<Domain.Agent> Map( List<Agent> dto ) {
+    return dto.Select( Map ).ToList();
+  }
+
+  private static Domain.Agent Map( Agent dto ) {
+    var agent = new Domain.Agent();
+
+    agent.Address = dto.Address;
+
+    // TODO agent.Id = dto.
+
+    return agent;
   }
 
   private static Domain.Network Map( Network dto ) {

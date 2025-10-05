@@ -101,7 +101,6 @@ partial class NukeBuild {
       }
     );
 
-
   private static int LatestLast( ImageReference r ) {
     return r.Tag is LatestVersion ? 1 : 0;
   }

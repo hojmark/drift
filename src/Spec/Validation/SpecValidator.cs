@@ -2,13 +2,28 @@ using System.Text.Json;
 using Drift.Spec.Schema;
 using Drift.Spec.Serialization;
 using Json.Schema;
+using YamlDotNet.Core;
+using SpecVersion = Drift.Spec.Schema.SpecVersion;
 
 namespace Drift.Spec.Validation;
 
 public static class SpecValidator {
-  public static ValidationResult Validate( string yaml, Schema.SpecVersion specVersion ) {
-    var schema = SpecSchemaProvider.AsText( specVersion );
-    return Validate( yaml, schema );
+  public static ValidationResult Validate( string yaml, SpecVersion specVersion ) {
+    try {
+      var schema = SpecSchemaProvider.AsText( specVersion );
+      return Validate( yaml, schema );
+    }
+    catch ( YamlException ex ) {
+      var errors = new List<ValidationError>();
+
+      Exception? exp = ex;
+      do {
+        errors.Add( new ValidationError { Message = exp.Message } );
+        exp = exp.InnerException;
+      } while ( exp != null );
+
+      return new ValidationResult { IsValid = false, Errors = errors };
+    }
   }
 
   private static ValidationResult Validate( string yaml, string jsonSchema ) {

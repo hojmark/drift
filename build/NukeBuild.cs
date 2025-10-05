@@ -392,7 +392,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     );
 
   Target Test => _ => _
-    .DependsOn( TestUnit, TestE2E /*, TestContainer*/ );
+    .DependsOn( TestUnit, TestE2E );
 
   Target TestLocal => _ => _
     .DependsOn( Test )

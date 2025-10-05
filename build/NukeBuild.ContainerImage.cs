@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text.Json;
 using Nuke.Common;
 using Nuke.Common.IO;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Docker;
 using Nuke.Common.Tools.DotNet;
 using Serilog;
+using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 partial class NukeBuild {
   private static readonly string LocalImageName = "drift";
@@ -18,12 +20,12 @@ partial class NukeBuild {
   [Parameter( "DockerHubPassword - Required for releasing container images to Docker Hub" )]
   public readonly string DockerHubPassword;
 
-  Target PackContainer => _ => _
+  Target PublishContainer => _ => _
     .DependsOn( PublishBinaries, CleanArtifacts )
     //.Requires( () => SemVer )
     .Requires( () => Commit )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(PackContainer) );
+        using var _ = new TargetLifecycle( nameof(PublishContainer) );
 
         var localTagVersion = ContainerImageTag( ContainerRegistry.Local, TagType.Version );
 
@@ -51,10 +53,31 @@ partial class NukeBuild {
       }
     );
 
+
   Target TestContainer => _ => _
-    .DependsOn( PackContainer )
+    .DependsOn( PublishContainer )
+    .After( TestUnit, TestE2E )
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(TestContainer) );
+
+        DotNetTest( s => s
+          .SetProjectFile( Solution.Cli_ContainerTests )
+          .SetConfiguration( Configuration )
+          .SetProcessEnvironmentVariable( "DRIFT_CONTAINER_IMAGE_TAG",
+            ContainerImageTag( ContainerRegistry.Local, TagType.Version )
+          )
+          .ConfigureLoggers( Verbose )
+          .EnableNoLogo()
+          .EnableNoRestore()
+          .EnableNoBuild()
+        );
+      }
+    );
+
+  Target TestContainer2 => _ => _
+    .DependsOn( PublishContainer )
+    .Executes( () => {
+        using var _ = new TargetLifecycle( nameof(TestContainer2) );
 
         //TODO may need to pull image from docker hub if not present locally
 

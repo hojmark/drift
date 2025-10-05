@@ -34,6 +34,7 @@ partial class NukeBuild {
         Log.Information( "Building container image {Tag}", localTagVersion );
         DockerTasks.DockerBuild( s => s
           .SetPath( RootDirectory )
+          .SetFile( "Containerfile" )
           .SetTag( localTagVersion )
           .SetLabel(
             // Timestamping prevents build from being idempotent

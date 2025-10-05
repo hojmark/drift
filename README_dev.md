@@ -78,7 +78,44 @@ Arguments, options and environment variables for `install.sh`:
 
 ### Container Image
 
-_Coming soon_
+TODO support reading spec from stdin
+
+TODO include debug symbols in container image
+
+NOTE: defaults to o=log and subnetscanner=fping
+
+Local:
+```sh
+docker run --rm \
+  --cap-add=NET_RAW \
+  localhost/drift:dev scan
+```
+
+Readme flow:
+```sh
+docker run --rm \
+  --cap-add=NET_RAW \
+  docker.io/hojmark/drift init > main-site.spec.yaml
+cat main-site.spec.yaml | docker run --rm \
+  --cap-add=NET_RAW \
+  docker.io/hojmark/drift scan
+```
+
+Individual scan:
+```sh
+docker run --rm \
+  --cap-add=NET_RAW \
+  docker.io/hojmark/drift scan
+```
+
+Start in agent mode:
+```sh
+ docker run \
+  --name drift-agent \
+  --cap-add=NET_RAW \
+  -p 45454:45454 \
+  localhost/drift agent start
+```
 
 ### Package Manager
 

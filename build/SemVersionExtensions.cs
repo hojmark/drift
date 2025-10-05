@@ -2,6 +2,10 @@ using Nuke.Common.Tools.DotNet;
 using Semver;
 
 internal static class SemVersionExtensions {
+  internal static string ToContainerTag( this SemVersion version ) {
+    return version.ToString();
+  }
+
   internal static DotNetBuildSettings SetVersionProperties(
     this DotNetBuildSettings settings,
     SemVersion version

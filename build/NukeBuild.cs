@@ -23,7 +23,7 @@ using ProductHeaderValue = Octokit.ProductHeaderValue;
 // ReSharper disable AllUnderscoreLocalParameterName
 // ReSharper disable UnusedMember.Local
 
-sealed class NukeBuild : Nuke.Common.NukeBuild {
+sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   public static int Main() => Execute<NukeBuild>( x => x.Build );
 
   private static class Paths {
@@ -41,6 +41,7 @@ sealed class NukeBuild : Nuke.Common.NukeBuild {
   [Parameter( $"{nameof(CustomVersion)} - e.g. '3.1.5-preview.5'" )] //
   public readonly string CustomVersion;
 
+  //[Required]
   [Parameter( $"{nameof(Commit)} - e.g. '4c16978aa41a3b435c0b2e34590f1759c1dc0763'" )] //
   public string Commit;
 
@@ -56,7 +57,8 @@ sealed class NukeBuild : Nuke.Common.NukeBuild {
   private const bool AllowLocalRelease = false;
 
   private static readonly DotNetRuntimeIdentifier[] SupportedRuntimes = [
-    DotNetRuntimeIdentifier.linux_x64
+    DotNetRuntimeIdentifier.linux_x64,
+    //DotNetRuntimeIdentifier.linux_musl_x64
     // TODO support more architectures
     /*, DotNetRuntimeIdentifier.linux_arm
       , DotNetRuntimeIdentifier.linux_arm64
@@ -130,7 +132,7 @@ sealed class NukeBuild : Nuke.Common.NukeBuild {
 
   Target Version => _ => _
     .Before( BuildInfo )
-    .DependentFor( Build, Publish, Release, ReleaseSpecial )
+    .DependentFor( Build, PublishBinaries, Release, ReleaseSpecial )
     .Executes( async () => {
         using var _ = new TargetLifecycle( nameof(Version) );
 
@@ -161,7 +163,6 @@ sealed class NukeBuild : Nuke.Common.NukeBuild {
         }
       }
     );
-
 
   Target BuildInfo => _ => _
     .Before( CleanProjects, Restore, CleanArtifacts )
@@ -236,6 +237,9 @@ sealed class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
+  Target Clean => _ => _
+    .DependsOn( CleanProjects, CleanArtifacts );
+
   Target Restore => _ => _
     .DependsOn( CleanProjects )
     .Executes( () => {
@@ -286,9 +290,8 @@ sealed class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
-
   Target CheckPublishWarnings => _ => _
-    .After( CheckBuildWarnings, Publish )
+    .After( CheckBuildWarnings, PublishBinaries )
     //.TriggeredBy( Build )
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(CheckPublishWarnings) );
@@ -336,11 +339,12 @@ sealed class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
-  Target Publish => _ => _
+  Target PublishBinaries => _ => _
     .DependsOn( Build, CleanArtifacts )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(Publish) );
+        using var _ = new TargetLifecycle( nameof(PublishBinaries) );
 
+        // TODO https://nuke.build/docs/common/cli-tools/#combinatorial-modifications
         foreach ( var runtime in SupportedRuntimes ) {
           var publishDir = Paths.PublishDirectoryForRuntime( runtime );
 
@@ -363,49 +367,51 @@ sealed class NukeBuild : Nuke.Common.NukeBuild {
     );
 
   Target TestE2E => _ => _
-    .DependsOn( Publish )
+    .DependsOn( PublishBinaries )
     .After( TestUnit )
     .Executes( () => {
-      using var _ = new TargetLifecycle( nameof(TestE2E) );
+        using var _ = new TargetLifecycle( nameof(TestE2E) );
 
-      //TODO
-      foreach ( var runtime in SupportedRuntimes ) {
-        var publishDir = Paths.PublishDirectoryForRuntime( runtime );
-        var driftBinary = publishDir / "drift";
+        //TODO
+        foreach ( var runtime in SupportedRuntimes ) {
+          var publishDir = Paths.PublishDirectoryForRuntime( runtime );
+          var driftBinary = publishDir / "drift";
 
-        DotNetTest( s => s
-          .SetProjectFile( Solution.Cli_E2ETests )
-          .SetConfiguration( Configuration )
-          .SetProcessEnvironmentVariable( "DRIFT_BINARY_PATH", driftBinary )
-          .ConfigureLoggers( Verbose )
-          .EnableNoLogo()
-          .EnableNoRestore()
-          .EnableNoBuild()
-        );
+          DotNetTest( s => s
+            .SetProjectFile( Solution.Cli_E2ETests )
+            .SetConfiguration( Configuration )
+            .SetProcessEnvironmentVariable( "DRIFT_BINARY_PATH", driftBinary )
+            .ConfigureLoggers( Verbose )
+            .EnableNoLogo()
+            .EnableNoRestore()
+            .EnableNoBuild()
+          );
 
-        Log.Information( "Running E2E test on {Runtime} build to {PublishDir}", runtime, publishDir );
+          Log.Information( "Running E2E test on {Runtime} build to {PublishDir}", runtime, publishDir );
+        }
       }
-    } );
+    );
 
-  Target TestAll => _ => _
-    .DependsOn( TestUnit, TestE2E );
+  Target Test => _ => _
+    .DependsOn( TestUnit, TestE2E, TestContainer );
 
-  Target TestAllLocal => _ => _
-    .DependsOn( TestAll )
+  Target TestLocal => _ => _
+    .DependsOn( Test )
     .Executes( () => {
-      //DotNetToolRestore();
-      var result = ProcessTasks.StartProcess(
-        "dotnet",
-        "trx --verbosity verbose",
-        workingDirectory: RootDirectory
-      );
-      result.AssertZeroExitCode();
-    } );
+        //DotNetToolRestore();
+        var result = ProcessTasks.StartProcess(
+          "dotnet",
+          "trx --verbosity verbose",
+          workingDirectory: RootDirectory
+        );
+        result.AssertZeroExitCode();
+      }
+    );
 
-  Target Pack => _ => _
-    .DependsOn( Publish, CleanArtifacts )
+  Target PackBinaries => _ => _
+    .DependsOn( PublishBinaries, CleanArtifacts )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(Pack) );
+        using var _ = new TargetLifecycle( nameof(PackBinaries) );
 
         foreach ( var runtime in SupportedRuntimes ) {
           var publishDir = Paths.PublishDirectoryForRuntime( runtime );
@@ -422,40 +428,41 @@ sealed class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
+  Target Release => _ => _
+    .DependsOn( PackBinaries, Test )
+    .Executes( async () => {
+        using var _ = new TargetLifecycle( nameof(Release) );
+
+        Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
+
+        await ValidateAllowedReleaseTargetOrThrow( Release );
+
+        var release = await CreateDraftRelease();
+
+        await RemoveDraftStatus( release );
+
+        Log.Information( "⭐ Released {ReleaseName} to GitHub!", release.Name );
+      }
+    );
+
   Target ReleaseSpecial => _ => _
     .Requires(
       // Version target CustomVersion parameter when this target is in the execution plan
       () => CustomVersion
     )
-    .DependsOn( Pack, TestAll )
+    .DependsOn( PackBinaries, Test )
     .Executes( async () => {
-      using var _ = new TargetLifecycle( nameof(ReleaseSpecial) );
+        using var _ = new TargetLifecycle( nameof(ReleaseSpecial) );
 
-      Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
+        Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
 
-      await ValidateAllowedReleaseTargetOrThrow( ReleaseSpecial );
+        await ValidateAllowedReleaseTargetOrThrow( ReleaseSpecial );
 
-      var release = await CreateDraftRelease();
+        var release = await CreateDraftRelease();
 
-      Log.Information( "⭐ Released {ReleaseName} to GitHub!", release.Name );
-    } );
-
-
-  Target Release => _ => _
-    .DependsOn( Pack, TestAll )
-    .Executes( async () => {
-      using var _ = new TargetLifecycle( nameof(Release) );
-
-      Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
-
-      await ValidateAllowedReleaseTargetOrThrow( Release );
-
-      var release = await CreateDraftRelease();
-
-      await RemoveDraftStatus( release );
-
-      Log.Information( "⭐ Released {ReleaseName} to GitHub!", release.Name );
-    } );
+        Log.Information( "⭐ Released {ReleaseName} to GitHub!", release.Name );
+      }
+    );
 
   private async Task RemoveDraftStatus( Release release ) {
     var updateRelease = release.ToUpdate();

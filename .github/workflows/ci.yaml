@@ -34,7 +34,12 @@ jobs:
         uses: ./.github/actions/setup-runner
 
       - name: Run tests
-        run: dotnet run --project ./build/_build.csproj --target TestAll --commit ${{ github.sha }} --verbose ${{ github.event.inputs.verbose }}
+        run: |
+          dotnet run \
+          --project ./build/_build.csproj \
+          --target Test \
+          --commit ${{ github.sha }} \
+          --verbose ${{ github.event.inputs.verbose }}
 
       - name: Display test results
         continue-on-error: true
@@ -43,4 +48,7 @@ jobs:
 
       - name: Check for warnings
         continue-on-error: true # TODO remove
-        run: dotnet run --project ./build/_build.csproj --target CheckWarnings
+        run: |
+          dotnet run \
+          --project ./build/_build.csproj \
+          --target CheckWarnings

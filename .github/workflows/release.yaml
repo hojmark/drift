@@ -20,7 +20,12 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: dotnet run --project ./build/_build.csproj --target Release --commit ${{ github.sha }}
+        run: |
+          dotnet run \
+            --project ./build/_build.csproj \
+            --target Release \
+            --commit ${{ github.sha }} \
+            --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }} 
 
       - name: Display test results
         continue-on-error: true

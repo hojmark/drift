@@ -29,16 +29,20 @@
         "CheckBuildWarnings",
         "CheckPublishWarnings",
         "CheckWarnings",
+        "Clean",
         "CleanArtifacts",
         "CleanProjects",
-        "Pack",
-        "Publish",
+        "PackBinaries",
+        "PackContainer",
+        "PublishBinaries",
         "Release",
+        "ReleaseContainer",
         "ReleaseSpecial",
         "Restore",
-        "TestAll",
-        "TestAllLocal",
+        "Test",
+        "TestContainer",
         "TestE2E",
+        "TestLocal",
         "TestUnit",
         "Version"
       ]
@@ -129,6 +133,11 @@
         "CustomVersion": {
           "type": "string",
           "description": "CustomVersion - e.g. '3.1.5-preview.5'"
+        },
+        "DockerHubPassword": {
+          "type": "string",
+          "description": "DockerHubPassword - Required for releasing container images to Docker Hub",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
         },
         "Solution": {
           "type": "string",

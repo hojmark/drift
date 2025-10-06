@@ -1,9 +1,6 @@
 using System;
 using System.Globalization;
-using System.Linq;
-using System.Text.Json;
 using Nuke.Common;
-using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Docker;
 using Nuke.Common.Tools.DotNet;
@@ -74,32 +71,6 @@ partial class NukeBuild {
       }
     );
 
-  Target TestContainer2 => _ => _
-    .DependsOn( PublishContainer )
-    .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(TestContainer2) );
-
-        //TODO may need to pull image from docker hub if not present locally
-
-        var tag = ContainerImageTag( ContainerRegistry.Local, TagType.Version );
-        ( Paths.PublishDirectory / "container" ).CreateOrCleanDirectory();
-
-        return;
-        var output = DockerTasks.DockerImageInspect( options => options.SetImages( "drift:latest" ) );
-
-        var jsonText = string.Join( Environment.NewLine, output.Select( o => o.Text ) );
-
-        var json = JsonDocument.Parse( jsonText );
-        var config = json.RootElement[0].GetProperty( "Config" );
-        var labels = config.GetProperty( "Labels" );
-
-        var version = labels.GetProperty( "org.opencontainers.image.version" ).GetString();
-        var revision = labels.GetProperty( "org.opencontainers.image.revision" ).GetString();
-
-        //Log.Information( "Image version: {version}, revision: {revision}", version, revision );
-      }
-    );
-
   /// <summary>
   /// Releases container image to public Docker Hub!
   /// </summary>
@@ -112,7 +83,7 @@ partial class NukeBuild {
     .Executes( () => {
         Log.Information( "Logging in to Docker Hub" );
         DockerTasks.DockerLogin( c => c
-            // TODO extract all this to a record incl. tags
+          // TODO extract all this to a record incl. tags
           .SetUsername( DockerHubUsername )
           .SetPassword( DockerHubPassword )
           .SetServer( "docker.io" )

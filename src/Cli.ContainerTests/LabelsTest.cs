@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Drift.Cli.ContainerTests;
 
 internal sealed class LabelsTest : DriftContainerImageFixture {
@@ -22,6 +24,12 @@ internal sealed class LabelsTest : DriftContainerImageFixture {
     "io.buildah.version",
   ];
 
+  private readonly List<string> _dynamicLabels = [
+    "org.opencontainers.image.created",
+    "org.opencontainers.image.version",
+    "org.opencontainers.image.revision"
+  ];
+
   [Test]
   public async Task LabelsUseOciAnnotationsTest() {
     // Arrange / Act
@@ -42,13 +50,42 @@ internal sealed class LabelsTest : DriftContainerImageFixture {
       .ToList();
 
     // Assert
-    await Verify( ociAnnotationLabels.Select( s => $"{s.Name}={s.Value}" ) ).UseTypeName( "oci-annotations" );
+    await Verify(
+      ociAnnotationLabels
+        .Where( l => !_dynamicLabels.Contains( l.Name ) )
+        .Select( s => $"{s.Name}={s.Value}" )
+    ).UseTypeName( "oci-annotations" );
 
     await Verify( remainingLabels.Select( s => $"{s.Name}={s.Value}" ) ).UseTypeName( "remaining" );
 
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( ociAnnotationLabels.Select( l => l.Name ), Is.SubsetOf( _ociAnnotationsV1_1_1 ) );
       Assert.That( remainingLabels, Has.All.Matches<(string Name, string Value)>( l => l.Value == string.Empty ) );
+
+      var commitHash = ociAnnotationLabels.Single( l => l.Name == "org.opencontainers.image.revision" ).Value;
+      Assert.That(
+        GitUtils.IsValidGitCommitHash( commitHash ),
+        $"Expected org.opencontainers.image.revision to be a valid Git commit hash, but it was not: {commitHash}"
+      );
+
+      var version = ociAnnotationLabels.Single( l => l.Name == "org.opencontainers.image.version" ).Value;
+      Assert.That(
+        Version.TryParse( version, out _ ),
+        $"Expected org.opencontainers.image.version to be a valid semantic version, but it was not: {version}"
+      );
+    }
+  }
+
+  internal static class GitUtils {
+    // 40-character hexadecimal Git SHA-1 hash
+    private static readonly Regex GitCommitHashRegex = new(@"^[0-9a-f]{40}$", RegexOptions.IgnoreCase);
+
+    public static bool IsValidGitCommitHash( string? input ) {
+      if ( string.IsNullOrWhiteSpace( input ) ) {
+        return false;
+      }
+
+      return GitCommitHashRegex.IsMatch( input );
     }
   }
 }

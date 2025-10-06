@@ -19,7 +19,6 @@ LABEL "org.opencontainers.image.url"="https://docker.io/hojmark/drift"
 LABEL "org.opencontainers.image.vendor"="hojmark"
 
 # Override fedora-minimal labels (all OCI non-standard)
-LABEL "io.buildah.version"=""
 LABEL "license"=""
 LABEL "name"=""
 LABEL "org.opencontainers.image.license"=""

@@ -16,7 +16,7 @@ internal static class VersionHelper {
     }
 
     // .Latest() does not return prereleases
-    var releases = await NukeBuild.GitHubClient.Repository.Release.GetAll(
+    var releases = await build.GitHubClient.Repository.Release.GetAll(
       repository.GetGitHubOwner(),
       repository.GetGitHubName()
     );

@@ -54,7 +54,10 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   [GitRepository] // 
   private readonly GitRepository Repository;
 
-  private const bool AllowLocalRelease = false;
+  [Secret, Parameter( $"{nameof(GitHubToken)} - GitHub token used to create releases" )] // //
+  public string GitHubToken;
+
+  private const bool AllowLocalRelease = true;
 
   private static readonly DotNetRuntimeIdentifier[] SupportedRuntimes = [
     DotNetRuntimeIdentifier.linux_x64,
@@ -70,14 +73,16 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   private const string BinaryBuildLogName = "build.binlog";
   private const string BinaryPublishLogName = "publish.binlog";
 
-  internal static GitHubClient GitHubClient {
+  internal GitHubClient GitHubClient {
     get {
       Credentials credentials;
 
-      if ( EnvironmentInfo.GetVariable( "GITHUB_TOKEN" ) is { } token ) {
+      //if ( EnvironmentInfo.GetVariable( "GITHUB_TOKEN" ) is { } token ) {
+      if ( GitHubToken is { } token ) {
         credentials = new Credentials( token );
       }
       else {
+        // TODO update
         Log.Warning( "GITHUB_TOKEN environment variable not set. Using default credentials." );
         credentials = new Credentials(
           "blah",
@@ -103,7 +108,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   private async Task ValidateAllowedReleaseTargetOrThrow( Target target ) {
     if ( ExpectedTarget != target ) {
       throw new InvalidOperationException(
-        $"Target not allowed: {target}. Unexpected target. Did execution plan not contain Version?" );
+        $"Target not allowed: {target}. Unexpected target. Did execution plan not contain {nameof(Version)}?" );
     }
 
     if ( IsLocalBuild && !AllowLocalRelease ) {
@@ -117,9 +122,22 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     }
 
     if ( IsLocalBuild ) {
+      var delay = TimeSpan.FromSeconds( 10 );
       Log.Warning( "⚠️ LOCAL RELEASE BUILD ⚠️" );
-      Log.Warning( "Continuing in 10 seconds..." );
-      await Task.Delay( TimeSpan.FromSeconds( 10 ) );
+      Log.Warning( $"Continuing in {(int) delay.TotalSeconds} seconds..." );
+      await Task.Delay( delay );
+    }
+
+    var tags = await GitHubClient.Repository.GetAllTags(
+      Repository.GetGitHubOwner(),
+      Repository.GetGitHubName()
+    );
+
+    if ( tags.Any( t => t.Name == TagName ) ) {
+      throw new InvalidOperationException( $"Release {TagName} already exists" );
+    }
+    else {
+      Log.Debug( "Release {TagName} does not exist", TagName );
     }
   }
 
@@ -329,7 +347,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
         DotNetTest( s => s
           .SetProjectFile( Solution )
           .SetConfiguration( Configuration )
-          .SetFilter( "Category!=E2E" )
+          .SetFilter( "Category!=E2E&Category!=Container" )
           .ConfigureLoggers( Verbose )
           .EnableNoLogo()
           .EnableNoRestore()
@@ -428,7 +446,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     );
 
   Target Release => _ => _
-    .DependsOn( PackBinaries, Test )
+    .DependsOn( PackBinaries, ReleaseContainer, Test )
     .Executes( async () => {
         using var _ = new TargetLifecycle( nameof(Release) );
 
@@ -436,7 +454,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
         await ValidateAllowedReleaseTargetOrThrow( Release );
 
-        var release = await CreateDraftRelease();
+        var release = await CreateDraftRelease( prerelease: false );
 
         await RemoveDraftStatus( release );
 
@@ -449,7 +467,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
       // Version target CustomVersion parameter when this target is in the execution plan
       () => CustomVersion
     )
-    .DependsOn( PackBinaries, Test )
+    .DependsOn( PackBinaries, ReleaseContainerSpecial, Test )
     .Executes( async () => {
         using var _ = new TargetLifecycle( nameof(ReleaseSpecial) );
 
@@ -457,7 +475,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
         await ValidateAllowedReleaseTargetOrThrow( ReleaseSpecial );
 
-        var release = await CreateDraftRelease();
+        var release = await CreateDraftRelease( prerelease: true );
 
         Log.Information( "⭐ Released {ReleaseName} to GitHub!", release.Name );
       }
@@ -479,9 +497,12 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   }
 
   //TODO make static
-  private async Task<Release> CreateDraftRelease() {
+  private async Task<Release> CreateDraftRelease( bool prerelease ) {
     var newRelease = new NewRelease( TagName ) {
-      Draft = true, Prerelease = false, Name = VersionHelper.CreateReleaseName( SemVer ), GenerateReleaseNotes = true
+      Draft = true,
+      Prerelease = prerelease,
+      Name = VersionHelper.CreateReleaseName( SemVer ),
+      GenerateReleaseNotes = true
     };
 
     Log.Information( "Creating release {@Release}", newRelease );

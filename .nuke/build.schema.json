@@ -37,11 +37,11 @@
         "PublishContainer",
         "Release",
         "ReleaseContainer",
+        "ReleaseContainerSpecial",
         "ReleaseSpecial",
         "Restore",
         "Test",
         "TestContainer",
-        "TestContainer2",
         "TestE2E",
         "TestLocal",
         "TestUnit",
@@ -138,6 +138,11 @@
         "DockerHubPassword": {
           "type": "string",
           "description": "DockerHubPassword - Required for releasing container images to Docker Hub",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
+        "GitHubToken": {
+          "type": "string",
+          "description": "GitHubToken - GitHub token used to create releases",
           "default": "Secrets must be entered via 'nuke :secrets [profile]'"
         },
         "Solution": {

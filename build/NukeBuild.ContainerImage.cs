@@ -81,45 +81,68 @@ partial class NukeBuild {
     //.Requires( () => SemVer )
     .DependsOn( TestContainer )
     .Executes( () => {
-        Log.Information( "Logging in to Docker Hub" );
-        DockerTasks.DockerLogin( c => c
-          // TODO extract all this to a record incl. tags
-          .SetUsername( DockerHubUsername )
-          .SetPassword( DockerHubPassword )
-          .SetServer( "docker.io" )
-        );
-
         var localTag = ContainerImageTag( ContainerRegistry.Local, TagType.Version );
         string[] dockerHubTags = [
           ContainerImageTag( ContainerRegistry.DockerHub, TagType.Version ),
-          //TODO not this when pre-release
           ContainerImageTag( ContainerRegistry.DockerHub, TagType.Latest )
         ];
 
-        Log.Information(
-          "Pushing {LocalTag} to Docker with new tags: {DockerHubTags}", localTag,
-          string.Join( ", ", dockerHubTags )
-        );
-
-        foreach ( var dockerHubTag in dockerHubTags ) {
-          Log.Information( "Re-tagging {LocalTag} -> {DockerHubTag}", localTag, dockerHubTag );
-          DockerTasks.DockerTag( s => s
-            .SetSourceImage( localTag )
-            .SetTargetImage( dockerHubTag )
-          );
-
-          Log.Information( "Pushing {DockerHubTag} to Docker Hub", dockerHubTag );
-          DockerTasks.DockerPush( s => s
-            .SetName( dockerHubTag )
-          );
-        }
-
-        Log.Information( "Logging out of Docker Hub" );
-        DockerTasks.DockerLogout( s => s
-          .SetServer( "docker.io" )
-        );
+        Push( localTag, dockerHubTags );
       }
     );
+
+  /// <summary>
+  /// Releases container image to public Docker Hub!
+  /// </summary>
+  // ReSharper disable once UnusedMember.Local
+  Target ReleaseContainerSpecial => _ => _
+    // .DependsOn( Publish )
+    .Requires( () => DockerHubPassword )
+    //.Requires( () => SemVer )
+    .DependsOn( TestContainer )
+    .Executes( () => {
+        var localTag = ContainerImageTag( ContainerRegistry.Local, TagType.Version );
+        string[] dockerHubTags = [
+          ContainerImageTag( ContainerRegistry.DockerHub, TagType.Version )
+        ];
+
+        Push( localTag, dockerHubTags );
+      }
+    );
+
+  private void Push( string localTag, string[] dockerHubTags ) {
+    Log.Information( "Logging in to Docker Hub" );
+    DockerTasks.DockerLogin( c => c
+      // TODO extract all this to a record incl. tags
+      .SetUsername( DockerHubUsername )
+      .SetPassword( DockerHubPassword )
+      .SetServer( "docker.io" )
+    );
+
+    Log.Information(
+      "Pushing {LocalTag} to Docker with new tags: {DockerHubTags}", localTag,
+      string.Join( ", ", dockerHubTags )
+    );
+
+    foreach ( var dockerHubTag in dockerHubTags ) {
+      Log.Information( "Re-tagging {LocalTag} -> {DockerHubTag}", localTag, dockerHubTag );
+      DockerTasks.DockerTag( s => s
+        .SetSourceImage( localTag )
+        .SetTargetImage( dockerHubTag )
+      );
+
+      Log.Information( "Pushing {DockerHubTag} to Docker Hub", dockerHubTag );
+      DockerTasks.DockerPush( s => s
+        .SetName( dockerHubTag )
+      );
+      Log.Information( "Pushed {DockerHubTag} to Docker Hub!", dockerHubTag );
+    }
+
+    Log.Information( "Logging out of Docker Hub" );
+    DockerTasks.DockerLogout( s => s
+      .SetServer( "docker.io" )
+    );
+  }
 
   private enum ContainerRegistry {
     Local,

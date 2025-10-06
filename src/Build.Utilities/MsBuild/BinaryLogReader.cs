@@ -1,12 +1,12 @@
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
-internal static class BinaryLog {
-  internal static string[] GetWarnings( string binaryLogName ) {
+namespace Drift.Build.Utilities.MsBuild;
+
+public static class BinaryLogReader {
+  public static string[] GetWarnings( string binaryLogName ) {
     string warningsLogName = $"{binaryLogName}-warnings-only.log";
 
     DotNetMSBuild( s => s

@@ -1,19 +1,21 @@
-using System;
-using System.Globalization;
 using System.Linq;
-using System.Text.Json;
+using Drift.Build.Utilities.ContainerImage;
 using Nuke.Common;
-using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Docker;
 using Nuke.Common.Tools.DotNet;
 using Serilog;
+using Utilities;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 partial class NukeBuild {
+  /*
   private static readonly string LocalImageName = "drift";
 
   private static readonly string DockerHubImageName = "hojmark/drift";
+  */
+
+
   private static readonly string DockerHubUsername = "hojmark";
 
   [Secret] //
@@ -22,14 +24,13 @@ partial class NukeBuild {
 
   Target PublishContainer => _ => _
     .DependsOn( PublishBinaries, CleanArtifacts )
-    //.Requires( () => SemVer )
     .Requires( () => Commit )
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(PublishContainer) );
 
-        var localTagVersion = ContainerImageTag( ContainerRegistry.Local, TagType.Version );
+        var localTagVersion = ImageReference.Localhost( "drift", SemVer );
 
-        var created = DateTime.UtcNow.ToString( "o", CultureInfo.InvariantCulture ); // o = round-trip format / ISO 8601
+        // var created = DateTime.UtcNow.ToString( "o", CultureInfo.InvariantCulture ); // o = round-trip format / ISO 8601
 
         Log.Information( "Building container image {Tag}", localTagVersion );
         DockerTasks.DockerBuild( s => s
@@ -38,13 +39,13 @@ partial class NukeBuild {
           .SetTag( localTagVersion )
           .SetLabel(
             // Timestamping prevents build from being idempotent
-            //$"\"org.opencontainers.image.created={created}\"",
+            // $"\"org.opencontainers.image.created={created}\"",
             $"\"org.opencontainers.image.version={SemVer.ToString()}\"",
             $"\"org.opencontainers.image.revision={Commit}\""
           )
         );
 
-        var localTagDev = ContainerImageTag( ContainerRegistry.Local, TagType.Dev );
+        var localTagDev = localTagVersion.WithTag( DevVersion.Instance );
 
         Log.Information( "Re-tagging {LocalTagVersion} -> {LocalTagDev}", localTagVersion, localTagDev );
         DockerTasks.DockerTag( s => s
@@ -54,20 +55,20 @@ partial class NukeBuild {
       }
     );
 
-
   Target TestContainer => _ => _
     .DependsOn( PublishContainer )
-    .After( TestUnit, TestE2E )
+    .After( TestUnit, TestE2E ) // Not strictly necessary, but makes it easier to debug
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(TestContainer) );
 
         DotNetTest( s => s
           .SetProjectFile( Solution.Cli_ContainerTests )
           .SetConfiguration( Configuration )
+          // TODO use this!
           .SetProcessEnvironmentVariable( "DRIFT_CONTAINER_IMAGE_TAG",
-            ContainerImageTag( ContainerRegistry.Local, TagType.Version )
+            ImageReference.Localhost( "drift", SemVer )
           )
-          .ConfigureLoggers( Verbose )
+          .ConfigureLoggers( MsBuildVerbosityParsed )
           .EnableNoLogo()
           .EnableNoRestore()
           .EnableNoBuild()
@@ -75,129 +76,92 @@ partial class NukeBuild {
       }
     );
 
-  Target TestContainer2 => _ => _
-    .DependsOn( PublishContainer )
+  /// <summary>
+  /// Releases container image to public Docker Hub!
+  /// </summary>
+  Target ReleaseContainer => _ => _
+    .DependsOn( TestContainer )
+    .Requires( () => DockerHubPassword )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(TestContainer2) );
+        using var _ = new TargetLifecycle( nameof(ReleaseContainer) );
 
-        //TODO may need to pull image from docker hub if not present locally
+        var local = ImageReference.Localhost( "drift", SemVer );
+        var dockerHub = new[] {
+          ImageReference.DockerIo( "hojmark", "drift", SemVer ),
+          ImageReference.DockerIo( "hojmark", "drift", LatestVersion.Instance )
+        };
 
-        var tag = ContainerImageTag( ContainerRegistry.Local, TagType.Version );
-        ( Paths.PublishDirectory / "container" ).CreateOrCleanDirectory();
-
-        return;
-        var output = DockerTasks.DockerImageInspect( options => options.SetImages( "drift:latest" ) );
-
-        var jsonText = string.Join( Environment.NewLine, output.Select( o => o.Text ) );
-
-        var json = JsonDocument.Parse( jsonText );
-        var config = json.RootElement[0].GetProperty( "Config" );
-        var labels = config.GetProperty( "Labels" );
-
-        var version = labels.GetProperty( "org.opencontainers.image.version" ).GetString();
-        var revision = labels.GetProperty( "org.opencontainers.image.revision" ).GetString();
-
-        //Log.Information( "Image version: {version}, revision: {revision}", version, revision );
+        Push( local, dockerHub );
       }
     );
 
   /// <summary>
   /// Releases container image to public Docker Hub!
   /// </summary>
-  // ReSharper disable once UnusedMember.Local
-  Target ReleaseContainer => _ => _
-    // .DependsOn( Publish )
-    .Requires( () => DockerHubPassword )
-    //.Requires( () => SemVer )
+  Target PreReleaseContainer => _ => _
     .DependsOn( TestContainer )
+    .Requires( () => DockerHubPassword )
     .Executes( () => {
-        Log.Information( "Logging in to Docker Hub" );
-        DockerTasks.DockerLogin( c => c
-          .SetUsername( DockerHubUsername )
-          .SetPassword( DockerHubPassword )
-          .SetServer( "docker.io" )
-        );
+        using var _ = new TargetLifecycle( nameof(PreReleaseContainer) );
 
-        var localTag = ContainerImageTag( ContainerRegistry.Local, TagType.Version );
-        string[] dockerHubTags = [
-          ContainerImageTag( ContainerRegistry.DockerHub, TagType.Version ),
-          ContainerImageTag( ContainerRegistry.DockerHub, TagType.Latest )
-        ];
+        var local = ImageReference.Localhost( "drift", SemVer );
+        var dockerHub = new[] { ImageReference.DockerIo( "hojmark", "drift", SemVer ), };
 
-        Log.Information(
-          "Pushing {LocalTag} to Docker with new tags: {DockerHubTags}", localTag,
-          string.Join( ", ", dockerHubTags )
-        );
-
-        foreach ( var dockerHubTag in dockerHubTags ) {
-          Log.Information( "Re-tagging {LocalTag} -> {DockerHubTag}", localTag, dockerHubTag );
-          DockerTasks.DockerTag( s => s
-            .SetSourceImage( localTag )
-            .SetTargetImage( dockerHubTag )
-          );
-
-          Log.Information( "Pushing {DockerHubTag} to Docker Hub", dockerHubTag );
-          DockerTasks.DockerPush( s => s
-            .SetName( dockerHubTag )
-          );
-        }
-
-        Log.Information( "Logging out of Docker Hub" );
-        DockerTasks.DockerLogout( s => s
-          .SetServer( "docker.io" )
-        );
+        Push( local, dockerHub );
       }
     );
 
-  private enum ContainerRegistry {
-    Local,
-    DockerHub
+  private void Push( ImageReference source, ImageReference[] targets ) {
+    ImageReference[] allReferences = [source, ..targets];
+    var loginToDockerHub = allReferences.Any( reference => reference.Host == DockerIoRegistry.Instance );
+
+    try {
+      if ( loginToDockerHub ) {
+        DockerHubLogin();
+      }
+
+      Log.Information(
+        "Pushing {SourceTag} to: {TargetTags}",
+        source,
+        string.Join( ", ", targets.Select( t => t.ToString() ) )
+      );
+
+      foreach ( var target in targets ) {
+        Log.Information( "Re-tagging {SourceTag} -> {TargetTag}", source, target );
+        DockerTasks.DockerTag( s => s
+          .SetSourceImage( source )
+          .SetTargetImage( target )
+        );
+
+        Log.Information( "Pushing {TargetTag}", target );
+        DockerTasks.DockerPush( s => s
+          .SetName( target )
+        );
+        Log.Information( "Pushed {TargetTag}", target );
+      }
+    }
+    finally {
+      if ( loginToDockerHub ) {
+        DockerHubLogout();
+      }
+    }
   }
 
-  internal sealed class DockerImageName {
-    public string Registry {
-      get;
-      set;
-    } = "docker.io"; // default
+  private void DockerHubLogin() {
+    Log.Information( "Logging in to Docker Hub" );
 
-    public required string Namespace {
-      get;
-      set;
-    } = "hojmark"; // default if omitted
-
-    public required string Repository {
-      get;
-      set;
-    } = "drift";
-
-    public required string Tag {
-      get;
-      set;
-    } = "latest"; // default
-
-    public override string ToString() => $"";
+    DockerTasks.DockerLogin( s => s
+      .SetUsername( DockerHubUsername )
+      .SetPassword( DockerHubPassword )
+      .SetServer( DockerIoRegistry.Instance )
+    );
   }
 
-  internal enum TagType {
-    Version,
-    Latest,
-    Dev
-  }
+  private static void DockerHubLogout() {
+    Log.Information( "Logging out of Docker Hub" );
 
-  private string ContainerImageTag( ContainerRegistry registry, TagType tagType ) {
-    var imageName = registry switch {
-      ContainerRegistry.DockerHub => DockerHubImageName,
-      ContainerRegistry.Local => LocalImageName,
-      _ => throw new ArgumentOutOfRangeException( nameof(registry), registry, null )
-    };
-
-    var tag = tagType switch {
-      TagType.Version => SemVer.ToString(),
-      TagType.Latest => "latest",
-      TagType.Dev => "dev",
-      _ => throw new ArgumentOutOfRangeException( nameof(tagType), tagType, null )
-    };
-
-    return $"{imageName}:{tag}";
+    DockerTasks.DockerLogout( s => s
+      .SetServer( "docker.io" )
+    );
   }
 }

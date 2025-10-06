@@ -3,12 +3,10 @@
 ENV DRIFT_ENVIRONMENT="container"
 
 RUN microdnf --setopt=install_weak_deps=False install -y \
-    # iputils (ping), iproute (ip neigh), arp TODO remove arp
+    # iputils (ping), iproute (ip neigh)
     iputils iproute fping arp && \
     dnf clean all && \
     rm -rf /var/cache /var/log /tmp/*
-
-EXPOSE 45454/tcp
 
 LABEL "org.opencontainers.image.authors"="hojmark"
 LABEL "org.opencontainers.image.description"="Monitor network drift against your declared state"
@@ -19,7 +17,6 @@ LABEL "org.opencontainers.image.url"="https://docker.io/hojmark/drift"
 LABEL "org.opencontainers.image.vendor"="hojmark"
 
 # Override fedora-minimal labels (all OCI non-standard)
-LABEL "io.buildah.version"=""
 LABEL "license"=""
 LABEL "name"=""
 LABEL "org.opencontainers.image.license"=""

@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Drift.Cli.E2ETests.Utils;
 
+[SuppressMessage( "ReSharper", "InconsistentNaming", Justification = "Environment variable name" )]
 internal enum EnvVar {
-  // ReSharper disable once InconsistentNaming
   DRIFT_BINARY_PATH
 }
 

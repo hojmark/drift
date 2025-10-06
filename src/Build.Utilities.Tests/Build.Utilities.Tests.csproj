@@ -6,17 +6,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Nuke.Common" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit.Analyzers" />
     <PackageReference Include="NUnit3TestAdapter" />
-    <PackageReference Include="Semver" />
-    <PackageReference Include="Testcontainers" />
-    <PackageReference Include="Verify.NUnit" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
+    <ProjectReference Include="..\Build.Utilities\Build.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

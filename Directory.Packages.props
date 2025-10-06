@@ -18,6 +18,7 @@
     <PackageVersion Include="NmapXmlParser" Version="1.0.0" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="Nuke.Common" Version="9.0.4" />
+    <PackageVersion Include="Nuke.Tooling" Version="9.0.4" />
     <PackageVersion Include="NUnit" Version="4.4.0" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.10.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="5.2.0" />
@@ -33,6 +34,7 @@
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta6.25358.103" />
     <PackageVersion Include="System.Text.Json" Version="9.0.6" />
     <PackageVersion Include="System.Threading.RateLimiting" Version="9.0.10" />
+    <PackageVersion Include="Testcontainers" Version="4.7.0" />
     <PackageVersion Include="TngTech.ArchUnitNET.NUnit" Version="0.12.3" />
     <PackageVersion Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="16.3.0" />
     <PackageVersion Include="Verify.NUnit" Version="31.0.1" />

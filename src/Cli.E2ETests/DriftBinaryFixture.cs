@@ -3,7 +3,6 @@ using Drift.Common;
 
 namespace Drift.Cli.E2ETests;
 
-[TestFixture]
 internal abstract class DriftBinaryFixture {
   protected static ToolWrapper DriftBinary {
     get;

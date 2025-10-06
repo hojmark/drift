@@ -33,15 +33,15 @@
         "CleanArtifacts",
         "CleanProjects",
         "PackBinaries",
+        "PreRelease",
+        "PreReleaseContainer",
         "PublishBinaries",
         "PublishContainer",
         "Release",
         "ReleaseContainer",
-        "ReleaseSpecial",
         "Restore",
         "Test",
         "TestContainer",
-        "TestContainer2",
         "TestE2E",
         "TestLocal",
         "TestUnit",
@@ -140,13 +140,18 @@
           "description": "DockerHubPassword - Required for releasing container images to Docker Hub",
           "default": "Secrets must be entered via 'nuke :secrets [profile]'"
         },
+        "GitHubToken": {
+          "type": "string",
+          "description": "GitHubToken - GitHub token used to create releases",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
+        "MsBuildVerbosity": {
+          "type": "string",
+          "description": "MsBuildVerbosity - Console output verbosity - Default is 'normal'"
+        },
         "Solution": {
           "type": "string",
           "description": "Path to a solution file that is automatically loaded"
-        },
-        "Verbose": {
-          "type": "string",
-          "description": "Verbose - Verbose console output - Default is 'false'"
         }
       }
     },

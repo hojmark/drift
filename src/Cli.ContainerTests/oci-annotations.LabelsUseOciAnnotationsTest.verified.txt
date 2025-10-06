@@ -1,0 +1,9 @@
+﻿[
+  org.opencontainers.image.authors=hojmark,
+  org.opencontainers.image.description=Monitor network drift against your declared state,
+  org.opencontainers.image.licenses=AGPL-3.0,
+  org.opencontainers.image.source=https://github.com/hojmark/drift,
+  org.opencontainers.image.title=Drift,
+  org.opencontainers.image.url=https://docker.io/hojmark/drift,
+  org.opencontainers.image.vendor=hojmark
+]

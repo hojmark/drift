@@ -54,10 +54,9 @@ partial class NukeBuild {
       }
     );
 
-
   Target TestContainer => _ => _
     .DependsOn( PublishContainer )
-    .After( TestUnit, TestE2E )
+    .After( TestUnit, TestE2E ) // Not strictly necessary, but makes it easier to debug
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(TestContainer) );
 
@@ -113,6 +112,7 @@ partial class NukeBuild {
     .Executes( () => {
         Log.Information( "Logging in to Docker Hub" );
         DockerTasks.DockerLogin( c => c
+            // TODO extract all this to a record incl. tags
           .SetUsername( DockerHubUsername )
           .SetPassword( DockerHubPassword )
           .SetServer( "docker.io" )
@@ -121,6 +121,7 @@ partial class NukeBuild {
         var localTag = ContainerImageTag( ContainerRegistry.Local, TagType.Version );
         string[] dockerHubTags = [
           ContainerImageTag( ContainerRegistry.DockerHub, TagType.Version ),
+          //TODO not this when pre-release
           ContainerImageTag( ContainerRegistry.DockerHub, TagType.Latest )
         ];
 

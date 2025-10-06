@@ -13,7 +13,6 @@ using Drift.Domain.Scan;
 using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
-using Environment = System.Environment;
 
 namespace Drift.Cli.Commands.Init;
 

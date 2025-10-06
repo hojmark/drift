@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Semver;
 
 namespace Drift.Cli.ContainerTests;
 
@@ -70,9 +71,17 @@ internal sealed class LabelsTest : DriftContainerImageFixture {
 
       var version = ociAnnotationLabels.Single( l => l.Name == "org.opencontainers.image.version" ).Value;
       Assert.That(
-        Version.TryParse( version, out _ ),
+        SemVersion.TryParse( version, out _ ),
         $"Expected org.opencontainers.image.version to be a valid semantic version, but it was not: {version}"
       );
+
+      /*
+      var created = ociAnnotationLabels.Single( l => l.Name == "org.opencontainers.image.created" ).Value;
+      Assert.That(
+        DateTime.TryParse( created, CultureInfo.InvariantCulture, out _ ),
+        $"Expected org.opencontainers.image.created to be a valid datetime, but it was not: {created}"
+      );
+      */
     }
   }
 

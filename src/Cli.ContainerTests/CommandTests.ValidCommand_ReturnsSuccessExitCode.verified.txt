@@ -1,25 +1,25 @@
 ﻿{
   Item1:
-DateTime_1   ___          _    __   _   
-DateTime_1  |   \   _ _  (_)  / _| | |_ 
-DateTime_1  | |) | | '_| | | |  _| |  _|
-DateTime_1  |___/  |_|   |_| |_|    \__|
-DateTime_1                              
-DateTime_1 Description:
-DateTime_1   📡️ Drift CLI — monitor network drift against your declared state
-DateTime_1 
-DateTime_1 Usage:
-DateTime_1   drift [command] [options]
-DateTime_1 
-DateTime_1 Options:
-DateTime_1   -?, -h, --help  Show help and usage information
-DateTime_1   --version       Show version information
-DateTime_1 
-DateTime_1 Commands:
-DateTime_1   init <spec>  Create a network spec
-DateTime_1   scan <spec>  Scan the network and detect drift
-DateTime_1   lint <spec>  Validate a network spec
-DateTime_1 
+<time>   ___          _    __   _   
+<time>  |   \   _ _  (_)  / _| | |_ 
+<time>  | |) | | '_| | | |  _| |  _|
+<time>  |___/  |_|   |_| |_|    \__|
+<time>                              
+<time> Description:
+<time>   📡️ Drift CLI — monitor network drift against your declared state
+<time> 
+<time> Usage:
+<time>   drift [command] [options]
+<time> 
+<time> Options:
+<time>   -?, -h, --help  Show help and usage information
+<time>   --version       Show version information
+<time> 
+<time> Commands:
+<time>   init <spec>  Create a network spec
+<time>   scan <spec>  Scan the network and detect drift
+<time>   lint <spec>  Validate a network spec
+<time> 
 ,
   Item2: 
 }

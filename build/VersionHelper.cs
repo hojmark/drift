@@ -58,7 +58,8 @@ internal static class VersionHelper {
   internal static SemVersion GetPreReleaseVersion( string customVersion = null ) {
     if ( customVersion == null ) {
       throw new InvalidOperationException(
-        $"Must specify {nameof(NukeBuild.CustomVersion)} when releasing a pre-release version" );
+        $"Must specify {nameof(NukeBuild.CustomVersion)} when releasing a pre-release version"
+      );
     }
 
     var ver = SemVersion.Parse( customVersion );

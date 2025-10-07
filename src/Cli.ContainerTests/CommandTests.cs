@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using DotNet.Testcontainers.Builders;
 using Drift.Cli.Abstractions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -23,7 +24,13 @@ internal sealed class CommandTests : DriftContainerImageFixture {
     var logs = await container.GetLogsAsync();
 
     Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-    await Verify( logs ).ScrubInlineDateTimes( "yyyy-MM-ddTHH:mm:ssK", CultureInfo.InvariantCulture );
+    await Verify( logs ).ScrubLinesWithReplace( line =>
+      Regex.Replace(
+        line,
+        @"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*?(?= )",
+        "<time>"
+      )
+    );
   }
 
   [Test]

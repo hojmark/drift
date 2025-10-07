@@ -1,0 +1,29 @@
+name: ️️🏗 Pre-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      customVersion:
+        description: "Pre-release version e.g., '0.0.0-prerelease.42'"
+        required: true
+        type: string
+
+jobs:
+  prerelease:
+    name: Pre-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required by Release target
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up runner
+        uses: ./.github/actions/setup-runner
+
+      - name: Release
+        env:
+          CUSTOM_VERSION: ${{ github.event.inputs.customVersion }}
+        run: |
+          echo "WIP"

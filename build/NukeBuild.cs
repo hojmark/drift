@@ -471,7 +471,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     .Executes( async () => {
         using var _ = new TargetLifecycle( nameof(PreRelease) );
 
-        Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
+        Log.Information( "🏗️ RELEASING 🏗️" );
 
         await ValidateAllowedReleaseTargetOrThrow( PreRelease );
 
@@ -487,8 +487,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
     Log.Information( "Removing release draft status..." );
 
-    await GitHubClient.Repository.Release
-      .Edit(
+    await GitHubClient.Repository.Release.Edit(
         Repository.GetGitHubOwner(),
         Repository.GetGitHubName(),
         release.Id,

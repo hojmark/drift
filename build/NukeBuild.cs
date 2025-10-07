@@ -145,20 +145,20 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   internal enum VersionStrategy {
     Default,
     Release,
-    ReleaseSpecial
+    PreRelease
   }
 
   Target Version => _ => _
     .Before( BuildInfo )
-    .DependentFor( Build, PublishBinaries, Release, ReleaseSpecial )
+    .DependentFor( Build, PublishBinaries, Release, PreRelease )
     .Executes( async () => {
         using var _ = new TargetLifecycle( nameof(Version) );
 
         Log.Information( "Determining version..." );
 
-        if ( ExecutionPlan.Contains( Release ) && ExecutionPlan.Contains( ReleaseSpecial ) ) {
+        if ( ExecutionPlan.Contains( Release ) && ExecutionPlan.Contains( PreRelease ) ) {
           throw new InvalidOperationException(
-            $"Execution plan cannot contain both {nameof(Release)} and {nameof(ReleaseSpecial)}" );
+            $"Execution plan cannot contain both {nameof(Release)} and {nameof(PreRelease)}" );
         }
 
         if ( ExecutionPlan.Contains( Release ) ) {
@@ -166,10 +166,10 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
           SemVer = await VersionHelper.GetNextReleaseVersion( this, Repository );
           ExpectedTarget = Release;
         }
-        else if ( ExecutionPlan.Contains( ReleaseSpecial ) ) {
-          Log.Information( "Versioning strategy: {Strategy}", VersionStrategy.ReleaseSpecial );
-          SemVer = VersionHelper.GetSpecialReleaseVersion( CustomVersion );
-          ExpectedTarget = ReleaseSpecial;
+        else if ( ExecutionPlan.Contains( PreRelease ) ) {
+          Log.Information( "Versioning strategy: {Strategy}", VersionStrategy.PreRelease );
+          SemVer = VersionHelper.GetPreReleaseVersion( CustomVersion );
+          ExpectedTarget = PreRelease;
         }
         else {
           Log.Information( "Versioning strategy: {Strategy}", VersionStrategy.Default );
@@ -462,18 +462,18 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
-  Target ReleaseSpecial => _ => _
+  Target PreRelease => _ => _
     .Requires(
       // Version target CustomVersion parameter when this target is in the execution plan
       () => CustomVersion
     )
-    .DependsOn( PackBinaries, ReleaseContainerSpecial, Test )
+    .DependsOn( PackBinaries, PreReleaseContainer, Test )
     .Executes( async () => {
-        using var _ = new TargetLifecycle( nameof(ReleaseSpecial) );
+        using var _ = new TargetLifecycle( nameof(PreRelease) );
 
         Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
 
-        await ValidateAllowedReleaseTargetOrThrow( ReleaseSpecial );
+        await ValidateAllowedReleaseTargetOrThrow( PreRelease );
 
         var release = await CreateDraftRelease( prerelease: true );
 
@@ -501,7 +501,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     var newRelease = new NewRelease( TagName ) {
       Draft = true,
       Prerelease = prerelease,
-      Name = VersionHelper.CreateReleaseName( SemVer ),
+      Name = VersionHelper.CreateReleaseName( SemVer, includeMetadata: prerelease ),
       GenerateReleaseNotes = true
     };
 

@@ -95,7 +95,7 @@ partial class NukeBuild {
   /// Releases container image to public Docker Hub!
   /// </summary>
   // ReSharper disable once UnusedMember.Local
-  Target ReleaseContainerSpecial => _ => _
+  Target PreReleaseContainer => _ => _
     // .DependsOn( Publish )
     .Requires( () => DockerHubPassword )
     //.Requires( () => SemVer )

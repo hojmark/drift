@@ -55,32 +55,11 @@ partial class NukeBuild {
       }
     );
 
-  Target TestContainer => _ => _
-    .DependsOn( PublishContainer )
-    .After( TestUnit, TestE2E ) // Not strictly necessary, but makes it easier to debug
-    .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(TestContainer) );
-
-        DotNetTest( s => s
-          .SetProjectFile( Solution.Cli_ContainerTests )
-          .SetConfiguration( Configuration )
-          // TODO use this!
-          .SetProcessEnvironmentVariable( "DRIFT_CONTAINER_IMAGE_TAG",
-            ImageReference.Localhost( "drift", SemVer )
-          )
-          .ConfigureLoggers( MsBuildVerbosityParsed )
-          .EnableNoLogo()
-          .EnableNoRestore()
-          .EnableNoBuild()
-        );
-      }
-    );
-
   /// <summary>
   /// Releases container image to public Docker Hub!
   /// </summary>
   Target ReleaseContainer => _ => _
-    .DependsOn( TestContainer )
+    .DependsOn( TestE2E )
     .Requires( () => DockerHubPassword )
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(ReleaseContainer) );
@@ -99,7 +78,7 @@ partial class NukeBuild {
   /// Releases container image to public Docker Hub!
   /// </summary>
   Target PreReleaseContainer => _ => _
-    .DependsOn( TestContainer )
+    .DependsOn( TestE2E )
     .Requires( () => DockerHubPassword )
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(PreReleaseContainer) );

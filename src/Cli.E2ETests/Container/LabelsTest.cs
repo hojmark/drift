@@ -3,7 +3,7 @@ using Semver;
 
 namespace Drift.Cli.E2ETests.Container;
 
-internal sealed class LabelsTest : DriftContainerImageFixture {
+internal sealed class LabelsTest : DriftImageFixture {
   private readonly List<string> _ociAnnotationsV1_1_1 = [
     "org.opencontainers.image.created",
     "org.opencontainers.image.authors",

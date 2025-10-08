@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -373,7 +374,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
         DotNetTest( s => s
           .SetProjectFile( Solution )
           .SetConfiguration( Configuration )
-          .SetFilter( "Category!=E2E&Category!=Container" )
+          .SetFilter( "Category!=E2E" ) // Negative filter to ensure tests all tests are discovered
           .ConfigureLoggers( MsBuildVerbosityParsed )
           .SetBlameHangTimeout( "60s" )
           .EnableNoLogo()
@@ -413,23 +414,51 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   Target TestE2E => _ => _
     .DependsOn( PublishBinaries, PublishContainer )
     .After( TestUnit )
-    .Executes( () => {
+    .Executes( async () => {
         using var _ = new TargetLifecycle( nameof(TestE2E) );
+
+        string? podmanHost = null;
+        if ( IsPodmanAvailable() ) {
+          // Step 1: Run `podman info --format json`
+          ProcessStartInfo psi = new ProcessStartInfo {
+            FileName = "podman",
+            Arguments = "info --format '{{.Host.RemoteSocket.Path}}'",
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+          };
+
+          using Process process = Process.Start( psi );
+          string output = process.StandardOutput.ReadToEnd();
+          await process.WaitForExitAsync();
+
+          podmanHost = "unix://" + output.Trim().Trim( '\'' );
+          Log.Information( "Found socket path: {SocketPath}", podmanHost );
+        }
+        else {
+          Log.Warning( "Podman not available. " );
+        }
 
         // TODO
         foreach ( var runtime in SupportedRuntimes ) {
           var publishDir = Paths.PublishDirectoryForRuntime( runtime );
           var driftBinary = publishDir / "drift";
 
+          var envs = new Dictionary<string, string> {
+            { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
+            // TODO use this!
+            { nameof(EnvVar.DRIFT_CONTAINER_IMAGE_TAG), ImageReference.Localhost( "drift", SemVer ).ToString() }
+          };
+
+          if ( podmanHost != null ) {
+            envs.Add( "DOCKER_HOST", podmanHost );
+          }
+
           DotNetTest( s => s
             .SetProjectFile( Solution.Cli_E2ETests )
             .SetConfiguration( Configuration )
             .SetProcessEnvironmentVariables(
-              new Dictionary<string, string> {
-                { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
-                // TODO use this!
-                { nameof(EnvVar.DRIFT_CONTAINER_IMAGE_TAG), ImageReference.Localhost( "drift", SemVer ).ToString() }
-              }
+              envs
             )
             .ConfigureLoggers( MsBuildVerbosityParsed )
             .EnableNoLogo()
@@ -442,8 +471,40 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
+  static bool IsPodmanAvailable() {
+    try {
+      string versionOutput = RunCommand( "podman", "--version" );
+      return versionOutput.StartsWith( "podman", StringComparison.OrdinalIgnoreCase );
+    }
+    catch {
+      return false;
+    }
+  }
+
+  static string RunCommand( string command, string arguments ) {
+    ProcessStartInfo psi = new ProcessStartInfo {
+      FileName = command,
+      Arguments = arguments,
+      RedirectStandardOutput = true,
+      RedirectStandardError = true,
+      UseShellExecute = false,
+      CreateNoWindow = true
+    };
+
+    using Process process = Process.Start( psi );
+    string output = process.StandardOutput.ReadToEnd();
+    string error = process.StandardError.ReadToEnd();
+    process.WaitForExit();
+
+    if ( process.ExitCode != 0 ) {
+      throw new Exception( $"Command '{command} {arguments}' failed with error:\n{error}" );
+    }
+
+    return output;
+  }
+
   Target Test => _ => _
-    .DependsOn( TestUnit, TestE2E, TestContainer );
+    .DependsOn( TestUnit, TestE2E );
 
   Target TestLocal => _ => _
     .DependsOn( Test )

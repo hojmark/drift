@@ -23,9 +23,10 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     env:
-      ACTIONS_RUNNER_DEBUG: true
+      # https://docs.github.com/en/actions/how-tos/monitor-workflows/enable-debug-logging
+      ACTIONS_RUNNER_DEBUG: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5

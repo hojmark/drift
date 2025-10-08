@@ -9,6 +9,8 @@ using Nuke.Common.Tools.GitHub;
 using Semver;
 using Serilog;
 
+namespace Versioning;
+
 internal static class VersionHelper {
   internal static async Task<SemVersion> GetNextReleaseVersion( NukeBuild build, GitRepository repository ) {
     if ( build.CustomVersion != null ) {
@@ -97,7 +99,6 @@ internal static class VersionHelper {
 
     return releaseVersion;
   }
-
 
   [CanBeNull]
   static SemVersion GetNextReleaseVersionFromTagNameOrThrow( string latestTagName ) {

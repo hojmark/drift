@@ -1,8 +1,10 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Drift.Build.Utilities.MsBuild;
 using Nuke.Common;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
@@ -14,54 +16,63 @@ using Nuke.Common.Utilities.Collections;
 using Octokit;
 using Semver;
 using Serilog;
+using Utilities;
+using Versioning;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using AuthenticationType = Octokit.AuthenticationType;
 using Credentials = Octokit.Credentials;
 using FileMode = System.IO.FileMode;
 using ProductHeaderValue = Octokit.ProductHeaderValue;
 
+// ReSharper disable VariableHidesOuterVariable
 // ReSharper disable AllUnderscoreLocalParameterName
 // ReSharper disable UnusedMember.Local
 
+[SuppressMessage(
+  "StyleCop.CSharp.MaintainabilityRules",
+  "SA1400:Access modifier should be declared",
+  Justification = "Clutters the code and it's not critical in this class"
+)]
+[SuppressMessage(
+  "StyleCop.CSharp.NamingRules",
+  "SA1312:Variable names should begin with lower-case letter",
+  Justification = "Clutters the code and it's not critical in this class"
+)]
 sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   public static int Main() => Execute<NukeBuild>( x => x.Build );
 
-  private static class Paths {
-    internal static AbsolutePath PublishDirectory => RootDirectory / "publish";
-
-    internal static AbsolutePath PublishDirectoryForRuntime( DotNetRuntimeIdentifier id ) =>
-      PublishDirectory / id.ToString();
-
-    internal static AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
-  }
 
   [Parameter( $"{nameof(Configuration)} - Configuration to build - Default is 'Debug' (local) or 'Release' (server)" )]
   public readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-  [Parameter( $"{nameof(CustomVersion)} - e.g. '3.1.5-preview.5'" )] //
+  [Parameter( $"{nameof(CustomVersion)} - e.g. '3.1.5-preview.5'" )]
   public readonly string CustomVersion;
 
-  //[Required]
-  [Parameter( $"{nameof(Commit)} - e.g. '4c16978aa41a3b435c0b2e34590f1759c1dc0763'" )] //
+  [Required] //
+  [Parameter( $"{nameof(Commit)} - e.g. '4c16978aa41a3b435c0b2e34590f1759c1dc0763'" )]
   public string Commit;
 
-  [Parameter( $"{nameof(Verbose)} - Verbose console output - Default is 'false'" )] // //
+  [Parameter( $"{nameof(Verbose)} - Verbose console output - Default is 'false'" )]
   public string Verbose = "normal";
 
   [Solution( GenerateProjects = true )] //
   private readonly Solution Solution;
 
-  [GitRepository] // 
+  [GitRepository] //
   private readonly GitRepository Repository;
 
-  [Secret, Parameter( $"{nameof(GitHubToken)} - GitHub token used to create releases" )] // //
+  [Secret, Parameter( $"{nameof(GitHubToken)} - GitHub token used to create releases" )]
   public string GitHubToken;
+
 
   private const bool AllowLocalRelease = true;
 
+  private const string BinaryBuildLogName = "build.binlog";
+  private const string BinaryPublishLogName = "publish.binlog";
+
   private static readonly DotNetRuntimeIdentifier[] SupportedRuntimes = [
     DotNetRuntimeIdentifier.linux_x64,
-    //DotNetRuntimeIdentifier.linux_musl_x64
+    // DotNetRuntimeIdentifier.linux_musl_x64
     // TODO support more architectures
     /*, DotNetRuntimeIdentifier.linux_arm
       , DotNetRuntimeIdentifier.linux_arm64
@@ -70,14 +81,11 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
   private static readonly string[] FilesToDistribute = ["drift", "drift.dbg"];
 
-  private const string BinaryBuildLogName = "build.binlog";
-  private const string BinaryPublishLogName = "publish.binlog";
-
   internal GitHubClient GitHubClient {
     get {
       Credentials credentials;
 
-      //if ( EnvironmentInfo.GetVariable( "GITHUB_TOKEN" ) is { } token ) {
+      // if ( EnvironmentInfo.GetVariable( "GITHUB_TOKEN" ) is { } token ) {
       if ( GitHubToken is { } token ) {
         credentials = new Credentials( token );
       }
@@ -100,6 +108,15 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   }
 
   private string TagName => "v" + SemVer.WithoutMetadata();
+
+  private static class Paths {
+    internal static AbsolutePath PublishDirectory => RootDirectory / "publish";
+
+    internal static AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
+
+    internal static AbsolutePath PublishDirectoryForRuntime( DotNetRuntimeIdentifier id ) =>
+      PublishDirectory / id.ToString();
+  }
 
   // Insurance...
   private Target ExpectedTarget;
@@ -141,7 +158,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     }
   }
 
-  //TODO or is it build type? in that case, Default should probably be Other
+  // TODO or is it build type? in that case, Default should probably be Other
   internal enum VersionStrategy {
     Default,
     Release,
@@ -206,7 +223,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 #pragma warning restore CS0162 // Unreachable code detected
 
         if ( Verbose != "minimal" ) {
-          Log.Warning( "Verbose console output enabled: " + Verbose );
+          Log.Warning( "Verbose console output enabled: {Verbosity}", Verbose );
         }
       }
     );
@@ -287,11 +304,11 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
   Target CheckBuildWarnings => _ => _
     .After( Build )
-    //.TriggeredBy( Build )
+    // .TriggeredBy( Build )
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(CheckBuildWarnings) );
 
-        var warnings = BinaryLog.GetWarnings( BinaryBuildLogName );
+        var warnings = BinaryLogReader.GetWarnings( BinaryBuildLogName );
 
         foreach ( var warning in warnings ) {
           Log.Information( warning );
@@ -310,11 +327,11 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
   Target CheckPublishWarnings => _ => _
     .After( CheckBuildWarnings, PublishBinaries )
-    //.TriggeredBy( Build )
+    // .TriggeredBy( Build )
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(CheckPublishWarnings) );
 
-        var warnings = BinaryLog.GetWarnings( BinaryPublishLogName );
+        var warnings = BinaryLogReader.GetWarnings( BinaryPublishLogName );
 
         foreach ( var warning in warnings ) {
           Log.Information( warning );
@@ -333,9 +350,9 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
   Target CheckWarnings => _ => _
     .DependsOn( CheckBuildWarnings, CheckPublishWarnings )
-    //.TriggeredBy( Publish )
+    // .TriggeredBy( Publish )
     .Executes( () => {
-        //using var _ = new TargetLifecycle( nameof(CheckWarnings) );
+        // using var _ = new TargetLifecycle( nameof(CheckWarnings) );
       }
     );
 
@@ -372,7 +389,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
             .SetOutput( publishDir )
             .SetSelfContained( true )
             .SetVersionProperties( SemVer )
-            //TODO if not specifying a RID, apparently only x64 gets built on x64 host
+            // TODO if not specifying a RID, apparently only x64 gets built on x64 host
             .SetRuntime( runtime )
             .SetProcessAdditionalArguments( $"-bl:{BinaryPublishLogName}" )
             .EnableNoLogo()
@@ -389,7 +406,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(TestE2E) );
 
-        //TODO
+        // TODO
         foreach ( var runtime in SupportedRuntimes ) {
           var publishDir = Paths.PublishDirectoryForRuntime( runtime );
           var driftBinary = publishDir / "drift";
@@ -415,7 +432,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   Target TestLocal => _ => _
     .DependsOn( Test )
     .Executes( () => {
-        //DotNetToolRestore();
+        // DotNetToolRestore();
         var result = ProcessTasks.StartProcess(
           "dotnet",
           "trx --verbosity verbose",
@@ -488,14 +505,14 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     Log.Information( "Removing release draft status..." );
 
     await GitHubClient.Repository.Release.Edit(
-        Repository.GetGitHubOwner(),
-        Repository.GetGitHubName(),
-        release.Id,
-        updateRelease
-      );
+      Repository.GetGitHubOwner(),
+      Repository.GetGitHubName(),
+      release.Id,
+      updateRelease
+    );
   }
 
-  //TODO make static
+  // TODO make static
   private async Task<Release> CreateDraftRelease( bool prerelease ) {
     var newRelease = new NewRelease( TagName ) {
       Draft = true,

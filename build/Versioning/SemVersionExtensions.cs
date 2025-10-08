@@ -1,6 +1,8 @@
 using Nuke.Common.Tools.DotNet;
 using Semver;
 
+namespace Versioning;
+
 internal static class SemVersionExtensions {
   internal static string ToContainerTag( this SemVersion version ) {
     return version.ToString();

@@ -18,6 +18,7 @@
     <PackageVersion Include="NmapXmlParser" Version="1.0.0" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="Nuke.Common" Version="9.0.4" />
+    <PackageVersion Include="Nuke.Tooling" Version="9.0.4" />
     <PackageVersion Include="NUnit" Version="4.4.0" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.10.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="5.1.0" />

@@ -19,4 +19,8 @@
     <PackageReference Include="Nuke.Common" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\src\Build.Utilities\Build.Utilities.csproj" />
+  </ItemGroup>
+
 </Project>

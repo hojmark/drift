@@ -147,7 +147,7 @@
         },
         "MsBuildVerbosity": {
           "type": "string",
-          "description": "MsBuildVerbosity - Verbose console output - Default is 'false'"
+          "description": "MsBuildVerbosity - Console output verbosity - Default is 'normal'"
         },
         "Solution": {
           "type": "string",

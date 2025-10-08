@@ -1,5 +1,3 @@
-using System;
-using System.Globalization;
 using System.Linq;
 using Drift.Build.Utilities.ContainerImage;
 using Nuke.Common;
@@ -11,9 +9,13 @@ using Utilities;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 partial class NukeBuild {
+  /*
   private static readonly string LocalImageName = "drift";
 
   private static readonly string DockerHubImageName = "hojmark/drift";
+  */
+
+
   private static readonly string DockerHubUsername = "hojmark";
 
   [Secret] //
@@ -22,15 +24,13 @@ partial class NukeBuild {
 
   Target PublishContainer => _ => _
     .DependsOn( PublishBinaries, CleanArtifacts )
-    //.Requires( () => SemVer )
     .Requires( () => Commit )
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(PublishContainer) );
 
-        //var localTagVersion = ContainerImageTag( ContainerRegistry.Local, TagType.Version );
         var localTagVersion = ImageReference.Localhost( "drift", SemVer );
 
-        var created = DateTime.UtcNow.ToString( "o", CultureInfo.InvariantCulture ); // o = round-trip format / ISO 8601
+        // var created = DateTime.UtcNow.ToString( "o", CultureInfo.InvariantCulture ); // o = round-trip format / ISO 8601
 
         Log.Information( "Building container image {Tag}", localTagVersion );
         DockerTasks.DockerBuild( s => s
@@ -39,7 +39,7 @@ partial class NukeBuild {
           .SetTag( localTagVersion )
           .SetLabel(
             // Timestamping prevents build from being idempotent
-            //$"\"org.opencontainers.image.created={created}\"",
+            // $"\"org.opencontainers.image.created={created}\"",
             $"\"org.opencontainers.image.version={SemVer.ToString()}\"",
             $"\"org.opencontainers.image.revision={Commit}\""
           )
@@ -64,6 +64,7 @@ partial class NukeBuild {
         DotNetTest( s => s
           .SetProjectFile( Solution.Cli_ContainerTests )
           .SetConfiguration( Configuration )
+          // TODO use this!
           .SetProcessEnvironmentVariable( "DRIFT_CONTAINER_IMAGE_TAG",
             ImageReference.Localhost( "drift", SemVer )
           )
@@ -78,13 +79,12 @@ partial class NukeBuild {
   /// <summary>
   /// Releases container image to public Docker Hub!
   /// </summary>
-  // ReSharper disable once UnusedMember.Local
   Target ReleaseContainer => _ => _
-    // .DependsOn( Publish )
-    .Requires( () => DockerHubPassword )
-    //.Requires( () => SemVer )
     .DependsOn( TestContainer )
+    .Requires( () => DockerHubPassword )
     .Executes( () => {
+        using var _ = new TargetLifecycle( nameof(ReleaseContainer) );
+
         var local = ImageReference.Localhost( "drift", SemVer );
         var dockerHub = new[] {
           ImageReference.DockerIo( "hojmark", "drift", SemVer ),
@@ -98,13 +98,12 @@ partial class NukeBuild {
   /// <summary>
   /// Releases container image to public Docker Hub!
   /// </summary>
-  // ReSharper disable once UnusedMember.Local
   Target PreReleaseContainer => _ => _
-    // .DependsOn( Publish )
-    .Requires( () => DockerHubPassword )
-    //.Requires( () => SemVer )
     .DependsOn( TestContainer )
+    .Requires( () => DockerHubPassword )
     .Executes( () => {
+        using var _ = new TargetLifecycle( nameof(PreReleaseContainer) );
+
         var local = ImageReference.Localhost( "drift", SemVer );
         var dockerHub = new[] { ImageReference.DockerIo( "hojmark", "drift", SemVer ), };
 
@@ -116,37 +115,41 @@ partial class NukeBuild {
     ImageReference[] allReferences = [source, ..targets];
     var loginToDockerHub = allReferences.Any( reference => reference.Host == DockerIoRegistry.Instance );
 
-    if ( loginToDockerHub ) {
-      DockerHubLogin();
-    }
+    try {
+      if ( loginToDockerHub ) {
+        DockerHubLogin();
+      }
 
-    Log.Information(
-      "Pushing {SourceTag} to: {TargetTags}",
-      source,
-      string.Join( ", ", targets.Select( t => t.ToString() ) )
-    );
-
-    foreach ( var target in targets ) {
-      Log.Information( "Re-tagging {SourceTag} -> {TargetTag}", source, target );
-      DockerTasks.DockerTag( s => s
-        .SetSourceImage( source )
-        .SetTargetImage( target )
+      Log.Information(
+        "Pushing {SourceTag} to: {TargetTags}",
+        source,
+        string.Join( ", ", targets.Select( t => t.ToString() ) )
       );
 
-      Log.Information( "Pushing {TargetTag}", target );
-      DockerTasks.DockerPush( s => s
-        .SetName( target )
-      );
-      Log.Information( "Pushed {TargetTag}", target );
-    }
+      foreach ( var target in targets ) {
+        Log.Information( "Re-tagging {SourceTag} -> {TargetTag}", source, target );
+        DockerTasks.DockerTag( s => s
+          .SetSourceImage( source )
+          .SetTargetImage( target )
+        );
 
-    if ( loginToDockerHub ) {
-      DockerHubLogout();
+        Log.Information( "Pushing {TargetTag}", target );
+        DockerTasks.DockerPush( s => s
+          .SetName( target )
+        );
+        Log.Information( "Pushed {TargetTag}", target );
+      }
+    }
+    finally {
+      if ( loginToDockerHub ) {
+        DockerHubLogout();
+      }
     }
   }
 
   private void DockerHubLogin() {
     Log.Information( "Logging in to Docker Hub" );
+
     DockerTasks.DockerLogin( s => s
       .SetUsername( DockerHubUsername )
       .SetPassword( DockerHubPassword )
@@ -156,6 +159,7 @@ partial class NukeBuild {
 
   private static void DockerHubLogout() {
     Log.Information( "Logging out of Docker Hub" );
+
     DockerTasks.DockerLogout( s => s
       .SetServer( "docker.io" )
     );

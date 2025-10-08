@@ -67,7 +67,6 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   [Secret, Parameter( $"{nameof(GitHubToken)} - GitHub token used to create releases" )]
   public string GitHubToken;
 
-
   private const bool AllowLocalRelease = false;
 
   private const string BinaryBuildLogName = "build.binlog";
@@ -75,11 +74,13 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
   private static readonly DotNetRuntimeIdentifier[] SupportedRuntimes = [
     DotNetRuntimeIdentifier.linux_x64,
-    // DotNetRuntimeIdentifier.linux_musl_x64
     // TODO support more architectures
-    /*, DotNetRuntimeIdentifier.linux_arm
+    /*
+      , DotNetRuntimeIdentifier.linux_musl_x64
+      , DotNetRuntimeIdentifier.linux_arm
       , DotNetRuntimeIdentifier.linux_arm64
-      , DotNetRuntimeIdentifier.osx_x64 */
+      , DotNetRuntimeIdentifier.osx_x64
+    */
   ];
 
   private static readonly string[] FilesToDistribute = ["drift", "drift.dbg"];
@@ -144,7 +145,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     if ( IsLocalBuild ) {
       var delay = TimeSpan.FromSeconds( 10 );
       Log.Warning( "⚠️ LOCAL RELEASE BUILD ⚠️" );
-      Log.Warning( $"Continuing in {(int) delay.TotalSeconds} seconds..." );
+      Log.Warning( "Continuing in {Delay} seconds...", (int) delay.TotalSeconds );
       await Task.Delay( delay );
     }
 

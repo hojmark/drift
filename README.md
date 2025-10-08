@@ -18,7 +18,7 @@ state, Drift can detect issues like unknown devices or unexpected subnet access,
 
 You can install Drift by either:
 
-- Downloading the latest release from the [Releases page](https://github.com/hojmark/drift/releases), or
+- Downloading the latest release from the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse), or
 - Running the installation script:
 
     ```bash

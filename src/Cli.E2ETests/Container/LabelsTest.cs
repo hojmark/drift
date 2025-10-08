@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using Semver;
 
-namespace Drift.Cli.ContainerTests;
+namespace Drift.Cli.E2ETests.Container;
 
 internal sealed class LabelsTest : DriftContainerImageFixture {
   private readonly List<string> _ociAnnotationsV1_1_1 = [

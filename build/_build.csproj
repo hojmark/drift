@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\Build.Utilities\Build.Utilities.csproj" />
+    <ProjectReference Include="..\src\Cli.E2ETests.Abstractions\Cli.E2ETests.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

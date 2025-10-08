@@ -1,4 +1,4 @@
-namespace Drift.Cli.ContainerTests;
+namespace Drift.Cli.E2ETests.Container;
 
 internal sealed class PortTest : DriftContainerImageFixture {
   [Test]

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Nuke.Common.Tools.Docker;
 
-namespace Drift.Cli.ContainerTests;
+namespace Drift.Cli.E2ETests.Container;
 
 internal abstract class DriftContainerImageFixture {
   protected string ImageTag {

@@ -1,10 +1,9 @@
-﻿using System.Globalization;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using DotNet.Testcontainers.Builders;
 using Drift.Cli.Abstractions;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Drift.Cli.ContainerTests;
+namespace Drift.Cli.E2ETests.Container;
 
 internal sealed class CommandTests : DriftContainerImageFixture {
   [Test]

@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Drift.Build.Utilities.ContainerImage;
 using Drift.Build.Utilities.MsBuild;
+using Drift.Cli.E2ETests.Abstractions;
 using Nuke.Common;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
@@ -408,7 +411,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     );
 
   Target TestE2E => _ => _
-    .DependsOn( PublishBinaries )
+    .DependsOn( PublishBinaries, PublishContainer )
     .After( TestUnit )
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(TestE2E) );
@@ -421,7 +424,13 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
           DotNetTest( s => s
             .SetProjectFile( Solution.Cli_E2ETests )
             .SetConfiguration( Configuration )
-            .SetProcessEnvironmentVariable( "DRIFT_BINARY_PATH", driftBinary )
+            .SetProcessEnvironmentVariables(
+              new Dictionary<string, string> {
+                { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
+                // TODO use this!
+                { nameof(EnvVar.DRIFT_CONTAINER_IMAGE_TAG), ImageReference.Localhost( "drift", SemVer ).ToString() }
+              }
+            )
             .ConfigureLoggers( MsBuildVerbosityParsed )
             .EnableNoLogo()
             .EnableNoRestore()

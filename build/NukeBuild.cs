@@ -21,6 +21,7 @@ using Versioning;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using AuthenticationType = Octokit.AuthenticationType;
 using Credentials = Octokit.Credentials;
+using DotNetTestSettingsExtensions = Utilities.DotNetTestSettingsExtensions;
 using FileMode = System.IO.FileMode;
 using ProductHeaderValue = Octokit.ProductHeaderValue;
 
@@ -52,8 +53,10 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   [Parameter( $"{nameof(Commit)} - e.g. '4c16978aa41a3b435c0b2e34590f1759c1dc0763'" )]
   public string Commit;
 
-  [Parameter( $"{nameof(Verbose)} - Verbose console output - Default is 'false'" )]
-  public string Verbose = "normal";
+  [Parameter( $"{nameof(Verbosity)} - Verbose console output - Default is 'false'" )]
+  public string Verbosity = MsBuildVerbosity.Normal.ToMsBuildVerbosity();
+
+  private MsBuildVerbosity VerbosityInternal => DotNetTestSettingsExtensions.FromMsBuildVerbosity( Verbosity );
 
   [Solution( GenerateProjects = true )] //
   private readonly Solution Solution;
@@ -222,9 +225,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
         }
 #pragma warning restore CS0162 // Unreachable code detected
 
-        if ( Verbose != "minimal" ) {
-          Log.Warning( "Verbose console output enabled: {Verbosity}", Verbose );
-        }
+        Log.Information( "Console output verbosity: {Verbosity}", Verbosity );
       }
     );
 
@@ -365,7 +366,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
           .SetProjectFile( Solution )
           .SetConfiguration( Configuration )
           .SetFilter( "Category!=E2E&Category!=Container" )
-          .ConfigureLoggers( Verbose )
+          .ConfigureLoggers( VerbosityInternal )
           .EnableNoLogo()
           .EnableNoRestore()
           .EnableNoBuild()
@@ -415,7 +416,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
             .SetProjectFile( Solution.Cli_E2ETests )
             .SetConfiguration( Configuration )
             .SetProcessEnvironmentVariable( "DRIFT_BINARY_PATH", driftBinary )
-            .ConfigureLoggers( Verbose )
+            .ConfigureLoggers( VerbosityInternal )
             .EnableNoLogo()
             .EnableNoRestore()
             .EnableNoBuild()

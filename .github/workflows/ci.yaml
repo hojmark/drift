@@ -7,8 +7,8 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
     inputs:
-      verbose:
-        description: 'Verbosity level'
+      verbosity:
+        description: 'MSBuild verbosity level'
         required: false
         default: 'normal'
         type: choice
@@ -39,7 +39,7 @@ jobs:
           --project ./build/_build.csproj \
           --target Test \
           --commit ${{ github.sha }} \
-          --verbose ${{ github.event.inputs.verbose }}
+          --verbosity ${{ github.event.inputs.verbosity }}
 
       - name: Display test results
         continue-on-error: true

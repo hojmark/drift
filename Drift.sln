@@ -60,6 +60,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Build.Utilities.Tests", "sr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{C0698EF0-61C8-403E-8E93-1F1D34C5B910}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{DD70FBC7-8367-45B3-8D3D-757F1CDF6531}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\ci.yaml = .github\workflows\ci.yaml
+		.github\workflows\release.yaml = .github\workflows\release.yaml
+		.github\workflows\prerelease.yaml = .github\workflows\prerelease.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -161,5 +168,6 @@ Global
 		{8523E9E0-F412-41B7-B361-ADE639FFAF24} = {C0698EF0-61C8-403E-8E93-1F1D34C5B910}
 		{FEA2FBBE-785F-4187-8242-FD348F9E78AF} = {C0698EF0-61C8-403E-8E93-1F1D34C5B910}
 		{272166CF-E425-45F8-984F-FAFD3CE953C9} = {C0698EF0-61C8-403E-8E93-1F1D34C5B910}
+		{DD70FBC7-8367-45B3-8D3D-757F1CDF6531} = {C0698EF0-61C8-403E-8E93-1F1D34C5B910}
 	EndGlobalSection
 EndGlobal

@@ -113,16 +113,11 @@ partial class NukeBuild {
     );
 
   private void Push( ImageReference source, ImageReference[] targets ) {
-    ImageReference[] all = [source, ..targets];
-    var loginToDockerHub = all.Any( reference => reference.Host == DockerIoRegistry.Instance )
+    ImageReference[] allReferences = [source, ..targets];
+    var loginToDockerHub = allReferences.Any( reference => reference.Host == DockerIoRegistry.Instance );
 
     if ( loginToDockerHub ) {
-      Log.Information( "Logging in to Docker Hub" );
-      DockerTasks.DockerLogin( s => s
-        .SetUsername( DockerHubUsername )
-        .SetPassword( DockerHubPassword )
-        .SetServer( DockerIoRegistry.Instance )
-      );
+      DockerHubLogin();
     }
 
     Log.Information(
@@ -146,10 +141,23 @@ partial class NukeBuild {
     }
 
     if ( loginToDockerHub ) {
-      Log.Information( "Logging out of Docker Hub" );
-      DockerTasks.DockerLogout( s => s
-        .SetServer( "docker.io" )
-      );
+      DockerHubLogout();
     }
+  }
+
+  private void DockerHubLogin() {
+    Log.Information( "Logging in to Docker Hub" );
+    DockerTasks.DockerLogin( s => s
+      .SetUsername( DockerHubUsername )
+      .SetPassword( DockerHubPassword )
+      .SetServer( DockerIoRegistry.Instance )
+    );
+  }
+
+  private static void DockerHubLogout() {
+    Log.Information( "Logging out of Docker Hub" );
+    DockerTasks.DockerLogout( s => s
+      .SetServer( "docker.io" )
+    );
   }
 }

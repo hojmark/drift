@@ -55,7 +55,6 @@ partial class NukeBuild {
       }
     );
 
-
   /// <summary>
   /// Releases container image to public Docker Hub!
   /// </summary>
@@ -79,7 +78,7 @@ partial class NukeBuild {
   /// Releases container image to public Docker Hub!
   /// </summary>
   Target PreReleaseContainer => _ => _
-    .DependsOn( TestContainer )
+    .DependsOn( TestE2E )
     .Requires( () => DockerHubPassword )
     .Executes( () => {
         using var _ = new TargetLifecycle( nameof(PreReleaseContainer) );

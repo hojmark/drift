@@ -39,7 +39,7 @@ jobs:
           --project ./build/_build.csproj \
           --target Test \
           --commit ${{ github.sha }} \
-          --verbosity ${{ github.event.inputs.verbosity }}
+          --msbuildverbosity ${{ github.event.inputs.verbosity }}
 
       - name: Display test results
         continue-on-error: true

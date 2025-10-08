@@ -145,13 +145,13 @@
           "description": "GitHubToken - GitHub token used to create releases",
           "default": "Secrets must be entered via 'nuke :secrets [profile]'"
         },
+        "MsBuildVerbosity": {
+          "type": "string",
+          "description": "MsBuildVerbosity - Verbose console output - Default is 'false'"
+        },
         "Solution": {
           "type": "string",
           "description": "Path to a solution file that is automatically loaded"
-        },
-        "Verbose": {
-          "type": "string",
-          "description": "Verbose - Verbose console output - Default is 'false'"
         }
       }
     },

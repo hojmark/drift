@@ -53,10 +53,11 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   [Parameter( $"{nameof(Commit)} - e.g. '4c16978aa41a3b435c0b2e34590f1759c1dc0763'" )]
   public string Commit;
 
-  [Parameter( $"{nameof(Verbosity)} - Verbose console output - Default is 'false'" )]
-  public string Verbosity = MsBuildVerbosity.Normal.ToMsBuildVerbosity();
+  [Parameter( $"{nameof(MsBuildVerbosity)} - Verbose console output - Default is 'false'" )]
+  public string MsBuildVerbosity = Utilities.MsBuildVerbosity.Normal.ToMsBuildVerbosity();
 
-  private MsBuildVerbosity VerbosityInternal => DotNetTestSettingsExtensions.FromMsBuildVerbosity( Verbosity );
+  private MsBuildVerbosity MsBuildVerbosityParsed =>
+    DotNetTestSettingsExtensions.FromMsBuildVerbosity( MsBuildVerbosity );
 
   [Solution( GenerateProjects = true )] //
   private readonly Solution Solution;
@@ -225,7 +226,11 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
         }
 #pragma warning restore CS0162 // Unreachable code detected
 
-        Log.Information( "Console output verbosity: {Verbosity}", Verbosity );
+        Log.Information(
+          "MSBuild console output verbosity: {Verbosity} (parsed from {ParsedVerbosity})",
+          MsBuildVerbosityParsed,
+          MsBuildVerbosity
+        );
       }
     );
 
@@ -366,7 +371,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
           .SetProjectFile( Solution )
           .SetConfiguration( Configuration )
           .SetFilter( "Category!=E2E&Category!=Container" )
-          .ConfigureLoggers( VerbosityInternal )
+          .ConfigureLoggers( MsBuildVerbosityParsed )
           .EnableNoLogo()
           .EnableNoRestore()
           .EnableNoBuild()
@@ -416,7 +421,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
             .SetProjectFile( Solution.Cli_E2ETests )
             .SetConfiguration( Configuration )
             .SetProcessEnvironmentVariable( "DRIFT_BINARY_PATH", driftBinary )
-            .ConfigureLoggers( VerbosityInternal )
+            .ConfigureLoggers( MsBuildVerbosityParsed )
             .EnableNoLogo()
             .EnableNoRestore()
             .EnableNoBuild()

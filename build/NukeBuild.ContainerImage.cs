@@ -67,7 +67,7 @@ partial class NukeBuild {
           .SetProcessEnvironmentVariable( "DRIFT_CONTAINER_IMAGE_TAG",
             ImageReference.Localhost( "drift", SemVer )
           )
-          .ConfigureLoggers( Verbose )
+          .ConfigureLoggers( MsBuildVerbosityParsed )
           .EnableNoLogo()
           .EnableNoRestore()
           .EnableNoBuild()

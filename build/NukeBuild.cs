@@ -69,7 +69,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   public string GitHubToken;
 
 
-  private const bool AllowLocalRelease = true;
+  private const bool AllowLocalRelease = false;
 
   private const string BinaryBuildLogName = "build.binlog";
   private const string BinaryPublishLogName = "publish.binlog";

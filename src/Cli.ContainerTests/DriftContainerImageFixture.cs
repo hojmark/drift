@@ -6,7 +6,7 @@ namespace Drift.Cli.ContainerTests;
 internal abstract class DriftContainerImageFixture {
   protected string ImageTag {
     get;
-  } = "drift:dev";
+  } = "localhost:5000/drift:dev";
 
   protected JsonDocument Inspect() {
     var output = DockerTasks.DockerImageInspect( options => options.SetImages( ImageTag ) );

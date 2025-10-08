@@ -373,7 +373,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
         DotNetTest( s => s
           .SetProjectFile( Solution )
           .SetConfiguration( Configuration )
-          .SetFilter( "Category!=E2E&Category!=Container" )
+          .SetFilter( "Category!=E2E" ) // Negative filter to ensure tests all tests are discovered
           .ConfigureLoggers( MsBuildVerbosityParsed )
           .EnableNoLogo()
           .EnableNoRestore()

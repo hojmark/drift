@@ -42,7 +42,6 @@ using ProductHeaderValue = Octokit.ProductHeaderValue;
 sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   public static int Main() => Execute<NukeBuild>( x => x.Build );
 
-
   [Parameter( $"{nameof(Configuration)} - Configuration to build - Default is 'Debug' (local) or 'Release' (server)" )]
   public readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
@@ -53,7 +52,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   [Parameter( $"{nameof(Commit)} - e.g. '4c16978aa41a3b435c0b2e34590f1759c1dc0763'" )]
   public string Commit;
 
-  [Parameter( $"{nameof(MsBuildVerbosity)} - Verbose console output - Default is 'false'" )]
+  [Parameter( $"{nameof(MsBuildVerbosity)} - Console output verbosity - Default is 'normal'" )]
   public string MsBuildVerbosity = Utilities.MsBuildVerbosity.Normal.ToMsBuildVerbosity();
 
   private MsBuildVerbosity MsBuildVerbosityParsed =>

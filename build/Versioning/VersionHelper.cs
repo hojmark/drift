@@ -9,6 +9,8 @@ using Nuke.Common.Tools.GitHub;
 using Semver;
 using Serilog;
 
+namespace Versioning;
+
 internal static class VersionHelper {
   internal static async Task<SemVersion> GetNextReleaseVersion( NukeBuild build, GitRepository repository ) {
     if ( build.CustomVersion != null ) {
@@ -16,7 +18,7 @@ internal static class VersionHelper {
     }
 
     // .Latest() does not return prereleases
-    var releases = await NukeBuild.GitHubClient.Repository.Release.GetAll(
+    var releases = await build.GitHubClient.Repository.Release.GetAll(
       repository.GetGitHubOwner(),
       repository.GetGitHubName()
     );
@@ -35,7 +37,7 @@ internal static class VersionHelper {
     Log.Debug( "Latest release is {Name} with tag {TagName}", latest?.Name, latestTagName );
 
     var nextReleaseVersion = GetNextReleaseVersionFromTagNameOrThrow( latestTagName );
-    var nextReleaseName = CreateReleaseName( nextReleaseVersion );
+    var nextReleaseName = CreateReleaseName( nextReleaseVersion, includeMetadata: false );
     var nextTagName = $"v{nextReleaseVersion}";
 
     Log.Debug( "Next release is {Name} with tag {TagName}", nextReleaseName, nextTagName );
@@ -55,31 +57,32 @@ internal static class VersionHelper {
     return version;
   }
 
-  internal static SemVersion GetSpecialReleaseVersion( string customVersion = null ) {
+  internal static SemVersion GetPreReleaseVersion( string customVersion = null ) {
     if ( customVersion == null ) {
       throw new InvalidOperationException(
-        $"Must specify {nameof(NukeBuild.CustomVersion)} when releasing a special version" );
+        $"Must specify {nameof(NukeBuild.CustomVersion)} when releasing a pre-release version"
+      );
     }
 
     var ver = SemVersion.Parse( customVersion );
 
     if ( !( ver.Major == 0 && ver.Minor == 0 && ver.Patch == 0 ) ) {
       throw new InvalidOperationException(
-        $"{nameof(NukeBuild.CustomVersion)} must start with 0.0.0 when releasing a special version" );
+        $"{nameof(NukeBuild.CustomVersion)} must start with 0.0.0 when releasing a pre-release version" );
     }
 
     if ( !ver.IsPrerelease ) {
       throw new InvalidOperationException(
-        $"{nameof(NukeBuild.CustomVersion)} must be a prerelease when releasing a special version" );
+        $"{nameof(NukeBuild.CustomVersion)} must be a prerelease when releasing a pre-release version" );
     }
 
     if ( ver.PrereleaseIdentifiers.Contains( new PrereleaseIdentifier( "alpha" ) ) ) {
       throw new InvalidOperationException(
-        $"{nameof(NukeBuild.CustomVersion)} must not contain 'alpha' when releasing a special version" );
+        $"{nameof(NukeBuild.CustomVersion)} must not contain 'alpha' when releasing a pre-release version" );
     }
 
     var metadata = ver.MetadataIdentifiers.ToList();
-    var specialIdentifier = new MetadataIdentifier( "special" );
+    var specialIdentifier = new MetadataIdentifier( "prerelease" );
     if ( !metadata.Contains( specialIdentifier ) ) {
       metadata.Add( specialIdentifier );
     }
@@ -92,11 +95,10 @@ internal static class VersionHelper {
       ver.MetadataIdentifiers
     );
 
-    Log.Information( "Special release version is {Version}", releaseVersion );
+    Log.Information( "Pre-release version is {Version}", releaseVersion );
 
     return releaseVersion;
   }
-
 
   [CanBeNull]
   static SemVersion GetNextReleaseVersionFromTagNameOrThrow( string latestTagName ) {
@@ -121,7 +123,8 @@ internal static class VersionHelper {
     return latestVersion.WithPrerelease( "alpha", nextAlphaNumber.ToString( CultureInfo.InvariantCulture ) );
   }
 
-  internal static string CreateReleaseName( SemVersion version ) {
-    return $"Drift CLI {version.WithoutMetadata()}";
+  internal static string CreateReleaseName( SemVersion version, bool includeMetadata ) {
+    var v = includeMetadata ? version : version.WithoutMetadata();
+    return $"Drift CLI {v}";
   }
 }

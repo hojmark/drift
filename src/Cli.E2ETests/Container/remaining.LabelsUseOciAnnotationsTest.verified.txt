@@ -1,0 +1,8 @@
+﻿[
+  license=,
+  name=,
+  org.opencontainers.image.license=,
+  org.opencontainers.image.name=,
+  vendor=,
+  version=
+]

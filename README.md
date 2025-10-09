@@ -14,7 +14,9 @@ state, Drift can detect issues like unknown devices or unexpected subnet access,
 
 ## 🚀 Getting started
 
-### Install (Linux x64)
+### Linux x64
+
+#### Install
 
 You can install Drift by either:
 
@@ -25,13 +27,13 @@ You can install Drift by either:
     curl -sSL https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.sh | bash
     ```
 
-  ℹ️ **What does this script do?**  
+  ℹ️ **What does the script do?**  
   It fetches the latest version and puts the `drift` binary into `/usr/local/bin`.
   If Drift is already installed, it will be updated to the latest version.
   For more info see [Installation Options - Script](./README_dev.md#script-installsh),
   or [view the source code](./install.sh).
 
-### Run
+#### Run
 
 ```bash
 # Create a network spec using auto-discovery
@@ -39,6 +41,16 @@ drift init
 
 # Scan and detect drift
 drift scan
+```
+
+### Container
+
+#### Run
+
+```bash
+# Scan
+docker run --rm --cap-add=NET_RAW \
+  docker.io/hojmark/drift scan
 ```
 
 ## 🌟 Features
@@ -71,12 +83,6 @@ drift scan
 
 ## ❓ FAQ
 
-### ▸ What can be automatically discovered?
-
-Drift can automatically discover devices (MAC, IPv4, hostname), open ports, and subnets. Due to the massive size of the
-IPv6 address space, full IPv6 scanning isn’t feasible. However, you can still manually define IPv6 addresses for your
-known devices.
-
 ### ▸ Is there any documentation?
 
 Use `--help` on each command to explore functionality.
@@ -95,12 +101,18 @@ There’s no official documentation site yet.
 
 If you run into trouble, feel free to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a).
 
+### ▸ What can be automatically discovered?
+
+Drift can automatically discover devices (MAC, IPv4, hostname), open ports, and subnets. Due to the massive size of the
+IPv6 address space, full IPv6 scanning isn’t feasible. However, you can still manually define IPv6 addresses for your
+known devices.
+
 ### ▸ Is this useful for: _my homelab_?
 
 Yes! That’s exactly what I built it for. I'd love your feedback if you think anything could be improved. Being in alpha,
 I'm sure there's quite a bit!
 
-### ▸ Is this useful for: _a business setting_?
+### ▸ Is this useful for: _a business environment_?
 
 Probably! But I’d love to hear what you think.
 

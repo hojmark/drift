@@ -5,6 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Build.Utilities\Build.Utilities.csproj" />
     <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
     <ProjectReference Include="..\Cli.E2ETests.Abstractions\Cli.E2ETests.Abstractions.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />

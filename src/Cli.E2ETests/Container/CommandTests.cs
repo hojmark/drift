@@ -5,13 +5,13 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Drift.Cli.E2ETests.Container;
 
-internal sealed class CommandTests : DriftContainerImageFixture {
+internal sealed class CommandTests : DriftImageFixture {
   [Test]
   public async Task ValidCommand_ReturnsSuccessExitCode() {
     // Arrange
     var container = new ContainerBuilder()
       .WithLogger( NullLogger.Instance )
-      .WithImage( ImageTag )
+      .WithImage( DriftImage.ToString() )
       .WithCommand( "--help" )
       .Build();
 
@@ -37,7 +37,7 @@ internal sealed class CommandTests : DriftContainerImageFixture {
     // Arrange
     var container = new ContainerBuilder()
       .WithLogger( NullLogger.Instance )
-      .WithImage( ImageTag )
+      .WithImage( DriftImage.ToString() )
       .WithCommand( "bogus" )
       .Build();
 

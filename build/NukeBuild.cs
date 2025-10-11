@@ -131,17 +131,26 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   private async Task ValidateAllowedReleaseTargetOrThrow( Target target ) {
     if ( ExpectedTarget != target ) {
       throw new InvalidOperationException(
-        $"Target not allowed: {target}. Unexpected target. Did execution plan not contain {nameof(Version)}?" );
+        $"Target not allowed: {target}. Unexpected target. Did execution plan not contain {nameof(Version)}?"
+      );
     }
 
     if ( IsLocalBuild && !AllowLocalRelease ) {
       throw new InvalidOperationException(
-        $"Target not allowed: {nameof(target)}. A local release build was prevented." );
+        $"Target not allowed: {nameof(target)}. A local release build was prevented."
+      );
     }
 
     if ( Configuration != Configuration.Release ) {
       throw new InvalidOperationException(
-        $"Releases must be built with {nameof(Configuration)}.{nameof(Configuration.Release)}" );
+        $"Releases must be built with {nameof(Configuration)}.{nameof(Configuration.Release)}"
+      );
+    }
+
+    var tags = await GitHubClient.Repository.GetAllTags( Repository.GetGitHubOwner(), Repository.GetGitHubName() );
+
+    if ( tags.Any( t => t.Name == TagName ) ) {
+      throw new InvalidOperationException( $"Release {TagName} already exists" );
     }
 
     if ( IsLocalBuild ) {
@@ -149,18 +158,6 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
       Log.Warning( "⚠️ LOCAL RELEASE BUILD ⚠️" );
       Log.Warning( "Continuing in {Delay} seconds...", (int) delay.TotalSeconds );
       await Task.Delay( delay );
-    }
-
-    var tags = await GitHubClient.Repository.GetAllTags(
-      Repository.GetGitHubOwner(),
-      Repository.GetGitHubName()
-    );
-
-    if ( tags.Any( t => t.Name == TagName ) ) {
-      throw new InvalidOperationException( $"Release {TagName} already exists" );
-    }
-    else {
-      Log.Debug( "Release {TagName} does not exist", TagName );
     }
   }
 
@@ -181,7 +178,8 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
         if ( ExecutionPlan.Contains( Release ) && ExecutionPlan.Contains( PreRelease ) ) {
           throw new InvalidOperationException(
-            $"Execution plan cannot contain both {nameof(Release)} and {nameof(PreRelease)}" );
+            $"Execution plan cannot contain both {nameof(Release)} and {nameof(PreRelease)}"
+          );
         }
 
         if ( ExecutionPlan.Contains( Release ) ) {
@@ -210,11 +208,11 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     .DependsOn( Version )
     .DependentFor( Build )
     .Executes( () => {
+        var providedVersion = string.IsNullOrEmpty( CustomVersion ) ? "[none]" : CustomVersion;
+
         var builder = new StringBuilder();
         builder.AppendLine( $"Configuration        : {Configuration}" );
-        builder.AppendLine( $"Version - provided   : {
-          ( string.IsNullOrEmpty( CustomVersion ) ? "[none]" : CustomVersion )
-        }" );
+        builder.AppendLine( $"Version - provided   : {providedVersion}" );
         builder.AppendLine( $"Version - determined : {SemVer}" );
         builder.AppendLine( $"Tag Name             : {TagName}" );
         builder.AppendLine( $"Prerelease           : {SemVer.IsPrerelease}" );
@@ -222,11 +220,9 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
         Log.Information( "BUILD INFORMATION:\n{BuildInfo}", builder.ToString() );
 
-#pragma warning disable CS0162 // Unreachable code detected
         if ( AllowLocalRelease ) {
           Log.Warning( "Allowing locally built releases!" );
         }
-#pragma warning restore CS0162 // Unreachable code detected
 
         Log.Information(
           "MSBuild console output verbosity: {Verbosity} (parsed from {ParsedVerbosity})",
@@ -236,6 +232,9 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
+  Target Clean => _ => _
+    .DependsOn( CleanProjects, CleanArtifacts );
+
   Target CleanProjects => _ => _
     .Before( Restore )
     .Executes( () => {
@@ -243,16 +242,17 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
         var dirsToDelete = Solution.AllProjects
           .Where( project =>
-            // Do not clean the build project
+            // Do not clean the [NUKE] _build project
             project.Path != BuildProjectFile
           )
           .SelectMany( project => new[] {
-            // Build dirs
-            project.Directory / "bin", project.Directory / "obj",
+              // Build directories
+              project.Directory / "bin", project.Directory / "obj",
 
-            // trx logger
-            project.Directory / "TestResults"
-          } )
+              // trx logs
+              project.Directory / "TestResults"
+            }
+          )
           .Where( dir => dir.Exists() )
           .ToList();
 
@@ -280,9 +280,6 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
-  Target Clean => _ => _
-    .DependsOn( CleanProjects, CleanArtifacts );
-
   Target Restore => _ => _
     .DependsOn( CleanProjects )
     .Executes( () => {
@@ -307,6 +304,14 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
           .EnableNoLogo()
           .EnableNoRestore()
         );
+      }
+    );
+
+  Target CheckWarnings => _ => _
+    .DependsOn( CheckBuildWarnings, CheckPublishWarnings )
+    // .TriggeredBy( Publish )
+    .Executes( () => {
+        // using var _ = new TargetLifecycle( nameof(CheckWarnings) );
       }
     );
 
@@ -356,11 +361,19 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
       }
     );
 
-  Target CheckWarnings => _ => _
-    .DependsOn( CheckBuildWarnings, CheckPublishWarnings )
-    // .TriggeredBy( Publish )
+  Target Test => _ => _
+    .DependsOn( TestUnit, TestE2E );
+
+  Target TestLocal => _ => _
+    .DependsOn( Test )
     .Executes( () => {
-        // using var _ = new TargetLifecycle( nameof(CheckWarnings) );
+        // DotNetToolRestore();
+        var result = ProcessTasks.StartProcess(
+          "dotnet",
+          "trx --verbosity verbose",
+          workingDirectory: RootDirectory
+        );
+        result.AssertZeroExitCode();
       }
     );
 
@@ -379,33 +392,6 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
           .EnableNoRestore()
           .EnableNoBuild()
         );
-      }
-    );
-
-  Target PublishBinaries => _ => _
-    .DependsOn( Build, CleanArtifacts )
-    .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(PublishBinaries) );
-
-        // TODO https://nuke.build/docs/common/cli-tools/#combinatorial-modifications
-        foreach ( var runtime in SupportedRuntimes ) {
-          var publishDir = Paths.PublishDirectoryForRuntime( runtime );
-
-          Log.Information( "Publishing {Runtime} build to {PublishDir}", runtime, publishDir );
-          DotNetPublish( s => s
-            .SetProject( Solution.Cli )
-            .SetConfiguration( Configuration )
-            .SetOutput( publishDir )
-            .SetSelfContained( true )
-            .SetVersionProperties( SemVer )
-            // TODO if not specifying a RID, apparently only x64 gets built on x64 host
-            .SetRuntime( runtime )
-            .SetProcessAdditionalArguments( $"-bl:{BinaryPublishLogName}" )
-            .EnableNoLogo()
-            .EnableNoRestore()
-            .EnableNoBuild()
-          );
-        }
       }
     );
 
@@ -499,20 +485,31 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
     return output;
   }
-
-  Target Test => _ => _
-    .DependsOn( TestUnit, TestE2E );
-
-  Target TestLocal => _ => _
-    .DependsOn( Test )
+  
+  Target PublishBinaries => _ => _
+    .DependsOn( Build, CleanArtifacts )
     .Executes( () => {
-        // DotNetToolRestore();
-        var result = ProcessTasks.StartProcess(
-          "dotnet",
-          "trx --verbosity verbose",
-          workingDirectory: RootDirectory
-        );
-        result.AssertZeroExitCode();
+        using var _ = new TargetLifecycle( nameof(PublishBinaries) );
+
+        // TODO https://nuke.build/docs/common/cli-tools/#combinatorial-modifications
+        foreach ( var runtime in SupportedRuntimes ) {
+          var publishDir = Paths.PublishDirectoryForRuntime( runtime );
+
+          Log.Information( "Publishing {Runtime} build to {PublishDir}", runtime, publishDir );
+          DotNetPublish( s => s
+            .SetProject( Solution.Cli )
+            .SetConfiguration( Configuration )
+            .SetOutput( publishDir )
+            .SetSelfContained( true )
+            .SetVersionProperties( SemVer )
+            // TODO if not specifying a RID, apparently only x64 gets built on x64 host
+            .SetRuntime( runtime )
+            .SetProcessAdditionalArguments( $"-bl:{BinaryPublishLogName}" )
+            .EnableNoLogo()
+            .EnableNoRestore()
+            .EnableNoBuild()
+          );
+        }
       }
     );
 

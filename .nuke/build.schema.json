@@ -27,7 +27,7 @@
         "Build",
         "BuildInfo",
         "CheckBuildWarnings",
-        "CheckPublishWarnings",
+        "CheckPublishBinariesWarnings",
         "CheckWarnings",
         "Clean",
         "CleanArtifacts",

@@ -1,12 +1,13 @@
 using System.Linq;
 using Drift.Build.Utilities.ContainerImage;
 using Nuke.Common;
-using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Docker;
-using Nuke.Common.Tools.DotNet;
 using Serilog;
 using Utilities;
-using static Nuke.Common.Tools.DotNet.DotNetTasks;
+
+// ReSharper disable VariableHidesOuterVariable
+// ReSharper disable AllUnderscoreLocalParameterName
+// ReSharper disable UnusedMember.Local
 
 partial class NukeBuild {
   /*
@@ -71,6 +72,8 @@ partial class NukeBuild {
         };
 
         Push( local, dockerHub );
+
+        Log.Information( "🐋 Released {ImageReference} to Docker Hub!", dockerHub.Last() );
       }
     );
 
@@ -84,13 +87,15 @@ partial class NukeBuild {
         using var _ = new TargetLifecycle( nameof(PreReleaseContainer) );
 
         var local = ImageReference.Localhost( "drift", SemVer );
-        var dockerHub = new[] { ImageReference.DockerIo( "hojmark", "drift", SemVer ), };
+        var dockerHub = ImageReference.DockerIo( "hojmark", "drift", SemVer );
 
         Push( local, dockerHub );
+
+        Log.Information( "🐋 Released {ImageReference} to Docker Hub!", dockerHub );
       }
     );
 
-  private void Push( ImageReference source, ImageReference[] targets ) {
+  private void Push( ImageReference source, params ImageReference[] targets ) {
     ImageReference[] allReferences = [source, ..targets];
     var loginToDockerHub = allReferences.Any( reference => reference.Host == DockerIoRegistry.Instance );
 

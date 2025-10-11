@@ -45,7 +45,7 @@ jobs:
       - name: Display test results
         continue-on-error: true
         if: always()
-        run: dotnet trx --verbosity verbose #--output
+        run: dotnet trx --verbosity normal
 
       - name: Check for warnings
         continue-on-error: true # TODO remove

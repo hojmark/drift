@@ -37,4 +37,4 @@ jobs:
       - name: Display test results
         continue-on-error: true
         if: always()
-        run: dotnet trx --verbosity verbose
+        run: dotnet trx --verbosity normal

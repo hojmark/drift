@@ -31,8 +31,8 @@ internal abstract class DriftImageFixture {
     }
   }
 
-  protected JsonDocument Inspect() {
-    var output = DockerTasks.DockerImageInspect( options => options.SetImages( [DriftImage.ToString()] ) );
+  protected static JsonDocument Inspect() {
+    var output = DockerTasks.DockerImageInspect( options => options.SetImages( DriftImage.ToString() ) );
 
     var jsonText = string.Join( Environment.NewLine, output.Select( o => o.Text ) );
 

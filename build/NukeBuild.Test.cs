@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Drift.Build.Utilities.ContainerImage;
 using Drift.Cli.E2ETests.Abstractions;
+using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
@@ -55,28 +57,6 @@ sealed partial class NukeBuild {
     .Executes( async () => {
         using var _ = new TargetLifecycle( nameof(TestE2E) );
 
-        string? podmanHost = null;
-        if ( IsPodmanAvailable() ) {
-          // Step 1: Run `podman info --format json`
-          ProcessStartInfo psi = new ProcessStartInfo {
-            FileName = "podman",
-            Arguments = "info --format '{{.Host.RemoteSocket.Path}}'",
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-          };
-
-          using Process process = Process.Start( psi );
-          string output = process.StandardOutput.ReadToEnd();
-          await process.WaitForExitAsync();
-
-          podmanHost = "unix://" + output.Trim().Trim( '\'' );
-          Log.Information( "Found socket path: {SocketPath}", podmanHost );
-        }
-        else {
-          Log.Warning( "Podman not available. " );
-        }
-
         // TODO
         foreach ( var runtime in SupportedRuntimes ) {
           var publishDir = Paths.PublishDirectoryForRuntime( runtime );
@@ -87,10 +67,12 @@ sealed partial class NukeBuild {
             // TODO use this!
             { nameof(EnvVar.DRIFT_CONTAINER_IMAGE_TAG), ImageReference.Localhost( "drift", SemVer ).ToString() }
           };
+          var alternateDockerHost = await FindAlternateDockerHostAsync();
 
           DotNetTest( s => {
-            if ( podmanHost != null ) {
-              s.SetProcessEnvironmentVariable( "DOCKER_HOST", podmanHost );
+            if ( alternateDockerHost != null ) {
+              Log.Information( "Using alternate Docker host: {Host}", alternateDockerHost );
+              s.SetProcessEnvironmentVariable( "DOCKER_HOST", alternateDockerHost );
             }
 
             return s
@@ -108,7 +90,35 @@ sealed partial class NukeBuild {
       }
     );
 
-  static bool IsPodmanAvailable() {
+  [ItemCanBeNull]
+  private static async Task<string> FindAlternateDockerHostAsync() {
+    Log.Debug( "Looking for alternate Docker host..." );
+
+    if ( IsPodmanAvailable() ) {
+      var psi = new ProcessStartInfo {
+        FileName = "podman",
+        Arguments = "info --format '{{.Host.RemoteSocket.Path}}'",
+        RedirectStandardOutput = true,
+        UseShellExecute = false,
+        CreateNoWindow = true
+      };
+
+      using var process = Process.Start( psi );
+      await process.WaitForExitAsync();
+
+      string output = await process.StandardOutput.ReadToEndAsync();
+
+      var host = "unix://" + output.Trim().Trim( '\'' );
+
+      Log.Debug( "Found Podman at {SocketPath}", host );
+    }
+
+    Log.Debug( "Found no Docker host alternative" );
+
+    return null;
+  }
+
+  private static bool IsPodmanAvailable() {
     try {
       string versionOutput = RunCommand( "podman", "--version" );
       return versionOutput.StartsWith( "podman", StringComparison.OrdinalIgnoreCase );
@@ -119,7 +129,7 @@ sealed partial class NukeBuild {
   }
 
   static string RunCommand( string command, string arguments ) {
-    ProcessStartInfo psi = new ProcessStartInfo {
+    var psi = new ProcessStartInfo {
       FileName = command,
       Arguments = arguments,
       RedirectStandardOutput = true,
@@ -128,10 +138,10 @@ sealed partial class NukeBuild {
       CreateNoWindow = true
     };
 
-    using Process process = Process.Start( psi );
+    using var process = Process.Start( psi );
+    process.WaitForExit();
     string output = process.StandardOutput.ReadToEnd();
     string error = process.StandardError.ReadToEnd();
-    process.WaitForExit();
 
     if ( process.ExitCode != 0 ) {
       throw new Exception( $"Command '{command} {arguments}' failed with error:\n{error}" );

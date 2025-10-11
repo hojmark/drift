@@ -25,7 +25,12 @@ public static class ExitCodes {
   public const int GeneralError = 2;
 
   /// <summary>
+  /// Indicates that a command timed out.
+  /// </summary>
+  public const int TimeOutError = 3;
+
+  /// <summary>
   /// Indicates that a spec validation error occurred.
   /// </summary>
-  public const int SpecValidationError = 3;
+  public const int SpecValidationError = 4;
 }

@@ -78,12 +78,36 @@ internal sealed class InitCommandTests {
   [Test]
   public async Task MissingNameOption() {
     // Arrange / Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "init" );
+    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "init --overwrite" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
       await Verify( output.ToString() + error );
+    }
+  }
+
+  [Explicit( "Implement interactive cancellation" )]
+  [Test]
+  public async Task CancellationIsRespected() {
+    // Arrange
+    var cancellationTokenSource = new CancellationTokenSource( TimeSpan.FromSeconds( 2 ) );
+
+    try {
+      // Act
+      var (exitCode, _, _) = await DriftTestCli.InvokeFromTestAsync(
+        "init",
+        cancellationToken: cancellationTokenSource.Token
+      );
+
+      // Assert
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( cancellationTokenSource.Token.IsCancellationRequested );
+        Assert.That( exitCode, Is.EqualTo( ExitCodes.TimeOutError ) );
+      }
+    }
+    finally {
+      cancellationTokenSource.Dispose();
     }
   }
 

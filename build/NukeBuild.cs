@@ -328,6 +328,7 @@ sealed class NukeBuild : Nuke.Common.NukeBuild {
           .SetConfiguration( Configuration )
           .SetFilter( "Category!=E2E" )
           .ConfigureLoggers( Verbose )
+          .SetBlameHangTimeout( "60s" )
           .EnableNoLogo()
           .EnableNoRestore()
           .EnableNoBuild()

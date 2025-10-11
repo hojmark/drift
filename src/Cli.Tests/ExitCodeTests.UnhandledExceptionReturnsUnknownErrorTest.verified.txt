@@ -3,4 +3,4 @@
    at Drift.Cli.Commands.Common.CommandBase`2.<>c__DisplayClass0_0.<.ctor>b__0(ParseResult parseResult, CancellationToken cancellationToken) in {SolutionDirectory}src/Cli/Commands/Common/CommandBase.cs:line 25
    at System.CommandLine.Invocation.AnonymousAsynchronousCommandLineAction.InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
    at System.CommandLine.Invocation.InvocationPipeline.InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
-   at Drift.Cli.DriftCli.InvokeAsync(String[] args, Boolean toConsole, Boolean plainConsole, Action`1 configureServices, CommandRegistration[] customCommands, Action`1 configureCommandLineConfig) in {SolutionDirectory}src/Cli/DriftCli.cs:line 37
+   at Drift.Cli.DriftCli.InvokeAsync(String[] args, Boolean toConsole, Boolean plainConsole, Action`1 configureServices, CommandRegistration[] customCommands, Action`1 configureCommandLineConfig, CancellationToken cancellationToken) in {SolutionDirectory}src/Cli/DriftCli.cs:line 38

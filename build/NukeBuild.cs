@@ -52,9 +52,8 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   [Parameter( $"{nameof(CustomVersion)} - e.g. '3.1.5-preview.5'" )]
   public readonly string CustomVersion;
 
-  [Required] //
   [Parameter( $"{nameof(Commit)} - e.g. '4c16978aa41a3b435c0b2e34590f1759c1dc0763'" )]
-  public string Commit;
+  public string Commit = IsLocalBuild ? "0000000000000000000000000000000000000000" : null;
 
   [Parameter( $"{nameof(MsBuildVerbosity)} - Console output verbosity - Default is 'normal'" )]
   public string MsBuildVerbosity = Utilities.MsBuildVerbosity.Normal.ToMsBuildVerbosity();
@@ -93,7 +92,6 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     get {
       Credentials credentials;
 
-      // if ( EnvironmentInfo.GetVariable( "GITHUB_TOKEN" ) is { } token ) {
       if ( GitHubToken is { } token ) {
         credentials = new Credentials( token );
       }
@@ -450,21 +448,20 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
             { nameof(EnvVar.DRIFT_CONTAINER_IMAGE_TAG), ImageReference.Localhost( "drift", SemVer ).ToString() }
           };
 
-          if ( podmanHost != null ) {
-            envs.Add( "DOCKER_HOST", podmanHost );
-          }
+          DotNetTest( s => {
+            if ( podmanHost != null ) {
+              s.SetProcessEnvironmentVariable( "DOCKER_HOST", podmanHost );
+            }
 
-          DotNetTest( s => s
-            .SetProjectFile( Solution.Cli_E2ETests )
-            .SetConfiguration( Configuration )
-            .SetProcessEnvironmentVariables(
-              envs
-            )
-            .ConfigureLoggers( MsBuildVerbosityParsed )
-            .EnableNoLogo()
-            .EnableNoRestore()
-            .EnableNoBuild()
-          );
+            return s
+              .SetProjectFile( Solution.Cli_E2ETests )
+              .SetConfiguration( Configuration )
+              .AddProcessEnvironmentVariables( envs )
+              .ConfigureLoggers( MsBuildVerbosityParsed )
+              .EnableNoLogo()
+              .EnableNoRestore()
+              .EnableNoBuild();
+          } );
 
           Log.Information( "Running E2E test on {Runtime} build to {PublishDir}", runtime, publishDir );
         }

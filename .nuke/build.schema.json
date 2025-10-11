@@ -41,7 +41,6 @@
         "ReleaseContainer",
         "Restore",
         "Test",
-        "TestContainer",
         "TestE2E",
         "TestLocal",
         "TestUnit",

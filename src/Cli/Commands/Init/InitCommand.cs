@@ -81,7 +81,7 @@ internal class InitCommandHandler(
     output.Log.LogDebug( "Running init command" );
 
     var initOptions = isInteractive
-      ? RunInteractive( output.Normal )
+      ? RunInteractive( output.Normal, cancellationToken )
       : RunNonInteractive( output, parameters.SpecFile?.Name, parameters.Overwrite, parameters.Discover );
 
     if ( initOptions == null ) {
@@ -118,7 +118,7 @@ internal class InitCommandHandler(
            );
   }
 
-  private static InitOptions RunInteractive( INormalOutput console ) {
+  private static InitOptions RunInteractive( INormalOutput console, CancellationToken cancellationToken ) {
     // TODO first run logic
     // var driftStatePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.UserProfile ), ".drift" );
 

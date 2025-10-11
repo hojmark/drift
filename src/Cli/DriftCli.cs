@@ -13,7 +13,8 @@ internal static class DriftCli {
     bool plainConsole = false,
     Action<IServiceCollection>? configureServices = null,
     RootCommandFactory.CommandRegistration[]? customCommands = null,
-    Action<CommandLineConfiguration>? configureCommandLineConfig = null
+    Action<CommandLineConfiguration>? configureCommandLineConfig = null,
+    CancellationToken cancellationToken = default
   ) {
     // Justification: intentionally using the most basic output form to make sure the error is surfaced, no matter what code fails
 #pragma warning disable RS0030
@@ -34,7 +35,7 @@ internal static class DriftCli {
 
       error = config.Error;
 
-      return await config.InvokeAsync( args );
+      return await config.InvokeAsync( args, cancellationToken );
     }
     catch ( Exception e ) {
       Console.ForegroundColor = ConsoleColor.DarkRed;

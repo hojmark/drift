@@ -6,30 +6,47 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Drift.Cli.Tests.Utils;
 
 internal static class DriftTestCli {
+  private static readonly TimeSpan DefaultCommandTimeout = TimeSpan.FromSeconds( 7 );
+
   internal static async Task<(int ExitCode, TextWriter Output, TextWriter Error )> InvokeFromTestAsync(
     string args,
     Action<IServiceCollection>? configureServices = null,
-    RootCommandFactory.CommandRegistration[]? customCommands = null
+    RootCommandFactory.CommandRegistration[]? customCommands = null,
+    CancellationToken cancellationToken = default
   ) {
+    var token = cancellationToken;
+    CancellationTokenSource? cancellationTokenSource = null;
+
+    if ( cancellationToken == default ) {
+      cancellationTokenSource = new CancellationTokenSource( DefaultCommandTimeout );
+      token = cancellationTokenSource.Token;
+    }
+
     var output = new StringWriter();
     var error = new StringWriter();
 
-    var configureCommandLineConfig = ( CommandLineConfiguration config ) => {
+    void ConfigureCommandLine( CommandLineConfiguration config ) {
       config.Output = output;
       config.Error = error;
-    };
+    }
 
-    return (
-      await DriftCli.InvokeAsync(
-        CommandLineParser.SplitCommandLine( args ).ToArray(),
-        false,
-        true,
-        configureServices,
-        customCommands,
-        configureCommandLineConfig
-      ),
-      output,
-      error
-    );
+    try {
+      return (
+        await DriftCli.InvokeAsync(
+          CommandLineParser.SplitCommandLine( args ).ToArray(),
+          false,
+          true,
+          configureServices,
+          customCommands,
+          ConfigureCommandLine,
+          token
+        ),
+        output,
+        error
+      );
+    }
+    finally {
+      cancellationTokenSource?.Dispose();
+    }
   }
 }

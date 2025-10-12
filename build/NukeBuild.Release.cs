@@ -23,7 +23,7 @@ internal partial class NukeBuild {
   Target Release => _ => _
     .DependsOn( PackBinaries, ReleaseContainer, Test )
     .Executes( async () => {
-        using var _ = new TargetLifecycle( nameof(Release) );
+        using var _ = new OperationTimer( nameof(Release) );
 
         Log.Information( "��� RELEASING ���" );
 
@@ -44,7 +44,7 @@ internal partial class NukeBuild {
     )
     .DependsOn( PackBinaries, PreReleaseContainer, Test )
     .Executes( async () => {
-        using var _ = new TargetLifecycle( nameof(PreRelease) );
+        using var _ = new OperationTimer( nameof(PreRelease) );
 
         Log.Information( "�️ RELEASING �️" );
 

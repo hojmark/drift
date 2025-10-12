@@ -16,7 +16,7 @@ sealed partial class NukeBuild {
   Target CleanProjects => _ => _
     .Before( Restore )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(CleanProjects) );
+        using var _ = new OperationTimer( nameof(CleanProjects) );
 
         var dirsToDelete = Solution.AllProjects
           .Where( project =>
@@ -48,7 +48,7 @@ sealed partial class NukeBuild {
   Target CleanArtifacts => _ => _
     .Before( Restore )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(CleanArtifacts) );
+        using var _ = new OperationTimer( nameof(CleanArtifacts) );
 
         Log.Debug( "Cleaning {Directory}", Paths.PublishDirectory );
         Paths.PublishDirectory.CreateOrCleanDirectory();

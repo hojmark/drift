@@ -24,7 +24,7 @@ sealed partial class NukeBuild {
     .After( Build )
     // .TriggeredBy( Build )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(CheckBuildWarnings) );
+        using var _ = new OperationTimer( nameof(CheckBuildWarnings) );
 
         var warnings = BinaryLogReader.GetWarnings( BinaryBuildLogName );
 
@@ -47,7 +47,7 @@ sealed partial class NukeBuild {
     .After( CheckBuildWarnings, PublishBinaries )
     // .TriggeredBy( Build )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(CheckPublishBinariesWarnings) );
+        using var _ = new OperationTimer( nameof(CheckPublishBinariesWarnings) );
 
         var warnings = BinaryLogReader.GetWarnings( BinaryPublishLogName );
 

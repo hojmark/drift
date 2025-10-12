@@ -19,7 +19,7 @@ sealed partial class NukeBuild {
   Target PublishBinaries => _ => _
     .DependsOn( Build, CleanArtifacts )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(PublishBinaries) );
+        using var _ = new OperationTimer( nameof(PublishBinaries) );
 
         // TODO https://nuke.build/docs/common/cli-tools/#combinatorial-modifications
         foreach ( var runtime in SupportedRuntimes ) {
@@ -46,7 +46,7 @@ sealed partial class NukeBuild {
   Target PackBinaries => _ => _
     .DependsOn( PublishBinaries, CleanArtifacts )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(PackBinaries) );
+        using var _ = new OperationTimer( nameof(PackBinaries) );
 
         foreach ( var runtime in SupportedRuntimes ) {
           var publishDir = Paths.PublishDirectoryForRuntime( runtime );

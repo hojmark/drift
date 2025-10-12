@@ -5,7 +5,7 @@ using Serilog;
 
 namespace Utilities;
 
-internal sealed class TargetLifecycle( string targetName ) : IDisposable {
+internal sealed class OperationTimer( string operationName ) : IDisposable {
   private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
 
   public void Dispose() {
@@ -14,6 +14,6 @@ internal sealed class TargetLifecycle( string targetName ) : IDisposable {
 
   private void Complete() {
     var elapsed = _stopwatch.Elapsed.Humanize( 2 );
-    Log.Information( "🏁 {Target} completed in {Elapsed}", targetName, elapsed );
+    Log.Information( "🏁 {Operation} completed in {Elapsed}", operationName, elapsed );
   }
 }

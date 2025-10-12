@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Drift.Build.Utilities.ContainerImage;
 using Drift.Cli.E2ETests.Abstractions;
@@ -36,7 +37,7 @@ sealed partial class NukeBuild {
   Target TestUnit => _ => _
     .DependsOn( Build )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(TestUnit) );
+        using var _ = new OperationTimer( nameof(TestUnit) );
 
         DotNetTest( s => s
           .SetProjectFile( Solution )
@@ -55,55 +56,59 @@ sealed partial class NukeBuild {
     .DependsOn( PublishBinaries, PublishContainer )
     .After( TestUnit )
     .Executes( async () => {
-        using var _ = new TargetLifecycle( nameof(TestE2E) );
+        using var _ = new OperationTimer( nameof(TestE2E) );
 
         // TODO
         foreach ( var runtime in SupportedRuntimes ) {
-          var publishDir = Paths.PublishDirectoryForRuntime( runtime );
-          var driftBinary = publishDir / "drift";
+          var driftBinary = Paths.PublishDirectoryForRuntime( runtime ) / "drift";
 
-          var envs = new Dictionary<string, string> {
+          var envVars = new Dictionary<string, string> {
             { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
             // TODO use this!
             { nameof(EnvVar.DRIFT_CONTAINER_IMAGE_TAG), ImageReference.Localhost( "drift", SemVer ).ToString() }
           };
+
           var alternateDockerHost = await FindAlternateDockerHostAsync();
 
-          DotNetTest( s => {
+          DotNetTest( settings => {
             if ( alternateDockerHost != null ) {
               Log.Information( "Using alternate Docker host: {Host}", alternateDockerHost );
-              s.SetProcessEnvironmentVariable( "DOCKER_HOST", alternateDockerHost );
+              settings.SetProcessEnvironmentVariable( "DOCKER_HOST", alternateDockerHost );
             }
 
-            return s
+            return settings
               .SetProjectFile( Solution.Cli_E2ETests )
               .SetConfiguration( Configuration )
-              .AddProcessEnvironmentVariables( envs )
+              .AddProcessEnvironmentVariables( envVars )
               .ConfigureLoggers( MsBuildVerbosityParsed )
               .EnableNoLogo()
               .EnableNoRestore()
               .EnableNoBuild();
           } );
 
-          Log.Information( "Running E2E test on {Runtime} build to {PublishDir}", runtime, publishDir );
+          Log.Information( "Running E2E test on {Runtime} using binary {Binary}", runtime, driftBinary );
         }
       }
     );
 
   [ItemCanBeNull]
   private static async Task<string> FindAlternateDockerHostAsync() {
+    if ( !RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
+      Log.Debug( "Not running on Linux, skipping alternate Docker host search" );
+      return null;
+    }
+
     Log.Debug( "Looking for alternate Docker host..." );
 
-    if ( IsPodmanAvailable() ) {
-      var psi = new ProcessStartInfo {
+    if ( await IsPodmanAvailableAsync() ) {
+      using var process = Process.Start( new ProcessStartInfo {
         FileName = "podman",
         Arguments = "info --format '{{.Host.RemoteSocket.Path}}'",
         RedirectStandardOutput = true,
         UseShellExecute = false,
         CreateNoWindow = true
-      };
+      } );
 
-      using var process = Process.Start( psi );
       await process.WaitForExitAsync();
 
       string output = await process.StandardOutput.ReadToEndAsync();
@@ -118,9 +123,9 @@ sealed partial class NukeBuild {
     return null;
   }
 
-  private static bool IsPodmanAvailable() {
+  private static async Task<bool> IsPodmanAvailableAsync() {
     try {
-      string versionOutput = RunCommand( "podman", "--version" );
+      var versionOutput = await RunCommandAsync( "podman", "--version" );
       return versionOutput.StartsWith( "podman", StringComparison.OrdinalIgnoreCase );
     }
     catch {
@@ -128,23 +133,23 @@ sealed partial class NukeBuild {
     }
   }
 
-  static string RunCommand( string command, string arguments ) {
-    var psi = new ProcessStartInfo {
+  static async Task<string> RunCommandAsync( string command, string arguments ) {
+    using var process = Process.Start( new ProcessStartInfo {
       FileName = command,
       Arguments = arguments,
       RedirectStandardOutput = true,
       RedirectStandardError = true,
       UseShellExecute = false,
       CreateNoWindow = true
-    };
+    } );
 
-    using var process = Process.Start( psi );
-    process.WaitForExit();
+    await process.WaitForExitAsync();
+
     string output = process.StandardOutput.ReadToEnd();
     string error = process.StandardError.ReadToEnd();
 
     if ( process.ExitCode != 0 ) {
-      throw new Exception( $"Command '{command} {arguments}' failed with error:\n{error}" );
+      throw new Exception( $"Command '{command} {arguments}' failed:\n{error}" );
     }
 
     return output;

@@ -12,7 +12,7 @@ internal partial class NukeBuild {
   Target Restore => _ => _
     .DependsOn( CleanProjects )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(Restore) );
+        using var _ = new OperationTimer( nameof(Restore) );
 
         DotNetRestore( s => s
           .SetProjectFile( Solution )
@@ -23,7 +23,7 @@ internal partial class NukeBuild {
   Target Build => _ => _
     .DependsOn( Restore )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(Build) );
+        using var _ = new OperationTimer( nameof(Build) );
 
         DotNetBuild( s => s
           .SetProjectFile( Solution )

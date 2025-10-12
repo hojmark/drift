@@ -27,7 +27,7 @@ partial class NukeBuild {
     .DependsOn( PublishBinaries, CleanArtifacts )
     .Requires( () => Commit )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(PublishContainer) );
+        using var _ = new OperationTimer( nameof(PublishContainer) );
 
         var localTagVersion = ImageReference.Localhost( "drift", SemVer );
 
@@ -63,7 +63,7 @@ partial class NukeBuild {
     .DependsOn( TestE2E )
     .Requires( () => DockerHubPassword )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(ReleaseContainer) );
+        using var _ = new OperationTimer( nameof(ReleaseContainer) );
 
         var local = ImageReference.Localhost( "drift", SemVer );
         var dockerHub = new[] {
@@ -84,7 +84,7 @@ partial class NukeBuild {
     .DependsOn( TestE2E )
     .Requires( () => DockerHubPassword )
     .Executes( () => {
-        using var _ = new TargetLifecycle( nameof(PreReleaseContainer) );
+        using var _ = new OperationTimer( nameof(PreReleaseContainer) );
 
         var local = ImageReference.Localhost( "drift", SemVer );
         var dockerHub = ImageReference.DockerIo( "hojmark", "drift", SemVer );

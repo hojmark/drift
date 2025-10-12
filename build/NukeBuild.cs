@@ -116,7 +116,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     .Before( BuildInfo )
     .DependentFor( Build, PublishBinaries, PublishContainer, Release, PreRelease )
     .Executes( async () => {
-        using var _ = new TargetLifecycle( nameof(Version) );
+        using var _ = new OperationTimer( nameof(Version) );
 
         Log.Information( "Determining version..." );
 

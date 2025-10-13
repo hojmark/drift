@@ -93,8 +93,6 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     set;
   }
 
-  private string TagName => "v" + SemVer.WithoutMetadata();
-
   private static class Paths {
     internal static AbsolutePath PublishDirectory => RootDirectory / "publish";
 
@@ -157,7 +155,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
         builder.AppendLine( $"Configuration        : {Configuration}" );
         builder.AppendLine( $"Version - provided   : {providedVersion}" );
         builder.AppendLine( $"Version - determined : {SemVer}" );
-        builder.AppendLine( $"Tag Name             : {TagName}" );
+        builder.AppendLine( $"Tag Name             : {VersionHelper.CreateTagName( SemVer )}" );
         builder.AppendLine( $"Prerelease           : {SemVer.IsPrerelease}" );
         builder.AppendLine( $"Commit               : {Commit}" );
 

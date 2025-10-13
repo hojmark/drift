@@ -78,6 +78,7 @@ sealed partial class NukeBuild {
               .SetProjectFile( Solution.Cli_E2ETests )
               .SetConfiguration( Configuration )
               .ConfigureLoggers( MsBuildVerbosityParsed )
+              .SetBlameHangTimeout( "60s" )
               .EnableNoLogo()
               .EnableNoRestore()
               .EnableNoBuild()

@@ -107,7 +107,7 @@ internal partial class NukeBuild {
 
   // TODO make static
   private async Task<Release> CreateDraftRelease( bool prerelease ) {
-    var newRelease = new NewRelease( TagName ) {
+    var newRelease = new NewRelease( VersionHelper.CreateTagName( SemVer ) ) {
       Draft = true,
       Prerelease = prerelease,
       Name = VersionHelper.CreateReleaseName( SemVer, includeMetadata: prerelease ),

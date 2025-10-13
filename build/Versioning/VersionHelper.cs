@@ -36,15 +36,15 @@ internal static class VersionHelper {
 
     Log.Debug( "Latest release is {Name} with tag {TagName}", latest?.Name, latestTagName );
 
-    var nextReleaseVersion = GetNextReleaseVersionFromTagNameOrThrow( latestTagName );
-    var nextReleaseName = CreateReleaseName( nextReleaseVersion, includeMetadata: false );
-    var nextTagName = $"v{nextReleaseVersion}";
+    var version = GetNextReleaseVersionFromTagNameOrThrow( latestTagName );
+    var releaseName = CreateReleaseName( version, includeMetadata: false );
+    var tagName = $"v{version}";
 
-    Log.Debug( "Next release is {Name} with tag {TagName}", nextReleaseName, nextTagName );
+    Log.Debug( "Next release is {Name} with tag {TagName}", releaseName, tagName );
 
-    Log.Information( "Release version is {Version}", nextReleaseVersion );
+    Log.Information( "Release version is {Version}", version );
 
-    return nextReleaseVersion;
+    return version;
   }
 
   internal static SemVersion GetDefaultVersion() {
@@ -81,27 +81,42 @@ internal static class VersionHelper {
         $"{nameof(NukeBuild.CustomVersion)} must not contain 'alpha' when releasing a pre-release version" );
     }
 
-    var metadata = ver.MetadataIdentifiers.ToList();
-    var specialIdentifier = new MetadataIdentifier( "prerelease" );
-    if ( !metadata.Contains( specialIdentifier ) ) {
-      metadata.Add( specialIdentifier );
+    var updatedPrereleaseIdentifiers = ver.PrereleaseIdentifiers.ToList();
+    var date = new PrereleaseIdentifier( DateTime.UtcNow.ToString( "yyyyMMddHHmmss" ) );
+    updatedPrereleaseIdentifiers.Add( date );
+
+    var updatedMetadata = ver.MetadataIdentifiers.ToList();
+    var preReleaseIdentifier = new MetadataIdentifier( "prerelease" );
+    if ( !updatedMetadata.Contains( preReleaseIdentifier ) ) {
+      updatedMetadata.Add( preReleaseIdentifier );
     }
 
-    var releaseVersion = new SemVersion(
+    var version = new SemVersion(
       new BigInteger( 0 ),
       new BigInteger( 0 ),
       new BigInteger( 0 ),
-      ver.PrereleaseIdentifiers,
-      ver.MetadataIdentifiers
+      updatedPrereleaseIdentifiers,
+      updatedMetadata
     );
+    var releaseName = CreateReleaseName( version, includeMetadata: true );
+    var tagName = CreateTagName( version );
 
-    Log.Information( "Pre-release version is {Version}", releaseVersion );
+    Log.Debug( "Pre-release is {Name} with tag {TagName}", releaseName, tagName );
 
-    return releaseVersion;
+    Log.Information( "Pre-release version is {Version}", version );
+
+    return version;
   }
 
+  internal static string CreateReleaseName( SemVersion version, bool includeMetadata ) {
+    var v = includeMetadata ? version : version.WithoutMetadata();
+    return $"Drift CLI {v}";
+  }
+
+  internal static string CreateTagName( SemVersion version ) => "v" + version.WithoutMetadata();
+
   [CanBeNull]
-  static SemVersion GetNextReleaseVersionFromTagNameOrThrow( string latestTagName ) {
+  private static SemVersion GetNextReleaseVersionFromTagNameOrThrow( string latestTagName ) {
     var latestVersion = SemVersion.Parse(
       // Skip 'v'
       latestTagName[1..]
@@ -121,10 +136,5 @@ internal static class VersionHelper {
     var nextAlphaNumber = ++latestAlphaNumber;
 
     return latestVersion.WithPrerelease( "alpha", nextAlphaNumber.ToString( CultureInfo.InvariantCulture ) );
-  }
-
-  internal static string CreateReleaseName( SemVersion version, bool includeMetadata ) {
-    var v = includeMetadata ? version : version.WithoutMetadata();
-    return $"Drift CLI {v}";
   }
 }

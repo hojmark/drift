@@ -25,7 +25,7 @@ internal partial class NukeBuild {
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(Release) );
 
-        Log.Information( "��� RELEASING ���" );
+        Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
 
         await ValidateAllowedReleaseTargetOrThrow( Release );
 
@@ -46,7 +46,7 @@ internal partial class NukeBuild {
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(PreRelease) );
 
-        Log.Information( "�️ RELEASING �️" );
+        Log.Information( "🐋️ RELEASING 🐋️" );
 
         await ValidateAllowedReleaseTargetOrThrow( PreRelease );
 

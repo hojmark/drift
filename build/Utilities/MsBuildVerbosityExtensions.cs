@@ -11,7 +11,7 @@ internal enum MsBuildVerbosity {
   Diagnostic
 }
 
-internal static class DotNetTestSettingsExtensions {
+internal static class MsBuildVerbosityExtensions {
   internal static string ToMsBuildVerbosity( this MsBuildVerbosity verbosity ) {
     return verbosity switch {
       MsBuildVerbosity.Quiet => "quiet",

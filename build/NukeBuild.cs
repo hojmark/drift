@@ -13,7 +13,6 @@ using Utilities;
 using Versioning;
 using AuthenticationType = Octokit.AuthenticationType;
 using Credentials = Octokit.Credentials;
-using DotNetTestSettingsExtensions = Utilities.DotNetTestSettingsExtensions;
 using ProductHeaderValue = Octokit.ProductHeaderValue;
 
 // ReSharper disable VariableHidesOuterVariable
@@ -46,7 +45,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   public string MsBuildVerbosity = Utilities.MsBuildVerbosity.Normal.ToMsBuildVerbosity();
 
   private MsBuildVerbosity MsBuildVerbosityParsed =>
-    DotNetTestSettingsExtensions.FromMsBuildVerbosity( MsBuildVerbosity );
+    MsBuildVerbosityExtensions.FromMsBuildVerbosity( MsBuildVerbosity );
 
   [Solution( GenerateProjects = true )] //
   private readonly Solution Solution;

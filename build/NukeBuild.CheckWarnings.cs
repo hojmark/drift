@@ -13,16 +13,10 @@ sealed partial class NukeBuild {
   private const string BinaryPublishLogName = "publish.binlog";
 
   Target CheckWarnings => _ => _
-    .DependsOn( CheckBuildWarnings, CheckPublishBinariesWarnings )
-    // .TriggeredBy( Publish )
-    .Executes( () => {
-        // using var _ = new TargetLifecycle( nameof(CheckWarnings) );
-      }
-    );
+    .DependsOn( CheckBuildWarnings, CheckPublishBinariesWarnings );
 
   Target CheckBuildWarnings => _ => _
     .After( Build )
-    // .TriggeredBy( Build )
     .Executes( () => {
         using var _ = new OperationTimer( nameof(CheckBuildWarnings) );
 
@@ -39,13 +33,12 @@ sealed partial class NukeBuild {
           throw new Exception( $"Found {warnings.Length} build warnings" );
         }
 
-        Log.Information( "� No build warnings found" );
+        Log.Information( "🟢 No build warnings found" );
       }
     );
 
   Target CheckPublishBinariesWarnings => _ => _
     .After( CheckBuildWarnings, PublishBinaries )
-    // .TriggeredBy( Build )
     .Executes( () => {
         using var _ = new OperationTimer( nameof(CheckPublishBinariesWarnings) );
 
@@ -58,11 +51,11 @@ sealed partial class NukeBuild {
         var hasWarnings = warnings.Length != 0;
 
         if ( hasWarnings ) {
-          Log.Error( "Found {Count} publish warnings", warnings.Length );
-          throw new Exception( $"Found {warnings.Length} publish warnings" );
+          Log.Error( "Found {Count} binary publish warnings", warnings.Length );
+          throw new Exception( $"Found {warnings.Length} binary publish warnings" );
         }
 
-        Log.Information( "� No publish warnings found" );
+        Log.Information( "🟢 No binary publish warnings found" );
       }
     );
 }

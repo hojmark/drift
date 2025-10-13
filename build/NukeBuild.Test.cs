@@ -24,7 +24,6 @@ sealed partial class NukeBuild {
   Target TestLocal => _ => _
     .DependsOn( Test )
     .Executes( () => {
-        // DotNetToolRestore();
         var result = ProcessTasks.StartProcess(
           "dotnet",
           "trx --verbosity verbose",
@@ -58,7 +57,6 @@ sealed partial class NukeBuild {
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(TestE2E) );
 
-        // TODO
         foreach ( var runtime in SupportedRuntimes ) {
           var driftBinary = Paths.PublishDirectoryForRuntime( runtime ) / "drift";
 
@@ -79,11 +77,11 @@ sealed partial class NukeBuild {
             return settings
               .SetProjectFile( Solution.Cli_E2ETests )
               .SetConfiguration( Configuration )
-              .AddProcessEnvironmentVariables( envVars )
               .ConfigureLoggers( MsBuildVerbosityParsed )
               .EnableNoLogo()
               .EnableNoRestore()
-              .EnableNoBuild();
+              .EnableNoBuild()
+              .AddProcessEnvironmentVariables( envVars );
           } );
 
           Log.Information( "Running E2E test on {Runtime} using binary {Binary}", runtime, driftBinary );
@@ -101,21 +99,10 @@ sealed partial class NukeBuild {
     Log.Debug( "Looking for alternate Docker host..." );
 
     if ( await IsPodmanAvailableAsync() ) {
-      using var process = Process.Start( new ProcessStartInfo {
-        FileName = "podman",
-        Arguments = "info --format '{{.Host.RemoteSocket.Path}}'",
-        RedirectStandardOutput = true,
-        UseShellExecute = false,
-        CreateNoWindow = true
-      } );
-
-      await process.WaitForExitAsync();
-
-      string output = await process.StandardOutput.ReadToEndAsync();
-
+      var output = await RunCommandAsync( "podman", "info --format '{{.Host.RemoteSocket.Path}}'" );
       var host = "unix://" + output.Trim().Trim( '\'' );
-
       Log.Debug( "Found Podman at {SocketPath}", host );
+      return host;
     }
 
     Log.Debug( "Found no Docker host alternative" );
@@ -133,7 +120,7 @@ sealed partial class NukeBuild {
     }
   }
 
-  static async Task<string> RunCommandAsync( string command, string arguments ) {
+  private static async Task<string> RunCommandAsync( string command, string arguments ) {
     using var process = Process.Start( new ProcessStartInfo {
       FileName = command,
       Arguments = arguments,
@@ -143,13 +130,17 @@ sealed partial class NukeBuild {
       CreateNoWindow = true
     } );
 
+    if ( process == null ) {
+      throw new Exception( $"Could not start process '{command} {arguments}'" );
+    }
+
     await process.WaitForExitAsync();
 
-    string output = process.StandardOutput.ReadToEnd();
-    string error = process.StandardError.ReadToEnd();
+    string output = await process.StandardOutput.ReadToEndAsync();
+    string error = await process.StandardError.ReadToEndAsync();
 
     if ( process.ExitCode != 0 ) {
-      throw new Exception( $"Command '{command} {arguments}' failed:\n{error}" );
+      throw new Exception( $"Process '{command} {arguments}' failed:\n{error}" );
     }
 
     return output;

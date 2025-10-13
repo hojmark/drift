@@ -1,6 +1,7 @@
 using System.Linq;
 using Nuke.Common;
 using Nuke.Common.IO;
+using Nuke.Common.ProjectModel;
 using Nuke.Common.Utilities.Collections;
 using Serilog;
 using Utilities;
@@ -19,10 +20,7 @@ sealed partial class NukeBuild {
         using var _ = new OperationTimer( nameof(CleanProjects) );
 
         var dirsToDelete = Solution.AllProjects
-          .Where( project =>
-            // Do not clean the [NUKE] _build project
-            project.Path != BuildProjectFile
-          )
+          .Where( project => !IsBuildProject( project ) )
           .SelectMany( project => new[] {
               // Build directories
               project.Directory / "bin", project.Directory / "obj",
@@ -57,4 +55,6 @@ sealed partial class NukeBuild {
         Paths.ArtifactsDirectory.CreateOrCleanDirectory();
       }
     );
+
+  private static bool IsBuildProject( Project project ) => project.Path == BuildProjectFile;
 }

@@ -13,10 +13,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Humanizer" />
     <PackageReference Include="Octokit" />
     <PackageReference Include="Semver" />
     <PackageReference Include="Nuke.Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\build-utils\Build.Utilities\Build.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

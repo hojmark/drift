@@ -78,11 +78,40 @@ Arguments, options and environment variables for `install.sh`:
 
 ### Container Image
 
-_Coming soon_
+> [!WARNING]
+> WIP
+
+- TODO Support reading spec from stdin
+- TODO include debug symbols in container image
+- NOTE: default to o=log and subnetscanner=fping ?
+
+Local scan:
+
+```sh
+docker run -it --rm --network host localhost:5000/drift:dev scan -i
+```
+
+Readme flow:
+
+```sh
+docker run --rm --network host docker.io/hojmark/drift init > main-site.spec.yaml
+cat main-site.spec.yaml | docker run --rm --network host docker.io/hojmark/drift scan -i
+```
+
+Agent mode:
+
+```sh
+ docker run 
+  --network host
+  --name drift-agent \
+  -p 45454:45454 \
+  localhost:5000/drift agent start
+```
 
 ### Package Manager
 
-_Coming soon_
+> [!WARNING]
+> WIP
 
 | Package Manager | Format              | Distribution           |
 |-----------------|---------------------|------------------------|
@@ -91,6 +120,9 @@ _Coming soon_
 | `pacman`        | PKGBUILD / `.pkg.*` | AUR, direct .pkg.*     |
 
 ## Spec
+
+> [!WARNING]
+> WIP
 
 A Drift spec is a declarative definition of the desired state of network resources.
 

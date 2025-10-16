@@ -43,10 +43,11 @@ body:
   - type: textarea
     attributes:
       label: Environment
-      description: Drift version / Operating System
+      description: Drift version / Operating System / Execution environment
       placeholder: |
         - Drift version:
         - OS:
+        - Execution environment (Container, Host [install.sh], Host [manual download], etc.):
     validations:
       required: true
 

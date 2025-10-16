@@ -1,6 +1,8 @@
 using Nuke.Common.Tools.DotNet;
 using Semver;
 
+namespace Versioning;
+
 internal static class SemVersionExtensions {
   internal static DotNetBuildSettings SetVersionProperties(
     this DotNetBuildSettings settings,

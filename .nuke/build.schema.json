@@ -27,18 +27,23 @@
         "Build",
         "BuildInfo",
         "CheckBuildWarnings",
-        "CheckPublishWarnings",
+        "CheckPublishBinariesWarnings",
         "CheckWarnings",
+        "Clean",
         "CleanArtifacts",
         "CleanProjects",
-        "Pack",
-        "Publish",
+        "PackBinaries",
+        "PreRelease",
+        "PreReleaseContainer",
+        "PublishBinaries",
+        "PublishContainer",
         "Release",
-        "ReleaseSpecial",
+        "ReleaseContainer",
         "Restore",
-        "TestAll",
-        "TestAllLocal",
+        "Test",
         "TestE2E",
+        "TestLocal",
+        "TestSelf",
         "TestUnit",
         "Version"
       ]
@@ -130,13 +135,23 @@
           "type": "string",
           "description": "CustomVersion - e.g. '3.1.5-preview.5'"
         },
+        "DockerHubPassword": {
+          "type": "string",
+          "description": "DockerHubPassword - Required for releasing container images to Docker Hub",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
+        "GitHubToken": {
+          "type": "string",
+          "description": "GitHubToken - GitHub token used to create releases",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
+        "MsBuildVerbosity": {
+          "type": "string",
+          "description": "MsBuildVerbosity - Console output verbosity - Default is 'normal'"
+        },
         "Solution": {
           "type": "string",
           "description": "Path to a solution file that is automatically loaded"
-        },
-        "Verbose": {
-          "type": "string",
-          "description": "Verbose - Verbose console output - Default is 'false'"
         }
       }
     },

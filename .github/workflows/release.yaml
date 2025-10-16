@@ -18,11 +18,15 @@ jobs:
         uses: ./.github/actions/setup-runner
 
       - name: Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: dotnet run --project ./build/_build.csproj --target Release --commit ${{ github.sha }}
+        run: |
+          dotnet run \
+            --project ./build/_build.csproj \
+            --target Release \
+            --commit ${{ github.sha }} \
+            --githubtoken ${{ secrets.GITHUB_TOKEN }} \
+            --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }} 
 
       - name: Display test results
         continue-on-error: true
         if: always()
-        run: dotnet trx --verbosity verbose
+        run: dotnet trx --verbosity normal

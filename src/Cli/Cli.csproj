@@ -1,14 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RuntimeIdentifiers>linux-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
+    <RuntimeIdentifiers>linux-x64;linux-musl-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
     <PublishAot>true</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
     <InvariantGlobalization>true</InvariantGlobalization>
     <AssemblyName>drift</AssemblyName>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault> <!-- todo remove -->
     <Version>0.0.0-undefined</Version>
+    <!--
+    https://github.com/NuGet/Home/issues/12814#issuecomment-2459432666
+    https://github.com/dotnet/aspnetcore/issues/41149
+    -->
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
   </PropertyGroup>
 
   <ItemGroup>

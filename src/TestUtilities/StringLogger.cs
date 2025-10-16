@@ -20,7 +20,7 @@ public sealed class StringLogger( StringWriter? writer = null ) : ILogger {
     var logEntry = $"[{ToSerilogStyleLevel( logLevel )}] {message}";
 
     if ( exception != null ) {
-      logEntry += Environment.NewLine + exception;
+      logEntry += System.Environment.NewLine + exception;
     }
 
     _writer.WriteLine( logEntry );

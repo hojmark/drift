@@ -7,8 +7,8 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
     inputs:
-      verbose:
-        description: 'Verbosity level'
+      verbosity:
+        description: 'MSBuild verbosity level'
         required: false
         default: 'normal'
         type: choice
@@ -23,9 +23,10 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     env:
-      ACTIONS_RUNNER_DEBUG: true
+      # https://docs.github.com/en/actions/how-tos/monitor-workflows/enable-debug-logging
+      ACTIONS_RUNNER_DEBUG: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -34,13 +35,21 @@ jobs:
         uses: ./.github/actions/setup-runner
 
       - name: Run tests
-        run: dotnet run --project ./build/_build.csproj --target TestAll --commit ${{ github.sha }} --verbose ${{ github.event.inputs.verbose }}
+        run: |
+          dotnet run \
+          --project ./build/_build.csproj \
+          --target Test \
+          --commit ${{ github.sha }} \
+          --msbuildverbosity ${{ github.event.inputs.verbosity }}
 
       - name: Display test results
         continue-on-error: true
         if: always()
-        run: dotnet trx --verbosity verbose #--output
+        run: dotnet trx --verbosity normal
 
       - name: Check for warnings
         continue-on-error: true # TODO remove
-        run: dotnet run --project ./build/_build.csproj --target CheckWarnings
+        run: |
+          dotnet run \
+          --project ./build/_build.csproj \
+          --target CheckWarnings

@@ -30,11 +30,11 @@ internal class ScanCommand : CommandBase<ScanParameters, ScanCommandHandler> {
     Add( ScanParameters.Options.Interactive );
   }
 
- /* private enum ShowMode {
-    All = 1,
-    Changed = 2,
-    Unchanged = 3
-  }*/
+  /* private enum ShowMode {
+     All = 1,
+     Changed = 2,
+     Unchanged = 3
+   }*/
 
   // var monitorOption = new Option<bool>( "--monitor", "Continually scan network(s) until manually stopped." );
   // AddOption( monitorOption );
@@ -81,8 +81,8 @@ internal class ScanCommandHandler(
 
     var subnetProvider = new CompositeSubnetProvider( subnetProviders );
 
-    output.Normal.WriteLineVerbose( $"Using subnet provider: {subnetProvider.GetType().Name}" );
-    output.Log.LogDebug( "Using subnet provider: {SubnetProviderType}", subnetProvider.GetType().Name );
+    output.Normal.WriteLineVerbose( $"Using {subnetProvider.GetType().Name}" );
+    output.Log.LogDebug( "Using {SubnetProviderType}", subnetProvider.GetType().Name );
 
     var subnets = subnetProvider.Get();
 

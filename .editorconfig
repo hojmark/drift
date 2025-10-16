@@ -9,7 +9,7 @@ root = true
 indent_style = space
 
 # Code files
-[*.{cs,csproj,props,json}]
+[*.{cs,csproj,slnx,props,json}]
 indent_size = 2
 insert_final_newline = false
 charset = utf-8
@@ -153,7 +153,7 @@ csharp_blank_lines_around_invocable = 1
 # Code analyzer rules
 [**/*.cs]
 dotnet_diagnostic.CA1816.severity = error
-dotnet_diagnostic.CA1515.severity = error
+dotnet_diagnostic.CA1515.severity = warning
 dotnet_diagnostic.CA1852.severity = error
 dotnet_diagnostic.CA1848.severity = suggestion
 dotnet_diagnostic.CA2007.severity = suggestion
@@ -205,6 +205,14 @@ dotnet_diagnostic.SA1515.severity = none
 dotnet_diagnostic.SA1512.severity = none
 # Use trailing comma in multi-line initializers
 dotnet_diagnostic.SA1413.severity = none
+# 'public' members should come before 'private' members
+dotnet_diagnostic.SA1202.severity = none
+# Prefix local calls with this
+dotnet_diagnostic.SA1101.severity = none
+# Field '*' should not begin with an underscore
+dotnet_diagnostic.SA1309.severity = none
+# Static members should appear before non-static members
+dotnet_diagnostic.SA1204.severity = suggestion
 
 # Buggy analyzers throwing exceptions
 # SA1502ElementMustNotBeOnASingleLine
@@ -213,12 +221,8 @@ dotnet_diagnostic.SA1502.severity = none
 dotnet_diagnostic.SA1508.severity = none
 
 # TODO TBD
-# Prefix local calls with this
-dotnet_diagnostic.SA1101.severity = suggestion
 # The keyword 'new' should be followed by a space.
 dotnet_diagnostic.SA1000.severity = suggestion # Need to configure formatting in Rider?
-# Field '*' should not begin with an underscore
-dotnet_diagnostic.SA1309.severity = suggestion
 # Parameter '*' should begin with lower-case letter
 dotnet_diagnostic.SA1313.severity = suggestion # Rider disagrees?
 

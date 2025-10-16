@@ -1,0 +1,25 @@
+﻿{
+  Item1:
+<time>   ___          _    __   _   
+<time>  |   \   _ _  (_)  / _| | |_ 
+<time>  | |) | | '_| | | |  _| |  _|
+<time>  |___/  |_|   |_| |_|    \__|
+<time>                              
+<time> Description:
+<time>   📡️ Drift CLI — monitor network drift against your declared state
+<time> 
+<time> Usage:
+<time>   drift [command] [options]
+<time> 
+<time> Options:
+<time>   -?, -h, --help  Show help and usage information
+<time>   --version       Show version information
+<time> 
+<time> Commands:
+<time>   init <spec>  Create a network spec
+<time>   scan <spec>  Scan the network and detect drift
+<time>   lint <spec>  Validate a network spec
+<time> 
+,
+  Item2: 
+}

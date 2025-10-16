@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Semver" />
     <PackageReference Include="Verify.NUnit" />
   </ItemGroup>
 

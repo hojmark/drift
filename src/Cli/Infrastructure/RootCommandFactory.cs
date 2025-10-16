@@ -11,11 +11,13 @@ using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
+using Drift.Domain.ExecutionEnvironment;
 using Drift.Domain.Scan;
 using Drift.Scanning;
 using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Infrastructure;
 
@@ -47,10 +49,15 @@ internal static class RootCommandFactory {
 
   private static void ConfigureDefaults( IServiceCollection services, bool toConsole, bool plainConsole ) {
     services.AddScoped<ParseResultHolder>();
+    ConfigureExecutionEnvironment( services );
     ConfigureOutput( services, toConsole, plainConsole );
     ConfigureSpecProvider( services );
     ConfigureSubnetProvider( services );
     ConfigureNetworkScanner( services );
+  }
+
+  private static void ConfigureExecutionEnvironment( IServiceCollection services ) {
+    services.AddSingleton<IExecutionEnvironmentProvider, CurrentExecutionEnvironmentProvider>();
   }
 
   private static RootCommand CreateRootCommand( IServiceProvider provider ) {
@@ -76,6 +83,7 @@ internal static class RootCommandFactory {
       var factory = sp.GetRequiredService<IOutputManagerFactory>();
       return factory.Create( parseResult, plainConsole );
     } );
+    services.AddScoped<ILogger>( sp => sp.GetRequiredService<IOutputManager>().GetLogger() );
   }
 
   private static void ConfigureSpecProvider( IServiceCollection services ) {
@@ -83,9 +91,7 @@ internal static class RootCommandFactory {
   }
 
   private static void ConfigureSubnetProvider( IServiceCollection services ) {
-    services.AddScoped<IInterfaceSubnetProvider>( sp =>
-      new PhysicalInterfaceSubnetProvider( sp.GetRequiredService<IOutputManager>().GetLogger() )
-    );
+    services.AddScoped<IInterfaceSubnetProvider, PhysicalInterfaceSubnetProvider>();
   }
 
   private static void ConfigureBuiltInCommandHandlers( IServiceCollection services ) {

@@ -94,8 +94,8 @@ docker run -it --rm --network host localhost:5000/drift:dev scan -i
 Readme flow:
 
 ```sh
-docker run --network host docker.io/hojmark/drift init > main-site.spec.yaml
-cat main-site.spec.yaml | docker run docker.io/hojmark/drift scan
+docker run --rm --network host docker.io/hojmark/drift init > main-site.spec.yaml
+cat main-site.spec.yaml | docker run --rm --network host docker.io/hojmark/drift scan -i
 ```
 
 Agent mode:

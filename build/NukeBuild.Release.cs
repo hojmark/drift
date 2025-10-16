@@ -14,7 +14,7 @@ using Serilog;
 // ReSharper disable UnusedMember.Local
 
 internal partial class NukeBuild {
-  public bool AllowLocalRelease => true; // TODO set to false!
+  public bool AllowLocalRelease => false;
 
   public Target Release => _ => _
     .DependsOn( PackBinaries, ReleaseContainer, Test )
@@ -23,10 +23,7 @@ internal partial class NukeBuild {
 
         Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
 
-        //await ValidateAllowedReleaseTargetOrThrow( Release );
-
         var release = await CreateDraftRelease( prerelease: false );
-
         await RemoveDraftStatus( release );
 
         Log.Information( "🐱 Released {ReleaseName} to GitHub!", release.Name );
@@ -40,31 +37,11 @@ internal partial class NukeBuild {
 
         Log.Information( "🏗️ PRE-RELEASING 🏗️" );
 
-        //await ValidateAllowedReleaseTargetOrThrow( PreRelease );
-
         var release = await CreateDraftRelease( prerelease: true );
 
         Log.Information( "🐱 Released {ReleaseName} to GitHub!", release.Name );
       }
     );
-
-
-  // TODO Clean up release target and version validation
-  private async Task ValidateAllowedReleaseTargetOrThrow( Target target ) {
-    var existingTags =
-      await GitHubClient.Repository.GetAllTags( Repository.GetGitHubOwner(), Repository.GetGitHubName() );
-    var tag = await Versioning.Value.Release!.GetGitTagAsync();
-    if ( existingTags.Any( t => t.Name == tag ) ) {
-      throw new InvalidOperationException( $"Release {tag} already exists" );
-    }
-
-    if ( IsLocalBuild ) {
-      var delay = TimeSpan.FromSeconds( 10 );
-      Log.Warning( "⚠️ LOCAL RELEASE BUILD ⚠️" );
-      Log.Warning( "Continuing in {Delay} seconds...", (int) delay.TotalSeconds );
-      await Task.Delay( delay );
-    }
-  }
 
   private async Task RemoveDraftStatus( Release release ) {
     var updateRelease = release.ToUpdate();
@@ -80,7 +57,6 @@ internal partial class NukeBuild {
     );
   }
 
-  // TODO make static
   private async Task<Release> CreateDraftRelease( bool prerelease ) {
     var newRelease = new NewRelease( await Versioning.Value.Release!.GetGitTagAsync() ) {
       Draft = true,

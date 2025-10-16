@@ -30,6 +30,7 @@ sealed partial class NukeBuild {
           .SetConfiguration( Configuration )
           .ConfigureLoggers( MsBuildVerbosityParsed )
           .SetBlameHangTimeout( "60s" )
+          .AddProcessAdditionalArguments( "--disable-logo" )
           .EnableNoLogo()
         );
       }

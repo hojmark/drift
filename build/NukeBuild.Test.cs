@@ -25,13 +25,12 @@ sealed partial class NukeBuild {
     .Executes( () => {
         using var _ = new OperationTimer( nameof(TestSelf) );
 
-        DotNetTest( s => s
+        DotNetRun( s => s
           .SetProjectFile( Solution.Build.Build_Utilities_Tests.Path )
           .SetConfiguration( Configuration )
-          .ConfigureLoggers( MsBuildVerbosityParsed )
-          .SetBlameHangTimeout( "60s" )
+          //.ConfigureLoggers( MsBuildVerbosityParsed )
+          //.SetBlameHangTimeout( "60s" )
           .AddProcessAdditionalArguments( "--disable-logo" )
-          .EnableNoLogo()
         );
       }
     );

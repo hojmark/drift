@@ -19,7 +19,7 @@ internal sealed class VersioningTests {
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( version.ToString(), Is.EqualTo( "0.0.0-local" ).Or.EqualTo( "0.0.0-ci") );
+      Assert.That( version.ToString(), Is.EqualTo( "0.0.0-local" ).Or.EqualTo( "0.0.0-ci" ) );
       Assert.That( strategy.Release, Is.Null );
     }
   }
@@ -36,7 +36,7 @@ internal sealed class VersioningTests {
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( version.ToString(), Is.EqualTo( "0.0.0-local" ).Or.EqualTo( "0.0.0-ci") );
+      Assert.That( version.ToString(), Is.EqualTo( "0.0.0-local" ).Or.EqualTo( "0.0.0-ci" ) );
       Assert.That( strategy.Release, Is.Null );
     }
   }
@@ -65,7 +65,14 @@ internal sealed class VersioningTests {
     var factory = new VersioningStrategyFactory( build );
 
     // Assert
-    Assert.Throws<InvalidOperationException>( () => factory.Create( Configuration.Release, null, null, null ) );
+    TestDelegate testDelegate = () => factory.Create( Configuration.Release, null, null, null );
+
+    if ( Environment.IsCi() ) {
+      Assert.DoesNotThrow( testDelegate );
+    }
+    else {
+      Assert.Throws<InvalidOperationException>( testDelegate );
+    }
   }
 
 

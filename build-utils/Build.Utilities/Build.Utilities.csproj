@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <PackageReference Include="Humanizer" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Semver" />
     <PackageReference Include="Nuke.Common" />
     <PackageReference Include="Nuke.Tooling" />

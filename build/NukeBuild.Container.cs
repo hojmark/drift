@@ -68,11 +68,13 @@ partial class NukeBuild {
 
         var version = await Versioning.Value.GetVersionAsync();
         var local = ImageReference.Localhost( "drift", version );
-        var publicc = await Versioning.Value.Release!.GetImageReferences();
+        var publicc = ( await Versioning.Value.Release!.GetImageReferences() )
+          .OrderBy( LatestLast ) // Pushing 'latest' last will make sure it appears as the most recent tag on Docker Hub
+          .ToArray();
 
         Push( local, publicc.ToArray() );
 
-        var repos = publicc.Select( r => r.Repository ).Distinct();
+        var repos = publicc.Select( r => r.Host ).Distinct();
 
         Log.Information( "🐋 Released to {Repositories}!", string.Join( " and ", repos ) );
       }
@@ -98,6 +100,11 @@ partial class NukeBuild {
         Log.Information( "🐋 Released to {Repositories}!", string.Join( " and ", repos ) );
       }
     );
+
+
+  private static int LatestLast( ImageReference r ) {
+    return r.Tag is LatestVersion ? 1 : 0;
+  }
 
   private void Push( ImageReference source, params ImageReference[] targets ) {
     ImageReference[] allReferences = [source, ..targets];

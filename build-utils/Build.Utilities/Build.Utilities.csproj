@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="Docker.DotNet" />
     <PackageReference Include="Humanizer" />
     <PackageReference Include="Semver" />
     <PackageReference Include="Nuke.Common" />

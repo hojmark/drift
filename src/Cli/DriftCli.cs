@@ -29,6 +29,7 @@ internal static class DriftCli {
         configureServices,
         customCommands
       );
+
       var config = new CommandLineConfiguration( rootCommand ) { EnableDefaultExceptionHandler = false };
 
       configureCommandLineConfig?.Invoke( config );

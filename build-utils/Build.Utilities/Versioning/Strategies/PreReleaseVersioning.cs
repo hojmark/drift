@@ -1,6 +1,5 @@
 using System.Numerics;
 using Drift.Build.Utilities.Versioning.Abstractions;
-using NuGet.Packaging.Signing;
 using Nuke.Common.Git;
 using Octokit;
 using Semver;

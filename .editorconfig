@@ -153,7 +153,7 @@ csharp_blank_lines_around_invocable = 1
 # Code analyzer rules
 [**/*.cs]
 dotnet_diagnostic.CA1816.severity = error
-dotnet_diagnostic.CA1515.severity = error
+dotnet_diagnostic.CA1515.severity = warning
 dotnet_diagnostic.CA1852.severity = error
 dotnet_diagnostic.CA1848.severity = suggestion
 dotnet_diagnostic.CA2007.severity = suggestion

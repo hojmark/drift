@@ -86,23 +86,26 @@ Arguments, options and environment variables for `install.sh`:
 - NOTE: default to o=log and subnetscanner=fping ?
 
 Local scan:
+
 ```sh
-docker run -it --rm --network host localhost/drift:dev scan -i
+docker run -it --rm --network host localhost:5000/drift:dev scan -i
 ```
 
 Readme flow:
+
 ```sh
 docker run --network host docker.io/hojmark/drift init > main-site.spec.yaml
 cat main-site.spec.yaml | docker run docker.io/hojmark/drift scan
 ```
 
-Start in agent mode:
+Agent mode:
+
 ```sh
  docker run 
   --network host
   --name drift-agent \
   -p 45454:45454 \
-  localhost/drift agent start
+  localhost:5000/drift agent start
 ```
 
 ### Package Manager

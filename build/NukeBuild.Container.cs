@@ -16,7 +16,6 @@ partial class NukeBuild {
   private static readonly string DockerHubImageName = "hojmark/drift";
   */
 
-
   private static readonly string DockerHubUsername = "hojmark";
 
   [Secret] //

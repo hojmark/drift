@@ -64,7 +64,6 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
   [Secret, Parameter( $"{nameof(GitHubToken)} - GitHub token used to create releases" )]
   public string GitHubToken;
 
-
   private static readonly DotNetRuntimeIdentifier[] SupportedRuntimes = [
     DotNetRuntimeIdentifier.linux_x64,
     // TODO support more architectures
@@ -96,7 +95,10 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
     }
   }
 
-  private Lazy<IVersioningStrategy> Versioning;
+  private Lazy<IVersioningStrategy> Versioning {
+    get;
+    init;
+  }
 
   private static class Paths {
     internal static AbsolutePath PublishDirectory => RootDirectory / "publish";
@@ -107,28 +109,8 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
       PublishDirectory / id.ToString();
   }
 
-  Target Version => _ => _
-    .Before( BuildInfo )
-    .DependentFor( Build, PublishBinaries, PublishContainer, Release, PreRelease )
-    .Executes( async () => {
-        using var _ = new OperationTimer( nameof(Version) );
-
-        Log.Information( "Determining version..." );
-
-        var strategy = Versioning.Value;
-
-        /*var fac = new VersioningStrategyFactory( this );
-        Versioning = fac.Create();*/
-
-        /*if ( ExpectedTarget != null ) {
-          await ValidateAllowedReleaseTargetOrThrow( ExpectedTarget );
-        }*/
-      }
-    );
-
   Target BuildInfo => _ => _
     .Before( CleanProjects, CleanArtifacts, Restore )
-    .DependsOn( Version )
     .DependentFor( Build )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(BuildInfo) );
@@ -139,22 +121,24 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
           MsBuildVerbosity
         );
 
-        var providedVersion = string.IsNullOrEmpty( CustomVersion ) ? "[none]" : CustomVersion;
-        var determinedVersion = await Versioning.Value.GetVersionAsync(); // TODO clean up usage
+        var versionStrategy = Versioning.Value.GetType().Name.Replace( "Versioning", string.Empty );
+        var versionProvided = string.IsNullOrEmpty( CustomVersion ) ? "[none]" : CustomVersion;
+        var versionDetermined = await Versioning.Value.GetVersionAsync();
 
         var builder = new StringBuilder();
         // builder.AppendLine( $"Configuration        : {Configuration}" );
-        builder.AppendLine( $"Version strategy     : {Versioning.Value.GetType().Name.Replace( "Versioning", "" )}" );
-        builder.AppendLine( $"Version provided     : {providedVersion}" );
-        builder.AppendLine( $"Version determined   : {determinedVersion}" );
+        builder.AppendLine( $"Version strategy     : {versionStrategy}" );
+        builder.AppendLine( $"Version provided     : {versionProvided}" );
+        builder.AppendLine( $"Version determined   : {versionDetermined}" );
 
         if ( Versioning.Value.Release is { } release ) {
-          var releaseName = await release.GetNameAsync();
+          var name = await release.GetNameAsync();
           var gitTag = await release.GetGitTagAsync();
-          var containerTags = string.Join( ", ", await release.GetImageReferences() );
-          builder.AppendLine( $"Release name         : {releaseName}" );
+          var containerRefs = string.Join( ", ", await release.GetImageReferences() );
+
+          builder.AppendLine( $"Release name         : {name}" );
           builder.AppendLine( $"Git tag              : {gitTag}" );
-          builder.AppendLine( $"Container tag(s)     : {containerTags}" );
+          builder.AppendLine( $"Container ref(s)     : {containerRefs}" );
         }
 
         Log.Information( "BUILD INFORMATION:\n{BuildInfo}", builder.ToString() );

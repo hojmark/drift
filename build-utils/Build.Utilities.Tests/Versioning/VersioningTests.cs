@@ -74,7 +74,6 @@ internal sealed class VersioningTests {
     }
   }
 
-
   [Test]
   public void PreReleaseWithoutCustomVersionThrows() {
     // Arrange
@@ -168,7 +167,7 @@ internal sealed class VersioningTests {
     await Assert.That( async () => await strategy.GetVersionAsync() ).ThrowsNothing();
   }
 
-  private class NukeBuildWithArbitraryTarget : TestNukeBuild {
+  private sealed class NukeBuildWithArbitraryTarget : TestNukeBuild {
     public Target Arbitrary => _ => _
       .Executes( () => {
         }

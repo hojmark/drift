@@ -21,7 +21,7 @@ sealed partial class NukeBuild {
     .DependsOn( TestSelf, TestUnit, TestE2E );
 
   Target TestSelf => _ => _
-    .Before( Version )
+    .Before( BuildInfo )
     .Executes( () => {
         using var _ = new OperationTimer( nameof(TestSelf) );
 

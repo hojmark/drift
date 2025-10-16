@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using Nuke.Common.Tooling;
 
+namespace Drift.Build.Utilities;
+
 [TypeConverter( typeof(TypeConverter<Configuration>) )]
 public sealed class Configuration : Enumeration {
   public static Configuration Debug = new() { Value = nameof(Debug) };

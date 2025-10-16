@@ -1,5 +1,3 @@
-using System;
-using Drift.Build.Utilities.Versioning;
 using Drift.Build.Utilities.Versioning.Abstractions;
 using Drift.Build.Utilities.Versioning.Strategies;
 using Nuke.Common;
@@ -7,12 +5,12 @@ using Nuke.Common.Git;
 using Octokit;
 using Serilog;
 
-namespace Versioning;
+namespace Drift.Build.Utilities.Versioning;
 
-internal sealed class VersioningStrategyFactory( NukeBuild build ) {
-  internal IVersioningStrategy Create(
+public sealed class VersioningStrategyFactory( INukeRelease build ) {
+  public IVersioningStrategy Create(
     Configuration configuration,
-    string customVersion,
+    string? customVersion,
     // Maybe wrap below two in custom type
     IGitHubClient gitHubClient,
     GitRepository repository

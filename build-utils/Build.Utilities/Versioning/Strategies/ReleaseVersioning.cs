@@ -2,7 +2,6 @@ using System.Globalization;
 using Drift.Build.Utilities.ContainerImage;
 using Drift.Build.Utilities.Versioning.Abstractions;
 using JetBrains.Annotations;
-using Nuke.Common;
 using Nuke.Common.Git;
 using Nuke.Common.Tools.GitHub;
 using Octokit;

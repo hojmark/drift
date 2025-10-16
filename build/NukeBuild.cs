@@ -13,7 +13,6 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.DotNet;
 using Octokit;
 using Serilog;
-using Versioning;
 using AuthenticationType = Octokit.AuthenticationType;
 using Credentials = Octokit.Credentials;
 using ProductHeaderValue = Octokit.ProductHeaderValue;

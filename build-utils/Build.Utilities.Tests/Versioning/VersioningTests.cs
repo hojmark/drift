@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Drift.Build.Utilities.Tests.NukeBuild;
 using Drift.Build.Utilities.Versioning;
-using Drift.Build.Utilities.Versioning.Abstractions;
 using Drift.Build.Utilities.Versioning.Strategies;
 using Nuke.Common;
-using Nuke.Common.Execution;
-using NUnit.Framework;
 using Assert = NUnit.Framework.Assert;
 
 namespace Drift.Build.Utilities.Tests.Versioning;
@@ -16,12 +10,13 @@ internal sealed class VersioningTests {
   [Test]
   public async Task DefaultVersioningVersionTest() {
     // Arrange
-    var testProject = new TestNukeBuild();
-    var strategy = new DefaultVersioning( testProject );
+    var build = new TestNukeBuild();
 
-    // Act / Assert
+    // Act
+    var strategy = new DefaultVersioning( build );
     var version = await strategy.GetVersionAsync();
 
+    // Assert
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( version.ToString(), Is.EqualTo( "0.0.0-local" ) );
       Assert.That( strategy.Release, Is.Null );
@@ -29,44 +24,131 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public async Task DefaultSupportTest() {
+  public async Task DefaultVersioningWhenNoReleaseTargets() {
     // Arrange
-    var testProject = new TestNukeBuild();
-    var strategy = new DefaultVersioning( testProject );
+    var build = new NukeBuildWithArbitraryTarget().WithExecutionPlan( b => b.Arbitrary );
 
-    // Act / Assert
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Debug, null, null, null );
+    var version = await strategy.GetVersionAsync();
+
+    // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( strategy.SupportsTarget( testProject.Arbitrary ), Is.True );
-      Assert.That( strategy.SupportsTarget( testProject.Release ), Is.False );
-      Assert.That( strategy.SupportsTarget( testProject.PreRelease ), Is.False );
+      Assert.That( version.ToString(), Is.EqualTo( "0.0.0-local" ) );
+      Assert.That( strategy.Release, Is.Null );
     }
   }
 
-  private static TestNukeBuild SetExecutionPlan( TestNukeBuild build, params Target[] targets ) {
-    build.ExecutionPlan = targets.Select( target => new ExecutableTarget { Factory = target } ).ToList();
-    return build;
+  [Test]
+  public void MultipleReleaseTargetsThrows() {
+    // Arrange
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.Release, b => b.PreRelease );
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+
+    // Assert
+    var exception = Assert.Throws<InvalidOperationException>( () =>
+      factory.Create( Configuration.Release, null, null, null )
+    );
+    Assert.That( exception.Message, Is.EqualTo( "Execution plan cannot contain both Release and PreRelease" ) );
   }
-}
 
-internal sealed class TestNukeBuild : Nuke.Common.NukeBuild, INukeRelease {
-  internal TestNukeBuild() {
-    ExecutionPlan = new List<ExecutableTarget>();
+  [Test]
+  public void LocalReleaseThrows() {
+    // Arrange
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.PreRelease ).AllowLocalRelease( false );
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+
+    // Assert
+    Assert.Throws<InvalidOperationException>( () => factory.Create( Configuration.Release, null, null, null ) );
   }
 
-  public bool AllowLocalRelease => false;
 
-  public Target Release => _ => _
-    .Executes( () => {
-      }
-    );
+  [Test]
+  public void PreReleaseWithoutCustomVersionThrows() {
+    // Arrange
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.PreRelease ).AllowLocalRelease();
 
-  public Target PreRelease => _ => _
-    .Executes( () => {
-      }
-    );
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Release, null, null, null );
 
-  public Target Arbitrary => _ => _
-    .Executes( () => {
-      }
-    );
+    // Assert
+    Assert.ThrowsAsync<InvalidOperationException>( async () => await strategy.GetVersionAsync() );
+  }
+
+  [Test]
+  public void PreReleaseWithDebugConfigurationThrows() {
+    // Arrange
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.PreRelease ).AllowLocalRelease();
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+
+    // Assert
+    Assert.Throws<InvalidOperationException>( () => factory.Create( Configuration.Debug, "0.0.0-custom", null, null ) );
+  }
+
+  [Test]
+  public void PreReleaseValid() {
+    // Arrange
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.PreRelease ).AllowLocalRelease();
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Release, "0.0.0-custom", null, null );
+
+    // Assert
+    Assert.DoesNotThrowAsync( async () => await strategy.GetVersionAsync() ); //TODO test the version!
+  }
+
+  [Test]
+  public void ReleaseWithCustomVersionThrows() {
+    // Arrange
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.Release ).AllowLocalRelease();
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Release, "0.0.0-custom", null, null );
+
+    // Assert
+    Assert.ThrowsAsync<InvalidOperationException>( async () => await strategy.GetVersionAsync() );
+  }
+
+  [Test]
+  public void ReleaseWithDebugConfigurationThrows() {
+    // Arrange
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.Release ).AllowLocalRelease();
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+
+    // Assert
+    Assert.Throws<InvalidOperationException>( () => factory.Create( Configuration.Debug, null, null, null ) );
+  }
+
+  [Explicit( "Implement" )]
+  [Test]
+  public void ReleaseValid() {
+    // Arrange
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.Release ).AllowLocalRelease();
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Release, null, null, null );
+
+    // Assert
+    Assert.DoesNotThrowAsync( async () => await strategy.GetVersionAsync() );
+  }
+
+  private class NukeBuildWithArbitraryTarget : TestNukeBuild {
+    public Target Arbitrary => _ => _
+      .Executes( () => {
+        }
+      );
+  }
 }

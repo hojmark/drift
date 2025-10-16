@@ -13,15 +13,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Humanizer" />
     <PackageReference Include="Octokit" />
     <PackageReference Include="Semver" />
     <PackageReference Include="Nuke.Common" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Build.Utilities\Build.Utilities.csproj" />
-    <ProjectReference Include="..\src\Cli.E2ETests.Abstractions\Cli.E2ETests.Abstractions.csproj" />
+    <ProjectReference Include="..\build-utils\Build.Utilities\Build.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

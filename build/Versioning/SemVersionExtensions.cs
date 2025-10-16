@@ -8,7 +8,7 @@ internal static class SemVersionExtensions {
     return version.ToString();
   }
 
-  internal static DotNetBuildSettings SetVersionProperties(
+  public static DotNetBuildSettings SetVersionProperties(
     this DotNetBuildSettings settings,
     SemVersion version
   ) {
@@ -18,7 +18,7 @@ internal static class SemVersionExtensions {
       .SetInformationalVersion( version.ToDotNetInformationalVersion() );
   }
 
-  internal static DotNetPublishSettings SetVersionProperties(
+  public static DotNetPublishSettings SetVersionProperties(
     this DotNetPublishSettings settings,
     SemVersion version
   ) {
@@ -32,20 +32,20 @@ internal static class SemVersionExtensions {
    * Below methods skips metadata because .NET add the commit hash by itself (somewhere?)
    */
 
-  internal static string ToDotNetAssemblyVersion( this SemVersion version ) {
+  public static string ToDotNetAssemblyVersion( this SemVersion version ) {
     // Takes major.minor.patch and optional build number
     return version.WithoutPrereleaseOrMetadata().ToString();
   }
 
-  internal static string ToDotNetVersion( this SemVersion version ) {
+  public static string ToDotNetVersion( this SemVersion version ) {
     return version.WithoutMetadata().ToString();
   }
 
-  internal static string ToDotNetFileVersion( this SemVersion version ) {
+  public static string ToDotNetFileVersion( this SemVersion version ) {
     return version.WithoutPrereleaseOrMetadata().ToString();
   }
 
-  internal static string ToDotNetInformationalVersion( this SemVersion version ) {
+  public static string ToDotNetInformationalVersion( this SemVersion version ) {
     return version.WithoutMetadata().ToString();
   }
 }

@@ -2,32 +2,29 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Drift.Build.Utilities;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.GitHub;
 using Octokit;
 using Serilog;
-using Utilities;
-using Versioning;
 
 // ReSharper disable VariableHidesOuterVariable
 // ReSharper disable AllUnderscoreLocalParameterName
 // ReSharper disable UnusedMember.Local
 
 internal partial class NukeBuild {
-  private const bool AllowLocalRelease = false;
+  public bool AllowLocalRelease => true; // TODO set to false!
 
-  // Insurance...
-  private Target ExpectedTarget;
-
-  Target Release => _ => _
+  public Target Release => _ => _
+    //.Requires( () => Versioning.SupportsTarget( Release ) )
     .DependsOn( PackBinaries, ReleaseContainer, Test )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(Release) );
 
         Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
 
-        await ValidateAllowedReleaseTargetOrThrow( Release );
+        //await ValidateAllowedReleaseTargetOrThrow( Release );
 
         var release = await CreateDraftRelease( prerelease: false );
 
@@ -37,18 +34,15 @@ internal partial class NukeBuild {
       }
     );
 
-  Target PreRelease => _ => _
-    .Requires(
-      // Version target CustomVersion parameter when this target is in the execution plan
-      () => CustomVersion
-    )
+  public Target PreRelease => _ => _
+    //.Requires( () => Versioning.SupportsTarget( PreRelease ) )
     .DependsOn( PackBinaries, PreReleaseContainer, Test )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(PreRelease) );
 
         Log.Information( "🐋️ RELEASING 🐋️" );
 
-        await ValidateAllowedReleaseTargetOrThrow( PreRelease );
+        //await ValidateAllowedReleaseTargetOrThrow( PreRelease );
 
         var release = await CreateDraftRelease( prerelease: true );
 
@@ -59,28 +53,11 @@ internal partial class NukeBuild {
 
   // TODO Clean up release target and version validation
   private async Task ValidateAllowedReleaseTargetOrThrow( Target target ) {
-    if ( ExpectedTarget != target ) {
-      throw new InvalidOperationException(
-        $"Target not allowed: {target}. Unexpected target. Did execution plan not contain {nameof(Version)}?"
-      );
-    }
-
-    if ( IsLocalBuild && !AllowLocalRelease ) {
-      throw new InvalidOperationException(
-        $"Target not allowed: {nameof(target)}. A local release build was prevented."
-      );
-    }
-
-    if ( Configuration != Configuration.Release ) {
-      throw new InvalidOperationException(
-        $"Releases must be built with {nameof(Configuration)}.{nameof(Configuration.Release)}"
-      );
-    }
-
-    var tags = await GitHubClient.Repository.GetAllTags( Repository.GetGitHubOwner(), Repository.GetGitHubName() );
-
-    if ( tags.Any( t => t.Name == TagName ) ) {
-      throw new InvalidOperationException( $"Release {TagName} already exists" );
+    var existingTags =
+      await GitHubClient.Repository.GetAllTags( Repository.GetGitHubOwner(), Repository.GetGitHubName() );
+    var tag = await Versioning.Value.Release!.GetReleaseGitTagAsync();
+    if ( existingTags.Any( t => t.Name == tag ) ) {
+      throw new InvalidOperationException( $"Release {tag} already exists" );
     }
 
     if ( IsLocalBuild ) {
@@ -107,10 +84,10 @@ internal partial class NukeBuild {
 
   // TODO make static
   private async Task<Release> CreateDraftRelease( bool prerelease ) {
-    var newRelease = new NewRelease( VersionHelper.CreateTagName( SemVer ) ) {
+    var newRelease = new NewRelease( await Versioning.Value.Release!.GetReleaseGitTagAsync() ) {
       Draft = true,
       Prerelease = prerelease,
-      Name = VersionHelper.CreateReleaseName( SemVer, includeMetadata: prerelease ),
+      Name = await Versioning.Value.Release.GetReleaseNameAsync(),
       GenerateReleaseNotes = true
     };
 

@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Drift.Build.Utilities;
 using Drift.Build.Utilities.ContainerImage;
-using Drift.Cli.E2ETests.Abstractions;
+using Drift.Build.Utilities.MsBuild;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Serilog;
-using Utilities;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 // ReSharper disable VariableHidesOuterVariable
@@ -19,7 +18,22 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 sealed partial class NukeBuild {
   Target Test => _ => _
-    .DependsOn( TestUnit, TestE2E );
+    .DependsOn( TestSelf, TestUnit, TestE2E );
+
+  Target TestSelf => _ => _
+    .Before( Version )
+    .Executes( () => {
+        using var _ = new OperationTimer( nameof(TestSelf) );
+
+        DotNetTest( s => s
+          .SetProjectFile( Solution.Build.Build_Utilities_Tests.Path )
+          .SetConfiguration( Configuration )
+          .ConfigureLoggers( MsBuildVerbosityParsed )
+          .SetBlameHangTimeout( "60s" )
+          .EnableNoLogo()
+        );
+      }
+    );
 
   Target TestLocal => _ => _
     .DependsOn( Test )
@@ -57,13 +71,17 @@ sealed partial class NukeBuild {
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(TestE2E) );
 
+        var version = await Versioning.Value.GetVersionAsync();
+
         foreach ( var runtime in SupportedRuntimes ) {
           var driftBinary = Paths.PublishDirectoryForRuntime( runtime ) / "drift";
 
           var envVars = new Dictionary<string, string> {
-            { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
+            //{ nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
+            { "DRIFT_BINARY_PATH", driftBinary },
             // TODO use this!
-            { nameof(EnvVar.DRIFT_CONTAINER_IMAGE_TAG), ImageReference.Localhost( "drift", SemVer ).ToString() }
+            //{ "DRIFT_CONTAINER_IMAGE_TAG", ImageReference.Localhost( "drift", version ).ToString() }
+            { "DRIFT_CONTAINER_IMAGE_TAG", ImageReference.Localhost( "drift", version ).ToString() }
           };
 
           var alternateDockerHost = await FindAlternateDockerHostAsync();
@@ -100,7 +118,7 @@ sealed partial class NukeBuild {
     Log.Debug( "Looking for alternate Docker host..." );
 
     if ( await IsPodmanAvailableAsync() ) {
-      var output = await RunCommandAsync( "podman", "info --format '{{.Host.RemoteSocket.Path}}'" );
+      var output = await CommandRunner.RunAsync( "podman", "info --format '{{.Host.RemoteSocket.Path}}'" );
       var host = "unix://" + output.Trim().Trim( '\'' );
       Log.Debug( "Found Podman at {SocketPath}", host );
       return host;
@@ -113,37 +131,11 @@ sealed partial class NukeBuild {
 
   private static async Task<bool> IsPodmanAvailableAsync() {
     try {
-      var versionOutput = await RunCommandAsync( "podman", "--version" );
+      var versionOutput = await CommandRunner.RunAsync( "podman", "--version" );
       return versionOutput.StartsWith( "podman", StringComparison.OrdinalIgnoreCase );
     }
     catch {
       return false;
     }
-  }
-
-  private static async Task<string> RunCommandAsync( string command, string arguments ) {
-    using var process = Process.Start( new ProcessStartInfo {
-      FileName = command,
-      Arguments = arguments,
-      RedirectStandardOutput = true,
-      RedirectStandardError = true,
-      UseShellExecute = false,
-      CreateNoWindow = true
-    } );
-
-    if ( process == null ) {
-      throw new Exception( $"Could not start process '{command} {arguments}'" );
-    }
-
-    await process.WaitForExitAsync();
-
-    string output = await process.StandardOutput.ReadToEndAsync();
-    string error = await process.StandardError.ReadToEndAsync();
-
-    if ( process.ExitCode != 0 ) {
-      throw new Exception( $"Process '{command} {arguments}' failed:\n{error}" );
-    }
-
-    return output;
   }
 }

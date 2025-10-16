@@ -1,11 +1,10 @@
-using System;
 using System.Diagnostics;
 using Humanizer;
 using Serilog;
 
-namespace Utilities;
+namespace Drift.Build.Utilities;
 
-internal sealed class OperationTimer( string operationName ) : IDisposable {
+public sealed class OperationTimer( string operationName ) : IDisposable {
   private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
 
   public void Dispose() {

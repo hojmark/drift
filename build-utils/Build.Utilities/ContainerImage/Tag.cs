@@ -8,7 +8,7 @@ public abstract record Tag( string TagValue ) {
   }
 }
 
-public sealed record SemanticVersion( SemVersion Version ) : Tag( Version.ToString() ) {
+public sealed record SemanticVersion( SemVersion Version ) : Tag( Version.WithoutMetadata().ToString() ) {
   public override string ToString() {
     return TagValue;
   }

@@ -1,7 +1,6 @@
 using System.Text.Json;
-using Drift.Build.Utilities.ContainerImage;
 using Drift.Cli.E2ETests.Abstractions;
-using Drift.Common;
+using Drift.TestUtilities.ContainerImages;
 using Nuke.Common.Tools.Docker;
 
 namespace Drift.Cli.E2ETests;
@@ -21,7 +20,7 @@ internal abstract class DriftImageFixture {
       DriftImage = ImageReference.Localhost( "drift", DevVersion.Instance );
     }
     catch ( Exception e ) {
-      if ( !Build.Utilities.Environment.IsCi() ) {
+      if ( !TestUtilities.Environment.IsCi() ) {
         Assert.Inconclusive( $"{EnvVar.DRIFT_CONTAINER_IMAGE_TAG} not set" );
       }
 

@@ -1,9 +1,8 @@
-using System;
 using Nuke.Common.Tools.DotNet;
 
-namespace Utilities;
+namespace Drift.Build.Utilities.MsBuild;
 
-internal enum MsBuildVerbosity {
+public enum MsBuildVerbosity {
   Quiet,
   Minimal,
   Normal,
@@ -11,8 +10,8 @@ internal enum MsBuildVerbosity {
   Diagnostic
 }
 
-internal static class MsBuildVerbosityExtensions {
-  internal static string ToMsBuildVerbosity( this MsBuildVerbosity verbosity ) {
+public static class MsBuildVerbosityExtensions {
+  public static string ToMsBuildVerbosity( this MsBuildVerbosity verbosity ) {
     return verbosity switch {
       MsBuildVerbosity.Quiet => "quiet",
       MsBuildVerbosity.Minimal => "minimal",
@@ -23,7 +22,7 @@ internal static class MsBuildVerbosityExtensions {
     };
   }
 
-  internal static MsBuildVerbosity FromMsBuildVerbosity( string verbosity ) {
+  public static MsBuildVerbosity FromMsBuildVerbosity( string verbosity ) {
     return verbosity switch {
       "quiet" => MsBuildVerbosity.Quiet,
       "minimal" => MsBuildVerbosity.Minimal,
@@ -35,7 +34,7 @@ internal static class MsBuildVerbosityExtensions {
   }
 
   // https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2022#switches-for-loggers
-  internal static DotNetTestSettings ConfigureLoggers( this DotNetTestSettings settings, MsBuildVerbosity verbosity ) {
+  public static DotNetTestSettings ConfigureLoggers( this DotNetTestSettings settings, MsBuildVerbosity verbosity ) {
     return settings
       .AddLoggers( $"\"console;verbosity={ToMsBuildVerbosity( verbosity )}\"" )
       .AddLoggers( "trx" );

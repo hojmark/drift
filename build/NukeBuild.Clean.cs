@@ -1,10 +1,10 @@
 using System.Linq;
+using Drift.Build.Utilities;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Utilities.Collections;
 using Serilog;
-using Utilities;
 
 // ReSharper disable VariableHidesOuterVariable
 // ReSharper disable AllUnderscoreLocalParameterName
@@ -56,5 +56,11 @@ sealed partial class NukeBuild {
       }
     );
 
-  private static bool IsBuildProject( Project project ) => project.Path == BuildProjectFile;
+  private bool IsBuildProject( Project project ) {
+    if ( project.Path == BuildProjectFile || project.Path == Solution.Build.Build_Utilities.Path ) {
+      return true;
+    }
+
+    return false;
+  }
 }

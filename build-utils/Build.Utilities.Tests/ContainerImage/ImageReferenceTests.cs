@@ -2,7 +2,7 @@
 using Drift.Build.Utilities.ContainerImage;
 using Semver;
 
-namespace Drift.Build.Utilities.Tests;
+namespace Drift.Build.Utilities.Tests.ContainerImage;
 
 internal class ImageReferenceTests {
   public static IEnumerable SuccessTestCases {

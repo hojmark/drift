@@ -1,6 +1,6 @@
+using Drift.Build.Utilities;
 using Nuke.Common;
 using Nuke.Common.Tools.DotNet;
-using Utilities;
 using Versioning;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
@@ -22,13 +22,15 @@ internal partial class NukeBuild {
 
   Target Build => _ => _
     .DependsOn( Restore )
-    .Executes( () => {
+    .Executes( async () => {
         using var _ = new OperationTimer( nameof(Build) );
+
+        var version = await Versioning.Value.GetVersionAsync();
 
         DotNetBuild( s => s
           .SetProjectFile( Solution )
           .SetConfiguration( Configuration )
-          .SetVersionProperties( SemVer )
+          .SetVersionProperties( version )
           .SetBinaryLog( BinaryBuildLogName )
           .EnableNoLogo()
           .EnableNoRestore()

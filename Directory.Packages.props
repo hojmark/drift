@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
     <PackageVersion Include="Humanizer" Version="2.14.1" />
     <PackageVersion Include="IPNetwork2" Version="3.4.832" />
     <PackageVersion Include="JsonSchema.Net" Version="7.4.0" />

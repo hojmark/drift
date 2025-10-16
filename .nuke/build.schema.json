@@ -43,6 +43,7 @@
         "Test",
         "TestE2E",
         "TestLocal",
+        "TestSelf",
         "TestUnit",
         "Version"
       ]

@@ -1,15 +1,18 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Threading.Tasks;
+using Drift.Build.Utilities;
+using Drift.Build.Utilities.MsBuild;
+using Drift.Build.Utilities.Versioning;
+using Drift.Build.Utilities.Versioning.Abstractions;
 using Nuke.Common;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.DotNet;
 using Octokit;
-using Semver;
 using Serilog;
-using Utilities;
 using Versioning;
 using AuthenticationType = Octokit.AuthenticationType;
 using Credentials = Octokit.Credentials;
@@ -29,7 +32,13 @@ using ProductHeaderValue = Octokit.ProductHeaderValue;
   "SA1312:Variable names should begin with lower-case letter",
   Justification = "Clutters the code and it's not critical in this class"
 )]
-sealed partial class NukeBuild : Nuke.Common.NukeBuild {
+sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
+  public NukeBuild() {
+    Versioning = new Lazy<IVersioningStrategy>( () =>
+      new VersioningStrategyFactory( this ).Create( Configuration, CustomVersion, GitHubClient, Repository )
+    );
+  }
+
   public static int Main() => Execute<NukeBuild>( x => x.Build );
 
   [Parameter( $"{nameof(Configuration)} - Configuration to build - Default is 'Debug' (local) or 'Release' (server)" )]
@@ -42,7 +51,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   public string Commit = IsLocalBuild ? "0000000000000000000000000000000000000000" : null;
 
   [Parameter( $"{nameof(MsBuildVerbosity)} - Console output verbosity - Default is 'normal'" )]
-  public string MsBuildVerbosity = Utilities.MsBuildVerbosity.Normal.ToMsBuildVerbosity();
+  public string MsBuildVerbosity = Drift.Build.Utilities.MsBuild.MsBuildVerbosity.Normal.ToMsBuildVerbosity();
 
   private MsBuildVerbosity MsBuildVerbosityParsed =>
     MsBuildVerbosityExtensions.FromMsBuildVerbosity( MsBuildVerbosity );
@@ -51,7 +60,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
   private readonly Solution Solution;
 
   [GitRepository] //
-  private readonly GitRepository Repository;
+  internal readonly GitRepository Repository;
 
   [Secret, Parameter( $"{nameof(GitHubToken)} - GitHub token used to create releases" )]
   public string GitHubToken;
@@ -88,10 +97,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
     }
   }
 
-  private SemVersion SemVer {
-    get;
-    set;
-  }
+  private Lazy<IVersioningStrategy> Versioning;
 
   private static class Paths {
     internal static AbsolutePath PublishDirectory => RootDirectory / "publish";
@@ -102,13 +108,6 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
       PublishDirectory / id.ToString();
   }
 
-  // TODO or is it build type? in that case, Default should probably be Other
-  internal enum VersionStrategy {
-    Default,
-    Release,
-    PreRelease
-  }
-
   Target Version => _ => _
     .Before( BuildInfo )
     .DependentFor( Build, PublishBinaries, PublishContainer, Release, PreRelease )
@@ -117,59 +116,56 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild {
 
         Log.Information( "Determining version..." );
 
-        if ( ExecutionPlan.Contains( Release ) && ExecutionPlan.Contains( PreRelease ) ) {
-          throw new InvalidOperationException(
-            $"Execution plan cannot contain both {nameof(Release)} and {nameof(PreRelease)}"
-          );
-        }
+        var strategy = Versioning.Value;
 
-        if ( ExecutionPlan.Contains( Release ) ) {
-          Log.Information( "Versioning strategy: {Strategy}", VersionStrategy.Release );
-          SemVer = await VersionHelper.GetNextReleaseVersion( this, Repository );
-          ExpectedTarget = Release;
-        }
-        else if ( ExecutionPlan.Contains( PreRelease ) ) {
-          Log.Information( "Versioning strategy: {Strategy}", VersionStrategy.PreRelease );
-          SemVer = VersionHelper.GetPreReleaseVersion( CustomVersion );
-          ExpectedTarget = PreRelease;
-        }
-        else {
-          Log.Information( "Versioning strategy: {Strategy}", VersionStrategy.Default );
-          SemVer = VersionHelper.GetDefaultVersion();
-        }
+        /*var fac = new VersioningStrategyFactory( this );
+        Versioning = fac.Create();*/
 
-        if ( ExpectedTarget != null ) {
+        /*if ( ExpectedTarget != null ) {
           await ValidateAllowedReleaseTargetOrThrow( ExpectedTarget );
-        }
+        }*/
       }
     );
 
   Target BuildInfo => _ => _
-    .Before( CleanProjects, Restore, CleanArtifacts )
+    .Before( CleanProjects, CleanArtifacts, Restore )
     .DependsOn( Version )
     .DependentFor( Build )
-    .Executes( () => {
-        var providedVersion = string.IsNullOrEmpty( CustomVersion ) ? "[none]" : CustomVersion;
-
-        var builder = new StringBuilder();
-        builder.AppendLine( $"Configuration        : {Configuration}" );
-        builder.AppendLine( $"Version - provided   : {providedVersion}" );
-        builder.AppendLine( $"Version - determined : {SemVer}" );
-        builder.AppendLine( $"Tag Name             : {VersionHelper.CreateTagName( SemVer )}" );
-        builder.AppendLine( $"Prerelease           : {SemVer.IsPrerelease}" );
-        builder.AppendLine( $"Commit               : {Commit}" );
-
-        Log.Information( "BUILD INFORMATION:\n{BuildInfo}", builder.ToString() );
-
-        if ( AllowLocalRelease ) {
-          Log.Warning( "Allowing locally built releases!" );
-        }
+    .Executes( async () => {
+        using var _ = new OperationTimer( nameof(BuildInfo) );
 
         Log.Information(
-          "MSBuild console output verbosity: {Verbosity} (parsed from {ParsedVerbosity})",
+          "MSBuild console output verbosity is {Verbosity} (parsed from {ParsedVerbosity})",
           MsBuildVerbosityParsed,
           MsBuildVerbosity
         );
+
+        var providedVersion = string.IsNullOrEmpty( CustomVersion ) ? "[none]" : CustomVersion;
+        var determinedVersion = await Versioning.Value.GetVersionAsync(); // TODO clean up usage
+
+        var builder = new StringBuilder();
+        //builder.AppendLine( $"Configuration        : {Configuration}" );
+        builder.AppendLine( $"Version strategy     : {Versioning.Value.GetType().Name.Replace( "Versioning", "" )}" );
+        builder.AppendLine( $"Version provided     : {providedVersion}" );
+        builder.AppendLine( $"Version determined   : {determinedVersion}" );
+
+        if ( Versioning.Value.Release is { } release ) {
+          var releaseName = await release.GetReleaseNameAsync();
+          var gitTag = await release.GetReleaseGitTagAsync();
+          var containerTags = string.Join( ", ", await release.GetContainerImageReference() );
+          builder.AppendLine( $"Release name         : {releaseName}" );
+          builder.AppendLine( $"Git tag              : {gitTag}" );
+          builder.AppendLine( $"Container tag(s)     : {containerTags}" );
+        }
+
+        Log.Information( "BUILD INFORMATION:\n{BuildInfo}", builder.ToString() );
+
+        if ( Versioning.Value.Release != null && IsLocalBuild ) {
+          var delay = TimeSpan.FromSeconds( 10 );
+          Log.Warning( "⚠️ LOCAL RELEASE BUILD ⚠️" );
+          Log.Warning( "Continuing in {Delay} seconds...", (int) delay.TotalSeconds );
+          await Task.Delay( delay );
+        }
       }
     );
 }

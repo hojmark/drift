@@ -9,7 +9,7 @@ root = true
 indent_style = space
 
 # Code files
-[*.{cs,csproj,props,json}]
+[*.{cs,csproj,slnx,props,json}]
 indent_size = 2
 insert_final_newline = false
 charset = utf-8
@@ -205,6 +205,8 @@ dotnet_diagnostic.SA1515.severity = none
 dotnet_diagnostic.SA1512.severity = none
 # Use trailing comma in multi-line initializers
 dotnet_diagnostic.SA1413.severity = none
+# 'public' members should come before 'private' members
+dotnet_diagnostic.SA1202.severity = none
 
 # Buggy analyzers throwing exceptions
 # SA1502ElementMustNotBeOnASingleLine

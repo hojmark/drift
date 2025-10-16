@@ -5,11 +5,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Build.Utilities\Build.Utilities.csproj" />
     <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
     <ProjectReference Include="..\Cli.E2ETests.Abstractions\Cli.E2ETests.Abstractions.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Spec.SchemaGenerator.Cli\Spec.SchemaGenerator.Cli.csproj" />
+    <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +22,10 @@
     <PackageReference Include="Testcontainers" />
     <PackageReference Include="Verify.NUnit" />
     <PackageReference Include="IPNetwork2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Utils\" />
   </ItemGroup>
 
 </Project>

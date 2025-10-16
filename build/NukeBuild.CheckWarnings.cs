@@ -1,8 +1,8 @@
 using System;
+using Drift.Build.Utilities;
 using Drift.Build.Utilities.MsBuild;
 using Nuke.Common;
 using Serilog;
-using Utilities;
 
 // ReSharper disable VariableHidesOuterVariable
 // ReSharper disable AllUnderscoreLocalParameterName

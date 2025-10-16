@@ -1,9 +1,9 @@
 using System.Linq;
+using Drift.Build.Utilities;
 using Drift.Build.Utilities.ContainerImage;
 using Nuke.Common;
 using Nuke.Common.Tools.Docker;
 using Serilog;
-using Utilities;
 
 // ReSharper disable VariableHidesOuterVariable
 // ReSharper disable AllUnderscoreLocalParameterName
@@ -26,10 +26,11 @@ partial class NukeBuild {
   Target PublishContainer => _ => _
     .DependsOn( PublishBinaries, CleanArtifacts )
     .Requires( () => Commit )
-    .Executes( () => {
+    .Executes( async () => {
         using var _ = new OperationTimer( nameof(PublishContainer) );
 
-        var localTagVersion = ImageReference.Localhost( "drift", SemVer );
+        var version = await Versioning.Value.GetVersionAsync();
+        var localTagVersion = ImageReference.Localhost( "drift", version );
 
         // var created = DateTime.UtcNow.ToString( "o", CultureInfo.InvariantCulture ); // o = round-trip format / ISO 8601
 
@@ -41,7 +42,7 @@ partial class NukeBuild {
           .SetLabel(
             // Timestamping prevents build from being idempotent
             // $"\"org.opencontainers.image.created={created}\"",
-            $"\"org.opencontainers.image.version={SemVer.ToString()}\"",
+            $"\"org.opencontainers.image.version={version.WithoutMetadata()}\"",
             $"\"org.opencontainers.image.revision={Commit}\""
           )
         );
@@ -61,13 +62,15 @@ partial class NukeBuild {
   /// </summary>
   Target ReleaseContainer => _ => _
     .DependsOn( TestE2E )
-    .Requires( () => DockerHubPassword )
-    .Executes( () => {
+    .Requires( () => DockerHubPassword ) //TODO require that login is successful
+    .Executes( async () => {
         using var _ = new OperationTimer( nameof(ReleaseContainer) );
 
-        var local = ImageReference.Localhost( "drift", SemVer );
+        var version = await Versioning.Value.GetVersionAsync();
+
+        var local = ImageReference.Localhost( "drift", version );
         var dockerHub = new[] {
-          ImageReference.DockerIo( "hojmark", "drift", SemVer ),
+          ImageReference.DockerIo( "hojmark", "drift", version ),
           ImageReference.DockerIo( "hojmark", "drift", LatestVersion.Instance )
         };
 
@@ -83,11 +86,13 @@ partial class NukeBuild {
   Target PreReleaseContainer => _ => _
     .DependsOn( TestE2E )
     .Requires( () => DockerHubPassword )
-    .Executes( () => {
+    .Executes( async () => {
         using var _ = new OperationTimer( nameof(PreReleaseContainer) );
 
-        var local = ImageReference.Localhost( "drift", SemVer );
-        var dockerHub = ImageReference.DockerIo( "hojmark", "drift", SemVer );
+        var version = await Versioning.Value.GetVersionAsync();
+
+        var local = ImageReference.Localhost( "drift", version );
+        var dockerHub = ImageReference.DockerIo( "hojmark", "drift", version );
 
         Push( local, dockerHub );
 

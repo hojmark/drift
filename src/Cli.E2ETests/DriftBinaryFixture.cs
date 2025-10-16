@@ -16,7 +16,7 @@ internal abstract class DriftBinaryFixture {
       DriftBinary = new ToolWrapper( path );
     }
     catch ( Exception e ) {
-      if ( !Build.Utilities.Environment.IsCi() ) {
+      if ( !Drift.TestUtilities.Environment.IsCi() ) {
         Assert.Inconclusive( $"{EnvVar.DRIFT_BINARY_PATH} not set" );
       }
 

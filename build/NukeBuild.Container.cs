@@ -62,21 +62,19 @@ partial class NukeBuild {
   /// </summary>
   Target ReleaseContainer => _ => _
     .DependsOn( TestE2E )
-    .Requires( () => DockerHubPassword ) //TODO require that login is successful
+    .Requires( () => DockerHubPassword ) // TODO require that login is successful
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(ReleaseContainer) );
 
         var version = await Versioning.Value.GetVersionAsync();
-
         var local = ImageReference.Localhost( "drift", version );
-        var dockerHub = new[] {
-          ImageReference.DockerIo( "hojmark", "drift", version ),
-          ImageReference.DockerIo( "hojmark", "drift", LatestVersion.Instance )
-        };
+        var publicc = await Versioning.Value.Release!.GetContainerImageReferences();
 
-        Push( local, dockerHub );
+        Push( local, publicc.ToArray() );
 
-        Log.Information( "🐋 Released {ImageReference} to Docker Hub!", dockerHub.Last() );
+        var repos = publicc.DistinctBy( r => r.Repository );
+
+        Log.Information( "🐋 Released to {Repositories}!", string.Join( " and ", repos ) );
       }
     );
 
@@ -90,13 +88,14 @@ partial class NukeBuild {
         using var _ = new OperationTimer( nameof(PreReleaseContainer) );
 
         var version = await Versioning.Value.GetVersionAsync();
-
         var local = ImageReference.Localhost( "drift", version );
-        var dockerHub = ImageReference.DockerIo( "hojmark", "drift", version );
+        var publicc = await Versioning.Value.Release!.GetContainerImageReferences();
 
-        Push( local, dockerHub );
+        Push( local, publicc.ToArray() );
 
-        Log.Information( "🐋 Released {ImageReference} to Docker Hub!", dockerHub );
+        var repos = publicc.DistinctBy( r => r.Repository );
+
+        Log.Information( "🐋 Released to {Repositories}!", string.Join( " and ", repos ) );
       }
     );
 
@@ -109,14 +108,14 @@ partial class NukeBuild {
         DockerHubLogin();
       }
 
-      Log.Information(
+      Log.Debug(
         "Pushing {SourceTag} to: {TargetTags}",
         source,
         string.Join( ", ", targets.Select( t => t.ToString() ) )
       );
 
       foreach ( var target in targets ) {
-        Log.Information( "Re-tagging {SourceTag} -> {TargetTag}", source, target );
+        Log.Debug( "Re-tagging {SourceTag} -> {TargetTag}", source, target );
         DockerTasks.DockerTag( s => s
           .SetSourceImage( source )
           .SetTargetImage( target )
@@ -126,6 +125,7 @@ partial class NukeBuild {
         DockerTasks.DockerPush( s => s
           .SetName( target )
         );
+
         Log.Information( "Pushed {TargetTag}", target );
       }
     }
@@ -137,7 +137,7 @@ partial class NukeBuild {
   }
 
   private void DockerHubLogin() {
-    Log.Information( "Logging in to Docker Hub" );
+    Log.Debug( "Logging in to Docker Hub" );
 
     DockerTasks.DockerLogin( s => s
       .SetUsername( DockerHubUsername )
@@ -147,7 +147,7 @@ partial class NukeBuild {
   }
 
   private static void DockerHubLogout() {
-    Log.Information( "Logging out of Docker Hub" );
+    Log.Debug( "Logging out of Docker Hub" );
 
     DockerTasks.DockerLogout( s => s
       .SetServer( "docker.io" )

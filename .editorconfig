@@ -207,6 +207,10 @@ dotnet_diagnostic.SA1512.severity = none
 dotnet_diagnostic.SA1413.severity = none
 # 'public' members should come before 'private' members
 dotnet_diagnostic.SA1202.severity = none
+# Prefix local calls with this
+dotnet_diagnostic.SA1101.severity = none
+# Field '*' should not begin with an underscore
+dotnet_diagnostic.SA1309.severity = none
 
 # Buggy analyzers throwing exceptions
 # SA1502ElementMustNotBeOnASingleLine
@@ -215,12 +219,8 @@ dotnet_diagnostic.SA1502.severity = none
 dotnet_diagnostic.SA1508.severity = none
 
 # TODO TBD
-# Prefix local calls with this
-dotnet_diagnostic.SA1101.severity = suggestion
 # The keyword 'new' should be followed by a space.
 dotnet_diagnostic.SA1000.severity = suggestion # Need to configure formatting in Rider?
-# Field '*' should not begin with an underscore
-dotnet_diagnostic.SA1309.severity = suggestion
 # Parameter '*' should begin with lower-case letter
 dotnet_diagnostic.SA1313.severity = suggestion # Rider disagrees?
 

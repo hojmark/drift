@@ -58,7 +58,7 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
     return tag;
   }
 
-  public virtual async Task<ICollection<ImageReference>> GetContainerImageReference() {
+  public virtual async Task<ICollection<ImageReference>> GetContainerImageReferences() {
     return [
       ImageReference.DockerIo( "hojmark", "drift", await GetVersionAsync() )
     ];

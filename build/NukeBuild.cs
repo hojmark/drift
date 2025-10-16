@@ -151,7 +151,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
         if ( Versioning.Value.Release is { } release ) {
           var releaseName = await release.GetReleaseNameAsync();
           var gitTag = await release.GetReleaseGitTagAsync();
-          var containerTags = string.Join( ", ", await release.GetContainerImageReference() );
+          var containerTags = string.Join( ", ", await release.GetContainerImageReferences() );
           builder.AppendLine( $"Release name         : {releaseName}" );
           builder.AppendLine( $"Git tag              : {gitTag}" );
           builder.AppendLine( $"Container tag(s)     : {containerTags}" );

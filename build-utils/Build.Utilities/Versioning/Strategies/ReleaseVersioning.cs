@@ -53,10 +53,10 @@ public sealed class ReleaseVersioning(
     return CreateReleaseName( await GetVersionAsync(), includeMetadata: false );
   }
 
-  public override async Task<ICollection<ImageReference>> GetContainerImageReference() {
+  public override async Task<ICollection<ImageReference>> GetContainerImageReferences() {
     return [
       ImageReference.DockerIo( "hojmark", "drift", LatestVersion.Instance ),
-      ..await base.GetContainerImageReference()
+      ..await base.GetContainerImageReferences()
     ];
   }
 

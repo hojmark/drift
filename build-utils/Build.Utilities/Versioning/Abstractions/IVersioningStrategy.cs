@@ -16,5 +16,5 @@ public interface IReleaseInfo {
 
   Task<string> GetReleaseGitTagAsync();
 
-  Task<ICollection<ImageReference>> GetContainerImageReference();
+  Task<ICollection<ImageReference>> GetContainerImageReferences();
 }

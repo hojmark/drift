@@ -25,7 +25,7 @@ internal static class DriftTestCli {
     var output = new StringWriter();
     var error = new StringWriter();
 
-    void ConfigureCommandLine( CommandLineConfiguration config ) {
+    void ConfigureInvocation( InvocationConfiguration config ) {
       config.Output = output;
       config.Error = error;
     }
@@ -38,7 +38,7 @@ internal static class DriftTestCli {
           true,
           configureServices,
           customCommands,
-          ConfigureCommandLine,
+          ConfigureInvocation,
           token
         ),
         output,

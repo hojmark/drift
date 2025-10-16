@@ -43,8 +43,8 @@ internal class OutputManagerFactory(
       // outputFormat = OutputFormat.Normal;
     }
 
-    var consoleOut = result.Configuration.Output;
-    var consoleErr = result.Configuration.Error;
+    var consoleOut = result.InvocationConfiguration.Output;
+    var consoleErr = result.InvocationConfiguration.Error;
 
     return Create( outputFormat, verbose, veryVerbose, interactiveOutputOnly, consoleOut, consoleErr, plainConsole );
   }

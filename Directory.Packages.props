@@ -3,7 +3,6 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Humanizer" Version="2.14.1" />
     <PackageVersion Include="IPNetwork2" Version="3.4.832" />
     <PackageVersion Include="JsonSchema.Net" Version="7.4.0" />
@@ -15,7 +14,6 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.10" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
     <PackageVersion Include="NaturalSort.Extension" Version="4.4.0" />
-    <PackageVersion Include="NmapXmlParser" Version="1.0.0" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="Nuke.Common" Version="9.0.4" />
     <PackageVersion Include="Nuke.Tooling" Version="9.0.4" />
@@ -31,7 +29,7 @@
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.15.0.120848" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.52.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta6.25358.103" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-rc.2.25502.107" />
     <PackageVersion Include="System.Text.Json" Version="9.0.6" />
     <PackageVersion Include="System.Threading.RateLimiting" Version="9.0.10" />
     <PackageVersion Include="Testcontainers" Version="4.7.0" />

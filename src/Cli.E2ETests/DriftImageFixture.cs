@@ -14,14 +14,14 @@ internal abstract class DriftImageFixture {
   [OneTimeSetUp]
   public void Setup() {
     try {
-      var tag = EnvironmentVariable.GetOrThrow( EnvVar.DRIFT_CONTAINER_IMAGE_TAG );
+      var reference = EnvironmentVariable.GetOrThrow( EnvVar.DRIFT_CONTAINER_IMAGE_REF );
       // TODO get from env var
-      // DriftImage = ImageReference.Parse( path );
+      // DriftImage = ImageReference.Parse( reference );
       DriftImage = ImageReference.Localhost( "drift", DevVersion.Instance );
     }
     catch ( Exception e ) {
       if ( !TestUtilities.Environment.IsCi() ) {
-        Assert.Inconclusive( $"{EnvVar.DRIFT_CONTAINER_IMAGE_TAG} not set" );
+        Assert.Inconclusive( $"{EnvVar.DRIFT_CONTAINER_IMAGE_REF} not set" );
       }
 
       Console.Error.WriteLine( e.StackTrace );

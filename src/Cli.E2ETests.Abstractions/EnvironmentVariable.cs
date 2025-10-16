@@ -5,8 +5,8 @@ namespace Drift.Cli.E2ETests.Abstractions;
 [SuppressMessage( "ReSharper", "InconsistentNaming", Justification = "Environment variable name" )]
 public enum EnvVar {
   DRIFT_BINARY_PATH,
-  //TODO USE THIS
-  DRIFT_CONTAINER_IMAGE_TAG
+  // TODO USE THIS
+  DRIFT_CONTAINER_IMAGE_REF
 }
 
 public static class EnvironmentVariable {

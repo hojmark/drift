@@ -143,7 +143,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
         var determinedVersion = await Versioning.Value.GetVersionAsync(); // TODO clean up usage
 
         var builder = new StringBuilder();
-        //builder.AppendLine( $"Configuration        : {Configuration}" );
+        // builder.AppendLine( $"Configuration        : {Configuration}" );
         builder.AppendLine( $"Version strategy     : {Versioning.Value.GetType().Name.Replace( "Versioning", "" )}" );
         builder.AppendLine( $"Version provided     : {providedVersion}" );
         builder.AppendLine( $"Version determined   : {determinedVersion}" );

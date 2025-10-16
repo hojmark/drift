@@ -16,5 +16,5 @@ internal sealed class PortTest : DriftImageFixture {
     Assert.That( exposedPort, Is.EqualTo( "45454/tcp" ) );
   }
 
-  //TODO test port is open
+  // TODO test port is open
 }

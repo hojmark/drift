@@ -28,8 +28,8 @@ sealed partial class NukeBuild {
         DotNetRun( s => s
           .SetProjectFile( Solution.Build.Build_Utilities_Tests.Path )
           .SetConfiguration( Configuration )
-          //.ConfigureLoggers( MsBuildVerbosityParsed )
-          //.SetBlameHangTimeout( "60s" )
+          // .ConfigureLoggers( MsBuildVerbosityParsed )
+          // .SetBlameHangTimeout( "60s" )
           .AddProcessAdditionalArguments( "--disable-logo" )
           .AddProcessAdditionalArguments( "--minimum-expected-tests 18" )
         );
@@ -78,11 +78,11 @@ sealed partial class NukeBuild {
           var driftBinary = Paths.PublishDirectoryForRuntime( runtime ) / "drift";
 
           var envVars = new Dictionary<string, string> {
-            //{ nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
+            // { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
             { "DRIFT_BINARY_PATH", driftBinary },
             // TODO use this!
-            //{ "DRIFT_CONTAINER_IMAGE_TAG", ImageReference.Localhost( "drift", version ).ToString() }
-            { "DRIFT_CONTAINER_IMAGE_TAG", ImageReference.Localhost( "drift", version ).ToString() }
+            // { "DRIFT_CONTAINER_IMAGE_REF", ImageReference.Localhost( "drift", version ).ToString() }
+            { "DRIFT_CONTAINER_IMAGE_REF", ImageReference.Localhost( "drift", version ).ToString() }
           };
 
           var alternateDockerHost = await FindAlternateDockerHostAsync();

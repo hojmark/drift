@@ -51,17 +51,15 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
     return _cachedGitTag;
   }
 
-  public async Task<string> GetReleaseGitTagInternalAsync() {
-    var version = await GetVersionAsync();
-    var tag = "v" + version.WithoutMetadata();
-    await ValidateAvailableOrThrowAsync( tag );
-    return tag;
-  }
-
   public virtual async Task<ICollection<ImageReference>> GetImageReferences() {
     return [
       ImageReference.DockerIo( "hojmark", "drift", await GetVersionAsync() )
     ];
+  }
+
+  protected static string CreateReleaseName( SemVersion version, bool includeMetadata ) {
+    var v = includeMetadata ? version : version.WithoutMetadata();
+    return $"Drift CLI {v}";
   }
 
   private async Task ValidateAvailableOrThrowAsync( string tag ) {
@@ -75,8 +73,10 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
     }
   }
 
-  protected static string CreateReleaseName( SemVersion version, bool includeMetadata ) {
-    var v = includeMetadata ? version : version.WithoutMetadata();
-    return $"Drift CLI {v}";
+  private async Task<string> GetReleaseGitTagInternalAsync() {
+    var version = await GetVersionAsync();
+    var tag = "v" + version.WithoutMetadata();
+    await ValidateAvailableOrThrowAsync( tag );
+    return tag;
   }
 }

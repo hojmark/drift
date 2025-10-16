@@ -29,7 +29,7 @@ internal partial class NukeBuild {
 
         await RemoveDraftStatus( release );
 
-        Log.Information( "⭐ Released {ReleaseName} to GitHub!", release.Name );
+        Log.Information( "🐱 Released {ReleaseName} to GitHub!", release.Name );
       }
     );
 
@@ -44,7 +44,7 @@ internal partial class NukeBuild {
 
         var release = await CreateDraftRelease( prerelease: true );
 
-        Log.Information( "⭐ Released {ReleaseName} to GitHub!", release.Name );
+        Log.Information( "🐱 Released {ReleaseName} to GitHub!", release.Name );
       }
     );
 

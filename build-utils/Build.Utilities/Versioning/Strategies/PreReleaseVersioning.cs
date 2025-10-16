@@ -46,10 +46,10 @@ public sealed class PreReleaseVersioning(
     updatedPrereleaseIdentifiers.Add( date );
 
     var updatedMetadata = ver.MetadataIdentifiers.ToList();
-    var preReleaseIdentifier = new MetadataIdentifier( "prerelease" );
+    /*var preReleaseIdentifier = new MetadataIdentifier( "prerelease" );
     if ( !updatedMetadata.Contains( preReleaseIdentifier ) ) {
       updatedMetadata.Add( preReleaseIdentifier );
-    }
+    }*/
 
     var version = new SemVersion(
       new BigInteger( 0 ),

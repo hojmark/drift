@@ -73,7 +73,7 @@ partial class NukeBuild {
 
         Push( local, publicc.ToArray() );
 
-        var repos = publicc.DistinctBy( r => r.Repository );
+        var repos = publicc.Select( r => r.Repository ).Distinct();
 
         Log.Information( "🐋 Released to {Repositories}!", string.Join( " and ", repos ) );
       }

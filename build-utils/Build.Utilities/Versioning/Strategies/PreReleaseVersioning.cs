@@ -62,7 +62,7 @@ public sealed class PreReleaseVersioning(
     return Task.FromResult( version );
   }
 
-  public override async Task<string> GetReleaseNameAsync() {
+  public override async Task<string> GetNameAsync() {
     return CreateReleaseName( await GetVersionAsync(), includeMetadata: true );
   }
 }

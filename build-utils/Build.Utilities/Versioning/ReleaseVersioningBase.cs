@@ -44,9 +44,9 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
 
   public abstract Task<SemVersion> GetVersionAsync();
 
-  public abstract Task<string> GetReleaseNameAsync();
+  public abstract Task<string> GetNameAsync();
 
-  public async Task<string> GetReleaseGitTagAsync() {
+  public async Task<string> GetGitTagAsync() {
     _cachedGitTag ??= await GetReleaseGitTagInternalAsync();
     return _cachedGitTag;
   }
@@ -58,7 +58,7 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
     return tag;
   }
 
-  public virtual async Task<ICollection<ImageReference>> GetContainerImageReferences() {
+  public virtual async Task<ICollection<ImageReference>> GetImageReferences() {
     return [
       ImageReference.DockerIo( "hojmark", "drift", await GetVersionAsync() )
     ];

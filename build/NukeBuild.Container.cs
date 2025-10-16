@@ -69,7 +69,7 @@ partial class NukeBuild {
 
         var version = await Versioning.Value.GetVersionAsync();
         var local = ImageReference.Localhost( "drift", version );
-        var publicc = await Versioning.Value.Release!.GetContainerImageReferences();
+        var publicc = await Versioning.Value.Release!.GetImageReferences();
 
         Push( local, publicc.ToArray() );
 
@@ -90,7 +90,7 @@ partial class NukeBuild {
 
         var version = await Versioning.Value.GetVersionAsync();
         var local = ImageReference.Localhost( "drift", version );
-        var publicc = await Versioning.Value.Release!.GetContainerImageReferences();
+        var publicc = await Versioning.Value.Release!.GetImageReferences();
 
         Push( local, publicc.ToArray() );
 

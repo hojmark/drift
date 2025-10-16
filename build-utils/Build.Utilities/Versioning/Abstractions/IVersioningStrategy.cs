@@ -12,9 +12,9 @@ public interface IVersioningStrategy {
 }
 
 public interface IReleaseInfo {
-  Task<string> GetReleaseNameAsync();
+  Task<string> GetNameAsync();
 
-  Task<string> GetReleaseGitTagAsync();
+  Task<string> GetGitTagAsync();
 
-  Task<ICollection<ImageReference>> GetContainerImageReferences();
+  Task<ICollection<ImageReference>> GetImageReferences();
 }

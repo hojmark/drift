@@ -53,7 +53,7 @@ internal partial class NukeBuild {
   private async Task ValidateAllowedReleaseTargetOrThrow( Target target ) {
     var existingTags =
       await GitHubClient.Repository.GetAllTags( Repository.GetGitHubOwner(), Repository.GetGitHubName() );
-    var tag = await Versioning.Value.Release!.GetReleaseGitTagAsync();
+    var tag = await Versioning.Value.Release!.GetGitTagAsync();
     if ( existingTags.Any( t => t.Name == tag ) ) {
       throw new InvalidOperationException( $"Release {tag} already exists" );
     }
@@ -82,10 +82,10 @@ internal partial class NukeBuild {
 
   // TODO make static
   private async Task<Release> CreateDraftRelease( bool prerelease ) {
-    var newRelease = new NewRelease( await Versioning.Value.Release!.GetReleaseGitTagAsync() ) {
+    var newRelease = new NewRelease( await Versioning.Value.Release!.GetGitTagAsync() ) {
       Draft = true,
       Prerelease = prerelease,
-      Name = await Versioning.Value.Release.GetReleaseNameAsync(),
+      Name = await Versioning.Value.Release.GetNameAsync(),
       GenerateReleaseNotes = true
     };
 

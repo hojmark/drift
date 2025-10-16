@@ -12,9 +12,7 @@ updates:
       prefix: "ci(deps): "
 
   - package-ecosystem: "nuget"
-    directories: 
-      - "/"
-      - "/src"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "wednesday"

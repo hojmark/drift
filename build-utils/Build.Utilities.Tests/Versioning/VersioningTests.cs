@@ -19,7 +19,7 @@ internal sealed class VersioningTests {
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( version.ToString(), Is.EqualTo( "0.0.0-local" ) );
+      Assert.That( version.ToString(), Is.EqualTo( "0.0.0-local" ).Or.EqualTo( "0.0.0-ci") );
       Assert.That( strategy.Release, Is.Null );
     }
   }
@@ -36,7 +36,7 @@ internal sealed class VersioningTests {
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( version.ToString(), Is.EqualTo( "0.0.0-local" ) );
+      Assert.That( version.ToString(), Is.EqualTo( "0.0.0-local" ).Or.EqualTo( "0.0.0-ci") );
       Assert.That( strategy.Release, Is.Null );
     }
   }

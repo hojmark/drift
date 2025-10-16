@@ -49,8 +49,7 @@ drift scan
 
 ```bash
 # Scan
-docker run --rm --cap-add=NET_RAW \
-  docker.io/hojmark/drift scan
+docker run --rm --cap-add=NET_RAW docker.io/hojmark/drift scan
 ```
 
 ## 🌟 Features

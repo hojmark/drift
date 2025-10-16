@@ -14,17 +14,14 @@ namespace Drift.Build.Utilities.Versioning.Strategies;
 public sealed class ReleaseVersioning(
   INukeRelease build,
   Configuration configuration,
-  string customVersion,
+  string? customVersion,
   GitRepository repository,
   IGitHubClient gitHubClient
 ) : ReleaseVersioningBase( build, configuration, repository, gitHubClient ) {
-  [CanBeNull] private SemVersion _cachedVersion;
+  private SemVersion? _cachedVersion;
 
   public override async Task<SemVersion> GetVersionAsync() {
-    if ( _cachedVersion == null ) {
-      _cachedVersion = await GetVersionInternalAsync();
-    }
-
+    _cachedVersion ??= await GetVersionInternalAsync();
     return _cachedVersion;
   }
 
@@ -62,10 +59,6 @@ public sealed class ReleaseVersioning(
       ImageReference.DockerIo( "hojmark", "drift", LatestVersion.Instance ),
       ..await base.GetContainerImageReference()
     ];
-  }
-
-  public override bool SupportsTarget( Target target ) {
-    return false;
   }
 
   [CanBeNull]

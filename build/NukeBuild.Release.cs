@@ -17,7 +17,6 @@ internal partial class NukeBuild {
   public bool AllowLocalRelease => true; // TODO set to false!
 
   public Target Release => _ => _
-    //.Requires( () => Versioning.SupportsTarget( Release ) )
     .DependsOn( PackBinaries, ReleaseContainer, Test )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(Release) );
@@ -35,7 +34,6 @@ internal partial class NukeBuild {
     );
 
   public Target PreRelease => _ => _
-    //.Requires( () => Versioning.SupportsTarget( PreRelease ) )
     .DependsOn( PackBinaries, PreReleaseContainer, Test )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(PreRelease) );

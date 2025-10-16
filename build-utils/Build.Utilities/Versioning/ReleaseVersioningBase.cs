@@ -64,8 +64,6 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
     ];
   }
 
-  public abstract bool SupportsTarget( Target target );
-
   private async Task ValidateAvailableOrThrowAsync( string tag ) {
     var existingTags = await _gitHubClient.Repository.GetAllTags(
       _repository.GetGitHubOwner(),

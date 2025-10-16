@@ -10,14 +10,14 @@ namespace Drift.Build.Utilities.Versioning.Strategies;
 public sealed class PreReleaseVersioning(
   INukeRelease build,
   Configuration configuration,
-  string customVersion,
+  string? customVersion,
   GitRepository repository,
   IGitHubClient gitHubClient
 ) : ReleaseVersioningBase( build, configuration, repository, gitHubClient ) {
   public override Task<SemVersion> GetVersionAsync() {
     if ( string.IsNullOrWhiteSpace( customVersion ) ) {
       throw new InvalidOperationException(
-        $"Must specify custom version when releasing a pre-release version"
+        "Must specify custom version when releasing a pre-release version"
       );
     }
 
@@ -62,6 +62,4 @@ public sealed class PreReleaseVersioning(
   public override async Task<string> GetReleaseNameAsync() {
     return CreateReleaseName( await GetVersionAsync(), includeMetadata: true );
   }
-
-  public override bool SupportsTarget( Target target ) => throw new NotImplementedException();
 }

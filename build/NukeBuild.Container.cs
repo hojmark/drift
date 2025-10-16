@@ -29,6 +29,7 @@ partial class NukeBuild {
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(PublishContainer) );
 
+        // TODO use GetContainerImageReferences (.WithRepo(repo))
         var version = await Versioning.Value.GetVersionAsync();
         var localTagVersion = ImageReference.Localhost( "drift", version );
 
@@ -40,15 +41,15 @@ partial class NukeBuild {
           .SetFile( "Containerfile" )
           .SetTag( localTagVersion )
           .SetLabel(
-            // Timestamping prevents build from being idempotent
+            // Timestamping prevents the build from being idempotent
             // $"\"org.opencontainers.image.created={created}\"",
             $"\"org.opencontainers.image.version={version.WithoutMetadata()}\"",
             $"\"org.opencontainers.image.revision={Commit}\""
           )
         );
 
+        // For convenience, tag the image with dev as well
         var localTagDev = localTagVersion.WithTag( DevVersion.Instance );
-
         Log.Information( "Re-tagging {LocalTagVersion} -> {LocalTagDev}", localTagVersion, localTagDev );
         DockerTasks.DockerTag( s => s
           .SetSourceImage( localTagVersion )

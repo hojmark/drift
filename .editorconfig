@@ -211,6 +211,8 @@ dotnet_diagnostic.SA1202.severity = none
 dotnet_diagnostic.SA1101.severity = none
 # Field '*' should not begin with an underscore
 dotnet_diagnostic.SA1309.severity = none
+# Static members should appear before non-static members
+dotnet_diagnostic.SA1204.severity = suggestion
 
 # Buggy analyzers throwing exceptions
 # SA1502ElementMustNotBeOnASingleLine

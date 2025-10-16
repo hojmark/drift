@@ -2,7 +2,7 @@ using Semver;
 
 namespace Drift.Build.Utilities.ContainerImage;
 
-public record class ImageReference {
+public record ImageReference {
   public ContainerRegistry Host {
     get;
     protected init;

@@ -1,5 +1,6 @@
 using System.Numerics;
 using Drift.Build.Utilities.Versioning.Abstractions;
+using NuGet.Packaging.Signing;
 using Nuke.Common.Git;
 using Octokit;
 using Semver;
@@ -13,6 +14,8 @@ public sealed class PreReleaseVersioning(
   GitRepository repository,
   IGitHubClient gitHubClient
 ) : ReleaseVersioningBase( build, configuration, repository, gitHubClient ) {
+  private string? _timestamp; // Cache to support multiple calls to GetVersionAsync()
+
   public override Task<SemVersion> GetVersionAsync() {
     if ( string.IsNullOrWhiteSpace( customVersion ) ) {
       throw new InvalidOperationException(
@@ -38,7 +41,8 @@ public sealed class PreReleaseVersioning(
     }
 
     var updatedPrereleaseIdentifiers = ver.PrereleaseIdentifiers.ToList();
-    var date = new PrereleaseIdentifier( DateTime.UtcNow.ToString( "yyyyMMddHHmmss" ) );
+    _timestamp ??= DateTime.UtcNow.ToString( "yyyyMMddHHmmss" );
+    var date = new PrereleaseIdentifier( _timestamp );
     updatedPrereleaseIdentifiers.Add( date );
 
     var updatedMetadata = ver.MetadataIdentifiers.ToList();

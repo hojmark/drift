@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Drift.Build.Utilities.Tests.NukeBuild;
 using Drift.Build.Utilities.Versioning;
 using Drift.Build.Utilities.Versioning.Strategies;
@@ -104,6 +105,23 @@ internal sealed class VersioningTests {
 
     // Assert
     Assert.DoesNotThrowAsync( async () => await strategy.GetVersionAsync() ); //TODO test the version!
+  }
+
+  [Test]
+  public async Task PreReleaseVersionIsTemporallyConsistent() {
+    // Arrange
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.PreRelease ).AllowLocalRelease();
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Release, "0.0.0-custom", null, null );
+    var versionBefore = await strategy.GetVersionAsync();
+    Task.Delay( 1500 ).Wait();
+    var versionAfter = await strategy.GetVersionAsync();
+
+    // Assert
+
+    Assert.That( versionBefore, Is.EqualTo( versionAfter ) );
   }
 
   [Test]

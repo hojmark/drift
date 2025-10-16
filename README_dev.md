@@ -78,48 +78,37 @@ Arguments, options and environment variables for `install.sh`:
 
 ### Container Image
 
-TODO support reading spec from stdin
+> [!WARNING]
+> WIP
 
-TODO include debug symbols in container image
+- TODO Support reading spec from stdin
+- TODO include debug symbols in container image
+- NOTE: default to o=log and subnetscanner=fping ?
 
-NOTE: defaults to o=log and subnetscanner=fping
-
-Local:
+Local scan:
 ```sh
-docker run --rm \
-  --cap-add=NET_RAW \
-  localhost/drift:dev scan
+docker run -it --rm --network host localhost/drift:dev scan -i
 ```
 
 Readme flow:
 ```sh
-docker run --rm \
-  --cap-add=NET_RAW \
-  docker.io/hojmark/drift init > main-site.spec.yaml
-cat main-site.spec.yaml | docker run --rm \
-  --cap-add=NET_RAW \
-  docker.io/hojmark/drift scan
-```
-
-Individual scan:
-```sh
-docker run --rm \
-  --cap-add=NET_RAW \
-  docker.io/hojmark/drift scan
+docker run --network host docker.io/hojmark/drift init > main-site.spec.yaml
+cat main-site.spec.yaml | docker run docker.io/hojmark/drift scan
 ```
 
 Start in agent mode:
 ```sh
- docker run \
+ docker run 
+  --network host
   --name drift-agent \
-  --cap-add=NET_RAW \
   -p 45454:45454 \
   localhost/drift agent start
 ```
 
 ### Package Manager
 
-_Coming soon_
+> [!WARNING]
+> WIP
 
 | Package Manager | Format              | Distribution           |
 |-----------------|---------------------|------------------------|
@@ -128,6 +117,9 @@ _Coming soon_
 | `pacman`        | PKGBUILD / `.pkg.*` | AUR, direct .pkg.*     |
 
 ## Spec
+
+> [!WARNING]
+> WIP
 
 A Drift spec is a declarative definition of the desired state of network resources.
 

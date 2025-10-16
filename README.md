@@ -40,7 +40,7 @@ You can install Drift by either:
 drift init
 
 # Scan and detect drift
-drift scan
+drift scan -i
 ```
 
 ### Container
@@ -48,8 +48,8 @@ drift scan
 #### Run
 
 ```bash
-# Scan
-docker run --rm --cap-add=NET_RAW docker.io/hojmark/drift scan
+# Scan (interactive)
+docker run -it --rm --network host docker.io/hojmark/drift scan -i
 ```
 
 ## 🌟 Features

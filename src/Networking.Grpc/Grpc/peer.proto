@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option csharp_namespace = "Drift.Networking.Grpc.Generated";
+
+import "google/protobuf/empty.proto";
+
+package peer;
+
+service PeerService {
+  rpc PeerStream (stream PeerMessage) returns (stream PeerMessage);
+  rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty);
+}
+
+message PeerMessage {
+  string peer_id = 1;
+  string message = 2;
+  string message_type = 3;
+}

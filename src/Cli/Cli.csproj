@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <RuntimeIdentifiers>linux-x64;linux-musl-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
+    <ProjectReference Include="..\Networking.Grpc\Networking.Grpc.csproj" />
     <ProjectReference Include="..\Scanning\Scanning.csproj" />
     <ProjectReference Include="..\Diff\Diff.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />

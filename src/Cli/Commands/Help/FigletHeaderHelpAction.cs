@@ -9,8 +9,8 @@ namespace Drift.Cli.Commands.Help;
 
 internal class FigletHeaderHelpAction( HelpAction action ) : SynchronousCommandLineAction {
   public override int Invoke( ParseResult parseResult ) {
-    var consoleOut = parseResult.Configuration.Output;
-    var consoleErr = parseResult.Configuration.Error;
+    var consoleOut = parseResult.InvocationConfiguration.Output;
+    var consoleErr = parseResult.InvocationConfiguration.Error;
 
     var outputManager =
       new OutputManagerFactory().Create( OutputFormat.Normal, false, false, false, consoleOut, consoleErr, false );

@@ -13,7 +13,7 @@ internal static class DriftCli {
     bool plainConsole = false,
     Action<IServiceCollection>? configureServices = null,
     RootCommandFactory.CommandRegistration[]? customCommands = null,
-    Action<CommandLineConfiguration>? configureCommandLineConfig = null,
+    Action<InvocationConfiguration>? configureInvocation = null,
     CancellationToken cancellationToken = default
   ) {
     // Justification: intentionally using the most basic output form to make sure the error is surfaced, no matter what code fails
@@ -30,13 +30,15 @@ internal static class DriftCli {
         customCommands
       );
 
-      var config = new CommandLineConfiguration( rootCommand ) { EnableDefaultExceptionHandler = false };
+      var config = new InvocationConfiguration { EnableDefaultExceptionHandler = false };
 
-      configureCommandLineConfig?.Invoke( config );
+      configureInvocation?.Invoke( config );
 
       error = config.Error;
 
-      return await config.InvokeAsync( args, cancellationToken );
+      var parseResult = rootCommand.Parse( args );
+
+      return await parseResult.InvokeAsync( config, cancellationToken );
     }
     catch ( Exception e ) {
       Console.ForegroundColor = ConsoleColor.DarkRed;

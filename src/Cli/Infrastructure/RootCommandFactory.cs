@@ -18,8 +18,6 @@ using Drift.Domain.Scan;
 using Drift.Scanning;
 using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Infrastructure;
 
@@ -69,7 +67,7 @@ internal static class RootCommandFactory {
         new InitCommand( provider ),
         new ScanCommand( provider ),
         new LintCommand( provider ),
-        new AgentCommand( provider ) { new AgentStartCommand( provider ) }
+        new AgentCommand( provider )
       };
 
     rootCommand.TreatUnmatchedTokensAsErrors = true;

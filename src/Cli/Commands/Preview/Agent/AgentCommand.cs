@@ -1,13 +1,13 @@
 using System.CommandLine;
 using Drift.Cli.Commands.Common;
-using Drift.Cli.Commands.Lint;
+using Drift.Cli.Commands.Preview.Agent.Subcommands;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 
 namespace Drift.Cli.Commands.Preview.Agent;
 
 internal class AgentCommand : CommandBase<AgentParameters, AgentCommandHandler> {
   internal AgentCommand( IServiceProvider provider ) : base( "agent", "Manage the local Drift agent", provider ) {
-    /*var runCmd = new Command( "start", "Start the agent process" );
+    var runCmd = new AgentStartCommand( provider );
     runCmd.Options.Add( new Option<bool>( "--adoptable" ) {
       Description = "Allow this agent to be adopted by another peer in the distributed agent network"
     } );
@@ -17,11 +17,13 @@ internal class AgentCommand : CommandBase<AgentParameters, AgentCommandHandler> 
       Description = "Join the distributed agent network using a JWT"
     } );
     runCmd.Options.Add( new Option<bool>( "--daemon", "-d" ) { Description = "Run the agent as a background daemon" } );
-    runCmd.Options.Add( new Option<bool>( "--adoptable"
-    ) { Description = "Allow this agent to be adopted by another peer in the distributed agent network" } );
+    runCmd.Options.Add( new Option<uint>( "--port", "-p" ) {
+      DefaultValueFactory = _ => 51515,
+      Description = "Set the port used for both adoption and communication. Default is 51515"
+    } );
     Subcommands.Add( runCmd );
 
-    // Support other init systems in the future
+    /*// Support other init systems in the future
     var installCmd = new Command( "install", "Create agent systemd service file" );
     installCmd.Options.Add( new Option<string>( "--join" ) {
       Description = "Join the distributed agent network using a JWT"

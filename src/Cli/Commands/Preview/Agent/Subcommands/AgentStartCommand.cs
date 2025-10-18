@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
@@ -6,17 +5,13 @@ using Drift.Cli.Commands.Preview.Agent.Subcommands.Utils;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.SpecFile;
 using Drift.Domain;
-using Drift.Networking.Grpc.Generated;
-using Grpc.Core;
-using Grpc.Net.Client;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.Extensions.Logging;
 using PeerService = Drift.Cli.Commands.Preview.Agent.Subcommands.Utils.PeerService;
 
 namespace Drift.Cli.Commands.Preview.Agent.Subcommands;
 
 internal class AgentStartCommand : CommandBase<AgentStartParameters, AgentStartCommandHandler> {
-  internal AgentStartCommand( IServiceProvider provider ) : base( "start", "Manage the local Drift agent", provider ) {
+  internal AgentStartCommand( IServiceProvider provider ) : base( "start", "Start a local Drift agent process", provider ) {
     /*var runCmd = new Command( "start", "Start the agent process" );
     runCmd.Options.Add( new Option<bool>( "--adoptable" ) {
       Description = "Allow this agent to be adopted by another peer in the distributed agent network"
@@ -88,7 +83,7 @@ internal class AgentStartCommandHandler(
     // app.MapGrpcReflectionService();
     app.MapGet( "/", () => "Nothing to see here" );
 
-    app.Lifetime.ApplicationStarted.Register( () => {
+    /*app.Lifetime.ApplicationStarted.Register( () => {
       var clientStreams = new ConcurrentDictionary<string, AsyncDuplexStreamingCall<PeerMessage, PeerMessage>>();
       foreach ( var agent in inventory.Agents ) {
         var address = agent.Address;
@@ -106,7 +101,7 @@ internal class AgentStartCommandHandler(
 
         clientStreams[address] = call;
       }
-    } );
+    } );*/
 
     await app.RunAsync();
 

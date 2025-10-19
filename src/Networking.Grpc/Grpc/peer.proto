@@ -8,7 +8,11 @@ package peer;
 
 service PeerService {
   rpc PeerStream (stream PeerMessage) returns (stream PeerMessage);
-  rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc Ping(google.protobuf.Empty) returns (PingResponse);
+}
+
+message PingResponse {
+  string peer_id = 1;
 }
 
 message PeerMessage {

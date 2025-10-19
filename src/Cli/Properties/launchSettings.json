@@ -47,6 +47,18 @@
       "commandLineArgs": "lint ~",
       "dotnetRunMessages": true,
       "environmentVariables": {}
+    },
+    "agent start (home)": {
+      "commandName": "Project",
+      "commandLineArgs": "agent start ~",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    },
+    "agent start --port 51516 (home)": {
+      "commandName": "Project",
+      "commandLineArgs": "agent start ~ --port 51516",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
     }
   }
 }

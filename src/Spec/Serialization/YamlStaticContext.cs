@@ -10,6 +10,7 @@ namespace Drift.Spec.Serialization;
 [YamlSerializable( typeof(Dtos.V1_preview.Device) )]
 [YamlSerializable( typeof(Dtos.V1_preview.DeviceState) )]
 [YamlSerializable( typeof(Dtos.V1_preview.DeviceAddress) )]
+[YamlSerializable( typeof(Dtos.V1_preview.Agent) )]
 /*[YamlSerializable( typeof(IpV4Address) )]
 [YamlSerializable( typeof(HostnameAddress) )]
 [YamlSerializable( typeof(MacAddress) )]

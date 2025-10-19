@@ -7,21 +7,7 @@ namespace Drift.Cli.Commands.Preview.Agent;
 
 internal class AgentCommand : CommandBase<AgentParameters, AgentCommandHandler> {
   internal AgentCommand( IServiceProvider provider ) : base( "agent", "Manage the local Drift agent", provider ) {
-    var runCmd = new AgentStartCommand( provider );
-    runCmd.Options.Add( new Option<bool>( "--adoptable" ) {
-      Description = "Allow this agent to be adopted by another peer in the distributed agent network"
-    } );
-    // terminology: agent network or agent group?
-    // support @ for supplying local file
-    runCmd.Options.Add( new Option<string>( "--join" ) {
-      Description = "Join the distributed agent network using a JWT"
-    } );
-    runCmd.Options.Add( new Option<bool>( "--daemon", "-d" ) { Description = "Run the agent as a background daemon" } );
-    runCmd.Options.Add( new Option<uint>( "--port", "-p" ) {
-      DefaultValueFactory = _ => 51515,
-      Description = "Set the port used for both adoption and communication. Default is 51515"
-    } );
-    Subcommands.Add( runCmd );
+    Subcommands.Add( new AgentStartCommand( provider ) );
 
     /*// Support other init systems in the future
     var installCmd = new Command( "install", "Create agent systemd service file" );

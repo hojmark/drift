@@ -20,9 +20,21 @@ public class ConnectionManager(
   private readonly ConcurrentDictionary<string, AgentConnection> _activeConnections = new();
   private string? SelfAddress = null;
 
+  private readonly TaskCompletionSource _startSignal = new();
+
   protected override async Task ExecuteAsync( CancellationToken cancellationToken ) {
-    logger.LogInformation( "Starting outgoing connection handler" );
+    logger.LogInformation( "Initialing outgoing connection handler" );
+
     await Task.Delay( 100, cancellationToken ); // Initial delay
+
+    if ( false ) //is enrolled 
+    {
+      logger.LogInformation( "Starting outgoing connection handler" );
+    }
+    else {
+      logger.LogInformation( "Suspending outgoing connection handler until enrolled" );
+      await _startSignal.Task.WaitAsync( cancellationToken );
+    }
 
     while ( !cancellationToken.IsCancellationRequested ) {
       /*foreach ( var agent in inventory.Agents ) {

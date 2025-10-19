@@ -16,6 +16,8 @@ internal class AgentStartCommand : CommandBase<AgentStartParameters, AgentStartC
   internal AgentStartCommand( IServiceProvider provider )
     : base( "start", "Start a local Drift agent process", provider ) {
     Options.Add( AgentStartParameters.Options.Port );
+    Options.Add( AgentStartParameters.Options.Adoptable );
+    Options.Add( AgentStartParameters.Options.Join );
   }
 
   protected override AgentStartParameters CreateParameters( ParseResult result ) {
@@ -29,6 +31,20 @@ internal class AgentStartCommandHandler(
 ) : ICommandHandler<AgentStartParameters> {
   public async Task<int> Invoke( AgentStartParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running 'agent start' command" );
+    var logger = output.GetLogger();
+
+    var identity = LoadAgentIdentity();
+
+    if ( identity == null ) {
+      logger.LogDebug( "Agent is not enrolled" );
+
+      var enrollmentRequest = new EnrollmentRequest( parameters.Adoptable, parameters.Join );
+      logger.LogInformation( "Agent cluster enrollment method is {EnrollmentMethod}", enrollmentRequest.Method );
+    }
+    else {
+      logger.LogDebug( "Agent is enrolled into cluster 'milkyway'" );
+      logger.LogInformation( "Attempting to re-join cluster 'milkyway'..." );
+    }
 
     /*Inventory? inventory;
 
@@ -84,6 +100,23 @@ internal class AgentStartCommandHandler(
 
     return ExitCodes.Success;
   }
+
+  private AgentId? LoadAgentIdentity() {
+    if ( false ) {
+      return new AgentId( Guid.NewGuid() ); // TODO load from file
+    }
+
+    return null;
+  }
+}
+
+internal class EnrollmentRequest( bool parametersAdoptable, string? parametersJoin ) {
+  public EnrollmentMethod Method => parametersAdoptable ? EnrollmentMethod.Adoption : EnrollmentMethod.Jwt;
+}
+
+public enum EnrollmentMethod {
+  Adoption,
+  Jwt
 }
 
 public class AgentPeers {

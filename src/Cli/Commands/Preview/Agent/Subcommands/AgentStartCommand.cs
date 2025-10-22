@@ -2,13 +2,13 @@ using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Preview.Agent.Subcommands.Utils;
+using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.SpecFile;
 using Drift.Domain;
-using Drift.Networking.Grpc;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using PeerService = Drift.Cli.Commands.Preview.Agent.Subcommands.Utils.PeerService;
 
 namespace Drift.Cli.Commands.Preview.Agent.Subcommands;
 
@@ -57,19 +57,32 @@ internal class AgentStartCommandHandler(
 
     output.Log.LogDebug( "Starting agent..." );
 
+    var app = BuildServer( parameters );
+    await app.RunAsync( cancellationToken );
+
+    output.Log.LogDebug( "Completed 'agent start' command" );
+
+    return ExitCodes.Success;
+  }
+
+  private WebApplication BuildServer( AgentStartParameters parameters ) {
     var builder = WebApplication.CreateBuilder();
 
     builder.Logging.ClearProviders();
     //builder.Logging.AddProvider( new PredefinedLoggerProvider( output.Log ) );
 
-    builder.Services.AddGrpc();
+    builder.Services.AddGrpc( o => {
+      o.EnableDetailedErrors = true;
+      o.Interceptors.Add<ExceptionHandlerIntercepter>();
+    } );
+    builder.Services.AddSingleton<ExceptionHandlerIntercepter>();
 
     builder.Services.AddSingleton<ILogger>( output.GetLogger() );
 
-    builder.Services.AddMessageHandling();
-    builder.Services.AddSingleton<AgentPeers>();
+    RootCommandFactory.ConfigurePeerCommunication( builder.Services );
+    RootCommandFactory.ConfigureSubnetProvider( builder.Services );
     //builder.Services.AddSingleton<Inventory>( inventory );
-    builder.Services.AddHostedService<Utils.ConnectionManager>();
+    //builder.Services.AddHostedService<Utils.OutboundPeerService>();
 
     builder.WebHost.ConfigureKestrel( options => {
       options.ListenLocalhost( (int) parameters.Port, o => {
@@ -78,8 +91,30 @@ internal class AgentStartCommandHandler(
     } );
 
     var app = builder.Build();
+    app.UseExceptionHandler( errorApp => {
+      errorApp.Run( async context => {
+        var exceptionHandlerPathFeature =
+          context.Features.Get<IExceptionHandlerPathFeature>();
 
-    app.MapGrpcService<PeerService>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError( exceptionHandlerPathFeature?.Error, "Unhandled exception caught by middleware" );
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync( "Internal Server Error" );
+      } );
+    } );
+    app.Use( async ( context, next ) => {
+      try {
+        await next.Invoke();
+      }
+      catch ( Exception ex ) {
+        //var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        Console.Error.WriteLine( "Unhandled exception:\n" + ex.ToString() );
+        throw; // rethrow to let gRPC return error status
+      }
+    } );
+
+    app.MapGrpcService<InboundPeerService>();
     // app.MapGrpcReflectionService();
     app.MapGet( "/", () => "Nothing to see here" );
 
@@ -94,16 +129,12 @@ internal class AgentStartCommandHandler(
       output.GetLogger().LogInformation( "Agent stopped" );
     } );
 
-    await app.RunAsync();
-
-    output.Log.LogDebug( "Completed 'agent start' command" );
-
-    return ExitCodes.Success;
+    return app;
   }
 
   private AgentId? LoadAgentIdentity() {
     if ( false ) {
-      return new AgentId( Guid.NewGuid() ); // TODO load from file
+      return AgentId.New(); // TODO load from file
     }
 
     return null;
@@ -117,9 +148,4 @@ internal class EnrollmentRequest( bool parametersAdoptable, string? parametersJo
 public enum EnrollmentMethod {
   Adoption,
   Jwt
-}
-
-public class AgentPeers {
-  internal static readonly AgentId Self = new(Guid.NewGuid());
-  internal List<AgentId> Peers = [];
 }

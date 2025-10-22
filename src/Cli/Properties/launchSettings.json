@@ -20,7 +20,7 @@
     },
     "scan ~": {
       "commandName": "Project",
-      "commandLineArgs": "scan ~",
+      "commandLineArgs": "scan ~ -v",
       "dotnetRunMessages": true,
       "environmentVariables": {}
     },
@@ -50,7 +50,7 @@
     },
     "agent start (home)": {
       "commandName": "Project",
-      "commandLineArgs": "agent start ~",
+      "commandLineArgs": "agent start ~ -vv -o log --adoptable",
       "dotnetRunMessages": true,
       "environmentVariables": {}
     },

@@ -3,7 +3,7 @@ using Drift.Networking.Grpc.Generated;
 namespace Drift.Networking.Grpc.Messages;
 
 public interface IPeerMessageHandler {
-  string MessageType {
+  string? MessageType {
     get;
   }
 

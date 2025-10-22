@@ -20,7 +20,7 @@ using var call = client.PeerStream();
 var readTask = Task.Run( async () => {
   try {
     await foreach ( var message in call.ResponseStream.ReadAllAsync() ) {
-      Console.WriteLine( $"[{message.PeerId}]: {message.Message}" );
+      Console.WriteLine( $"[]: {message.Message}" );
     }
   }
   catch ( RpcException ex ) when ( ex.StatusCode == StatusCode.Cancelled ) {
@@ -35,7 +35,7 @@ while ( true ) {
     break;
   }
 
-  await call.RequestStream.WriteAsync( new PeerMessage { PeerId = Environment.UserName, Message = text } );
+  await call.RequestStream.WriteAsync( new PeerMessage { Message = text } );
 }
 
 // Gracefully complete the stream

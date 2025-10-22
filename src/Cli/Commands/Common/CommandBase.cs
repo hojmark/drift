@@ -1,5 +1,4 @@
 using System.CommandLine;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli.Commands.Common;
 

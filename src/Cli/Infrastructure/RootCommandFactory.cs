@@ -7,6 +7,9 @@ using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Preview.Agent;
 using Drift.Cli.Commands.Preview.Agent.Subcommands;
+using Drift.Cli.Commands.Preview.Agent.Subcommands.Peers;
+using Drift.Cli.Commands.Preview.Agent.Subcommands.Peers.Messages;
+using Drift.Cli.Commands.Preview.Agent.Subcommands.Utils;
 using Drift.Cli.Commands.Scan;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
@@ -15,6 +18,9 @@ using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
 using Drift.Domain.ExecutionEnvironment;
 using Drift.Domain.Scan;
+using Drift.Networking.Grpc;
+using Drift.Networking.Grpc.Generated;
+using Drift.Networking.Grpc.Messages;
 using Drift.Scanning;
 using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
@@ -54,6 +60,20 @@ internal static class RootCommandFactory {
     ConfigureSpecProvider( services );
     ConfigureSubnetProvider( services );
     ConfigureNetworkScanner( services );
+    ConfigureCluster( services );
+  }
+
+  private static void ConfigureCluster( IServiceCollection services ) {
+    ConfigurePeerCommunication( services );
+    services.AddScoped<ICluster, Cluster>();
+  }
+
+  public static void ConfigurePeerCommunication( IServiceCollection services ) {
+    services.AddSingleton<IPeerMessageSerializer>( new PeerMessageSerializer( typeof(GiveMeSubnets).Assembly ) );
+    services.AddMessageHandling();
+    services.AddSingleton<IPeerClientFactory, DefaultPeerClientFactory>();
+    services.AddScoped<IPeerMessageHandler, GiveMeSubnetsHandler>();
+    services.AddScoped<PeerStreamManager>();
   }
 
   private static void ConfigureExecutionEnvironment( IServiceCollection services ) {
@@ -86,6 +106,7 @@ internal static class RootCommandFactory {
       var factory = sp.GetRequiredService<IOutputManagerFactory>();
       return factory.Create( parseResult, plainConsole );
     } );
+    // Note: since ILogger is scoped, singletons can not log anything until a method (that takes an ILogger) is called
     services.AddScoped<ILogger>( sp => sp.GetRequiredService<IOutputManager>().GetLogger() );
   }
 
@@ -93,7 +114,7 @@ internal static class RootCommandFactory {
     services.AddScoped<ISpecFileProvider, FileSystemSpecProvider>();
   }
 
-  private static void ConfigureSubnetProvider( IServiceCollection services ) {
+  public static void ConfigureSubnetProvider( IServiceCollection services ) {
     services.AddScoped<IInterfaceSubnetProvider, PhysicalInterfaceSubnetProvider>();
   }
 

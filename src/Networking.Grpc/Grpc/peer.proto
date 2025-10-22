@@ -6,9 +6,11 @@ import "google/protobuf/empty.proto";
 
 package peer;
 
+// AgentService?
 service PeerService {
+  rpc Hello(HelloMessage) returns (HelloMessage);
   rpc PeerStream (stream PeerMessage) returns (stream PeerMessage);
-  rpc Ping(google.protobuf.Empty) returns (PingResponse);
+  rpc Ping(google.protobuf.Empty) returns (PingResponse); // Delete - Hello is superset
 }
 
 message PingResponse {
@@ -16,7 +18,11 @@ message PingResponse {
 }
 
 message PeerMessage {
-  string peer_id = 1;
+  string message_type = 1;
   string message = 2;
-  string message_type = 3;
+}
+
+message HelloMessage {
+  string agent_id = 1;
+  string drift_version = 2;
 }

@@ -1,7 +1,7 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
+using Drift.Cli.Commands.Agent.Subcommands.Utils;
 using Drift.Cli.Commands.Common;
-using Drift.Cli.Commands.Preview.Agent.Subcommands.Utils;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
@@ -10,7 +10,7 @@ using Drift.Domain;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
-namespace Drift.Cli.Commands.Preview.Agent.Subcommands;
+namespace Drift.Cli.Commands.Agent.Subcommands;
 
 internal class AgentStartCommand : CommandBase<AgentStartParameters, AgentStartCommandHandler> {
   internal AgentStartCommand( IServiceProvider provider )

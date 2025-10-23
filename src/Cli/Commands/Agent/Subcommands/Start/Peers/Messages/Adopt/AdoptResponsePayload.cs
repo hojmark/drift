@@ -1,4 +1,4 @@
-namespace Drift.Networking.Grpc.Messages.Adopt;
+namespace Drift.Cli.Commands.Agent.Subcommands.Peers.Messages.Adopt;
 
 public class AdoptResponsePayload
 {

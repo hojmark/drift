@@ -2,7 +2,7 @@ using Drift.Networking.Grpc.Generated;
 using Drift.Networking.Grpc.Messages;
 using Drift.Scanning.Subnets.Interface;
 
-namespace Drift.Cli.Commands.Preview.Agent.Subcommands.Peers.Messages;
+namespace Drift.Cli.Commands.Agent.Subcommands.Peers.Messages.Subnets;
 
 internal class GiveMeSubnetsHandler(
   IInterfaceSubnetProvider interfaceSubnetProvider

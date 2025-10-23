@@ -1,7 +1,4 @@
-using Drift.Cli.Commands.Preview.Agent.Subcommands.Peers;
-using Microsoft.Extensions.Logging;
-
-namespace Drift.Networking.Grpc.Messages.Adopt;
+namespace Drift.Cli.Commands.Agent.Subcommands.Peers.Messages.Adopt;
 
 public class AdoptRequestHandler : HandlerBase<AdoptRequestPayload> /* TODO, IAdoptRequestHandler*/ {
   private readonly ILogger _logger; // Example: inject what you need

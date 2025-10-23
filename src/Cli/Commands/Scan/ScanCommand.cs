@@ -1,7 +1,7 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
+using Drift.Cli.Commands.Agent.Subcommands.Utils;
 using Drift.Cli.Commands.Common;
-using Drift.Cli.Commands.Preview.Agent.Subcommands.Utils;
 using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Interactive.Input;
 using Drift.Cli.Commands.Scan.NonInteractive;

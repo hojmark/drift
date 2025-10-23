@@ -1,7 +1,7 @@
 using Drift.Domain;
 using Grpc.Core;
 
-namespace Drift.Cli.Commands.Preview.Agent.Subcommands.Peers;
+namespace Drift.Cli.Commands.Agent.Subcommands.Peers;
 
 public static class GrpcMetadataExtensions {
   public static AgentId GetAgentId( this Metadata metadata ) {

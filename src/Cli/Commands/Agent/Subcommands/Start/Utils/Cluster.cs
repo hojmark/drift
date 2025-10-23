@@ -1,10 +1,7 @@
-using Drift.Cli.Commands.Preview.Agent.Subcommands.Peers;
-
-namespace Drift.Cli.Commands.Preview.Agent.Subcommands.Utils;
-
-using Drift.Networking.Grpc.Generated;
+using Drift.Cli.Commands.Agent.Subcommands.Peers;
 using Drift.Networking.Grpc.Messages;
-using Microsoft.Extensions.Logging;
+
+namespace Drift.Cli.Commands.Agent.Subcommands.Utils;
 
 public class Cluster(
   IPeerMessageSerializer serializer,

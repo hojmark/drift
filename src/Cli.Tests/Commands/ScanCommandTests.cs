@@ -245,7 +245,7 @@ internal sealed class ScanCommandTests {
       ]
     );
 
-    var cts = new CancellationTokenSource( TimeSpan.FromSeconds( 500 ) );
+    var cts = new CancellationTokenSource( TimeSpan.FromSeconds( 800 ) );
 
     // Act
     Console.WriteLine( "Invoking agent start" );

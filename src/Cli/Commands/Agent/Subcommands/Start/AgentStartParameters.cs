@@ -1,7 +1,7 @@
 using System.CommandLine;
 using Drift.Cli.Commands.Common;
 
-namespace Drift.Cli.Commands.Preview.Agent.Subcommands;
+namespace Drift.Cli.Commands.Agent.Subcommands;
 
 internal record AgentStartParameters : BaseParameters {
   internal static class Options {

@@ -1,13 +1,14 @@
 using System.CommandLine;
+using Drift.Cli.Commands.Agent.Subcommands;
 using Drift.Cli.Commands.Common;
-using Drift.Cli.Commands.Preview.Agent.Subcommands;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 
-namespace Drift.Cli.Commands.Preview.Agent;
+namespace Drift.Cli.Commands.Agent;
 
 internal class AgentCommand : CommandBase<AgentParameters, AgentCommandHandler> {
   internal AgentCommand( IServiceProvider provider ) : base( "agent", "Manage the local Drift agent", provider ) {
     Subcommands.Add( new AgentStartCommand( provider ) );
+    // Subcommands.Add( new AgentServiceCommand( provider ) );
 
     /*// Support other init systems in the future
     var installCmd = new Command( "install", "Create agent systemd service file" );

@@ -1,5 +1,5 @@
-using Drift.Cli.Commands.Preview.Agent.Subcommands.Peers.Messages;
-using Drift.Cli.Commands.Preview.Agent.Subcommands.Utils;
+using Drift.Cli.Commands.Agent.Subcommands.Peers.Messages.Subnets;
+using Drift.Cli.Commands.Agent.Subcommands.Utils;
 using Drift.Domain;
 using Drift.Networking.Grpc.Generated;
 using Drift.Scanning.Subnets;
@@ -8,7 +8,7 @@ namespace Drift.Cli.Commands.Scan;
 
 public class AgentSubnetProvider(
   ILogger logger,
-  List<Agent> agents,
+  List<Domain.Agent> agents,
   ICluster cluster,
   CancellationToken cancellationToken
 )

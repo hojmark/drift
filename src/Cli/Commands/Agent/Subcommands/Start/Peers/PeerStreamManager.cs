@@ -1,11 +1,10 @@
 using System.Collections.Concurrent;
-using Drift.Cli.Commands.Preview.Agent.Subcommands.Utils;
 using Drift.Domain;
 using Drift.Networking.Grpc.Generated;
 using Drift.Networking.Grpc.Messages;
 using Grpc.Core;
 
-namespace Drift.Cli.Commands.Preview.Agent.Subcommands.Peers;
+namespace Drift.Cli.Commands.Agent.Subcommands.Peers;
 
 public class PeerStreamManager(
   ILogger logger,

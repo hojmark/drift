@@ -1,9 +1,8 @@
-using Drift.Cli.Commands.Preview.Agent.Subcommands.Peers;
+using Drift.Cli.Commands.Agent.Subcommands.Peers;
 using Drift.Networking.Grpc.Generated;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 
-namespace Drift.Cli.Commands.Preview.Agent.Subcommands.Utils;
+namespace Drift.Cli.Commands.Agent.Subcommands.Utils;
 
 // Handle incoming connections (AKA server-side).
 internal class InboundPeerService(

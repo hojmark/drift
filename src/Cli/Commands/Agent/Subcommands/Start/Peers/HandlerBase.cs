@@ -2,7 +2,7 @@ using System.Text.Json;
 using Drift.Networking.Grpc.Generated;
 using Drift.Networking.Grpc.Messages;
 
-namespace Drift.Cli.Commands.Preview.Agent.Subcommands.Peers;
+namespace Drift.Cli.Commands.Agent.Subcommands.Peers;
 
 public abstract class HandlerBase<T> : IPeerMessageHandler {
   public abstract string? MessageType {

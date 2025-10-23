@@ -227,7 +227,7 @@ internal sealed class ScanCommandTests {
       [
         new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.100" ), new MacAddress( "11:11:11:11:11:11" )] }
       ],
-      new Inventory { Network = new Network(), Agents = [new Agent { Address = "http://localhost:51515" }] }
+      new Inventory { Network = new Network(), Agents = [new Domain.Agent { Address = "http://localhost:51515" }] }
     );
 
     var serviceConfigAgent = ConfigureServices(

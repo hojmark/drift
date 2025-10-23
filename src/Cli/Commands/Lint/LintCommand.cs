@@ -6,6 +6,7 @@ using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
+using Drift.Spec.Schema;
 using Drift.Spec.Validation;
 
 namespace Drift.Cli.Commands.Lint;
@@ -47,7 +48,7 @@ internal class LintCommandHandler( IOutputManager output ) : ICommandHandler<Lin
 
     var yamlContent = await File.ReadAllTextAsync( filePath!.FullName, cancellationToken );
 
-    var result = SpecValidator.Validate( yamlContent, Spec.Schema.SpecVersion.V1_preview );
+    var result = SpecValidator.Validate( yamlContent, SpecVersion.V1_preview );
 
     IRenderer<ValidationResult> renderer =
       parameters.OutputFormat switch {

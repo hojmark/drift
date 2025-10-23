@@ -1,4 +1,6 @@
 using Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Subnets;
+using Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Subnets.Request;
+using Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Subnets.Response;
 using Drift.Domain;
 using Drift.Networking.Cluster;
 using Drift.Scanning.Subnets;
@@ -14,21 +16,30 @@ public class AgentSubnetProvider(
   : ISubnetProvider {
   public async Task<List<CidrBlock>> GetAsync() {
     logger.LogInformation( "Getting subnets from agents" );
+    var allSubnets = new List<CidrBlock>();
 
     foreach ( var agent in agents ) {
       logger.LogInformation( "Getting subnets from agent {Address}", agent.Address );
 
       try {
-        await cluster.SendAsync( agent, new GiveMeSubnets(), CancellationToken.None );
+        // await cluster.SendAsync( agent, new GiveMeSubnetsRequest(), CancellationToken.None );
+
+        var response = await cluster.SendAndWaitAsync<GiveMeSubnetsResponse>(
+          agent,
+          new GiveMeSubnetsRequest(),
+          timeout: TimeSpan.FromSeconds( 10 ),
+          cancellationToken
+        );
+
+        allSubnets.AddRange( response.Subnets );
+        logger.LogInformation( "Received {Count} subnets from {Address}: {Subnets}",
+          response.Subnets.Count, agent.Address, string.Join( ", ", response.Subnets ) );
       }
       catch ( Exception ex ) {
         logger.LogWarning( ex, "cluster.SendAsync failed", agent.Address );
       }
-
-      logger.LogInformation( "WAIT" );
-      await Task.Delay( 1000000, cancellationToken );
     }
 
-    throw new NotImplementedException();
+    return allSubnets;
   }
 }

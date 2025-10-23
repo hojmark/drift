@@ -1,6 +1,6 @@
 using Grpc.Core.Interceptors;
 
-namespace Drift.Cli.Commands.Agent.Subcommands.Start;
+namespace Drift.Agent.Hosting;
 
 public class ExceptionHandlerIntercepter : Interceptor {
 }

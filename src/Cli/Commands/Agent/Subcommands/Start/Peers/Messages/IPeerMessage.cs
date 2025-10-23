@@ -1,4 +1,4 @@
-using Drift.Networking.Grpc.Messages;
+using Drift.Networking.PeerStreaming.Messages;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages;
 
@@ -11,7 +11,8 @@ public interface IPeerResponse : IPeerMessage {
 public sealed class NoneResponse : IPeerResponse {
   public static readonly NoneResponse Instance = new();
 
-  private NoneResponse() {
+  // TODO make private
+  public NoneResponse() {
   }
 
   public string MessageType => "none";

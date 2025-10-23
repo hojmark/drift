@@ -1,4 +1,4 @@
-namespace Drift.Networking.Grpc.Messages;
+namespace Drift.Networking.PeerStreaming.Messages;
 
 public interface IPeerMessage {
   string MessageType {

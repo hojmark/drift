@@ -42,7 +42,7 @@ internal class NormalOutputLoggerAdapter( INormalOutput normalOutput ) : ILogger
         normalOutput.WriteLineVerbose( message );
         if ( exception != null ) {
           normalOutput.WriteLineVerbose( exception.Message );
-          normalOutput.WriteLineVerbose( exception.StackTrace, ConsoleColor.DarkGray );
+          normalOutput.WriteLineVerbose( exception.StackTrace );
         }
 
         break;
@@ -50,7 +50,7 @@ internal class NormalOutputLoggerAdapter( INormalOutput normalOutput ) : ILogger
         normalOutput.WriteLineVeryVerbose( message );
         if ( exception != null ) {
           normalOutput.WriteLineVeryVerbose( exception.Message );
-          normalOutput.WriteLineVeryVerbose( exception.StackTrace, ConsoleColor.DarkGray );
+          normalOutput.WriteLineVeryVerbose( exception.StackTrace );
         }
 
         break;

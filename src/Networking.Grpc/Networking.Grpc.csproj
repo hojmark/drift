@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <Protobuf Include="Grpc\peer.proto" GrpcServices="Both" />
+    <Protobuf Include="Protos\peer.proto" GrpcServices="Both" />
   </ItemGroup>
 
   <ItemGroup>

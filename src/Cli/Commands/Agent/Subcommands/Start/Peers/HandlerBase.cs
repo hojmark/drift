@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Drift.Networking.Grpc.Generated;
-using Drift.Networking.Grpc.Messages;
+using Drift.Networking.PeerStreaming;
+using Drift.Networking.PeerStreaming.Messages;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start.Peers;
 
@@ -9,7 +10,7 @@ public abstract class HandlerBase<T> : IPeerMessageHandler {
     get;
   }
 
-  public Task HandleAsync( PeerMessage message, CancellationToken cancellationToken = default ) {
+  public Task HandleAsync( PeerMessage message, PeerStream peerStream, CancellationToken cancellationToken = default ) {
     var payload = JsonSerializer.Deserialize<T>( message.Message );
     return HandleAsync( payload, cancellationToken );
   }

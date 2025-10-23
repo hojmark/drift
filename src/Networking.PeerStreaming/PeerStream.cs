@@ -1,19 +1,25 @@
 using Drift.Domain;
 using Drift.Networking.Grpc.Generated;
-using Drift.Networking.Grpc.Messages;
+using Drift.Networking.PeerStreaming.Common;
+using Drift.Networking.PeerStreaming.Messages;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Networking.Peer;
+namespace Drift.Networking.PeerStreaming;
 
-public sealed class PeerStream /* : IAsyncDisposable*/ {
-  private static int InstanceCounter = 0;
+public sealed class PeerStream : IAsyncDisposable {
+  private static int _instanceCounter;
+  private readonly IAsyncStreamReader<PeerMessage> _reader;
+  private readonly IAsyncStreamWriter<PeerMessage> _writer;
+  private readonly PeerMessageDispatcher _dispatcher;
+  private readonly ILogger _logger;
+  private readonly AsyncDuplexStreamingCall<PeerMessage, PeerMessage>? _call;
 
   public int InstanceNo {
     get;
-  } = Interlocked.Increment( ref InstanceCounter );
+  } = Interlocked.Increment( ref _instanceCounter );
 
-  private ConnectionDirection Direction {
+  private ConnectionSide Side {
     get;
   }
 
@@ -26,11 +32,6 @@ public sealed class PeerStream /* : IAsyncDisposable*/ {
     init;
   }
 
-  private readonly IAsyncStreamReader<PeerMessage> _reader;
-  private readonly IAsyncStreamWriter<PeerMessage> _writer;
-  private readonly PeerMessageDispatcher _dispatcher;
-  private readonly ILogger _logger;
-
   public Task ReadTask {
     get;
     private init;
@@ -42,7 +43,7 @@ public sealed class PeerStream /* : IAsyncDisposable*/ {
     PeerMessageDispatcher dispatcher,
     ILogger logger
   ) {
-    Direction = ConnectionDirection.Incoming;
+    Side = ConnectionSide.Incoming;
     _reader = reader;
     _writer = writer;
     _dispatcher = dispatcher;
@@ -52,13 +53,13 @@ public sealed class PeerStream /* : IAsyncDisposable*/ {
 
   public PeerStream(
     Uri address,
-    // TODO Dispose call at some point
     AsyncDuplexStreamingCall<PeerMessage, PeerMessage> call,
     PeerMessageDispatcher dispatcher,
     ILogger logger
   ) {
-    Direction = ConnectionDirection.Outgoing;
+    Side = ConnectionSide.Outgoing;
     Address = address;
+    _call = call;
     _reader = call.ResponseStream;
     _writer = call.RequestStream;
     _dispatcher = dispatcher;
@@ -71,34 +72,41 @@ public sealed class PeerStream /* : IAsyncDisposable*/ {
   }
 
   private async Task ReadLoopAsync() {
-    _logger.LogInformation( "Read loop starting" );
+    _logger.LogDebug( "Read loop starting..." );
 
     try {
       await foreach ( var message in _reader.ReadAllAsync() ) {
         try {
-          _logger.LogDebug( "Received message. Dispatching..." );
-          await _dispatcher.DispatchAsync( message, CancellationToken.None );
+          _logger.LogDebug( "Received message. Dispatching to handler..." );
+          await _dispatcher.DispatchAsync( message, this, CancellationToken.None );
         }
         catch ( Exception ex ) {
           _logger.LogError( ex, "Message dispatch failed" );
         }
       }
 
-      _logger.LogInformation( "Read loop ended gracefully (end of stream)" );
+      _logger.LogDebug( "Read loop ended gracefully (end of stream)" );
     }
     catch ( Exception ex ) {
       _logger.LogError( ex, "Read loop failed" );
     }
 
-    _logger.LogInformation( "Read loop ended" );
+    _logger.LogDebug( "Read loop ended" );
   }
 
   public async ValueTask DisposeAsync() {
-    Console.WriteLine( "Closing streams!" );
-    //await Task.WhenAll( _readTask );
+    Console.WriteLine( "Disposing " + this );
+
+    if ( _call != null ) {
+      // I.e., outgoing stream (client initiated)
+      await _call.RequestStream.CompleteAsync();
+    }
+
+    await ReadTask;
   }
 
   public override string ToString() {
-    return $"{nameof(PeerStream)}[#{InstanceNo}, AgentId={AgentId}, Direction={Direction}, Address={Address}]";
+    return
+      $"{nameof(PeerStream)}[#{InstanceNo}, {nameof(AgentId)}={AgentId}, {nameof(Side)}={Side}, {nameof(Address)}={Address}]";
   }
 }

@@ -1,12 +1,13 @@
-using Drift.Networking.Grpc.Messages;
-using Drift.Networking.Peer;
+using Drift.Networking.PeerStreaming;
+using Drift.Networking.PeerStreaming.Messages;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.Cluster;
 
 internal sealed class Cluster(
-  IPeerMessageSerializer serializer,
+  IPeerMessageEnvelopeConverter envelopeConverter,
   PeerStreamManager peerStreamManager,
+  PeerResponseAwaiter responseAwaiter,
   ILogger logger
 ) : ICluster {
   public async Task SendAsync(
@@ -44,8 +45,34 @@ internal sealed class Cluster(
     CancellationToken cancellationToken = default
   ) {
     var connection = peerStreamManager.GetOrCreate( new Uri( agent.Address ), "agentid_local1" );
-    var envelope = serializer.ToEnvelope( message );
+    var envelope = envelopeConverter.ToEnvelope( message );
     await connection.SendAsync( envelope );
+  }
+
+  public async Task<TResponse> SendAndWaitAsync<TResponse>(
+    Domain.Agent agent,
+    IPeerMessage message,
+    TimeSpan? timeout = null,
+    CancellationToken cancellationToken = default
+  ) where TResponse : IPeerMessage {
+    var correlationId = Guid.NewGuid().ToString();
+    var envelope = envelopeConverter.ToEnvelope( message );
+    envelope.CorrelationId = correlationId;
+
+    // Register awaiter BEFORE sending
+    var responseTask = responseAwaiter.WaitForResponseAsync(
+      correlationId,
+      timeout ?? TimeSpan.FromSeconds( 30 ),
+      cancellationToken
+    );
+
+    // Send the request
+    var connection = peerStreamManager.GetOrCreate( new Uri( agent.Address ), "agentid_local1" );
+    await connection.SendAsync( envelope );
+
+    // Wait for response
+    var response = await responseTask;
+    return envelopeConverter.FromEnvelope<TResponse>( response );
   }
 
   /* public async Task EnsureConnectedAsync( string peerAddress, CancellationToken cancellationToken = default ) {

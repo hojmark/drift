@@ -3,17 +3,18 @@ using Drift.Spec.Schema;
 using Drift.Spec.Serialization;
 using Json.Schema;
 using YamlDotNet.Core;
+using SpecVersion = Drift.Spec.Schema.SpecVersion;
 
 namespace Drift.Spec.Validation;
 
 public static class SpecValidator {
-  public static ValidationResult Validate( string yaml, Schema.SpecVersion specVersion ) {
+  public static ValidationResult Validate( string yaml, SpecVersion specVersion ) {
     try {
       var schema = SpecSchemaProvider.AsText( specVersion );
       return Validate( yaml, schema );
     }
     catch ( YamlException ex ) {
-      var errors = new List<ValidationError>() { };
+      var errors = new List<ValidationError>();
 
       Exception? exp = ex;
       do {

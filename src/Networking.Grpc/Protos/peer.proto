@@ -20,6 +20,8 @@ message PingResponse {
 message PeerMessage {
   string message_type = 1;
   string message = 2;
+  string correlation_id = 3;  // For request-response matching
+  string reply_to = 4;        // If this is a response, which request it replies to
 }
 
 message HelloMessage {

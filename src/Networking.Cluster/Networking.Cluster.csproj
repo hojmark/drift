@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Domain.csproj" />
-    <ProjectReference Include="..\Networking.Peer\Networking.Peer.csproj" />
+    <ProjectReference Include="..\Networking.PeerStreaming\Networking.PeerStreaming.csproj" />
   </ItemGroup>
 
 </Project>

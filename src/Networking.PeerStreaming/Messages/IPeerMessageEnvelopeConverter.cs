@@ -1,8 +1,8 @@
 using Drift.Networking.Grpc.Generated;
 
-namespace Drift.Networking.Grpc.Messages;
+namespace Drift.Networking.PeerStreaming.Messages;
 
-public interface IPeerMessageSerializer {
+public interface IPeerMessageEnvelopeConverter {
   public PeerMessage ToEnvelope( IPeerMessage message, string? requestId = null );
 
   public T FromEnvelope<T>( PeerMessage envelope ) where T : IPeerMessage;

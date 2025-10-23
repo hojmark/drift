@@ -1,7 +1,7 @@
 using Drift.Domain;
 using Grpc.Core;
 
-namespace Drift.Networking.Peer;
+namespace Drift.Networking.PeerStreaming.Common;
 
 public static class GrpcMetadataExtensions {
   public static AgentId GetAgentId( this Metadata metadata ) {

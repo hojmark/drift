@@ -17,9 +17,8 @@ internal record AgentStartParameters : BaseParameters {
       Description = "Run the agent as a background daemon"
     };
 
-    internal static readonly Option<uint> Port = new("--port", "-p") {
-      DefaultValueFactory = _ => 51515,
-      Description = "Set the port used for both adoption and communication"
+    internal static readonly Option<ushort> Port = new("--port", "-p") {
+      DefaultValueFactory = _ => 51515, Description = "Set the port used for both adoption and communication"
     };
   }
 
@@ -47,7 +46,7 @@ internal record AgentStartParameters : BaseParameters {
     set;
   }
 
-  public uint Port {
+  public ushort Port {
     get;
     set;
   }

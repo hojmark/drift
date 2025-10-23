@@ -1,11 +1,13 @@
 using System.Collections.Concurrent;
 using Drift.Domain;
 using Drift.Networking.Grpc.Generated;
-using Drift.Networking.Grpc.Messages;
+using Drift.Networking.PeerStreaming.Common;
+using Drift.Networking.PeerStreaming.Messages;
+using Drift.Networking.PeerStreaming.Outbound;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Networking.Peer;
+namespace Drift.Networking.PeerStreaming;
 
 public class PeerStreamManager(
   ILogger logger,

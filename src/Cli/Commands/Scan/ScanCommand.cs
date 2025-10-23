@@ -1,6 +1,5 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Agent.Subcommands.Utils;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Interactive.Input;
@@ -11,6 +10,7 @@ using Drift.Cli.SpecFile;
 using Drift.Common.Network;
 using Drift.Domain;
 using Drift.Domain.Scan;
+using Drift.Networking.Cluster;
 using Drift.Scanning.Subnets;
 using Drift.Scanning.Subnets.Interface;
 

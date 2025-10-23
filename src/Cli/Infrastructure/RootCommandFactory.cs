@@ -1,11 +1,9 @@
 using System.CommandLine;
 using System.CommandLine.Help;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Drift.Cli.Commands.Agent;
-using Drift.Cli.Commands.Agent.Subcommands;
-using Drift.Cli.Commands.Agent.Subcommands.Peers;
-using Drift.Cli.Commands.Agent.Subcommands.Peers.Messages.Subnets;
-using Drift.Cli.Commands.Agent.Subcommands.Utils;
+using Drift.Cli.Commands.Agent.Subcommands.Start;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Help;
 using Drift.Cli.Commands.Init;
@@ -18,9 +16,7 @@ using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
 using Drift.Domain.ExecutionEnvironment;
 using Drift.Domain.Scan;
-using Drift.Networking.Grpc;
-using Drift.Networking.Grpc.Generated;
-using Drift.Networking.Grpc.Messages;
+using Drift.Networking.Cluster;
 using Drift.Scanning;
 using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
@@ -64,16 +60,7 @@ internal static class RootCommandFactory {
   }
 
   private static void ConfigureCluster( IServiceCollection services ) {
-    ConfigurePeerCommunication( services );
-    services.AddScoped<ICluster, Cluster>();
-  }
-
-  public static void ConfigurePeerCommunication( IServiceCollection services ) {
-    services.AddSingleton<IPeerMessageSerializer>( new PeerMessageSerializer( typeof(GiveMeSubnets).Assembly ) );
-    services.AddMessageHandling();
-    services.AddSingleton<IPeerClientFactory, DefaultPeerClientFactory>();
-    services.AddScoped<IPeerMessageHandler, GiveMeSubnetsHandler>();
-    services.AddScoped<PeerStreamManager>();
+    services.AddClusterServices( Assembly.GetExecutingAssembly() );
   }
 
   private static void ConfigureExecutionEnvironment( IServiceCollection services ) {

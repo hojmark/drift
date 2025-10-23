@@ -3,7 +3,7 @@ using System.Text.Json;
 using Drift.Networking.Grpc.Generated;
 using Drift.Networking.Grpc.Messages;
 
-namespace Drift.Cli.Commands.Agent.Subcommands.Utils;
+namespace Drift.Networking.Peer;
 
 public class PeerMessageSerializer : IPeerMessageSerializer {
   private readonly Dictionary<string, Type> _typeMap = new();

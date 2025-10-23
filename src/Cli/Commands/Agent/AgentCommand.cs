@@ -1,5 +1,5 @@
 using System.CommandLine;
-using Drift.Cli.Commands.Agent.Subcommands;
+using Drift.Cli.Commands.Agent.Subcommands.Start;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 

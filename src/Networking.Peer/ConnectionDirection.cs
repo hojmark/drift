@@ -1,4 +1,4 @@
-namespace Drift.Cli.Commands.Agent.Subcommands.Peers;
+namespace Drift.Networking.Peer;
 
 public enum ConnectionDirection {
   Incoming,

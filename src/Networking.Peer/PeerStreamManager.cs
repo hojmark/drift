@@ -3,8 +3,9 @@ using Drift.Domain;
 using Drift.Networking.Grpc.Generated;
 using Drift.Networking.Grpc.Messages;
 using Grpc.Core;
+using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Commands.Agent.Subcommands.Peers;
+namespace Drift.Networking.Peer;
 
 public class PeerStreamManager(
   ILogger logger,

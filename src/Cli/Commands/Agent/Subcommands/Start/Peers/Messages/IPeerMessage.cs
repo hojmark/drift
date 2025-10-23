@@ -1,6 +1,6 @@
 using Drift.Networking.Grpc.Messages;
 
-namespace Drift.Cli.Commands.Agent.Subcommands.Peers.Messages;
+namespace Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages;
 
 public interface IPeerRequest<TResponse> : IPeerMessage where TResponse : IPeerMessage {
 }

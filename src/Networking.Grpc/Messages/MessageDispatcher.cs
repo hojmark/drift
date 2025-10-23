@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Drift.Networking.Grpc.Generated;
 using Microsoft.Extensions.Logging;
 

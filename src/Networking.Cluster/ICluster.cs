@@ -1,6 +1,6 @@
 using Drift.Networking.Grpc.Messages;
 
-namespace Drift.Cli.Commands.Agent.Subcommands.Utils;
+namespace Drift.Networking.Cluster;
 
 public interface ICluster {
   Task SendAsync( Domain.Agent agent, IPeerMessage message, CancellationToken cancellationToken = default );

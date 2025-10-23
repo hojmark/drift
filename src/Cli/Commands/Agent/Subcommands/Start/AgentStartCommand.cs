@@ -1,16 +1,18 @@
 using System.CommandLine;
+using System.Reflection;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Agent.Subcommands.Utils;
+using Drift.Cli.Commands.Agent.Subcommands.Start.Utils;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.SpecFile;
 using Drift.Domain;
+using Drift.Networking.Peer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
-namespace Drift.Cli.Commands.Agent.Subcommands;
+namespace Drift.Cli.Commands.Agent.Subcommands.Start;
 
 internal class AgentStartCommand : CommandBase<AgentStartParameters, AgentStartCommandHandler> {
   internal AgentStartCommand( IServiceProvider provider )
@@ -79,7 +81,7 @@ internal class AgentStartCommandHandler(
 
     builder.Services.AddSingleton<ILogger>( output.GetLogger() );
 
-    RootCommandFactory.ConfigurePeerCommunication( builder.Services );
+    builder.Services.AddPeerServices( Assembly.GetExecutingAssembly() );
     RootCommandFactory.ConfigureSubnetProvider( builder.Services );
     //builder.Services.AddSingleton<Inventory>( inventory );
     //builder.Services.AddHostedService<Utils.OutboundPeerService>();

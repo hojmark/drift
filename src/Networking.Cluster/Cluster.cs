@@ -1,9 +1,10 @@
-using Drift.Cli.Commands.Agent.Subcommands.Peers;
 using Drift.Networking.Grpc.Messages;
+using Drift.Networking.Peer;
+using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Commands.Agent.Subcommands.Utils;
+namespace Drift.Networking.Cluster;
 
-public class Cluster(
+internal sealed class Cluster(
   IPeerMessageSerializer serializer,
   PeerStreamManager peerStreamManager,
   ILogger logger

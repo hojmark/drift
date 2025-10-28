@@ -13,8 +13,7 @@ updates:
 
   - package-ecosystem: "nuget"
     directories:
-      - "/" # Also discovers /.config directory
-      - "/src"
+      - "/"
     schedule:
       interval: "weekly"
       day: "wednesday"

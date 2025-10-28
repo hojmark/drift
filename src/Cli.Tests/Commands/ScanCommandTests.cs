@@ -254,7 +254,7 @@ internal sealed class ScanCommandTests {
       serviceConfigAgent,
       cancellationToken: cts.Token
     );
-    await Task.Delay( 3000 );
+    await Task.Delay( 3000, cts.Token );
     Console.WriteLine( "Invoking scan" );
     var (scanExitCode, scanOutput, scanError) = await DriftTestCli.InvokeFromTestAsync(
       "scan unittest",
@@ -268,6 +268,7 @@ internal sealed class ScanCommandTests {
 
     Console.WriteLine( "Cancelling token" );
     await cts.CancelAsync();
+    cts.Dispose();
     Console.WriteLine( "Waiting for agent to shut down" );
 
     var (agentExitCode, agentOutput, agentError) = await agentTask;
@@ -280,6 +281,7 @@ internal sealed class ScanCommandTests {
     // Assert
     Assert.That( agentExitCode, Is.EqualTo( ExitCodes.Success ) );
     Assert.That( scanExitCode, Is.EqualTo( ExitCodes.Success ) );
+    await Verify( scanOutput.ToString() + scanError );
   }
 
   [Test]

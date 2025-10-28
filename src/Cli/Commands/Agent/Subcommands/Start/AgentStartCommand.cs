@@ -61,7 +61,7 @@ internal class AgentStartCommandHandler(
 
     var configureServices = ( IServiceCollection services ) => {
       RootCommandFactory.ConfigureSubnetProvider( services );
-      services.AddSingleton<IPeerMessageHandler, GiveMeSubnetsRequestHandler>();
+      services.AddScoped<IPeerMessageHandler, GiveMeSubnetsRequestHandler>();
     };
 
     await AgentHost.Run( parameters.Port, logger, configureServices, cancellationToken );

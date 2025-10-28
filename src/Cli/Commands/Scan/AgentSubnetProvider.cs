@@ -15,11 +15,11 @@ public class AgentSubnetProvider(
 )
   : ISubnetProvider {
   public async Task<List<CidrBlock>> GetAsync() {
-    logger.LogInformation( "Getting subnets from agents" );
+    logger.LogDebug( "Getting subnets from agents" );
     var allSubnets = new List<CidrBlock>();
 
     foreach ( var agent in agents ) {
-      logger.LogInformation( "Getting subnets from agent {Address}", agent.Address );
+      logger.LogInformation( "Requesting subnets from agent {Id} ({Address})", agent.Id, agent.Address );
 
       try {
         // await cluster.SendAsync( agent, new GiveMeSubnetsRequest(), CancellationToken.None );
@@ -32,8 +32,12 @@ public class AgentSubnetProvider(
         );
 
         allSubnets.AddRange( response.Subnets );
-        logger.LogInformation( "Received {Count} subnets from {Address}: {Subnets}",
-          response.Subnets.Count, agent.Address, string.Join( ", ", response.Subnets ) );
+        logger.LogInformation(
+          "Received subnet(s) from agent {Id} ({Address}): {Subnets}",
+          response.Subnets.Count,
+          agent.Address,
+          string.Join( ", ", response.Subnets )
+        );
       }
       catch ( Exception ex ) {
         logger.LogWarning( ex, "cluster.SendAsync failed", agent.Address );

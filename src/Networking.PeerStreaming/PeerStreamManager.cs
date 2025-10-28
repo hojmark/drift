@@ -19,7 +19,7 @@ public class PeerStreamManager(
   public PeerStream GetOrCreate( Uri peerAddress, string id ) {
     var agentId = new AgentId( id );
 
-    logger.LogInformation( "Getting or creating stream to agent {AgentId}", agentId );
+    logger.LogDebug( "Getting or creating stream to agent {Id} ({Address})", agentId, peerAddress );
 
     return _streams.GetOrAdd( agentId, _ => Create( peerAddress, agentId ) );
   }

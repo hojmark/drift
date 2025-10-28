@@ -13,7 +13,8 @@ updates:
 
   - package-ecosystem: "nuget"
     directories:
-      - "**/*"
+      - "/"
+      - "/src"
     schedule:
       interval: "weekly"
       day: "wednesday"

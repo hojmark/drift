@@ -5,8 +5,8 @@
     <File Path=".github\workflows\prerelease.yaml" />
     <File Path=".github\workflows\release.yaml" />
   </Folder>
-  <Folder Name="/Workflows/Actions" />
-  <Folder Name="/Workflows/Actions/runner-setup">
+  <Folder Name="/Workflows/Actions/" />
+  <Folder Name="/Workflows/Actions/runner-setup/">
     <File Path=".github\actions\setup-runner\action.yml" />
   </Folder>
   <Project Path="build\_build.csproj" Type="Classic C#" />

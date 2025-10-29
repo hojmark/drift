@@ -1,7 +1,7 @@
 using Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Subnets.Response;
 using Drift.Networking.Grpc.Generated;
-using Drift.Networking.PeerStreaming;
-using Drift.Networking.PeerStreaming.Messages;
+using Drift.Networking.PeerStreaming.Core;
+using Drift.Networking.PeerStreaming.Core.Messages;
 using Drift.Scanning.Subnets.Interface;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Subnets.Request;

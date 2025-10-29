@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.Core" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Networking.PeerStreaming.Core\Networking.PeerStreaming.Core.csproj" />
+  </ItemGroup>
+
+</Project>

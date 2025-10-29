@@ -1,9 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <ProjectReference Include="..\Domain\Domain.csproj" />
-    <ProjectReference Include="..\Networking.Grpc\Networking.Grpc.csproj" />
-    <ProjectReference Include="..\EnvironmentConfig\EnvironmentConfig.csproj" />
-  </ItemGroup>
-
-</Project>

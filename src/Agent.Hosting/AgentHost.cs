@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
-using Drift.Networking.PeerStreaming;
+using Drift.Networking.PeerStreaming.AspNetCore;
+using Drift.Networking.PeerStreaming.Client;
+using Drift.Networking.PeerStreaming.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -34,7 +36,9 @@ public static class AgentHost {
       o.Interceptors.Add<ExceptionHandlerIntercepter>();
     } );
     builder.Services.AddSingleton<ExceptionHandlerIntercepter>();
-    builder.Services.AddPeerStreamingServices( Assembly.GetExecutingAssembly() );
+    builder.Services.AddPeerStreamingServer();
+    builder.Services.AddPeerStreamingClient();
+    builder.Services.AddPeerStreamingCore( messageAssembly: Assembly.GetExecutingAssembly() );
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
@@ -45,7 +49,7 @@ public static class AgentHost {
 
     var app = builder.Build();
 
-    app.MapPeerStreamingEndpoints();
+    app.MapPeerStreamingServerEndpoints();
     app.MapGet( "/", () => "Nothing to see here" );
 
     app.Lifetime.ApplicationStarted.Register( () => {

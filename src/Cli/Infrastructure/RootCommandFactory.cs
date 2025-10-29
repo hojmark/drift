@@ -16,7 +16,9 @@ using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
 using Drift.Domain.ExecutionEnvironment;
 using Drift.Domain.Scan;
-using Drift.Networking.Cluster;
+using Drift.Networking.Clustering;
+using Drift.Networking.PeerStreaming.Client;
+using Drift.Networking.PeerStreaming.Core;
 using Drift.Scanning;
 using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
@@ -56,11 +58,13 @@ internal static class RootCommandFactory {
     ConfigureSpecProvider( services );
     ConfigureSubnetProvider( services );
     ConfigureNetworkScanner( services );
-    ConfigureCluster( services );
+    ConfigureAgentCluster( services );
   }
 
-  private static void ConfigureCluster( IServiceCollection services ) {
-    services.AddClusterServices( Assembly.GetExecutingAssembly() );
+  private static void ConfigureAgentCluster( IServiceCollection services ) {
+    services.AddPeerStreamingCore( messageAssembly: Assembly.GetExecutingAssembly() );
+    services.AddPeerStreamingClient();
+    services.AddClustering();
   }
 
   private static void ConfigureExecutionEnvironment( IServiceCollection services ) {

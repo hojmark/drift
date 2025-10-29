@@ -27,7 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Agent.Hosting\Agent.Hosting.csproj" />
     <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
-    <ProjectReference Include="..\Networking.Cluster\Networking.Cluster.csproj" />
+    <ProjectReference Include="..\Networking.Clustering\Networking.Clustering.csproj" />
     <ProjectReference Include="..\Scanning\Scanning.csproj" />
     <ProjectReference Include="..\Diff\Diff.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />

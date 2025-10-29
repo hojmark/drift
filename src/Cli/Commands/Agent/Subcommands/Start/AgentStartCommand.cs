@@ -1,7 +1,6 @@
 using System.CommandLine;
 using Drift.Agent.Hosting;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Subnets;
 using Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Subnets.Request;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Infrastructure;
@@ -9,8 +8,8 @@ using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.SpecFile;
 using Drift.Domain;
-using Drift.Networking.Cluster;
-using Drift.Networking.PeerStreaming.Messages;
+using Drift.Networking.Clustering;
+using Drift.Networking.PeerStreaming.Core.Messages;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start;
 

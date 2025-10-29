@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Drift.Networking.Grpc.Generated;
-using Drift.Networking.PeerStreaming;
-using Drift.Networking.PeerStreaming.Messages;
+using Drift.Networking.PeerStreaming.Core;
+using Drift.Networking.PeerStreaming.Core.Messages;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start.Peers;
 

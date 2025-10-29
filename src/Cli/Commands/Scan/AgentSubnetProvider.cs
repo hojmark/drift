@@ -1,8 +1,7 @@
-using Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Subnets;
 using Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Subnets.Request;
 using Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Subnets.Response;
 using Drift.Domain;
-using Drift.Networking.Cluster;
+using Drift.Networking.Clustering;
 using Drift.Scanning.Subnets;
 
 namespace Drift.Cli.Commands.Scan;

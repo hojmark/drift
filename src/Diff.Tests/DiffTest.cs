@@ -1,6 +1,4 @@
 using System.Globalization;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Drift.Diff.Domain;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -8,7 +6,6 @@ using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
-using Drift.EnvironmentConfig;
 using Drift.EnvironmentConfig.Converters;
 using Drift.TestUtilities;
 using JsonConverter = Drift.EnvironmentConfig.JsonConverter;

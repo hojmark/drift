@@ -1,4 +1,4 @@
-using Drift.Networking.PeerStreaming.Messages;
+using Drift.Networking.PeerStreaming.Core.Messages;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Subnets.Request;
 

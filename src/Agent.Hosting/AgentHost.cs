@@ -42,7 +42,7 @@ public static class AgentHost {
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
-      options.ListenLocalhost( (int) port, o => {
+      options.ListenLocalhost( port, o => {
         o.Protocols = HttpProtocols.Http2; // Allow HTTP/2 over plain HTTP
       } );
     } );

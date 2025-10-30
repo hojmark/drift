@@ -6,7 +6,7 @@ using Drift.Scanning.Subnets;
 
 namespace Drift.Cli.Commands.Scan;
 
-public class AgentSubnetProvider(
+internal sealed class AgentSubnetProvider(
   ILogger logger,
   List<Domain.Agent> agents,
   ICluster cluster,
@@ -21,25 +21,19 @@ public class AgentSubnetProvider(
       logger.LogInformation( "Requesting subnets from agent {Id} ({Address})", agent.Id, agent.Address );
 
       try {
-        // await cluster.SendAsync( agent, new GiveMeSubnetsRequest(), CancellationToken.None );
+        var response = await cluster.GetSubnetsAsync( agent, cancellationToken );
 
-        var response = await cluster.SendAndWaitAsync<GiveMeSubnetsResponse>(
-          agent,
-          new GiveMeSubnetsRequest(),
-          timeout: TimeSpan.FromSeconds( 10 ),
-          cancellationToken
-        );
-
-        allSubnets.AddRange( response.Subnets );
         logger.LogInformation(
           "Received subnet(s) from agent {Id} ({Address}): {Subnets}",
           response.Subnets.Count,
           agent.Address,
           string.Join( ", ", response.Subnets )
         );
+
+        allSubnets.AddRange( response.Subnets );
       }
       catch ( Exception ex ) {
-        logger.LogWarning( ex, "cluster.SendAsync failed", agent.Address );
+        logger.LogInformation( ex, "Failed requesting subnets from agent {Id} ({Address})", agent.Id, agent.Address );
       }
     }
 

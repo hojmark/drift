@@ -74,7 +74,6 @@ internal sealed class Cluster(
     var response = await responseTask;
     return envelopeConverter.FromEnvelope<TResponse>( response );
   }
-
   /* public async Task EnsureConnectedAsync( string peerAddress, CancellationToken cancellationToken = default ) {
      await peerStreamManager.GetOrCreateConnectionAsync( peerAddress, cancellationToken );
    }*/

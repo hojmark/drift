@@ -1,4 +1,4 @@
-using Drift.Networking.PeerStreaming.Core;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Drift.Networking.PeerStreaming.Core.Messages;
 using Microsoft.Extensions.Logging;
 
@@ -6,8 +6,8 @@ namespace Drift.Networking.Clustering;
 
 internal sealed class Cluster(
   IPeerMessageEnvelopeConverter envelopeConverter,
-  PeerStreamManager peerStreamManager,
-  PeerResponseAwaiter responseAwaiter,
+  IPeerStreamManager peerStreamManager,
+  PeerResponseCorrelator responseCorrelator,
   ILogger logger
 ) : ICluster {
   public async Task SendAsync(
@@ -59,22 +59,19 @@ internal sealed class Cluster(
     var envelope = envelopeConverter.ToEnvelope( message );
     envelope.CorrelationId = correlationId;
 
-    // Register awaiter BEFORE sending
-    var responseTask = responseAwaiter.WaitForResponseAsync(
+    // Register correlator BEFORE sending
+    var responseTask = responseCorrelator.WaitForResponseAsync(
       correlationId,
       timeout ?? TimeSpan.FromSeconds( 30 ),
       cancellationToken
     );
 
-    // Send the request
+    // Request
     var connection = peerStreamManager.GetOrCreate( new Uri( agent.Address ), "agentid_local1" );
     await connection.SendAsync( envelope );
 
-    // Wait for response
+    // Response
     var response = await responseTask;
     return envelopeConverter.FromEnvelope<TResponse>( response );
   }
-  /* public async Task EnsureConnectedAsync( string peerAddress, CancellationToken cancellationToken = default ) {
-     await peerStreamManager.GetOrCreateConnectionAsync( peerAddress, cancellationToken );
-   }*/
 }

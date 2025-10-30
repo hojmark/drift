@@ -1,4 +1,4 @@
-using Drift.Networking.PeerStreaming.Core;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Networking.PeerStreaming.Client;

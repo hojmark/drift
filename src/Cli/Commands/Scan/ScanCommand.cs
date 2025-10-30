@@ -62,8 +62,6 @@ internal class ScanCommandHandler(
   INetworkScanner scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ISpecFileProvider specProvider,
-  /*IPeerClientFactory peerClientFactory,
-  PeerMessageDispatcher dispatcher,*/
   ICluster cluster
 ) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {

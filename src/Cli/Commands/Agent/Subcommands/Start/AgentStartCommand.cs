@@ -9,7 +9,7 @@ using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.SpecFile;
 using Drift.Domain;
 using Drift.Networking.Clustering;
-using Drift.Networking.PeerStreaming.Core.Messages;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start;
 
@@ -58,16 +58,16 @@ internal class AgentStartCommandHandler(
 
     output.Log.LogDebug( "Starting agent..." );
 
-    var configureServices = ( IServiceCollection services ) => {
-      RootCommandFactory.ConfigureSubnetProvider( services );
-      services.AddScoped<IPeerMessageHandler, GiveMeSubnetsRequestHandler>();
-    };
-
-    await AgentHost.Run( parameters.Port, logger, configureServices, cancellationToken );
+    await AgentHost.Run( parameters.Port, logger, ConfigureServices, cancellationToken );
 
     output.Log.LogDebug( "Completed 'agent start' command" );
 
     return ExitCodes.Success;
+
+    void ConfigureServices( IServiceCollection services ) {
+      RootCommandFactory.ConfigureSubnetProvider( services );
+      services.AddScoped<IPeerMessageHandler, SubnetsRequestHandler>();
+    }
   }
 
 

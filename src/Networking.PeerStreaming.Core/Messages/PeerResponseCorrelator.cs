@@ -4,11 +4,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.PeerStreaming.Core.Messages;
 
-public class PeerResponseAwaiter {
+//TODO private?
+public sealed class PeerResponseCorrelator {
   private readonly ConcurrentDictionary<string, TaskCompletionSource<PeerMessage>> _pendingRequests = new();
   private readonly ILogger _logger;
 
-  public PeerResponseAwaiter( ILogger logger ) {
+  public PeerResponseCorrelator( ILogger logger ) {
     _logger = logger;
   }
 

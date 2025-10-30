@@ -7,9 +7,9 @@ internal class AgentCommandTests {
   [CancelAfter( 10000 )]
   [Test]
   public async Task RespectsCancellationToken() {
-    var tcs = new CancellationTokenSource( TimeSpan.FromSeconds( 5 ) );
+    using var tcs = new CancellationTokenSource( TimeSpan.FromSeconds( 5 ) );
 
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
+    var (exitCode, output, _) = await DriftTestCli.InvokeFromTestAsync(
       "agent start --adoptable",
       cancellationToken: tcs.Token
     );

@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using Drift.EnvironmentConfig.Converters;
 using Drift.Networking.Grpc.Generated;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
 
 namespace Drift.Networking.PeerStreaming.Core.Messages;
 

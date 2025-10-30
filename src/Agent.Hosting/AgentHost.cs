@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
-using Drift.Networking.PeerStreaming.AspNetCore;
 using Drift.Networking.PeerStreaming.Client;
 using Drift.Networking.PeerStreaming.Core;
+using Drift.Networking.PeerStreaming.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -43,7 +43,7 @@ public static class AgentHost {
 
     builder.WebHost.ConfigureKestrel( options => {
       options.ListenLocalhost( port, o => {
-        o.Protocols = HttpProtocols.Http2; // Allow HTTP/2 over plain HTTP
+        o.Protocols = HttpProtocols.Http2; // Allow HTTP/2 over plain HTTP i.e., non-HTTPS
       } );
     } );
 

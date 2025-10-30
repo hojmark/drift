@@ -1,19 +1,20 @@
 using Drift.Networking.Grpc.Generated;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.PeerStreaming.Core.Messages;
 
-public class PeerMessageDispatcher {
-  private readonly PeerResponseAwaiter _responseAwaiter;
+public sealed class PeerMessageDispatcher {
+  private readonly PeerResponseCorrelator _responseCorrelator;
   private readonly ILogger _logger;
   private readonly Dictionary<string, IPeerMessageHandler> _handlers;
 
   public PeerMessageDispatcher(
     IEnumerable<IPeerMessageHandler> handlers,
-    PeerResponseAwaiter responseAwaiter,
+    PeerResponseCorrelator responseCorrelator,
     ILogger logger
   ) {
-    _responseAwaiter = responseAwaiter;
+    _responseCorrelator = responseCorrelator;
     _logger = logger;
     _handlers = handlers.ToDictionary( h => h.MessageType, StringComparer.OrdinalIgnoreCase );
   }
@@ -23,7 +24,7 @@ public class PeerMessageDispatcher {
 
     // If this is a response to a pending request, complete it
     if ( !string.IsNullOrEmpty( message.ReplyTo ) ) {
-      if ( _responseAwaiter.TryCompleteResponse( message.ReplyTo, message ) ) {
+      if ( _responseCorrelator.TryCompleteResponse( message.ReplyTo, message ) ) {
         _logger.LogDebug( "Completed pending request: {CorrelationId}", message.ReplyTo );
         return Task.CompletedTask;
       }

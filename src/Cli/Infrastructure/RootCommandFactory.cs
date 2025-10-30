@@ -97,7 +97,7 @@ internal static class RootCommandFactory {
       var factory = sp.GetRequiredService<IOutputManagerFactory>();
       return factory.Create( parseResult, plainConsole );
     } );
-    // Note: since ILogger is scoped, singletons can not log anything until a method (that takes an ILogger) is called
+    // Note: since ILogger is scoped, singletons cannot access logging via DI
     services.AddScoped<ILogger>( sp => sp.GetRequiredService<IOutputManager>().GetLogger() );
   }
 

@@ -1,4 +1,5 @@
 using System.Reflection;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Drift.Networking.PeerStreaming.Core.Messages;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,7 +9,7 @@ public static class ServiceCollectionExtensions {
   public static void AddPeerStreamingCore( this IServiceCollection services, Assembly messageAssembly ) {
     services.AddSingleton<IPeerMessageEnvelopeConverter>( new PeerMessageEnvelopeConverter( messageAssembly ) );
     services.AddScoped<PeerMessageDispatcher>();
-    services.AddScoped<PeerStreamManager>();
-    services.AddScoped<PeerResponseAwaiter>();
+    services.AddScoped<PeerResponseCorrelator>();
+    services.AddScoped<IPeerStreamManager, PeerStreamManager>();
   }
 }

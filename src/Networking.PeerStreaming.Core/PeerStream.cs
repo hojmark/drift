@@ -1,13 +1,13 @@
 using Drift.Domain;
 using Drift.Networking.Grpc.Generated;
-using Drift.Networking.PeerStreaming.Core.Common;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Drift.Networking.PeerStreaming.Core.Messages;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.PeerStreaming.Core;
 
-public sealed class PeerStream : IAsyncDisposable {
+public sealed class PeerStream : IPeerStream, IAsyncDisposable {
   private static int _instanceCounter;
   private readonly IAsyncStreamReader<PeerMessage> _reader;
   private readonly IAsyncStreamWriter<PeerMessage> _writer;

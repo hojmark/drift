@@ -1,4 +1,4 @@
-using Drift.Networking.PeerStreaming.Core.Messages;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
 
 namespace Drift.Networking.Clustering;
 

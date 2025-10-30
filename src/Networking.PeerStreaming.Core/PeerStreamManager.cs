@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Drift.Domain;
 using Drift.Networking.Grpc.Generated;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Drift.Networking.PeerStreaming.Core.Common;
 using Drift.Networking.PeerStreaming.Core.Messages;
 using Grpc.Core;
@@ -8,14 +9,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.PeerStreaming.Core;
 
-public class PeerStreamManager(
+internal sealed class PeerStreamManager(
   ILogger logger,
   IPeerClientFactory peerClientFactory,
   PeerMessageDispatcher dispatcher
-) {
-  private readonly ConcurrentDictionary<AgentId, PeerStream> _streams = new();
+) : IPeerStreamManager {
+  private readonly ConcurrentDictionary<AgentId, IPeerStream> _streams = new();
 
-  public PeerStream GetOrCreate( Uri peerAddress, string id ) {
+  public IPeerStream GetOrCreate( Uri peerAddress, string id ) {
     var agentId = new AgentId( id );
 
     logger.LogDebug( "Getting or creating stream to agent {Id} ({Address})", agentId, peerAddress );
@@ -23,7 +24,7 @@ public class PeerStreamManager(
     return _streams.GetOrAdd( agentId, _ => Create( peerAddress, agentId ) );
   }
 
-  private PeerStream Create( Uri peerAddress, AgentId agentId ) {
+  private IPeerStream Create( Uri peerAddress, AgentId agentId ) {
     var (client, _) = peerClientFactory.Create( peerAddress );
     var callOptions = new CallOptions( new Metadata { { "agent-id", agentId } } );
     var call = client.PeerStream( callOptions );
@@ -33,7 +34,7 @@ public class PeerStreamManager(
     return stream;
   }
 
-  public PeerStream Create(
+  public IPeerStream Create(
     IAsyncStreamReader<PeerMessage> requestStream,
     IAsyncStreamWriter<PeerMessage> responseStream,
     ServerCallContext context
@@ -46,7 +47,7 @@ public class PeerStreamManager(
     return stream;
   }
 
-  private void Add( PeerStream stream ) {
+  private void Add( IPeerStream stream ) {
     logger.LogDebug( "Created stream to agent {AgentId}", stream.AgentId );
     logger.LogTrace( stream.ToString() );
 

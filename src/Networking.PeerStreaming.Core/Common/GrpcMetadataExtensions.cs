@@ -3,8 +3,8 @@ using Grpc.Core;
 
 namespace Drift.Networking.PeerStreaming.Core.Common;
 
-public static class GrpcMetadataExtensions {
-  public static AgentId GetAgentId( this Metadata metadata ) {
+internal static class GrpcMetadataExtensions {
+  internal static AgentId GetAgentId( this Metadata metadata ) {
     return new AgentId( metadata.Get( "agent-id" ).Value );
   }
 }

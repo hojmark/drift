@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Networking.PeerStreaming.Core\Networking.PeerStreaming.Core.csproj" />
+    <ProjectReference Include="..\Networking.PeerStreaming.Core.Abstractions\Networking.PeerStreaming.Core.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

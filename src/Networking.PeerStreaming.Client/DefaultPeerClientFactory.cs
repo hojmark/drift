@@ -1,5 +1,5 @@
 using Drift.Networking.Grpc.Generated;
-using Drift.Networking.PeerStreaming.Core;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Grpc.Net.Client;
 
 namespace Drift.Networking.PeerStreaming.Client;

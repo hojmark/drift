@@ -1,4 +1,4 @@
-namespace Drift.Networking.PeerStreaming.Core.Messages;
+namespace Drift.Networking.PeerStreaming.Core.Abstractions;
 
 public interface IPeerMessage {
   string MessageType {

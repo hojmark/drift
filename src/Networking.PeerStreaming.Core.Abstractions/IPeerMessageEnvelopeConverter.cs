@@ -1,6 +1,6 @@
 using Drift.Networking.Grpc.Generated;
 
-namespace Drift.Networking.PeerStreaming.Core.Messages;
+namespace Drift.Networking.PeerStreaming.Core.Abstractions;
 
 public interface IPeerMessageEnvelopeConverter {
   public PeerMessage ToEnvelope( IPeerMessage message, string? requestId = null );

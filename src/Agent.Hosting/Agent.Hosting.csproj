@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Networking.Clustering\Networking.Clustering.csproj" />
-    <ProjectReference Include="..\Networking.PeerStreaming.AspNetCore\Networking.PeerStreaming.AspNetCore.csproj" />
+    <ProjectReference Include="..\Networking.PeerStreaming.Server\Networking.PeerStreaming.Server.csproj" />
     <ProjectReference Include="..\Networking.PeerStreaming.Client\Networking.PeerStreaming.Client.csproj" />
   </ItemGroup>
 

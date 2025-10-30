@@ -1,6 +1,6 @@
 namespace Drift.Cli.Commands.Agent.Subcommands.Start.Peers.Messages.Adopt;
 
-public class AdoptRequestHandler : HandlerBase<AdoptRequestPayload> /* TODO, IAdoptRequestHandler*/ {
+internal class AdoptRequestHandler : HandlerBase<AdoptRequestPayload> /* TODO, IAdoptRequestHandler*/ {
   private readonly ILogger _logger; // Example: inject what you need
 
   public override string MessageType => "adopt-request2222222";

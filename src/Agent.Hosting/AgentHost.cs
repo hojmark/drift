@@ -31,12 +31,11 @@ public static class AgentHost {
 
     builder.Logging.ClearProviders();
     builder.Services.AddSingleton( logger );
-    builder.Services.AddGrpc( o => {
-      o.EnableDetailedErrors = true;
-      o.Interceptors.Add<ExceptionHandlerIntercepter>();
-    } );
     builder.Services.AddSingleton<ExceptionHandlerIntercepter>();
-    builder.Services.AddPeerStreamingServer();
+    builder.Services.AddPeerStreamingServer( options => {
+      options.EnableDetailedErrors = true;
+      options.Interceptors.Add<ExceptionHandlerIntercepter>();
+    } );
     builder.Services.AddPeerStreamingClient();
     builder.Services.AddPeerStreamingCore( messageAssembly: Assembly.GetExecutingAssembly() );
     configureServices?.Invoke( builder.Services );

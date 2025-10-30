@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Grpc.AspNetCore.Server;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,9 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Drift.Networking.PeerStreaming.Server;
 
 public static class ServiceCollectionExtensions {
-  public static void AddPeerStreamingServer( this IServiceCollection services ) {
+  public static void AddPeerStreamingServer(
+    this IServiceCollection services,
+    Action<GrpcServiceOptions>? configureOptions = null
+  ) {
     services.AddSingleton<PeerStreamingServerMarker>();
-    services.AddGrpc();
+    services.AddGrpc( options => configureOptions?.Invoke( options ) );
     services.AddTransient<IStartupFilter, PeerStreamingServerValidationFilter>();
   }
 

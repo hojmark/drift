@@ -105,7 +105,6 @@ public sealed class PeerStream : IPeerStream, IAsyncDisposable {
 
   public async ValueTask DisposeAsync() {
     Console.WriteLine( "Disposing " + this );
-    _logger.LogError( "Disposing " + this );
 
     if ( _call != null ) {
       // I.e., outgoing stream (client initiated)

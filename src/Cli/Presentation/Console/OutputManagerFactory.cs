@@ -5,7 +5,6 @@ using Drift.Cli.Commands.Scan;
 using Drift.Cli.Presentation.Console.Managers;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Common.IO;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Events;

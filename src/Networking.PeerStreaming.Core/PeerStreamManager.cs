@@ -1,0 +1,56 @@
+using System.Collections.Concurrent;
+using Drift.Domain;
+using Drift.Networking.Grpc.Generated;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
+using Drift.Networking.PeerStreaming.Core.Common;
+using Drift.Networking.PeerStreaming.Core.Messages;
+using Grpc.Core;
+using Microsoft.Extensions.Logging;
+
+namespace Drift.Networking.PeerStreaming.Core;
+
+internal sealed class PeerStreamManager(
+  ILogger logger,
+  IPeerClientFactory peerClientFactory,
+  PeerMessageDispatcher dispatcher,
+  PeerStreamingOptions options
+) : IPeerStreamManager {
+  private readonly ConcurrentDictionary<AgentId, IPeerStream> _streams = new();
+
+  public IPeerStream GetOrCreate( Uri peerAddress, string id ) {
+    var agentId = new AgentId( id );
+
+    logger.LogDebug( "Getting or creating stream to agent {Id} ({Address})", agentId, peerAddress );
+
+    return _streams.GetOrAdd( agentId, _ => Create( peerAddress, agentId ) );
+  }
+
+  private IPeerStream Create( Uri peerAddress, AgentId agentId ) {
+    var (client, _) = peerClientFactory.Create( peerAddress );
+    var callOptions = new CallOptions( new Metadata { { "agent-id", agentId } } );
+    var call = client.PeerStream( callOptions );
+
+    var stream = new PeerStream( peerAddress, call, dispatcher, logger, options.StoppingToken ) { AgentId = agentId };
+    Add( stream );
+    return stream;
+  }
+
+  public IPeerStream Create(
+    IAsyncStreamReader<PeerMessage> requestStream,
+    IAsyncStreamWriter<PeerMessage> responseStream,
+    ServerCallContext context
+  ) {
+    var agentId = context.RequestHeaders.GetAgentId();
+    logger.LogInformation( "Creating stream to agent {AgentId}", agentId );
+
+    var stream =
+      new PeerStream( requestStream, responseStream, dispatcher, logger, options.StoppingToken ) { AgentId = agentId };
+    Add( stream );
+    return stream;
+  }
+
+  private void Add( IPeerStream stream ) {
+    logger.LogTrace( stream.ToString() );
+    _streams[stream.AgentId] = stream;
+  }
+}

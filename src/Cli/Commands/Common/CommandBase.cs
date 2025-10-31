@@ -1,10 +1,9 @@
 using System.CommandLine;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli.Commands.Common;
 
 internal abstract class CommandBase<TParameters, THandler> : Command
-  where TParameters : DefaultParameters
+  where TParameters : BaseParameters
   where THandler : ICommandHandler<TParameters> {
   protected CommandBase( string name, string description, IServiceProvider provider ) : base( name, description ) {
     Add( CommonParameters.Options.Verbose );

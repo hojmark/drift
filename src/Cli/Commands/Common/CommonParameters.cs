@@ -1,6 +1,5 @@
 using System.CommandLine;
 using Drift.Cli.Presentation.Console;
-using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
 

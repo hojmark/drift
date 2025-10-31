@@ -62,7 +62,7 @@ internal static class RootCommandFactory {
   }
 
   private static void ConfigureAgentCluster( IServiceCollection services ) {
-    services.AddPeerStreamingCore( messageAssembly: Assembly.GetExecutingAssembly() );
+    services.AddPeerStreamingCore( new PeerStreamingOptions { MessageAssembly = Assembly.GetExecutingAssembly() } );
     services.AddPeerStreamingClient();
     services.AddClustering();
   }

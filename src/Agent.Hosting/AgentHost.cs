@@ -31,13 +31,12 @@ public static class AgentHost {
 
     builder.Logging.ClearProviders();
     builder.Services.AddSingleton( logger );
-    builder.Services.AddSingleton<ExceptionHandlerIntercepter>();
     builder.Services.AddPeerStreamingServer( options => {
       options.EnableDetailedErrors = true;
-      options.Interceptors.Add<ExceptionHandlerIntercepter>();
     } );
     builder.Services.AddPeerStreamingClient();
-    builder.Services.AddPeerStreamingCore( messageAssembly: Assembly.GetExecutingAssembly() );
+    var peerStreamingOptions = new PeerStreamingOptions();
+    builder.Services.AddPeerStreamingCore( peerStreamingOptions );
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
@@ -48,12 +47,14 @@ public static class AgentHost {
 
     var app = builder.Build();
 
+    peerStreamingOptions.StoppingToken = app.Lifetime.ApplicationStopping;
+
     app.MapPeerStreamingServerEndpoints();
     app.MapGet( "/", () => "Nothing to see here" );
 
     app.Lifetime.ApplicationStarted.Register( () => {
-      logger.LogInformation( "Agent started" );
       logger.LogInformation( "Listening for incoming connections on port {Port}", port );
+      logger.LogInformation( "Agent started" );
     } );
     app.Lifetime.ApplicationStopping.Register( () => {
       logger.LogInformation( "Agent stopping..." );

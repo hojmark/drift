@@ -13,6 +13,7 @@ public sealed class PeerStream : IPeerStream, IAsyncDisposable {
   private readonly IAsyncStreamWriter<PeerMessage> _writer;
   private readonly PeerMessageDispatcher _dispatcher;
   private readonly ILogger _logger;
+  private readonly CancellationToken _cancellationToken;
   private readonly AsyncDuplexStreamingCall<PeerMessage, PeerMessage>? _call;
 
   public int InstanceNo {
@@ -41,13 +42,15 @@ public sealed class PeerStream : IPeerStream, IAsyncDisposable {
     IAsyncStreamReader<PeerMessage> reader,
     IAsyncStreamWriter<PeerMessage> writer,
     PeerMessageDispatcher dispatcher,
-    ILogger logger
+    ILogger logger,
+    CancellationToken cancellationToken
   ) {
     Side = ConnectionSide.Incoming;
     _reader = reader;
     _writer = writer;
     _dispatcher = dispatcher;
     _logger = logger;
+    _cancellationToken = cancellationToken;
     ReadTask = Task.Run( ReadLoopAsync, CancellationToken.None );
   }
 
@@ -55,7 +58,8 @@ public sealed class PeerStream : IPeerStream, IAsyncDisposable {
     Uri address,
     AsyncDuplexStreamingCall<PeerMessage, PeerMessage> call,
     PeerMessageDispatcher dispatcher,
-    ILogger logger
+    ILogger logger,
+    CancellationToken cancellationToken
   ) {
     Side = ConnectionSide.Outgoing;
     Address = address;
@@ -64,18 +68,19 @@ public sealed class PeerStream : IPeerStream, IAsyncDisposable {
     _writer = call.RequestStream;
     _dispatcher = dispatcher;
     _logger = logger;
+    _cancellationToken = cancellationToken;
     ReadTask = Task.Run( ReadLoopAsync, CancellationToken.None );
   }
 
   public async Task SendAsync( PeerMessage message ) {
-    await _writer.WriteAsync( message );
+    await _writer.WriteAsync( message, _cancellationToken );
   }
 
   private async Task ReadLoopAsync() {
     _logger.LogDebug( "Read loop starting..." );
 
     try {
-      await foreach ( var message in _reader.ReadAllAsync() ) {
+      await foreach ( var message in _reader.ReadAllAsync( _cancellationToken ) ) {
         try {
           _logger.LogDebug( "Received message. Dispatching to handler..." );
           await _dispatcher.DispatchAsync( message, this, CancellationToken.None );
@@ -87,15 +92,20 @@ public sealed class PeerStream : IPeerStream, IAsyncDisposable {
 
       _logger.LogDebug( "Read loop ended gracefully (end of stream)" );
     }
+    catch ( OperationCanceledException ) {
+      // Justification: exception is control flow, not an error
+#pragma warning disable S6667
+      _logger.LogDebug( "Read loop ended gracefully (cancelled)" );
+#pragma warning restore S6667
+    }
     catch ( Exception ex ) {
       _logger.LogError( ex, "Read loop failed" );
     }
-
-    _logger.LogDebug( "Read loop ended" );
   }
 
   public async ValueTask DisposeAsync() {
     Console.WriteLine( "Disposing " + this );
+    _logger.LogError( "Disposing " + this );
 
     if ( _call != null ) {
       // I.e., outgoing stream (client initiated)

@@ -12,7 +12,8 @@ namespace Drift.Networking.PeerStreaming.Core;
 internal sealed class PeerStreamManager(
   ILogger logger,
   IPeerClientFactory peerClientFactory,
-  PeerMessageDispatcher dispatcher
+  PeerMessageDispatcher dispatcher,
+  PeerStreamingOptions options
 ) : IPeerStreamManager {
   private readonly ConcurrentDictionary<AgentId, IPeerStream> _streams = new();
 
@@ -29,7 +30,7 @@ internal sealed class PeerStreamManager(
     var callOptions = new CallOptions( new Metadata { { "agent-id", agentId } } );
     var call = client.PeerStream( callOptions );
 
-    var stream = new PeerStream( peerAddress, call, dispatcher, logger ) { AgentId = agentId };
+    var stream = new PeerStream( peerAddress, call, dispatcher, logger, options.StoppingToken ) { AgentId = agentId };
     Add( stream );
     return stream;
   }
@@ -42,7 +43,8 @@ internal sealed class PeerStreamManager(
     var agentId = context.RequestHeaders.GetAgentId();
     logger.LogInformation( "Creating stream to agent {AgentId}", agentId );
 
-    var stream = new PeerStream( requestStream, responseStream, dispatcher, logger ) { AgentId = agentId };
+    var stream =
+      new PeerStream( requestStream, responseStream, dispatcher, logger, options.StoppingToken ) { AgentId = agentId };
     Add( stream );
     return stream;
   }

@@ -17,40 +17,35 @@ internal class NormalOutputLoggerAdapter( INormalOutput normalOutput ) : ILogger
       case LogLevel.Error:
         normalOutput.WriteLineError( message );
         if ( exception != null ) {
-          normalOutput.WriteLineError( exception.Message );
-          normalOutput.WriteLineError( exception.StackTrace, ConsoleColor.DarkGray );
+          normalOutput.WriteLineError( exception.ToString() );
         }
 
         break;
       case LogLevel.Warning:
         normalOutput.WriteLineWarning( message );
         if ( exception != null ) {
-          normalOutput.WriteLineWarning( exception.Message );
-          normalOutput.WriteLineWarning( exception.StackTrace, ConsoleColor.DarkGray );
+          normalOutput.WriteLineWarning( exception.ToString() );
         }
 
         break;
       case LogLevel.Information:
         normalOutput.WriteLine( message );
         if ( exception != null ) {
-          normalOutput.WriteLine( exception.Message );
-          normalOutput.WriteLine( exception.StackTrace, ConsoleColor.DarkGray );
+          normalOutput.WriteLine( exception.ToString() );
         }
 
         break;
       case LogLevel.Debug:
         normalOutput.WriteLineVerbose( message );
         if ( exception != null ) {
-          normalOutput.WriteLineVerbose( exception.Message );
-          normalOutput.WriteLineVerbose( exception.StackTrace );
+          normalOutput.WriteLineVerbose( exception.ToString() );
         }
 
         break;
       case LogLevel.Trace:
         normalOutput.WriteLineVeryVerbose( message );
         if ( exception != null ) {
-          normalOutput.WriteLineVeryVerbose( exception.Message );
-          normalOutput.WriteLineVeryVerbose( exception.StackTrace );
+          normalOutput.WriteLineVeryVerbose( exception.ToString() );
         }
 
         break;

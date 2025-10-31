@@ -27,7 +27,7 @@ public static class AgentHost {
     ILogger logger,
     Action<IServiceCollection>? configureServices = null
   ) {
-    var builder = WebApplication.CreateBuilder();
+    var builder = WebApplication.CreateSlimBuilder();
 
     builder.Logging.ClearProviders();
     builder.Services.AddSingleton( logger );

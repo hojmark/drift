@@ -48,9 +48,7 @@ internal sealed class PeerStreamManager(
   }
 
   private void Add( IPeerStream stream ) {
-    logger.LogDebug( "Created stream to agent {AgentId}", stream.AgentId );
     logger.LogTrace( stream.ToString() );
-
     _streams[stream.AgentId] = stream;
   }
 }

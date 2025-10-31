@@ -9,8 +9,7 @@ internal sealed class AgentSubnetProvider(
   List<Domain.Agent> agents,
   ICluster cluster,
   CancellationToken cancellationToken
-)
-  : ISubnetProvider {
+) : ISubnetProvider {
   public async Task<List<CidrBlock>> GetAsync() {
     logger.LogDebug( "Getting subnets from agents" );
     var allSubnets = new List<CidrBlock>();
@@ -23,7 +22,7 @@ internal sealed class AgentSubnetProvider(
 
         logger.LogInformation(
           "Received subnet(s) from agent {Id} ({Address}): {Subnets}",
-          response.Subnets.Count,
+          agent.Id,
           agent.Address,
           string.Join( ", ", response.Subnets )
         );

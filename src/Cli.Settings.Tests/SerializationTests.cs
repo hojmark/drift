@@ -8,7 +8,7 @@ internal sealed class SerializationTests {
   [Test]
   public async Task DefaultSettingsContentsTest() {
     // Arrange
-    var location = (ISettingsLocationProvider) new TemporarySettingsLocationProvider();
+    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
 
     // Act
     new CliSettings().Save( NullLogger.Instance, location );
@@ -24,7 +24,7 @@ internal sealed class SerializationTests {
   [Test]
   public void SaveAndLoadShouldRoundtripCorrectlyTest() {
     // Arrange
-    var location = (ISettingsLocationProvider) new TemporarySettingsLocationProvider();
+    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
     var logger = NullLogger.Instance;
     var original = new CliSettings {
       Features = {

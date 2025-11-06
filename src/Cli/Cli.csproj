@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
+    <ProjectReference Include="..\Cli.Settings\Cli.Settings.csproj" />
     <ProjectReference Include="..\Scanning\Scanning.csproj" />
     <ProjectReference Include="..\Diff\Diff.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />

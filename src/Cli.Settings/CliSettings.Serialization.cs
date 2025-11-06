@@ -16,7 +16,7 @@ public partial class CliSettings {
     Converters = { new JsonStringEnumConverter( JsonNamingPolicy.CamelCase ), new FeatureFlagJsonConverter() }
   };
 
-  public static CliSettings Load( ILogger logger, ISettingsLocationProvider? location = null ) {
+  public static CliSettings Load( ILogger? logger = null, ISettingsLocationProvider? location = null ) {
     try {
       location ??= new DefaultSettingsLocationProvider();
 
@@ -31,17 +31,17 @@ public partial class CliSettings {
       var json = File.ReadAllText( location.GetFile() );
       var settings = JsonSerializer.Deserialize<CliSettings>( json, SerializerOptions );
 
-      logger.LogTrace( "Loaded settings: {Settings}", settings );
+      logger?.LogTrace( "Loaded settings: {Settings}", settings );
 
       if ( settings == null ) {
-        logger.LogWarning( "Deserialized settings is null, using default" );
+        logger?.LogWarning( "Deserialized settings is null, using default" );
         return new CliSettings();
       }
 
       return settings;
     }
     catch ( Exception e ) {
-      logger.LogError( e, "Error loading settings" );
+      logger?.LogError( e, "Error loading settings" );
       return new CliSettings();
     }
   }

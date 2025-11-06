@@ -1,3 +1,4 @@
+using Drift.Cli.Settings.Appearance;
 using Drift.Cli.Settings.FeatureFlags;
 
 namespace Drift.Cli.Settings;
@@ -8,8 +9,8 @@ public partial class CliSettings {
     set;
   } = [];
 
-  public Theme.Theme Theme {
+  public AppearanceSettings Appearance {
     get;
     set;
-  } = Settings.Theme.Theme.Default;
+  } = new(OutputFormatSetting.Default);
 }

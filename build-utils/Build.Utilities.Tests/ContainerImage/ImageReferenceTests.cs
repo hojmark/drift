@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Drift.Build.Utilities.ContainerImage;
+﻿using Drift.Build.Utilities.ContainerImage;
 using Semver;
 
 namespace Drift.Build.Utilities.Tests.ContainerImage;

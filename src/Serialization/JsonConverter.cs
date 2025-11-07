@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Drift.EnvironmentConfig;
+namespace Drift.Serialization;
 
 // TODO abused elsewhere. rename to EnvironmentJsonConverter to test
 public static class JsonConverter {

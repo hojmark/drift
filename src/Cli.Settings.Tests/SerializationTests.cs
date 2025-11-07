@@ -1,4 +1,5 @@
-﻿using Drift.Cli.Settings.FeatureFlags;
+﻿using System.Text.Json;
+using Drift.Cli.Settings.FeatureFlags;
 using Drift.Cli.Settings.Serialization;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -22,7 +23,7 @@ internal sealed class SerializationTests {
   }
 
   [Test]
-  public void SaveAndLoadShouldRoundtripCorrectlyTest() {
+  public void SaveAndLoadRoundtripTest() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
     var logger = NullLogger.Instance;
@@ -45,5 +46,39 @@ internal sealed class SerializationTests {
     }
 
     Directory.Delete( location.GetDirectory(), true );
+  }
+
+  [Test]
+  public async Task BadFormatLoadsDefaultsTest() {
+    // Arrange
+    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
+    Directory.CreateDirectory( location.GetDirectory() );
+    await File.WriteAllTextAsync( location.GetFile(), "garbage" );
+    var defaultSettings = new CliSettings();
+
+    // Act
+    var loadedSettings = CliSettings.Load( NullLogger.Instance, location );
+
+    // Assert
+    var defaultSettingsJson = JsonSerializer.Serialize( defaultSettings );
+    var loadedSettingsJson = JsonSerializer.Serialize( loadedSettings );
+    Assert.That( defaultSettingsJson, Is.EqualTo( loadedSettingsJson ) );
+
+    Directory.Delete( location.GetDirectory(), true );
+  }
+
+  [Test]
+  public void NoFileLoadsDefaultsTest() {
+    // Arrange
+    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
+    var defaultSettings = new CliSettings();
+
+    // Act
+    var loadedSettings = CliSettings.Load( NullLogger.Instance, location );
+
+    // Assert
+    var defaultSettingsJson = JsonSerializer.Serialize( defaultSettings );
+    var loadedSettingsJson = JsonSerializer.Serialize( loadedSettings );
+    Assert.That( defaultSettingsJson, Is.EqualTo( loadedSettingsJson ) );
   }
 }

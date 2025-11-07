@@ -20,10 +20,6 @@ public partial class CliSettings {
     try {
       location ??= new DefaultSettingsLocationProvider();
 
-      if ( !Directory.Exists( location.GetDirectory() ) ) {
-        Directory.CreateDirectory( location.GetDirectory() );
-      }
-
       if ( !File.Exists( location.GetFile() ) ) {
         return new CliSettings();
       }

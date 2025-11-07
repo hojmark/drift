@@ -2,7 +2,7 @@ using System.CommandLine;
 using Drift.Domain;
 using Drift.EnvironmentConfig;
 using Spectre.Console;
-using Environment = Drift.Domain.Environment;
+// using Environment = Drift.Domain.Environment;
 
 namespace Drift.Cli.Commands.Preview;
 
@@ -32,16 +32,16 @@ internal class EnvCommand : Command {
     listEnvs.SetAction( _ => {
       var envConfigPath = "............ drift-env.json";
       var json = File.ReadAllText( envConfigPath );
-      var environment = JsonConverter.Deserialize<Environment>( json );
+      // var environment = JsonConverter.Deserialize<Environment>( json );
 
       // Print
       var table = new Table().ShowRowSeparators();
 
-      table.AddColumn( new TableColumn( nameof(Environment.Name) ).Centered() );
+      // table.AddColumn( new TableColumn( nameof(Environment.Name) ).Centered() );
       table.AddColumn( new TableColumn( "Agents" ).Centered() );
       // table.AddColumn( new TableColumn( "" ).Centered() );
 
-      table.AddRow(
+      /*table.AddRow(
         environment.Name + ( environment.Active ? "\u26a1 [green]Active[/]" : string.Empty ),
         string.Join( "\n", environment.Agents.Select( a =>
             a.Address + " " + ( a.Authentication.Type == AuthType.None
@@ -49,7 +49,7 @@ internal class EnvCommand : Command {
               : "\ud83d\udd12" )
           )
         )
-      );
+      );*/
 
       AnsiConsole.Write( table );
       // Ui.WriteLine("config: "+ envConfigPath,ConsoleColor.DarkGray);

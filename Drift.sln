@@ -14,9 +14,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diff", "src\Diff\Diff.cspro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUtilities", "src\TestUtilities\TestUtilities.csproj", "{5602BD77-1A57-4C5E-BFA9-15DDD14D0F54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnvironmentConfig", "src\EnvironmentConfig\EnvironmentConfig.csproj", "{66AF3505-A886-4C73-8EE9-0F14A9FF2593}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnvironmentConfig.Tests", "src\EnvironmentConfig.Tests\EnvironmentConfig.Tests.csproj", "{EAA4AD6F-9BD8-402C-8079-D81A823EC9A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serialization", "src\Serialization\Serialization.csproj", "{66AF3505-A886-4C73-8EE9-0F14A9FF2593}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{75466C1B-ED91-43E9-9B81-809B95D868EC}"
 	ProjectSection(SolutionItems) = preProject
@@ -109,10 +107,6 @@ Global
 		{66AF3505-A886-4C73-8EE9-0F14A9FF2593}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66AF3505-A886-4C73-8EE9-0F14A9FF2593}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66AF3505-A886-4C73-8EE9-0F14A9FF2593}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EAA4AD6F-9BD8-402C-8079-D81A823EC9A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EAA4AD6F-9BD8-402C-8079-D81A823EC9A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EAA4AD6F-9BD8-402C-8079-D81A823EC9A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EAA4AD6F-9BD8-402C-8079-D81A823EC9A1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{904351B1-CC53-477A-834E-7C3A120EACE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{904351B1-CC53-477A-834E-7C3A120EACE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{904351B1-CC53-477A-834E-7C3A120EACE9}.Release|Any CPU.ActiveCfg = Release|Any CPU

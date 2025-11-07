@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Spec\Spec.csproj" />
-    <ProjectReference Include="..\EnvironmentConfig\EnvironmentConfig.csproj" />
+    <ProjectReference Include="..\Serialization\Serialization.csproj" />
   </ItemGroup>
 
   <ItemGroup>

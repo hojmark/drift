@@ -49,7 +49,7 @@ internal sealed class SerializationTests {
   }
 
   [Test]
-  public async Task BadFormatLoadsDefaultsTest() {
+  public async Task BadJsonLoadsDefaultsTest() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
     Directory.CreateDirectory( location.GetDirectory() );
@@ -80,5 +80,28 @@ internal sealed class SerializationTests {
     var defaultSettingsJson = JsonSerializer.Serialize( defaultSettings );
     var loadedSettingsJson = JsonSerializer.Serialize( loadedSettings );
     Assert.That( defaultSettingsJson, Is.EqualTo( loadedSettingsJson ) );
+  }
+
+  [Test]
+  public void CannotOverwriteFileWhenNotLoadedFromIt() {
+    // Arrange
+    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
+    new CliSettings().Save( NullLogger.Instance, location );
+
+    // Act / Assert
+    Assert.Throws<InvalidOperationException>( () => new CliSettings().Save( NullLogger.Instance, location ) );
+  }
+
+  [Test]
+  public void CannotSaveWhenLoadedFromDifferentFile() {
+    // Arrange
+    ISettingsLocationProvider location1 = new TemporarySettingsLocationProvider();
+    ISettingsLocationProvider location2 = new TemporarySettingsLocationProvider();
+    new CliSettings().Save( NullLogger.Instance, location1 );
+    new CliSettings().Save( NullLogger.Instance, location2 );
+    var reloaded1 = CliSettings.Load( NullLogger.Instance, location1 );
+
+    // Act / Assert
+    Assert.Throws<InvalidOperationException>( () => reloaded1.Save( NullLogger.Instance, location2 ) );
   }
 }

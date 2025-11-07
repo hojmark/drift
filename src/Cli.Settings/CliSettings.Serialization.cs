@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Cli.Settings;
 
 public partial class CliSettings {
+  private ISettingsLocationProvider? _loadLocation;
+
   private static readonly JsonSerializerOptions SerializerOptions = new() {
     ReadCommentHandling = JsonCommentHandling.Skip,
     PropertyNameCaseInsensitive = true,
@@ -34,6 +36,8 @@ public partial class CliSettings {
         return new CliSettings();
       }
 
+      settings._loadLocation = location;
+
       return settings;
     }
     catch ( Exception e ) {
@@ -47,6 +51,15 @@ public partial class CliSettings {
 
     if ( !Directory.Exists( location.GetDirectory() ) ) {
       Directory.CreateDirectory( location.GetDirectory() );
+    }
+
+    if ( !File.Exists( location.GetFile() ) ) {
+      logger.LogInformation( "Creating new settings file at {Path}", location.GetFile() );
+    }
+    else if ( _loadLocation == null ||
+              !_loadLocation.GetFile().Equals( location.GetFile(), StringComparison.Ordinal ) // Casing matters on Linux
+            ) {
+      throw new InvalidOperationException( "Settings file exists, but was not loaded from disk" );
     }
 
     var json = JsonSerializer.Serialize( this, SerializerOptions );

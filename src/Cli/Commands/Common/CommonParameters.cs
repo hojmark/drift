@@ -39,7 +39,7 @@ internal static class CommonParameters {
 
     internal static readonly Option<OutputFormat> OutputFormat =
       new("--output", "-o") {
-        DefaultValueFactory = _ => CliSettings.Load().Appearance.OutputFormat.ToOutputFormat(),
+        DefaultValueFactory = _ => CliSettings.Load().Appearance.Output.ToOutputFormat(),
         Description = "Output format",
         Required = false,
         Arity = ArgumentArity.ExactlyOne

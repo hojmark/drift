@@ -1,3 +1,3 @@
 namespace Drift.Cli.Settings.Appearance;
 
-public record AppearanceSettings( OutputFormatSetting OutputFormat/*, ThemeSetting Theme*/ );
+public record AppearanceSettings( OutputFormatSetting Output /*, ThemeSetting Theme*/ );

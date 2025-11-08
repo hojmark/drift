@@ -71,19 +71,18 @@ internal sealed class SerializationTests {
   public void NoFileLoadsDefaultsTest() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
-    var defaultSettings = new CliSettings();
 
     // Act
     var loadedSettings = CliSettings.Load( NullLogger.Instance, location );
 
     // Assert
-    var defaultSettingsJson = JsonSerializer.Serialize( defaultSettings );
+    var defaultSettingsJson = JsonSerializer.Serialize( new CliSettings() );
     var loadedSettingsJson = JsonSerializer.Serialize( loadedSettings );
     Assert.That( defaultSettingsJson, Is.EqualTo( loadedSettingsJson ) );
   }
 
   [Test]
-  public void CannotOverwriteFileWhenNotLoadedFromIt() {
+  public void CannotOverwriteFileWhenNotLoaded() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
     new CliSettings().Save( NullLogger.Instance, location );
@@ -93,7 +92,7 @@ internal sealed class SerializationTests {
   }
 
   [Test]
-  public void CannotSaveWhenLoadedFromDifferentFile() {
+  public void CannotOverwriteWhenLoadedFromDifferentFile() {
     // Arrange
     ISettingsLocationProvider location1 = new TemporarySettingsLocationProvider();
     ISettingsLocationProvider location2 = new TemporarySettingsLocationProvider();
@@ -103,5 +102,21 @@ internal sealed class SerializationTests {
 
     // Act / Assert
     Assert.Throws<InvalidOperationException>( () => reloaded1.Save( NullLogger.Instance, location2 ) );
+  }
+
+  [Test]
+  public async Task CannotSaveWhenDefaultsWereLoadedDueToBadJson() {
+    // Arrange
+    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
+    Directory.CreateDirectory( location.GetDirectory() );
+    await File.WriteAllTextAsync( location.GetFile(), "garbage" );
+
+    // Act
+    var loadedSettings = CliSettings.Load( NullLogger.Instance, location );
+
+    // Assert
+    Assert.Throws<InvalidOperationException>( () => loadedSettings.Save( NullLogger.Instance, location ) );
+
+    Directory.Delete( location.GetDirectory(), true );
   }
 }

@@ -9,7 +9,14 @@ internal sealed class DefaultSettingsLocationProvider : ISettingsLocationProvide
     }
 
     if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
-      return Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.UserProfile ), ".config", "drift" );
+      // https://specifications.freedesktop.org/basedir-spec/latest/
+      var xdgConfigHome = Environment.GetEnvironmentVariable( "XDG_CONFIG_HOME" );
+
+      var baseDir = string.IsNullOrEmpty( xdgConfigHome )
+        ? Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.UserProfile ), ".config" )
+        : xdgConfigHome;
+
+      return Path.Combine( baseDir, "drift" );
     }
 
     throw new PlatformNotSupportedException();

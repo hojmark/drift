@@ -1,4 +1,4 @@
-namespace Drift.Cli.Settings.FeatureFlags;
+namespace Drift.Cli.Settings.V1_preview.FeatureFlags;
 
 public static class CliSettingsExtensions {
   public static bool IsFeatureEnabled( this CliSettings settings, FeatureFlag flag ) {

@@ -1,4 +1,4 @@
-namespace Drift.Cli.Settings.Appearance;
+namespace Drift.Cli.Settings.V1_preview.Appearance;
 
 public enum ThemeSetting {
   Default = 0,

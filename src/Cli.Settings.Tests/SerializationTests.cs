@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
-using Drift.Cli.Settings.FeatureFlags;
 using Drift.Cli.Settings.Serialization;
+using Drift.Cli.Settings.V1_preview;
+using Drift.Cli.Settings.V1_preview.FeatureFlags;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Drift.Cli.Settings.Tests;

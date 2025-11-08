@@ -2,7 +2,7 @@ using Json.Schema.Generation;
 using Json.Schema.Generation.Generators;
 using Json.Schema.Generation.Intents;
 
-namespace Drift.Spec.Schema.Generation;
+namespace Drift.Common.Schemas;
 
 public class LowerCaseEnumGenerator : ISchemaGenerator {
   public bool Handles( Type type ) => type.IsEnum;

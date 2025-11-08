@@ -69,6 +69,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Settings", "src\Cli.Set
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Settings.Tests", "src\Cli.Settings.Tests\Cli.Settings.Tests.csproj", "{130363FC-478E-472A-978B-731D39E3E264}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Settings.SchemaGenerator.Cli", "src\Cli.Settings.SchemaGenerator.Cli\Cli.Settings.SchemaGenerator.Cli.csproj", "{B75C5C0C-A5A2-419E-B0DD-342A44B1B48D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Schemas", "src\Common.Schemas\Common.Schemas.csproj", "{BAC0F9AF-CAE2-43FB-AF47-B9AC7B62544B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +169,14 @@ Global
 		{130363FC-478E-472A-978B-731D39E3E264}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{130363FC-478E-472A-978B-731D39E3E264}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{130363FC-478E-472A-978B-731D39E3E264}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B75C5C0C-A5A2-419E-B0DD-342A44B1B48D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B75C5C0C-A5A2-419E-B0DD-342A44B1B48D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B75C5C0C-A5A2-419E-B0DD-342A44B1B48D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B75C5C0C-A5A2-419E-B0DD-342A44B1B48D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAC0F9AF-CAE2-43FB-AF47-B9AC7B62544B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAC0F9AF-CAE2-43FB-AF47-B9AC7B62544B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAC0F9AF-CAE2-43FB-AF47-B9AC7B62544B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAC0F9AF-CAE2-43FB-AF47-B9AC7B62544B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8523E9E0-F412-41B7-B361-ADE639FFAF24} = {C0698EF0-61C8-403E-8E93-1F1D34C5B910}

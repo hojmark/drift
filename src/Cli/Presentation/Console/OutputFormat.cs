@@ -1,4 +1,4 @@
-using Drift.Cli.Settings.Appearance;
+using Drift.Cli.Settings.V1_preview.Appearance;
 
 namespace Drift.Cli.Presentation.Console;
 

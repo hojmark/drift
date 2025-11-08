@@ -1,7 +1,7 @@
-using Drift.Cli.Settings.Appearance;
-using Drift.Cli.Settings.FeatureFlags;
+using Drift.Cli.Settings.V1_preview.Appearance;
+using Drift.Cli.Settings.V1_preview.FeatureFlags;
 
-namespace Drift.Cli.Settings;
+namespace Drift.Cli.Settings.V1_preview;
 
 public partial class CliSettings {
   public List<FeatureFlagSetting> Features {

@@ -4,9 +4,9 @@ using Drift.Common.Schemas;
 using Json.Schema;
 using Json.Schema.Generation;
 
-namespace Drift.Spec.Schema.Generation;
+namespace Drift.Cli.Settings.SchemaGenerator.Cli;
 
-public static class SchemaGenerator {
+internal static class SchemaGenerator {
   private static readonly JsonSerializerOptions SerializerOptions = new() {
     WriteIndented = true,
     PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
@@ -17,14 +17,14 @@ public static class SchemaGenerator {
     PropertyNameResolver = PropertyNameResolvers.LowerSnakeCase, Generators = { new LowerCaseEnumGenerator() }
   };
 
-  public static string Generate( SpecVersion version ) {
+  public static string Generate( SettingsVersion version ) {
     return version switch {
-      SpecVersion.V1_preview => Generate<Dtos.V1_preview.DriftSpec>( version ),
-      _ => throw new ArgumentOutOfRangeException( nameof(version), version, "Unknown spec version" )
+      SettingsVersion.V1_preview => Generate<V1_preview.CliSettings>( version ),
+      _ => throw new ArgumentOutOfRangeException( nameof(version), version, "Unknown settings version" )
     };
   }
 
-  private static string Generate<T>( SpecVersion version ) {
+  private static string Generate<T>( SettingsVersion version ) {
     var schema = new JsonSchemaBuilder()
       // Justification: this never needs to be dynamic
 #pragma warning disable S1075

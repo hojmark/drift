@@ -1,10 +1,9 @@
-﻿using Drift.Spec.Schema;
-using Drift.Spec.Schema.Generation;
-using SpecVersion = Drift.Spec.Schema.SpecVersion;
+﻿using Drift.Cli.Settings;
+using Drift.Cli.Settings.SchemaGenerator.Cli;
 
-const SpecVersion version = SpecVersion.V1_preview;
+const SettingsVersion version = SettingsVersion.V1_preview;
 
-Console.Write( "Generating spec schema for version " );
+Console.Write( "Generating settings schema for version " );
 Console.ForegroundColor = ConsoleColor.Cyan;
 Console.WriteLine( version );
 
@@ -19,11 +18,11 @@ try {
   var serialized = SchemaGenerator.Generate( version );
   await File.WriteAllTextAsync( filePath, serialized );
   Console.ForegroundColor = ConsoleColor.Green;
-  Console.WriteLine( $"✔ Generated spec schema for version {version} ({filePath})" );
+  Console.WriteLine( $"✔ Generated settings schema for version {version} ({filePath})" );
   Environment.Exit( 0 );
 }
 catch ( Exception ex ) {
   Console.ForegroundColor = ConsoleColor.Red;
-  Console.WriteLine( $"✗ Failed to generate spec schema for version {version}: {ex.Message}" );
+  Console.WriteLine( $"✗ Failed to generate settings schema for version {version}: {ex.Message}" );
   Environment.Exit( 1 );
 }

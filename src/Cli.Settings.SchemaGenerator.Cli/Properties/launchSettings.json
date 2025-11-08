@@ -2,7 +2,7 @@
   "profiles": {
     "Generate": {
       "commandName": "Project",
-      "commandLineArgs": "../../../../Spec/embedded_resources/schemas/",
+      "commandLineArgs": "../../../../Cli.Settings/embedded_resources/schemas/",
       "dotnetRunMessages": true,
       "environmentVariables": {}
     }

@@ -1,10 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Drift.Cli.Settings.FeatureFlags;
 using Drift.Cli.Settings.Serialization;
+using Drift.Cli.Settings.V1_preview.FeatureFlags;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Cli.Settings;
+namespace Drift.Cli.Settings.V1_preview;
 
 public partial class CliSettings {
   private ISettingsLocationProvider? _loadLocation;

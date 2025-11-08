@@ -7,7 +7,7 @@ namespace Drift.Cli.Settings.Tests;
 
 internal sealed class SerializationTests {
   [Test]
-  public async Task DefaultSettingsContentsTest() {
+  public async Task DefaultContents() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
 
@@ -23,7 +23,7 @@ internal sealed class SerializationTests {
   }
 
   [Test]
-  public void SaveAndLoadRoundtripTest() {
+  public void SaveAndLoadRoundtrip() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
     var logger = NullLogger.Instance;
@@ -49,7 +49,7 @@ internal sealed class SerializationTests {
   }
 
   [Test]
-  public async Task BadJsonLoadsDefaultsTest() {
+  public async Task LoadsDefaultsWhenBadJson() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
     Directory.CreateDirectory( location.GetDirectory() );
@@ -68,7 +68,7 @@ internal sealed class SerializationTests {
   }
 
   [Test]
-  public void NoFileLoadsDefaultsTest() {
+  public void LoadsDefaultsWhenNoFile() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
 
@@ -82,13 +82,15 @@ internal sealed class SerializationTests {
   }
 
   [Test]
-  public void CannotOverwriteFileWhenNotLoaded() {
+  public void CannotOverwriteWhenNotLoaded() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
     new CliSettings().Save( NullLogger.Instance, location );
 
     // Act / Assert
     Assert.Throws<InvalidOperationException>( () => new CliSettings().Save( NullLogger.Instance, location ) );
+    
+    Directory.Delete( location.GetDirectory(), true );
   }
 
   [Test]
@@ -102,10 +104,13 @@ internal sealed class SerializationTests {
 
     // Act / Assert
     Assert.Throws<InvalidOperationException>( () => reloaded1.Save( NullLogger.Instance, location2 ) );
+    
+    Directory.Delete( location1.GetDirectory(), true );
+    Directory.Delete( location2.GetDirectory(), true );
   }
 
   [Test]
-  public async Task CannotSaveWhenDefaultsWereLoadedDueToBadJson() {
+  public async Task CannotOverwriteWhenDefaultsWereLoadedDueToBadJson() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
     Directory.CreateDirectory( location.GetDirectory() );

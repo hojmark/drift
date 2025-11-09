@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Diff\Diff.csproj" />
-    <ProjectReference Include="..\EnvironmentConfig\EnvironmentConfig.csproj" />
+    <ProjectReference Include="..\Serialization\Serialization.csproj" />
     <ProjectReference Include="..\Spec\Spec.csproj" />
     <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>

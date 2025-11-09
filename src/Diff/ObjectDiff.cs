@@ -1,4 +1,4 @@
-﻿using Drift.EnvironmentConfig;
+﻿using Drift.Serialization;
 
 namespace Drift.Diff;
 

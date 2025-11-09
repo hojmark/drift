@@ -5,8 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EnvironmentConfig\EnvironmentConfig.csproj" />
-    <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
+    <ProjectReference Include="..\Cli.Settings\Cli.Settings.csproj" />
   </ItemGroup>
 
   <ItemGroup>

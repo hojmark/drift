@@ -1,9 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Drift.Common.Schemas;
 using Json.Schema;
 using Json.Schema.Generation;
 
-namespace Drift.Spec.Schema.Generation;
+namespace Drift.Spec.Schema;
 
 public static class SchemaGenerator {
   private static readonly JsonSerializerOptions SerializerOptions = new() {

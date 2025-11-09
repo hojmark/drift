@@ -86,19 +86,27 @@ docker run -it --rm --network host docker.io/hojmark/drift scan -i
 
 Use `--help` on each command to explore functionality.
 
-There’s a JSON Schema available for the network spec file.
-To enable auto-completion and validation in your editor, add the following line at the top of your spec file:
+A user settings file can be created at `~/.config/drift/settings.json`.
 
-```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json
+JSON Schemas are available to enable editor auto-completion and validation:
 
-network:
+- [**Network spec schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json)  
+  Add the `yaml-language-server` comment at the top of your spec file:
+  ```yaml
+  # yaml-language-server: $schema=https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json
+  network:
   ...
-```
+  ```
+- [**User settings schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Cli.Settings/embedded_resources/schemas/drift-settings-v1-preview.schema.json)  
+  Add the `$schema` property at the top of your settings file:
+  ```json
+  {
+    "$schema": "https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Cli.Settings/embedded_resources/schemas/drift-settings-v1-preview.schema.json",
+    ...
+  }
+  ```
 
-There’s no official documentation site yet.
-
-If you run into trouble, feel free to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a).
+There’s no official documentation site yet — if you run into trouble, feel free to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a).
 
 ### ▸ What can be automatically discovered?
 

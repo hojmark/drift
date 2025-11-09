@@ -9,7 +9,7 @@ using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
 using Drift.TestUtilities;
-using JsonConverter = Drift.EnvironmentConfig.JsonConverter;
+using JsonConverter = Drift.Serialization.JsonConverter;
 
 namespace Drift.Diff.Tests;
 

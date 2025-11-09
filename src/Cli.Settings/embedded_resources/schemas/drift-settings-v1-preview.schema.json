@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hojmark.github.io/drift/schemas/drift-settings-v1-preview.schema.json",
+  "type": "object",
+  "properties": {
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "appearance": {
+      "type": "object",
+      "properties": {
+        "output": {
+          "enum": [
+            "default",
+            "normal",
+            "log"
+          ]
+        }
+      }
+    }
+  }
+}

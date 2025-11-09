@@ -9,12 +9,16 @@ namespace Drift.Cli.Settings.SchemaGenerator.Cli;
 internal static class SchemaGenerator {
   private static readonly JsonSerializerOptions SerializerOptions = new() {
     WriteIndented = true,
-    PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-    Converters = { new JsonStringEnumConverter( JsonNamingPolicy.SnakeCaseLower ) }
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    Converters = { new JsonStringEnumConverter( JsonNamingPolicy.CamelCase ) }
   };
 
   private static readonly SchemaGeneratorConfiguration SchemaConfiguration = new() {
-    PropertyNameResolver = PropertyNameResolvers.LowerSnakeCase, Generators = { new LowerCaseEnumGenerator() }
+    PropertyNameResolver = PropertyNameResolvers.CamelCase,
+    Generators = {
+      // TODO Use camelcase?
+      new LowerCaseEnumGenerator()
+    }
   };
 
   public static string Generate( SettingsVersion version ) {

@@ -22,7 +22,10 @@ public partial class CliSettings {
     try {
       location ??= new DefaultSettingsLocationProvider();
 
+      logger?.LogTrace( "Loading settings from {Path}", location.GetFile() );
+
       if ( !File.Exists( location.GetFile() ) ) {
+        logger?.LogInformation( "Settings file not found. Using default." );
         return new CliSettings();
       }
 
@@ -32,7 +35,7 @@ public partial class CliSettings {
       logger?.LogTrace( "Loaded settings: {Settings}", settings );
 
       if ( settings == null ) {
-        logger?.LogWarning( "Deserialized settings is null, using default" );
+        logger?.LogWarning( "Deserialized settings is null. Using default." );
         return new CliSettings();
       }
 
@@ -49,6 +52,8 @@ public partial class CliSettings {
   public void Save( ILogger logger, ISettingsLocationProvider? location = null ) {
     location ??= new DefaultSettingsLocationProvider();
 
+    logger.LogTrace( "Saving settings to {Path}", location.GetFile() );
+
     if ( !Directory.Exists( location.GetDirectory() ) ) {
       Directory.CreateDirectory( location.GetDirectory() );
     }
@@ -59,7 +64,7 @@ public partial class CliSettings {
     else if ( _loadLocation == null ||
               !_loadLocation.GetFile().Equals( location.GetFile(), StringComparison.Ordinal ) // Casing matters on Linux
             ) {
-      throw new InvalidOperationException( "Settings file exists, but was not loaded from disk" );
+      throw new InvalidOperationException( "Settings file exists, but was not loaded." );
     }
 
     var json = JsonSerializer.Serialize( this, SerializerOptions );

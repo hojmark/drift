@@ -101,7 +101,7 @@ JSON Schemas are available to enable editor auto-completion and validation. Usag
   Add the `$schema` property at the top of your settings file:
   ```json
   {
-    "$schema": "https://raw.githubusercontent.com/hojmark/drift/refs/heads/feat/settings/src/Cli.Settings/embedded_resources/schemas/drift-settings-v1-preview.schema.json",
+    "$schema": "https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Cli.Settings/embedded_resources/schemas/drift-settings-v1-preview.schema.json",
     ...
   }
   ```

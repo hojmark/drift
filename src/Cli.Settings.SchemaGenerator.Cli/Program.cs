@@ -1,5 +1,4 @@
-﻿using Drift.Cli.Settings;
-using Drift.Cli.Settings.SchemaGenerator.Cli;
+﻿using Drift.Cli.Settings.Schema;
 
 const SettingsVersion version = SettingsVersion.V1_preview;
 

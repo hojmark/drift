@@ -6,11 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cli.Settings\Cli.Settings.csproj" />
-    <ProjectReference Include="..\Common.Schemas\Common.Schemas.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="JsonSchema.Net.Generation" />
   </ItemGroup>
 
 </Project>

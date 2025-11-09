@@ -1,5 +1,4 @@
 ﻿using Drift.Spec.Schema;
-using Drift.Spec.Schema.Generation;
 using SpecVersion = Drift.Spec.Schema.SpecVersion;
 
 const SpecVersion version = SpecVersion.V1_preview;

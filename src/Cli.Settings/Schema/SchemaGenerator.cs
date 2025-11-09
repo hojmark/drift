@@ -4,9 +4,9 @@ using Drift.Common.Schemas;
 using Json.Schema;
 using Json.Schema.Generation;
 
-namespace Drift.Cli.Settings.SchemaGenerator.Cli;
+namespace Drift.Cli.Settings.Schema;
 
-internal static class SchemaGenerator {
+public static class SchemaGenerator {
   private static readonly JsonSerializerOptions SerializerOptions = new() {
     WriteIndented = true,
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

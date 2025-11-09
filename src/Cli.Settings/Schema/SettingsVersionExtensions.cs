@@ -1,4 +1,4 @@
-namespace Drift.Cli.Settings;
+namespace Drift.Cli.Settings.Schema;
 
 public static class SettingsVersionExtensions {
   public static string ToJsonSchemaFileName( this SettingsVersion version ) {

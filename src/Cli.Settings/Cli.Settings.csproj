@@ -1,11 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <InternalsVisibleTo Include="Drift.Cli.Settings.Tests" />
+    <EmbeddedResource Include="embedded_resources\**\*" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="embedded_resources\schemas\" />
+    <ProjectReference Include="..\Common.Schemas\Common.Schemas.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JsonSchema.Net.Generation" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
 </Project>

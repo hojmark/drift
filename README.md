@@ -88,7 +88,7 @@ Use `--help` on each command to explore functionality.
 
 A user settings file can be created at `~/.config/drift/settings.json`.
 
-JSON Schemas are available to enable editor auto-completion and validation. Usage:
+JSON Schemas are available to enable editor auto-completion and validation:
 
 - [**Network spec schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json)  
   Add this line at the top of your spec file:

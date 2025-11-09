@@ -19,6 +19,7 @@
     <PackageReference Include="NUnit.Analyzers" />
     <PackageReference Include="NUnit3TestAdapter" />
     <PackageReference Include="Semver" />
+  <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Testcontainers" />
     <PackageReference Include="Verify.NUnit" />
     <PackageReference Include="IPNetwork2" />

@@ -5,6 +5,7 @@
     <PackageReference Include="Semver" />
     <PackageReference Include="Nuke.Common" />
     <PackageReference Include="Nuke.Tooling" />
+  <PackageReference Include="Serilog.Sinks.Console" />
   </ItemGroup>
 
 </Project>

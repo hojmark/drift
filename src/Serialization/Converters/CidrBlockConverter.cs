@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Drift.Domain;
 
-namespace Drift.EnvironmentConfig.Converters;
+namespace Drift.Serialization.Converters;
 
 public sealed class CidrBlockConverter : JsonConverter<CidrBlock> {
   public override CidrBlock Read(

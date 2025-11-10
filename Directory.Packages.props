@@ -18,12 +18,12 @@
     <PackageVersion Include="Nuke.Common" Version="9.0.4" />
     <PackageVersion Include="Nuke.Tooling" Version="9.0.4" />
     <PackageVersion Include="NUnit" Version="4.4.0" />
-    <PackageVersion Include="NUnit.Analyzers" Version="4.10.0" />
+    <PackageVersion Include="NUnit.Analyzers" Version="4.11.2" />
     <PackageVersion Include="NUnit3TestAdapter" Version="5.2.0" />
     <PackageVersion Include="Octokit" Version="14.0.0" />
     <PackageVersion Include="Semver" Version="3.0.0" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.2" />
-    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="Serilog.Sinks.TextWriter" Version="3.0.0" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.15.0.120848" />
@@ -34,9 +34,9 @@
     <PackageVersion Include="System.Threading.RateLimiting" Version="9.0.10" />
     <PackageVersion Include="Testcontainers" Version="4.8.1" />
     <PackageVersion Include="TngTech.ArchUnitNET.NUnit" Version="0.12.3" />
-    <PackageVersion Include="TUnit" Version="0.80.0" />
+    <PackageVersion Include="TUnit" Version="1.0.48" />
     <PackageVersion Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="16.3.0" />
-    <PackageVersion Include="Verify.NUnit" Version="31.1.0" />
+    <PackageVersion Include="Verify.NUnit" Version="31.4.3" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 </Project>

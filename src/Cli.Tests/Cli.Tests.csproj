@@ -16,7 +16,7 @@
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit.Analyzers" />
     <PackageReference Include="NUnit3TestAdapter" />
-  <PackageReference Include="Spectre.Console.Cli" VersionOverride="0.53.0" />
+    <PackageReference Include="Spectre.Console.Cli" />
     <PackageReference Include="Verify.NUnit" />
     <PackageReference Include="IPNetwork2" />
   </ItemGroup>

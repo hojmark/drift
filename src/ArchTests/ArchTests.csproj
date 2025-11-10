@@ -21,10 +21,10 @@
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit.Analyzers" />
     <PackageReference Include="NUnit3TestAdapter" />
-  <PackageReference Include="Spectre.Console.Cli" VersionOverride="0.53.0" />
-  <PackageReference Include="Testcontainers" VersionOverride="4.8.1" />
+    <PackageReference Include="Spectre.Console.Cli" />
+    <PackageReference Include="Testcontainers" />
     <PackageReference Include="TngTech.ArchUnitNET.NUnit" />
-  <PackageReference Include="Verify.NUnit" VersionOverride="31.1.0" />
+    <PackageReference Include="Verify.NUnit" />
   </ItemGroup>
 
 </Project>

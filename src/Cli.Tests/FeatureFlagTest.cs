@@ -19,16 +19,18 @@ internal sealed class FeatureFlagTest {
   private static readonly ISettingsLocationProvider SettingsLocationProvider = new TemporarySettingsLocationProvider();
 
   [Test]
-  public async Task SettingsControlFlag( [Values( false, true )] bool featureEnabled ) {
+  public async Task SettingsControlFlag( [Values( false, true, null )] bool? featureEnabled ) {
     // Arrange
     if ( Directory.Exists( SettingsLocationProvider.GetDirectory() ) ) {
       Directory.Delete( SettingsLocationProvider.GetDirectory(), true );
     }
 
-    new CliSettings { Features = [new FeatureFlagSetting( MyFeature, featureEnabled )] }.Save(
-      logger: NullLogger.Instance,
-      location: SettingsLocationProvider
-    );
+    var settings = new CliSettings();
+    if ( featureEnabled != null ) {
+      settings.Features = [new FeatureFlagSetting( MyFeature, featureEnabled.Value )];
+    }
+
+    settings.Save( logger: NullLogger.Instance, location: SettingsLocationProvider );
 
     RootCommandFactory.CommandRegistration[] customCommands = [
       new(typeof(DummyTestCommandHandler), sp => new DummyTestCommand( sp ))
@@ -40,10 +42,12 @@ internal sealed class FeatureFlagTest {
     // Assert
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( result.ExitCode, Is.EqualTo( DummyCommandExitCode ) );
-      var expectedOutput = featureEnabled ? "Feature is enabled" : "Feature is disabled";
+      var expectedOutput = featureEnabled == true ? "Feature is enabled" : "Feature is disabled";
       Assert.That( result.Output.ToString(), Is.EqualTo( expectedOutput ) );
       Assert.That( result.Error.ToString(), Is.Empty );
     }
+
+    Console.WriteLine( result.Output.ToString() );
   }
 
   private sealed class DummyTestCommand( IServiceProvider provider )

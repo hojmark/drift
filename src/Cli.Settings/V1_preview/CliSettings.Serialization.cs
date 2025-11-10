@@ -64,7 +64,9 @@ public partial class CliSettings {
     else if ( _loadLocation == null ||
               !_loadLocation.GetFile().Equals( location.GetFile(), StringComparison.Ordinal ) // Casing matters on Linux
             ) {
-      throw new InvalidOperationException( "Settings file exists, but was not loaded." );
+      throw new InvalidOperationException(
+        "Settings file exists, but the current settings instance was not loaded from that file. Save operation aborted to prevent overwrite."
+      );
     }
 
     var json = JsonSerializer.Serialize( this, SerializerOptions );

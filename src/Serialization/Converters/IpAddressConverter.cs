@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Drift.EnvironmentConfig.Converters;
+namespace Drift.Serialization.Converters;
 
 public sealed class IpAddressConverter : JsonConverter<System.Net.IPAddress> {
   public override System.Net.IPAddress Read(

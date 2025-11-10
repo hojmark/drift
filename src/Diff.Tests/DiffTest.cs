@@ -6,7 +6,7 @@ using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
-using Drift.EnvironmentConfig.Converters;
+using Drift.Serialization.Converters;
 using Drift.TestUtilities;
 using JsonConverter = Drift.Serialization.JsonConverter;
 

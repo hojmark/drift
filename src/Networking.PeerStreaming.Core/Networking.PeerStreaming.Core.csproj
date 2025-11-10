@@ -8,7 +8,6 @@
     <ProjectReference Include="..\Domain\Domain.csproj" />
     <ProjectReference Include="..\Networking.PeerStreaming.Core.Abstractions\Networking.PeerStreaming.Core.Abstractions.csproj" />
     <ProjectReference Include="..\Networking.PeerStreaming.Grpc\Networking.PeerStreaming.Grpc.csproj" />
-    <ProjectReference Include="..\EnvironmentConfig\EnvironmentConfig.csproj" />
     <ProjectReference Include="..\Serialization\Serialization.csproj" />
   </ItemGroup>
 

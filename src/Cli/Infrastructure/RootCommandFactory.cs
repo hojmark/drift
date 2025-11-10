@@ -1,6 +1,9 @@
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.Runtime.InteropServices;
+using Drift.Agent.PeerProtocol;
+using Drift.Cli.Commands.Agent;
+using Drift.Cli.Commands.Agent.Subcommands.Start;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Help;
 using Drift.Cli.Commands.Init;
@@ -13,11 +16,12 @@ using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
 using Drift.Domain.ExecutionEnvironment;
 using Drift.Domain.Scan;
+using Drift.Networking.Clustering;
+using Drift.Networking.PeerStreaming.Client;
+using Drift.Networking.PeerStreaming.Core;
 using Drift.Scanning;
 using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Infrastructure;
 
@@ -54,6 +58,15 @@ internal static class RootCommandFactory {
     ConfigureSpecProvider( services );
     ConfigureSubnetProvider( services );
     ConfigureNetworkScanner( services );
+    ConfigureAgentCluster( services );
+  }
+
+  private static void ConfigureAgentCluster( IServiceCollection services ) {
+    services.AddPeerStreamingCore( new PeerStreamingOptions {
+      MessageAssembly = typeof(PeerProtocolAssemblyMarker).Assembly
+    } );
+    services.AddPeerStreamingClient();
+    services.AddClustering();
   }
 
   private static void ConfigureExecutionEnvironment( IServiceCollection services ) {
@@ -64,7 +77,10 @@ internal static class RootCommandFactory {
     // TODO 'from' or 'against'?
     var rootCommand =
       new RootCommand( $"{Chars.SatelliteAntenna} Drift CLI — monitor network drift against your declared state" ) {
-        new InitCommand( provider ), new ScanCommand( provider ), new LintCommand( provider )
+        new InitCommand( provider ),
+        new ScanCommand( provider ),
+        new LintCommand( provider ),
+        new AgentCommand( provider )
       };
 
     rootCommand.TreatUnmatchedTokensAsErrors = true;
@@ -83,6 +99,7 @@ internal static class RootCommandFactory {
       var factory = sp.GetRequiredService<IOutputManagerFactory>();
       return factory.Create( parseResult, plainConsole );
     } );
+    // Note: since ILogger is scoped, singletons cannot access logging via DI
     services.AddScoped<ILogger>( sp => sp.GetRequiredService<IOutputManager>().GetLogger() );
   }
 
@@ -90,7 +107,7 @@ internal static class RootCommandFactory {
     services.AddScoped<ISpecFileProvider, FileSystemSpecProvider>();
   }
 
-  private static void ConfigureSubnetProvider( IServiceCollection services ) {
+  public static void ConfigureSubnetProvider( IServiceCollection services ) {
     services.AddScoped<IInterfaceSubnetProvider, PhysicalInterfaceSubnetProvider>();
   }
 
@@ -98,6 +115,7 @@ internal static class RootCommandFactory {
     services.AddScoped<InitCommandHandler>();
     services.AddScoped<ScanCommandHandler>();
     services.AddScoped<LintCommandHandler>();
+    services.AddScoped<AgentStartCommandHandler>();
   }
 
   private static void ConfigureDynamicCommands( IServiceCollection services, CommandRegistration[] commands ) {

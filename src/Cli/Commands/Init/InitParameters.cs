@@ -1,9 +1,9 @@
 using System.CommandLine;
-using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Common.Parameters;
 
 namespace Drift.Cli.Commands.Init;
 
-internal record InitParameters : DefaultParameters {
+internal record InitParameters : SpecParameters {
   internal bool? Discover {
     get;
   }

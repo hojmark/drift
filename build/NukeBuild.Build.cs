@@ -33,6 +33,7 @@ internal partial class NukeBuild {
           .SetVersionProperties( version )
           .SetBinaryLog( BinaryBuildLogName )
           .EnableNoLogo()
+          .SetRuntime( DotNetRuntimeIdentifier.linux_x64 )
           .EnableNoRestore()
         );
       }

@@ -38,7 +38,7 @@ sealed partial class NukeBuild {
             .SetProcessAdditionalArguments( $"-bl:{BinaryPublishLogName}" )
             .EnableNoLogo()
             .EnableNoRestore()
-            .EnableNoBuild()
+            //.EnableNoBuild()
           );
         }
       }

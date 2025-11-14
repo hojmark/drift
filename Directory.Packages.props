@@ -2,7 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
-    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <!--CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled-->
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Humanizer" Version="2.14.1" />

@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <PublishAot>true</PublishAot>
     <PublishTrimmed>true</PublishTrimmed>
-    <PublishSelfContained>true</PublishSelfContained> <!-- See https://github.com/dotnet/runtime/issues/121669#issuecomment-3537030500 -->
+    <SelfContained>true</SelfContained> <!-- .NET 10.0.100 workaround. See https://github.com/dotnet/runtime/issues/121669#issuecomment-3537030500 -->
     <InvariantGlobalization>true</InvariantGlobalization>
     <AssemblyName>drift</AssemblyName>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>

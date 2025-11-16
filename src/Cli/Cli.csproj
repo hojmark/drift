@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>linux-x64;linux-musl-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
     <PublishAot>true</PublishAot>
     <PublishTrimmed>true</PublishTrimmed>

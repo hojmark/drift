@@ -7,15 +7,15 @@ namespace Drift.Cli.Commands.Scan.Interactive.Ui;
 
 internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
   private readonly Lock _subnetLock = new();
-  private List<Subnet> _subnets = [];
   private uint _scrollOffset;
 
   public List<Subnet> Subnets {
+    private get;
     set {
       lock ( _subnetLock ) {
-        _subnets = value;
-        if ( _subnets.FirstOrDefault( s => s.Cidr == Selected ) == null ) {
-          Selected = _subnets.FirstOrDefault()?.Cidr;
+        field = value;
+        if ( field.FirstOrDefault( s => s.Cidr == Selected ) == null ) {
+          Selected = field.FirstOrDefault()?.Cidr;
         }
 
         if ( MaxScrollOffset == 0 ) {
@@ -23,19 +23,19 @@ internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
         }
       }
     }
-  }
+  } = [];
 
   public string DebugData {
     get {
-      var selectedCidr = _subnets.FirstOrDefault( s => s.Cidr == Selected );
+      var selectedCidr = Subnets.FirstOrDefault( s => s.Cidr == Selected );
       var selectedIndex = -1;
 
       if ( selectedCidr != null ) {
-        selectedIndex = _subnets.IndexOf( selectedCidr );
+        selectedIndex = Subnets.IndexOf( selectedCidr );
       }
 
       return
-        $"{nameof(ScrollOffset)}: {ScrollOffset}, {nameof(MaxScrollOffset)}: {MaxScrollOffset}, TotalHeight: {_subnets.GetHeight()}, ViewportHeight: {height()}, SelectedIndex: {selectedIndex}";
+        $"{nameof(ScrollOffset)}: {ScrollOffset}, {nameof(MaxScrollOffset)}: {MaxScrollOffset}, TotalHeight: {Subnets.GetHeight()}, ViewportHeight: {height()}, SelectedIndex: {selectedIndex}";
     }
   }
 
@@ -50,7 +50,7 @@ internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
     }
   }
 
-  private uint MaxScrollOffset => (uint) Math.Max( 0, _subnets.GetHeight() - height() );
+  private uint MaxScrollOffset => (uint) Math.Max( 0, Subnets.GetHeight() - height() );
 
   private CidrBlock? Selected {
     get;
@@ -59,7 +59,7 @@ internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
 
   public void ToggleSelected() {
     lock ( _subnetLock ) {
-      var subnet = _subnets.FirstOrDefault( s => s.Cidr == Selected );
+      var subnet = Subnets.FirstOrDefault( s => s.Cidr == Selected );
       if ( subnet != null ) {
         subnet.IsExpanded = !subnet.IsExpanded;
       }
@@ -68,39 +68,39 @@ internal class SubnetView( Func<uint> height ) : IEnumerable<Tree> {
 
   public void SelectNext() {
     lock ( _subnetLock ) {
-      var subnet = _subnets.FirstOrDefault( s => s.Cidr == Selected );
+      var subnet = Subnets.FirstOrDefault( s => s.Cidr == Selected );
       if ( subnet == null ) {
         return;
       }
 
-      var index = _subnets.IndexOf( subnet );
+      var index = Subnets.IndexOf( subnet );
       var nextIndex = index + 1;
 
-      if ( nextIndex < _subnets.Count ) {
-        Selected = _subnets[nextIndex].Cidr;
+      if ( nextIndex < Subnets.Count ) {
+        Selected = Subnets[nextIndex].Cidr;
       }
     }
   }
 
   public void SelectPrevious() {
     lock ( _subnetLock ) {
-      var subnet = _subnets.FirstOrDefault( s => s.Cidr == Selected );
+      var subnet = Subnets.FirstOrDefault( s => s.Cidr == Selected );
       if ( subnet == null ) {
         return;
       }
 
-      var index = _subnets.IndexOf( subnet );
+      var index = Subnets.IndexOf( subnet );
       var previousIndex = index - 1;
 
       if ( previousIndex >= 0 ) {
-        Selected = _subnets[previousIndex].Cidr;
+        Selected = Subnets[previousIndex].Cidr;
       }
     }
   }
 
   public IEnumerator<Tree> GetEnumerator() {
     lock ( _subnetLock ) {
-      var snapshot = _subnets.ToList();
+      var snapshot = Subnets.ToList();
       // TODO Hack; implement IRenderable to provide the right size. Note that other layout changes may make _scrollOffset invalid.
       var offset = Math.Min( _scrollOffset, MaxScrollOffset );
       return TreeRenderer.Render( snapshot, Selected, height(), offset ).GetEnumerator();

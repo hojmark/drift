@@ -1,6 +1,14 @@
 namespace Drift.Build.Utilities.ContainerImage;
 
-public abstract record ContainerRegistry;
+public abstract record ContainerRegistry {
+  protected abstract string Host {
+    get;
+  }
+
+  public sealed override string ToString() {
+    return Host;
+  }
+}
 
 public sealed record DockerIoRegistry : ContainerRegistry {
   public static readonly DockerIoRegistry Instance = new();
@@ -8,9 +16,7 @@ public sealed record DockerIoRegistry : ContainerRegistry {
   private DockerIoRegistry() {
   }
 
-  public override string ToString() {
-    return "docker.io";
-  }
+  protected override string Host => "docker.io";
 }
 
 public sealed record LocalhostRegistry : ContainerRegistry {
@@ -19,7 +25,5 @@ public sealed record LocalhostRegistry : ContainerRegistry {
   private LocalhostRegistry() {
   }
 
-  public override string ToString() {
-    return "localhost:5000";
-  }
+  protected override string Host => "localhost:5000";
 }

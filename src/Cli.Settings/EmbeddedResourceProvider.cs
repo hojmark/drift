@@ -18,9 +18,11 @@ internal static class EmbeddedResourceProvider {
              throw new Exception( "Could not get stream for resource" );
     }
 
-    LogAvailableResources();
+    var names = Assembly.GetManifestResourceNames();
+    var available = names.Length == 0 ? "(none)" : string.Join( ", ", names );
 
-    throw new Exception( "Resource does not exist: " + path + " (resolved assembly path: " + resolvedPath + ")" );
+    throw new Exception( "Resource does not exist: " + path + " (resolved assembly path: " + resolvedPath +
+                         ")\nAvailable resources: " + available );
   }
 
   internal static string ReadText( this Stream stream, Encoding? encoding = null ) {
@@ -40,23 +42,5 @@ internal static class EmbeddedResourceProvider {
                                throw new Exception( "Could not determine root namespace" );
 
     return $"{projectRootNamespace}.{ResourcePrefix}.{path.Replace( "/", "." )}";
-  }
-
-  private static void LogAvailableResources() {
-    var names = Assembly.GetManifestResourceNames();
-
-    // Justification: fallback error scenario
-#pragma warning disable RS0030
-    Console.Error.WriteLine( "Available resources:" );
-
-    if ( names.Length == 0 ) {
-      Console.Error.WriteLine( "(none)" );
-      return;
-    }
-
-    foreach ( var name in names ) {
-      Console.Error.WriteLine( name );
-    }
-#pragma warning restore RS0030
   }
 }

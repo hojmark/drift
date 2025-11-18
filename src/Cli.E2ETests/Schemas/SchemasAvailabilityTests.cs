@@ -28,13 +28,12 @@ internal sealed class SchemasAvailabilityTests {
         }
     """
   )]
-  // TODO re-enable when schema is available on GitHub
-  /*[TestCase(
+  [TestCase(
     "https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Cli.Settings/embedded_resources/schemas/drift-settings-v1-preview.schema.json",
     """
     "$id": "https://hojmark.github.io/drift/schemas/drift-settings-v1-preview.schema.json",
     """
-  )]*/
+  )]
   public async Task SchemaIsAvailableAtDocumentedUrl( string documentedUrl, string expectedPartialContent ) {
     // Arrange
     var httpClient = new HttpClient();
@@ -44,7 +43,7 @@ internal sealed class SchemasAvailabilityTests {
 
     // Assert
     Assert.DoesNotThrow( () => response.EnsureSuccessStatusCode() );
-    var content = await response.Content.ReadAsStringAsync()!;
+    var content = await response.Content.ReadAsStringAsync();
     Assert.That( content, Contains.Substring( expectedPartialContent ) );
   }
 }

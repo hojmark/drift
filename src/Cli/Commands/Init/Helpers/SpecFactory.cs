@@ -14,7 +14,7 @@ internal static class SpecFactory {
     string specPath
   ) {
     var subnets = scanResult.Subnets.Select( s => s.CidrBlock ).ToList();
-    var devices = scanResult.Subnets.SelectMany( subnet => subnet.DiscoveredDevices ).ToDeclared() ?? [];
+    var devices = scanResult.Subnets.SelectMany( subnet => subnet.DiscoveredDevices ).ToDeclared();
     CreateSpec( subnets, devices, specPath );
   }
 

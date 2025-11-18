@@ -69,7 +69,7 @@ public static partial class Mapper {
       "ip-v4" => new Domain.Device.Addresses.IpV4Address( dto.Value, dto.IsId ?? true ),
       "mac" => new Domain.Device.Addresses.MacAddress( dto.Value, dto.IsId ?? true ),
       "hostname" => new Domain.Device.Addresses.HostnameAddress( dto.Value, dto.IsId ?? true ),
-      _ => throw new ArgumentOutOfRangeException( nameof(dto.Type), dto.Type, null )
+      _ => throw new ArgumentOutOfRangeException( nameof(dto), dto.Type, "Unknown address type" )
     };
   }
 

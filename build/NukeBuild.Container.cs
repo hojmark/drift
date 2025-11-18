@@ -48,7 +48,7 @@ partial class NukeBuild {
         );
 
         // For convenience, tag the image with dev as well
-        var localTagDev = localTagVersion.WithTag( DevVersion.Instance );
+        var localTagDev = localTagVersion.WithTag( Tag.Dev );
         Log.Information( "Re-tagging {LocalTagVersion} -> {LocalTagDev}", localTagVersion, localTagDev );
         DockerTasks.DockerTag( s => s
           .SetSourceImage( localTagVersion )
@@ -68,13 +68,13 @@ partial class NukeBuild {
 
         var version = await Versioning.Value.GetVersionAsync();
         var local = ImageReference.Localhost( "drift", version );
-        var publicc = ( await Versioning.Value.Release!.GetImageReferences() )
+        var @public = ( await Versioning.Value.Release!.GetImageReferences() )
           .OrderBy( LatestLast ) // Pushing 'latest' last will make sure it appears as the most recent tag on Docker Hub
           .ToArray();
 
-        Push( local, publicc.ToArray() );
+        Push( local, @public.ToArray() );
 
-        var repos = publicc.Select( r => r.Host ).Distinct();
+        var repos = @public.Select( r => r.Host ).Distinct();
 
         Log.Information( "🐋 Released to {Repositories}!", string.Join( " and ", repos ) );
       }
@@ -101,9 +101,8 @@ partial class NukeBuild {
       }
     );
 
-
   private static int LatestLast( ImageReference r ) {
-    return r.Tag is LatestVersion ? 1 : 0;
+    return r.Tag is LatestTag ? 1 : 0;
   }
 
   private void Push( ImageReference source, params ImageReference[] targets ) {

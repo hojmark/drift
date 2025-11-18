@@ -90,7 +90,7 @@ internal sealed class SerializationTests {
 
     // Act / Assert
     Assert.Throws<InvalidOperationException>( () => new CliSettings().Save( NullLogger.Instance, location ) );
-    
+
     Directory.Delete( location.GetDirectory(), true );
   }
 
@@ -105,7 +105,7 @@ internal sealed class SerializationTests {
 
     // Act / Assert
     Assert.Throws<InvalidOperationException>( () => reloaded1.Save( NullLogger.Instance, location2 ) );
-    
+
     Directory.Delete( location1.GetDirectory(), true );
     Directory.Delete( location2.GetDirectory(), true );
   }

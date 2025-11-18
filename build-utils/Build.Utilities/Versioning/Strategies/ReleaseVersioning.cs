@@ -38,15 +38,14 @@ public sealed class ReleaseVersioning(
     var latest = releases
       .OrderByDescending( r => r.PublishedAt )
       .FirstOrDefault( r => !r.Draft );
-    var latestTagName = latest?.TagName;
 
     if ( latest == null ) {
       throw new InvalidOperationException( "No releases found. Cannot determine next version." );
     }
 
-    Log.Debug( "Latest release is {Name} with git tag {TagName}", latest.Name, latestTagName );
+    Log.Debug( "Latest release is {Name} with git tag {TagName}", latest.Name, latest.TagName );
 
-    return GetNextReleaseVersionFromTagNameOrThrow( latestTagName );
+    return GetNextReleaseVersionFromTagNameOrThrow( latest.TagName );
   }
 
   public override async Task<string> GetNameAsync() {
@@ -55,16 +54,14 @@ public sealed class ReleaseVersioning(
 
   public override async Task<ICollection<ImageReference>> GetImageReferences() {
     return [
-      ImageReference.DockerIo( "hojmark", "drift", LatestVersion.Instance ),
+      ImageReference.DockerIo( "hojmark", "drift", Tag.Latest ),
       ..await base.GetImageReferences()
     ];
   }
 
-  [CanBeNull]
   private static SemVersion GetNextReleaseVersionFromTagNameOrThrow( string latestTag ) {
     var latestVersion = SemVersion.Parse(
-      // Skip 'v'
-      latestTag[1..]
+      latestTag[1..] // Skip 'v'
     );
 
     if ( latestVersion.PrereleaseIdentifiers.Count != 2 ||
@@ -78,7 +75,7 @@ public sealed class ReleaseVersioning(
       throw new InvalidOperationException( "Cannot determine next version. Latest release has tag " + latestTag );
     }
 
-    var nextAlphaNumber = ++latestAlphaNumber;
+    var nextAlphaNumber = latestAlphaNumber + 1;
 
     return latestVersion.WithPrerelease( "alpha", nextAlphaNumber.ToString( CultureInfo.InvariantCulture ) );
   }

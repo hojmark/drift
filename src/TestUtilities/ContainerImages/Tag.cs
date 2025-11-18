@@ -3,36 +3,34 @@ using Semver;
 namespace Drift.TestUtilities.ContainerImages;
 
 // TODO DUPLICATE: move to shared project
-public abstract record Tag( string TagValue ) {
+public record Tag {
+  internal Tag( string value ) {
+    Value = value;
+  }
+
+  private string Value {
+    get;
+  }
+
   public override string ToString() {
-    return TagValue;
+    return Value;
   }
 }
 
-internal sealed record SemanticVersion( SemVersion Version ) : Tag( Version.WithoutMetadata().ToString() ) {
-  public override string ToString() {
-    return TagValue;
+public record LatestTag : Tag {
+  public static readonly LatestTag Instance = new();
+
+  private LatestTag() : base( "latest" ) {
   }
 }
 
-public sealed record LatestVersion : Tag {
-  private LatestVersion() : base( "latest" ) {
-  }
+public static class TagExtensions {
+  extension( Tag ) {
+    public static Tag Latest => LatestTag.Instance;
+    public static Tag Dev => new("dev");
 
-  public static readonly LatestVersion Instance = new();
-
-  public override string ToString() {
-    return TagValue;
-  }
-}
-
-public sealed record DevVersion : Tag {
-  private DevVersion() : base( "dev" ) {
-  }
-
-  public static readonly DevVersion Instance = new();
-
-  public override string ToString() {
-    return TagValue;
+    public static Tag Version( SemVersion version ) {
+      return new Tag( version.WithoutMetadata().ToString() );
+    }
   }
 }

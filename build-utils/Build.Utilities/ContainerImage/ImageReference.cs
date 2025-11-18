@@ -2,29 +2,30 @@ using Semver;
 
 namespace Drift.Build.Utilities.ContainerImage;
 
+// TODO DUPLICATE: move to shared project
 public record ImageReference {
-  public ContainerRegistry Host {
+  public required ContainerRegistry Host {
     get;
-    protected init;
+    init;
   }
 
-  public virtual string? Namespace {
+  public string? Namespace {
     get;
-    protected init;
+    init;
   }
 
-  public virtual string Repository {
+  public required string Repository {
     get;
-    protected init;
+    init;
   }
 
-  public Tag Tag {
+  public required Tag Tag {
     get;
-    protected init;
+    init;
   }
 
-  public static ImageReference Localhost( string repository, SemVersion semVer ) {
-    return Localhost( repository, new SemanticVersion( semVer ) );
+  public static ImageReference Localhost( string repository, SemVersion version ) {
+    return Localhost( repository, Tag.Version( version ) );
   }
 
   public static ImageReference Localhost( string repository, Tag tag ) {
@@ -33,53 +34,36 @@ public record ImageReference {
     return new ImageReference { Host = LocalhostRegistry.Instance, Repository = repository, Tag = tag };
   }
 
-  public static ImageReference DockerIo( string namespaze, string repository, SemVersion version ) {
-    return DockerIo( namespaze, repository, new SemanticVersion( version ) );
+  public static ImageReference DockerIo( string @namespace, string repository, SemVersion version ) {
+    return DockerIo( @namespace, repository, Tag.Version( version ) );
   }
 
-  public static ImageReference DockerIo( string namespaze, string repository, Tag tag ) {
-    ValidateOrThrow( namespaze, repository );
+  public static ImageReference DockerIo( string @namespace, string repository, Tag tag ) {
+    ValidateOrThrow( @namespace, repository );
 
     return new ImageReference {
-      Host = DockerIoRegistry.Instance, Namespace = namespaze, Repository = repository, Tag = tag
+      Host = DockerIoRegistry.Instance, Namespace = @namespace, Repository = repository, Tag = tag
     };
   }
 
   public override string ToString() {
-    var namespaze = Namespace == null
-      ? string.Empty
-      : $"{Namespace}/";
-
-    var name = $"{namespaze}{Repository}";
+    var @namespace = Namespace == null ? string.Empty : $"{Namespace}/";
+    var name = $"{@namespace}{Repository}";
 
     return $"{Host}/{name}:{Tag}";
   }
 
-  private static (string Namespaze, string Repository) SplitNameOrThrow( string name ) {
-    var split = name.Split( '/' );
-
-    if ( split.Length < 2 ) {
-      throw new ArgumentException( "Missing / separator", nameof(name) );
+  private static void ValidateOrThrow( string @namespace, string repository ) {
+    if ( @namespace.Contains( '/' ) ) {
+      throw new ArgumentException( "Contains /", nameof(@namespace) );
     }
 
-    if ( split.Length > 2 ) {
-      throw new ArgumentException( "Too many / separators", nameof(name) );
+    if ( @namespace.Trim().Length != @namespace.Length ) {
+      throw new ArgumentException( "Contains whitespace", nameof(@namespace) );
     }
 
-    return ( split[0], split[1] );
-  }
-
-  private static void ValidateOrThrow( string namespaze, string repository ) {
-    if ( namespaze.Contains( '/' ) ) {
-      throw new ArgumentException( "Contains /", nameof(namespaze) );
-    }
-
-    if ( namespaze.Trim().Length != namespaze.Length ) {
-      throw new ArgumentException( "Contains whitespace", nameof(namespaze) );
-    }
-
-    if ( string.IsNullOrWhiteSpace( namespaze ) ) {
-      throw new ArgumentException( "Cannot be null or empty", nameof(namespaze) );
+    if ( string.IsNullOrWhiteSpace( @namespace ) ) {
+      throw new ArgumentException( "Cannot be null or empty", nameof(@namespace) );
     }
 
     ValidateOrThrow( repository );

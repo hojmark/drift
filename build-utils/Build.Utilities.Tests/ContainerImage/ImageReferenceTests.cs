@@ -7,19 +7,19 @@ internal sealed class ImageReferenceTests {
   public static IEnumerable<(ImageReference, string)> SuccessTestCases {
     get {
       yield return (
-        ImageReference.Localhost( "drift", LatestVersion.Instance ),
+        ImageReference.Localhost( "drift", Tag.Latest ),
         "localhost:5000/drift:latest"
       );
       yield return (
-        ImageReference.DockerIo( "hojmark", "drift", new SemanticVersion( new SemVersion( 1, 21, 1 ) ) ),
+        ImageReference.DockerIo( "hojmark", "drift", Tag.Version( new SemVersion( 1, 21, 1 ) ) ),
         "docker.io/hojmark/drift:1.21.1"
       );
       yield return (
-        ImageReference.Localhost( "drift", new SemanticVersion( new SemVersion( 2, 0, 0 ) ) ),
+        ImageReference.Localhost( "drift", Tag.Version( new SemVersion( 2, 0, 0 ) ) ),
         "localhost:5000/drift:2.0.0"
       );
       yield return (
-        ImageReference.Localhost( "drift", DevVersion.Instance ), "localhost:5000/drift:dev"
+        ImageReference.Localhost( "drift", Tag.Dev ), "localhost:5000/drift:dev"
       );
     }
   }
@@ -27,15 +27,15 @@ internal sealed class ImageReferenceTests {
   public static IEnumerable<Lazy<ImageReference>> FailureTestCases {
     get {
       yield return new Lazy<ImageReference>( () =>
-        ImageReference.DockerIo( "drift", string.Empty, new SemanticVersion( new SemVersion( 1, 21, 1 ) ) ) );
+        ImageReference.DockerIo( "drift", string.Empty, Tag.Version( new SemVersion( 1, 21, 1 ) ) ) );
       yield return new Lazy<ImageReference>( () =>
-        ImageReference.DockerIo( string.Empty, "drift", new SemanticVersion( new SemVersion( 2, 0, 0 ) ) ) );
+        ImageReference.DockerIo( string.Empty, "drift", Tag.Version( new SemVersion( 2, 0, 0 ) ) ) );
       yield return new Lazy<ImageReference>( () =>
-        ImageReference.DockerIo( "hojmark", string.Empty, LatestVersion.Instance ) );
+        ImageReference.DockerIo( "hojmark", string.Empty, Tag.Latest ) );
       yield return new Lazy<ImageReference>( () =>
-        ImageReference.DockerIo( "hojmark", " ", DevVersion.Instance ) );
+        ImageReference.DockerIo( "hojmark", " ", Tag.Dev ) );
       yield return new Lazy<ImageReference>( () =>
-        ImageReference.DockerIo( "hojmark", "/", DevVersion.Instance ) );
+        ImageReference.DockerIo( "hojmark", "/", Tag.Dev ) );
     }
   }
 

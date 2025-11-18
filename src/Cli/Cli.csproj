@@ -4,18 +4,12 @@
     <RuntimeIdentifiers>linux-x64;linux-musl-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
     <PublishAot>true</PublishAot>
-    <PublishTrimmed>true</PublishTrimmed>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <SelfContained>true</SelfContained> <!-- .NET 10.0.100 workaround. See https://github.com/dotnet/runtime/issues/121669#issuecomment-3537030500 -->
     <InvariantGlobalization>true</InvariantGlobalization>
     <AssemblyName>drift</AssemblyName>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault> <!-- todo remove -->
     <Version>0.0.0-undefined</Version>
-    <!--
-    https://github.com/NuGet/Home/issues/12814#issuecomment-2459432666
-    https://github.com/dotnet/aspnetcore/issues/41149
-    -->
-    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
   </PropertyGroup>
 
   <ItemGroup>

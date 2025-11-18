@@ -1,5 +1,6 @@
 using System.CommandLine;
 using System.CommandLine.Help;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Help;
@@ -24,9 +25,20 @@ namespace Drift.Cli.Infrastructure;
 internal static class RootCommandFactory {
   // Note: registering commands using reflection does not work with AOT compilation
   internal readonly record struct CommandRegistration(
+    [property: DynamicallyAccessedMembers( DynamicallyAccessedMemberTypes.PublicConstructors )]
     Type Handler,
     Func<IServiceProvider, Command> Factory
-  );
+  ) {
+    // ILLink ALSO needs the annotation applied to the out parameter in Deconstruct()
+    public void Deconstruct(
+      [DynamicallyAccessedMembers( DynamicallyAccessedMemberTypes.PublicConstructors )]
+      out Type handler,
+      out Func<IServiceProvider, Command> factory
+    ) {
+      handler = Handler;
+      factory = Factory;
+    }
+  }
 
   internal static RootCommand Create(
     bool toConsole,

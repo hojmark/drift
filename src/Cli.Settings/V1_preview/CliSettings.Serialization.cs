@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Drift.Cli.Settings.Serialization;
+using Drift.Cli.Settings.V1_preview.Appearance;
 using Drift.Cli.Settings.V1_preview.FeatureFlags;
 using Microsoft.Extensions.Logging;
 
@@ -8,15 +9,6 @@ namespace Drift.Cli.Settings.V1_preview;
 
 public partial class CliSettings {
   private ISettingsLocationProvider? _loadLocation;
-
-  private static readonly JsonSerializerOptions SerializerOptions = new() {
-    ReadCommentHandling = JsonCommentHandling.Skip,
-    PropertyNameCaseInsensitive = true,
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    WriteIndented = true,
-    DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-    Converters = { new JsonStringEnumConverter( JsonNamingPolicy.CamelCase ), new FeatureFlagJsonConverter() }
-  };
 
   public static CliSettings Load( ILogger? logger = null, ISettingsLocationProvider? location = null ) {
     try {
@@ -30,7 +22,7 @@ public partial class CliSettings {
       }
 
       var json = File.ReadAllText( location.GetFile() );
-      var settings = JsonSerializer.Deserialize<CliSettings>( json, SerializerOptions );
+      var settings = JsonSerializer.Deserialize<CliSettings>( json, CliSettingsJsonContext.Default.CliSettings );
 
       logger?.LogTrace( "Loaded settings: {Settings}", settings );
 
@@ -67,7 +59,23 @@ public partial class CliSettings {
       throw new InvalidOperationException( "Settings file exists, but was not loaded." );
     }
 
-    var json = JsonSerializer.Serialize( this, SerializerOptions );
+    var json = JsonSerializer.Serialize( this, CliSettingsJsonContext.Default.CliSettings );
     File.WriteAllText( location.GetFile(), json );
+  }
+
+  [JsonSourceGenerationOptions(
+    ReadCommentHandling = JsonCommentHandling.Skip,
+    PropertyNameCaseInsensitive = true,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    WriteIndented = true,
+    DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+    // TODO cannot provide camelcase setting to jsonstringenumconverter, so it creates pascalcase
+    Converters = [typeof(JsonStringEnumConverter<OutputFormatSetting>), typeof(FeatureFlagJsonConverter)],
+    // Recommended to enable the below two options: https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonserializeroptions.respectrequiredconstructorparameters?view=net-9.0#remarks
+    RespectRequiredConstructorParameters = true,
+    RespectNullableAnnotations = true
+  )]
+  [JsonSerializable( typeof(CliSettings) )]
+  internal partial class CliSettingsJsonContext : JsonSerializerContext {
   }
 }

@@ -44,8 +44,7 @@
         "TestE2E",
         "TestLocal",
         "TestSelf",
-        "TestUnit",
-        "Version"
+        "TestUnit"
       ]
     },
     "Verbosity": {

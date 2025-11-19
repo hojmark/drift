@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Drift.Cli.E2ETests.Abstractions;
-using Drift.TestUtilities.ContainerImages;
+using HLabs.Containers;
 using Nuke.Common.Tools.Docker;
 
 namespace Drift.Cli.E2ETests;

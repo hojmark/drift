@@ -3,11 +3,13 @@ using System.Reflection;
 namespace Drift.Common.EmbeddedResources;
 
 public abstract class EmbeddedResourceProviderBase {
-  private const string ResourcePrefix = "embedded_resources";
+  protected virtual string ResourcePrefix => "embedded_resources";
 
   protected abstract Assembly ResourceAssembly {
     get;
   }
+
+  protected virtual string RootNamespace => ResourceAssembly.GetName().Name!;
 
   // TODO NUKE style paths?
   internal Stream GetStream( string path ) {
@@ -37,8 +39,7 @@ public abstract class EmbeddedResourceProviderBase {
 
   private string ConvertPath( string path ) {
     // Assumes this class is located in the root namespace
-    var rootNamespace = ResourceAssembly.GetName().Name
-                        ?? throw new Exception( "Could not determine root namespace" );
+    var rootNamespace = RootNamespace ?? throw new Exception( "Could not determine root namespace" );
 
     return $"{rootNamespace}.{ResourcePrefix}.{path.Replace( "/", "." )}";
   }

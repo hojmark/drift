@@ -3,6 +3,7 @@ using System.CommandLine.Help;
 using System.CommandLine.Invocation;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console;
+using Drift.Common.EmbeddedResources;
 using Spectre.Console;
 
 namespace Drift.Cli.Commands.Help;

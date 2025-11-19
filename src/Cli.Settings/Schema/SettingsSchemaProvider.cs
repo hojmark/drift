@@ -1,3 +1,5 @@
+using Drift.Common.EmbeddedResources;
+
 namespace Drift.Cli.Settings.Schema;
 
 public static class SettingsSchemaProvider {

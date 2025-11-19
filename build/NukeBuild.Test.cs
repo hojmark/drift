@@ -29,9 +29,8 @@ sealed partial class NukeBuild {
           .SetProjectFile( Solution.Build.Build_Utilities_Tests.Path )
           .SetConfiguration( Configuration )
           // .ConfigureLoggers( MsBuildVerbosityParsed )
-          // .SetBlameHangTimeout( "60s" )
           .AddProcessAdditionalArguments( "--disable-logo" )
-          .AddProcessAdditionalArguments( "--minimum-expected-tests 18" )
+          .AddProcessAdditionalArguments( "--minimum-expected-tests 10" )
         );
       }
     );

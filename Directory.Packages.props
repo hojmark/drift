@@ -21,8 +21,8 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
-    <PackageVersion Include="NaturalSort.Extension" Version="4.4.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="NaturalSort.Extension" Version="4.4.1" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="Nuke.Common" Version="9.0.4" />
     <PackageVersion Include="Nuke.Tooling" Version="9.0.4" />
@@ -38,12 +38,12 @@
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.15.0.120848" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.53.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.0-rc.2.25502.107" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0" />
     <PackageVersion Include="System.Text.Json" Version="9.0.6" />
     <PackageVersion Include="System.Threading.RateLimiting" Version="10.0.0" />
     <PackageVersion Include="Testcontainers" Version="4.8.1" />
     <PackageVersion Include="TngTech.ArchUnitNET.NUnit" Version="0.12.3" />
-    <PackageVersion Include="TUnit" Version="1.0.48" />
+    <PackageVersion Include="TUnit" Version="1.2.11" />
     <PackageVersion Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="16.3.0" />
     <PackageVersion Include="Verify.NUnit" Version="31.4.3" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />

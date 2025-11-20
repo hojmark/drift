@@ -1,8 +1,5 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Drift.Cli.Settings.Serialization;
-using Drift.Cli.Settings.V1_preview.Appearance;
-using Drift.Cli.Settings.V1_preview.FeatureFlags;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Settings.V1_preview;
@@ -56,26 +53,10 @@ public partial class CliSettings {
     else if ( _loadLocation == null ||
               !_loadLocation.GetFile().Equals( location.GetFile(), StringComparison.Ordinal ) // Casing matters on Linux
             ) {
-      throw new InvalidOperationException( "Settings file exists, but was not loaded." );
+      throw new InvalidOperationException( "Prevented overwriting an existing file, which had not first been loaded." );
     }
 
     var json = JsonSerializer.Serialize( this, CliSettingsJsonContext.Default.CliSettings );
     File.WriteAllText( location.GetFile(), json );
-  }
-
-  [JsonSourceGenerationOptions(
-    ReadCommentHandling = JsonCommentHandling.Skip,
-    PropertyNameCaseInsensitive = true,
-    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-    WriteIndented = true,
-    DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-    // TODO cannot provide camelcase setting to jsonstringenumconverter, so it creates pascalcase
-    Converters = [typeof(JsonStringEnumConverter<OutputFormatSetting>), typeof(FeatureFlagJsonConverter)],
-    // Recommended to enable the below two options: https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonserializeroptions.respectrequiredconstructorparameters?view=net-9.0#remarks
-    RespectRequiredConstructorParameters = true,
-    RespectNullableAnnotations = true
-  )]
-  [JsonSerializable( typeof(CliSettings) )]
-  internal partial class CliSettingsJsonContext : JsonSerializerContext {
   }
 }

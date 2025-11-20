@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="HLabs.Containers" />
     <PackageReference Include="Humanizer" />
     <PackageReference Include="Semver" />
     <PackageReference Include="Nuke.Common" />

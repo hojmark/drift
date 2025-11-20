@@ -197,25 +197,11 @@ internal sealed class DeviceIdTests {
           : "Expected not to be same (using Equals)"
       );
       Assert.That(
-        device1.GetDeviceId() == device2.GetDeviceId(),
-        Is.EqualTo( isSame ),
-        isSame
-          ? "Expected to be same (using ==)"
-          : "Expected not to be same (using ==)"
-      );
-      Assert.That(
         device2.GetDeviceId().Equals( device1.GetDeviceId() ),
         Is.EqualTo( isSame ),
         isSame
           ? "Expected to be same (using Equals) [commutative usage]"
           : "Expected not to be same (using Equals) [commutative usage]"
-      );
-      Assert.That(
-        device2.GetDeviceId() == device1.GetDeviceId(),
-        Is.EqualTo( isSame ),
-        isSame
-          ? "Expected to be same (using ==) [commutative usage]"
-          : "Expected not to be same (using ==) [commutative usage]"
       );
     }
   }

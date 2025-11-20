@@ -21,7 +21,9 @@ internal static class Chars {
   /// Unicode Variation Selector 15 (VS15): forces text-style rendering.
   /// </summary>
   /// <remarks>See https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block).</remarks>
+#pragma warning disable S1144
   private const string TextStyle = "\uFE0E";
+#pragma warning restore S1144
 
   internal static ICollection<string> All() {
     return new List<string> {

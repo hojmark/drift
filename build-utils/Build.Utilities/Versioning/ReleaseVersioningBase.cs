@@ -1,5 +1,5 @@
-using Drift.Build.Utilities.ContainerImage;
 using Drift.Build.Utilities.Versioning.Abstractions;
+using HLabs.Containers;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Git;

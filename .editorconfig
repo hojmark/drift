@@ -213,12 +213,17 @@ dotnet_diagnostic.SA1101.severity = none
 dotnet_diagnostic.SA1309.severity = none
 # Static members should appear before non-static members
 dotnet_diagnostic.SA1204.severity = suggestion
+# Extract this nested ternary operation into an independent statement
+dotnet_diagnostic.S3358.severity = suggestion
 
-# Buggy analyzers throwing exceptions
-# SA1502ElementMustNotBeOnASingleLine
+# Buggy analyzers
+# SA1502 ElementMustNotBeOnASingleLine (throwing exceptions)
 dotnet_diagnostic.SA1502.severity = none
-# SA1508ClosingBracesMustNotBePrecededByBlankLine
+# SA1508 ClosingBracesMustNotBePrecededByBlankLine (throwing exceptions)
 dotnet_diagnostic.SA1508.severity = none
+# SA1516 Elements should be separated by blank line (but reports false positives)
+dotnet_diagnostic.SA1516.severity = none
+
 
 # TODO TBD
 # The keyword 'new' should be followed by a space.

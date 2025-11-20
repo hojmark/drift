@@ -49,9 +49,9 @@ jobs:
         if: always()
         run: dotnet trx --verbosity normal
 
+      # TODO fix publish warnings and re-enable check
       - name: Check for warnings
-        continue-on-error: true # TODO remove
         run: |
           dotnet run \
           --project ./build/_build.csproj \
-          --target CheckWarnings
+          --target CheckBuildWarnings

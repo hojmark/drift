@@ -1,3 +1,5 @@
+using Drift.Common.EmbeddedResources;
+
 namespace Drift.Spec.Schema;
 
 public static class SpecSchemaProvider {

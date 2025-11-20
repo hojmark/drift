@@ -1,4 +1,5 @@
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Drift.Domain;
 using Drift.Domain.Scan;
@@ -24,6 +25,11 @@ internal sealed class NetworkScannerTests {
       .Select( ip => IPAddress.Parse( ip.ToString() ) )
       .Take( 3 )
     ).ToList();
+
+    if ( !RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
+      Assert.Fail();
+      return;
+    }
 
     var subnetScanner = new LinuxPingSubnetScanner( new PredefinedPingTool( successfulIps ) );
 

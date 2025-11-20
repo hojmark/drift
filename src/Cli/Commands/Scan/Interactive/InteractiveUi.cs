@@ -210,9 +210,11 @@ internal class InteractiveUi : IAsyncDisposable {
     }
     catch ( Exception e ) {
       _running.Cancel();
+#pragma warning disable RS0030
       // TODO
       // _outputManager.Normal.WriteLineError( e.ToString() ); //being redirected
       Console.Error.WriteLine( e );
+#pragma warning restore RS0030
     }
   }
 }

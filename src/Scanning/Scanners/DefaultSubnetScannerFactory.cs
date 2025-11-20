@@ -23,6 +23,8 @@ public class DefaultSubnetScannerFactory(
     logger.LogDebug( "Getting subnet scanner for CIDR block {Cidr}", cidr );
 
     if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
+#pragma warning disable S1854
+#pragma warning disable CS0162 // Unreachable code detected
       if ( UseFping ) {
         logger.LogDebug( "Using {SubnetScanner} (user preference)", nameof(LinuxFpingSubnetScanner) );
         return new LinuxFpingSubnetScanner();
@@ -43,6 +45,8 @@ public class DefaultSubnetScannerFactory(
           logger.LogDebug( "Using {SubnetScanner} (default)", nameof(LinuxPingSubnetScanner) );
           return new LinuxPingSubnetScanner( pingTool );
       }
+#pragma warning restore CS0162 // Unreachable code detected
+#pragma warning restore S1854
     }
 
     if ( RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ) {

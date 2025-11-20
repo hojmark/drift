@@ -38,7 +38,7 @@ internal static class SubnetScanResultProcessor {
       var device = GetDevice( diff );
 
       var matchingDeclared = declaredDevices
-        .Where( d => ( (IAddressableDevice) d ).GetDeviceId() == device.GetDeviceId() )
+        .Where( d => ( (IAddressableDevice) d ).GetDeviceId().Equals( device.GetDeviceId() ) )
         .ToList();
 
       if ( matchingDeclared.Count > 1 ) {

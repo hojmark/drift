@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Drift.Build.Utilities;
-using Drift.Build.Utilities.ContainerImage;
 using Drift.Build.Utilities.MsBuild;
+using HLabs.Containers;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Tooling;
@@ -29,9 +29,8 @@ sealed partial class NukeBuild {
           .SetProjectFile( Solution.Build.Build_Utilities_Tests.Path )
           .SetConfiguration( Configuration )
           // .ConfigureLoggers( MsBuildVerbosityParsed )
-          // .SetBlameHangTimeout( "60s" )
           .AddProcessAdditionalArguments( "--disable-logo" )
-          .AddProcessAdditionalArguments( "--minimum-expected-tests 18" )
+          .AddProcessAdditionalArguments( "--minimum-expected-tests 10" )
         );
       }
     );

@@ -13,22 +13,6 @@ public class DeviceId( List<IDeviceAddress> addresses ) {
     get;
   } = addresses.Where( a => a.IsId != false ).ToList();
 
-  /// <summary>
-  /// Determines whether this <see cref="DeviceId"/> is equivalent to another.
-  /// Considered equivalent if both <see cref="DeviceId"/>s have at least one address type in common,
-  /// and for every address type they have in common, values are identical.
-  /// </summary>
-  /// <seealso cref="op_Inequality"/>
-  public static bool operator ==( DeviceId? left, DeviceId? right )
-    => Equals( left, right );
-
-  /// <summary>
-  /// Determines whether this <see cref="DeviceId"/> is not equivalent to another.
-  /// </summary>
-  /// <seealso cref="op_Equality"/>
-  public static bool operator !=( DeviceId? left, DeviceId? right )
-    => !Equals( left, right );
-
   public bool Contributes( AddressType type ) => Addresses.Any( a => a.Type == type && a.IsId != false );
 
   /*[Obsolete]

@@ -1,5 +1,8 @@
 using System.CommandLine;
 using Spectre.Console;
+
+#pragma warning disable S1481 // Justification: Draft code
+
 // using Environment = Drift.Domain.Environment;
 
 namespace Drift.Cli.Commands.Preview;

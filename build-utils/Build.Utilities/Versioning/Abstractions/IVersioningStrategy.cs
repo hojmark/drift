@@ -1,4 +1,4 @@
-using Drift.Build.Utilities.ContainerImage;
+using HLabs.Containers;
 using Semver;
 
 namespace Drift.Build.Utilities.Versioning.Abstractions;

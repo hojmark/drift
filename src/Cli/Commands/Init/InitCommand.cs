@@ -80,7 +80,7 @@ internal class InitCommandHandler(
     output.Log.LogDebug( "Running init command" );
 
     var initOptions = isInteractive
-      ? RunInteractive( output.Normal, cancellationToken )
+      ? RunInteractive( output.Normal )
       : RunNonInteractive( output, parameters.SpecFile?.Name, parameters.Overwrite, parameters.Discover );
 
     if ( initOptions == null ) {
@@ -117,7 +117,11 @@ internal class InitCommandHandler(
            );
   }
 
-  private static InitOptions RunInteractive( INormalOutput console, CancellationToken cancellationToken ) {
+  private static InitOptions RunInteractive(
+    INormalOutput console
+    // How to support cancellation of the prompt (Console.ReadLine)?
+    /*, CancellationToken cancellationToken */
+  ) {
     // TODO first run logic
     // var driftStatePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.UserProfile ), ".drift" );
 
@@ -204,13 +208,15 @@ internal class InitCommandHandler(
 
       return true;
     }
+    // TODO create generic catch for all commands
+#pragma warning disable S2139
     catch ( Exception e ) {
-      // TODO create generic catch for all commands
       output.Normal.WriteLineError( "Unexpected error" );
       output.Normal.WriteLineError( e.ToString() );
       output.Log.LogError( e, "Unexpected error" );
       throw;
     }
+#pragma warning restore S2139
   }
 
   private async Task<NetworkScanResult> PerformScanAsync( NetworkScanOptions request ) {

@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common.Schemas\Common.Schemas.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

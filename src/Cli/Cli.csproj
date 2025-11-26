@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <RuntimeIdentifiers>linux-x64;linux-musl-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
@@ -14,14 +14,19 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Drift.Cli.Tests" />
+    <!-- For NSubstitute -->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     <EmbeddedResource Include="embedded_resources\**\*" />
     <!-- Options: T: type, M: method, P: property -->
     <AdditionalFiles Include="BannedSymbols.txt" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Agent.Hosting\Agent.Hosting.csproj" />
+    <ProjectReference Include="..\Agent.PeerProtocol\Agent.PeerProtocol.csproj" />
     <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
     <ProjectReference Include="..\Cli.Settings\Cli.Settings.csproj" />
+    <ProjectReference Include="..\Networking.Clustering\Networking.Clustering.csproj" />
     <ProjectReference Include="..\Scanning\Scanning.csproj" />
     <ProjectReference Include="..\Diff\Diff.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />
@@ -45,6 +50,10 @@
     <PackageReference Include="Serilog.Sinks.TextWriter" />
     <PackageReference Include="Spectre.Console.Cli" />
     <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\Agent\Subcommands\Start\Peers\" />
   </ItemGroup>
 
 </Project>

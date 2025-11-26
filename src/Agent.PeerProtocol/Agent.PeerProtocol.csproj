@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+      <ProjectReference Include="..\Networking.PeerStreaming.Core.Abstractions\Networking.PeerStreaming.Core.Abstractions.csproj" />
+      <ProjectReference Include="..\Scanning\Scanning.csproj" />
+    </ItemGroup>
+
+</Project>

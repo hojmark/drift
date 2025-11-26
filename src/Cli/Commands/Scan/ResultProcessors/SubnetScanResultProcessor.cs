@@ -18,7 +18,7 @@ namespace Drift.Cli.Commands.Scan.ResultProcessors;
 
 internal static class SubnetScanResultProcessor {
   private const string Na = "n/a";
-  private static int _deviceIdCounter = 0;
+  private static int _deviceIdCounter;
 
   internal static List<Device> Process( SubnetScanResult scanResult, Network? network ) {
     // TODO test throw new Exception( "ads" );

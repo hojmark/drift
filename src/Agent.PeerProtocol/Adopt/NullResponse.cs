@@ -3,17 +3,9 @@ using Drift.Networking.PeerStreaming.Core.Abstractions;
 
 namespace Drift.Agent.PeerProtocol.Adopt;
 
-internal sealed class AdoptRequestPayload : IPeerMessage {
-  public static string MessageType => "adopt-request";
-
-  public string Jwt {
+public class NullResponse : IPeerMessage {
+  public static string MessageType {
     get;
-    set;
-  }
-
-  public string ControllerId {
-    get;
-    set;
   }
 
   public static JsonTypeInfo JsonInfo {

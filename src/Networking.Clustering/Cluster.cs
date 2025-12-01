@@ -10,18 +10,18 @@ internal sealed class Cluster(
   PeerResponseCorrelator responseCorrelator,
   ILogger logger
 ) : ICluster {
-  public async Task SendAsync(
+  /*public async Task SendAsync<TMessage>(
     Domain.Agent agent,
-    IPeerMessage message,
+    TMessage message,
     CancellationToken cancellationToken = default
-  ) {
+  ) where TMessage : IPeerMessage {
     try {
-      await SendInternalAsync( agent, message, cancellationToken );
+      await SendInternalAsync<TMessage>( agent, message, cancellationToken );
     }
     catch ( Exception ex ) {
       logger.LogWarning( ex, "Send to {Peer} failed", agent );
     }
-  }
+  }*/
 
   /* public async Task BroadcastAsync( PeerMessage message, CancellationToken cancellationToken = default ) {
      var peers = peerStreamManager.GetConnectedPeers();
@@ -39,24 +39,24 @@ internal sealed class Cluster(
      await Task.WhenAll( tasks );
    }*/
 
-  public async Task SendInternalAsync(
+  /*public async Task SendInternalAsync<TMessage>(
     Domain.Agent agent,
-    IPeerMessage message,
+    TMessage message,
     CancellationToken cancellationToken = default
-  ) {
+  ) where TMessage : IPeerMessage {
     var connection = peerStreamManager.GetOrCreate( new Uri( agent.Address ), "agentid_local1" );
-    var envelope = envelopeConverter.ToEnvelope( message );
+    var envelope = envelopeConverter.ToEnvelope<TMessage>( message );
     await connection.SendAsync( envelope );
-  }
+  }*/
 
-  public async Task<TResponse> SendAndWaitAsync<TResponse>(
+  public async Task<TResponse> SendAndWaitAsync<TReq, TResponse>(
     Domain.Agent agent,
-    IPeerMessage message,
+    TReq message,
     TimeSpan? timeout = null,
     CancellationToken cancellationToken = default
-  ) where TResponse : IPeerMessage {
+  ) where TResponse : IPeerMessage where TReq : IPeerMessage {
     var correlationId = Guid.NewGuid().ToString();
-    var envelope = envelopeConverter.ToEnvelope( message );
+    var envelope = envelopeConverter.ToEnvelope<TReq>( message );
     envelope.CorrelationId = correlationId;
 
     // Register correlator BEFORE sending

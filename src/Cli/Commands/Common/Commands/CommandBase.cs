@@ -13,8 +13,8 @@ internal abstract class CommandBase<TParameters, THandler> : Command
     Add( CommonParameters.Options.OutputFormat );
     Add( CommonParameters.Arguments.Spec );
 
-    SetAction( ( parseResult, cancellationToken ) => {
-      using var scope = provider.CreateScope();
+    SetAction( async ( parseResult, cancellationToken ) => {
+      await using var scope = provider.CreateAsyncScope();
       var serviceProvider = scope.ServiceProvider;
 
       serviceProvider.GetRequiredService<ParseResultHolder>().ParseResult = parseResult;
@@ -22,7 +22,7 @@ internal abstract class CommandBase<TParameters, THandler> : Command
       var handler = serviceProvider.GetRequiredService<THandler>();
       var parameters = CreateParameters( parseResult );
 
-      return handler.Invoke( parameters, cancellationToken );
+      return await handler.Invoke( parameters, cancellationToken );
     } );
   }
 

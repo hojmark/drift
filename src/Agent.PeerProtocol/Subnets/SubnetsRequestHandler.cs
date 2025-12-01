@@ -19,10 +19,9 @@ internal sealed class SubnetsRequestHandler(
     logger.LogInformation( "Handling subnet request" );
 
     var subnets = await interfaceSubnetProvider.GetAsync();
-    var response = new SubnetsResponse { Subnets = subnets };
 
     logger.LogInformation( "Sending subnets: {Subnets}", string.Join( ", ", subnets ) );
 
-    return response;
+    return new SubnetsResponse { Subnets = subnets };
   }
 }

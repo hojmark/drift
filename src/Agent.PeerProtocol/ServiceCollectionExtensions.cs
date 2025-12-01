@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions {
     where THandler : class, IPeerMessageHandler<TReq, TRes>
     where TReq : IPeerMessage
     where TRes : IPeerMessage {
-    services.AddScoped<IPeerMessageHandlerBase, THandler>();
+    services.AddScoped<IPeerMessageHandler, THandler>();
     services.AddScoped<IPeerMessageHandler<TReq, TRes>, THandler>();
     return services;
   }

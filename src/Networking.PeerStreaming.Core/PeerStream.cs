@@ -76,6 +76,9 @@ public sealed class PeerStream : IPeerStream {
     try {
       await foreach ( var message in _reader.ReadAllAsync( _cancellationToken ) ) {
         try {
+          using var scope = _logger.BeginScope(
+            new Dictionary<string, object?> { ["RequestId"] = message.CorrelationId ?? "no-id" }
+          );
           _logger.LogDebug( "Received message. Dispatching to handler..." );
           await _dispatcher.DispatchAsync( message, this, CancellationToken.None );
         }
@@ -100,10 +103,11 @@ public sealed class PeerStream : IPeerStream {
   public async ValueTask DisposeAsync() {
     Console.WriteLine( "Disposing " + this );
 
-    /*if ( _call != null ) {
+    if ( _writer is IClientStreamWriter<PeerMessage> clientWriter ) {
       // I.e., outgoing stream (client initiated)
-      await _call.RequestStream.CompleteAsync();
-    }*/
+      // Server streams are automatically completed by the gRPC framework
+      await clientWriter.CompleteAsync();
+    }
 
     await ReadTask;
   }

@@ -82,6 +82,7 @@ public sealed class PeerStream : IPeerStream {
           );
           _logger.LogDebug( "Received message. Dispatching to handler..." );
           await _dispatcher.DispatchAsync( message, this, CancellationToken.None );
+          _logger.LogDebug( "Dispatch completed. Waiting for next message..." );
         }
         catch ( Exception ex ) {
           _logger.LogError( ex, "Message dispatch failed" );

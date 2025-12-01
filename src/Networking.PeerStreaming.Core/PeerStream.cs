@@ -76,6 +76,7 @@ public sealed class PeerStream : IPeerStream {
     try {
       await foreach ( var message in _reader.ReadAllAsync( _cancellationToken ) ) {
         try {
+          // TODO ensure this is printed in the output
           using var scope = _logger.BeginScope(
             new Dictionary<string, object?> { ["RequestId"] = message.CorrelationId ?? "no-id" }
           );

@@ -14,47 +14,35 @@ namespace Drift.Networking.PeerStreaming.Core.Abstractions;
   );
 }*/
 
-public interface IPeerMessageHandlerBase {
+public interface IPeerMessageHandler {
   string MessageType {
     get;
   }
 
-  Task<PeerMessage?> DispatchAsync(
+  Task<PeerMessage?> HandleAsync(
     PeerMessage envelope,
     IPeerMessageEnvelopeConverter converter,
     CancellationToken cancellationToken
   );
 }
 
-public interface IPeerMessageHandler<TRequest, TResponse> : IPeerMessageHandlerBase
+public interface IPeerMessageHandler<TRequest, TResponse> : IPeerMessageHandler
   where TRequest : IPeerMessage
   where TResponse : IPeerMessage {
-  // TODO unused now
-  async Task<TResponse?> HandleAsync(
-    PeerMessage envelope,
-    IPeerMessageEnvelopeConverter envelopeConverter,
-    CancellationToken cancellationToken
-  ) {
-    var typedMessage = envelopeConverter.FromEnvelope<TRequest>( envelope );
-    return await HandleAsync( typedMessage, cancellationToken );
-  }
-
   Task<TResponse?> HandleAsync( TRequest message, CancellationToken cancellationToken = default );
 
-  async Task<PeerMessage?> IPeerMessageHandlerBase.DispatchAsync(
+  async Task<PeerMessage?> IPeerMessageHandler.HandleAsync(
     PeerMessage envelope,
     IPeerMessageEnvelopeConverter converter,
     CancellationToken cancellationToken ) {
-    // Deserialize strongly typed request
     var request = converter.FromEnvelope<TRequest>( envelope );
 
-    // Process request
     var response = await HandleAsync( request, cancellationToken );
 
-    if ( response is null )
+    if ( response is null ) {
       return null;
+    }
 
-    // Serialize strongly typed response
     return converter.ToEnvelope<TResponse>( response );
   }
 }

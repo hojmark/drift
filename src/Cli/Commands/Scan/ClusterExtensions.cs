@@ -9,7 +9,7 @@ internal static class ClusterExtensions {
     Domain.Agent agent,
     CancellationToken cancellationToken
   ) {
-    return cluster.SendAndWaitAsync<SubnetsResponse>(
+    return cluster.SendAndWaitAsync<SubnetsRequest, SubnetsResponse>(
       agent,
       new SubnetsRequest(),
       timeout: TimeSpan.FromSeconds( 10 ),

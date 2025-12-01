@@ -68,4 +68,12 @@ internal sealed class PeerStreamManager(
     logger.LogTrace( "Created {Stream}", stream );
     _streams[stream.AgentId] = stream;
   }
+
+  public async ValueTask DisposeAsync() {
+    logger.LogDebug( "Disposing peer stream manager" );
+    foreach ( var stream in _streams.Values ) {
+      logger.LogTrace( "Disposing peer stream #{StreamNo}", stream.InstanceNo );
+      await stream.DisposeAsync();
+    }
+  }
 }

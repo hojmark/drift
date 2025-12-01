@@ -10,11 +10,7 @@ public static class ServiceCollectionExtensions {
     PeerStreamingOptions options
   ) {
     services.AddSingleton( options );
-    services.AddSingleton<IPeerMessageEnvelopeConverter>(
-      new PeerMessageEnvelopeConverter(
-        new AssemblyScanPeerMessageTypesProvider( options.MessageAssembly )
-      )
-    );
+    services.AddSingleton<IPeerMessageEnvelopeConverter, PeerMessageEnvelopeConverter>();
     services.AddScoped<PeerMessageDispatcher>();
     services.AddScoped<PeerResponseCorrelator>();
     services.AddScoped<IPeerStreamManager, PeerStreamManager>();

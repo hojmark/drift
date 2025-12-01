@@ -8,7 +8,6 @@ internal sealed class TestServerCallContext : ServerCallContext {
   private readonly Metadata _responseTrailers;
   private readonly AuthContext _authContext;
   private readonly Dictionary<object, object> _userState;
-  private WriteOptions? _writeOptions;
 
   public Metadata? ResponseHeaders {
     get;
@@ -45,10 +44,8 @@ internal sealed class TestServerCallContext : ServerCallContext {
   }
 
   protected override WriteOptions? WriteOptionsCore {
-    get => _writeOptions;
-    set {
-      _writeOptions = value;
-    }
+    get;
+    set;
   }
 
   protected override AuthContext AuthContextCore => _authContext;

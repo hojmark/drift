@@ -57,9 +57,11 @@ internal sealed class InboundTests {
     var duplexStreams = callContext.CreateDuplexStreams();
 
     // Act
-    var peerStreamTask =
-      inboundPeerService.PeerStream( duplexStreams.Server.RequestStream, duplexStreams.Server.ResponseStream,
-        callContext );
+    var peerStreamTask = inboundPeerService.PeerStream(
+      duplexStreams.Server.RequestStream,
+      duplexStreams.Server.ResponseStream,
+      callContext
+    );
 
     // Assert
     Assert.That( peerStreamTask.IsCompleted, Is.False );

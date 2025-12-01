@@ -64,7 +64,7 @@ internal class AgentStartCommandHandler( IOutputManager output ) : ICommandHandl
     }
   }
 
-  private AgentId? LoadAgentIdentity() {
+  private static AgentId? LoadAgentIdentity() {
     if ( false ) {
       return AgentId.New(); // TODO load from file
     }

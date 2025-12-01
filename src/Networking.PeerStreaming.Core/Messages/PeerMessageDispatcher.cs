@@ -8,10 +8,10 @@ public sealed class PeerMessageDispatcher {
   private readonly PeerResponseCorrelator _responseCorrelator;
   private readonly IPeerMessageEnvelopeConverter _envelopeConverter;
   private readonly ILogger _logger;
-  private readonly Dictionary<string, IPeerMessageHandler> _handlers;
+  private readonly Dictionary<string, IPeerMessageHandlerBase> _handlers;
 
   public PeerMessageDispatcher(
-    IEnumerable<IPeerMessageHandler> handlers,
+    IEnumerable<IPeerMessageHandlerBase> handlers,
     IPeerMessageEnvelopeConverter envelopeConverter,
     PeerResponseCorrelator responseCorrelator,
     ILogger logger
@@ -39,10 +39,10 @@ public sealed class PeerMessageDispatcher {
 
     // Otherwise, dispatch to handler
     if ( _handlers.TryGetValue( message.MessageType, out var handler ) ) {
-      var response = await handler.HandleAsync( message, _envelopeConverter, ct );
+      var responseEnvelope = await handler.DispatchAsync( message, _envelopeConverter, ct );
 
-      if ( response != null ) {
-        var responseEnvelope = _envelopeConverter.ToEnvelope( response );
+      if ( responseEnvelope != null ) {
+        //var responseEnvelope = _envelopeConverter.ToEnvelope( response );
         responseEnvelope.ReplyTo = message.CorrelationId;
         await peerStream.SendAsync( responseEnvelope );
       }

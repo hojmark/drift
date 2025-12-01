@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Drift.Networking.Grpc.Generated;
 using Drift.Networking.PeerStreaming.Core;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
@@ -27,38 +29,19 @@ internal sealed class PeerStreamManagerTests {
     var duplexStreams = callContext.CreateDuplexStreams();
     var serverStreams = duplexStreams.Server;
     var stream = peerStreamManager.Create( serverStreams.RequestStream, serverStreams.ResponseStream, callContext );
-    var converter = new PeerMessageEnvelopeConverter( typeof(TestMessage) );
+    var converter = new PeerMessageEnvelopeConverter();
 
     // Act
     var clientStreams = duplexStreams.Client;
-    await clientStreams.RequestStream.WriteAsync( converter.ToEnvelope( new TestMessage() ) );
+    await clientStreams.RequestStream.WriteAsync( converter.ToEnvelope<TestPeerMessage>( new TestPeerMessage() ) );
 
     await cts.CancelAsync();
     await stream.ReadTask;
 
     // Assert
-    Assert.That( testMessageHandler._lastMessage, Is.Not.Null );
-    Assert.That( testMessageHandler._lastMessage.MessageType, Is.EqualTo( "TestMessageType" ) );
+    Assert.That( testMessageHandler.LastMessage, Is.Not.Null );
+    //Assert.That( testMessageHandler.LastMessage.MessageType, Is.EqualTo( "TestMessageType" ) );
 
     cts.Dispose();
-  }
-
-  internal class TestMessage : IPeerMessage {
-    public string MessageType => "TestMessageType";
-  }
-
-  internal class TestMessageHandler : IPeerMessageHandler {
-    internal PeerMessage? _lastMessage;
-
-    public string? MessageType => "TestMessageType";
-
-    public async Task<IPeerMessage?> HandleAsync(
-      PeerMessage envelope,
-      IPeerMessageEnvelopeConverter envelopeConverter,
-      CancellationToken cancellationToken = default
-    ) {
-      _lastMessage = envelope;
-      return null;
-    }
   }
 }

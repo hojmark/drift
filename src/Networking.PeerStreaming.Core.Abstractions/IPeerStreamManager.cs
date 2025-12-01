@@ -4,7 +4,7 @@ using Grpc.Core;
 
 namespace Drift.Networking.PeerStreaming.Core.Abstractions;
 
-public interface IPeerStreamManager {
+public interface IPeerStreamManager : IAsyncDisposable {
   public IPeerStream GetOrCreate( Uri peerAddress, AgentId id );
 
   public IPeerStream Create(

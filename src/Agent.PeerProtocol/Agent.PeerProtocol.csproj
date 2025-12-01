@@ -3,6 +3,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Networking.PeerStreaming.Core.Abstractions\Networking.PeerStreaming.Core.Abstractions.csproj" />
       <ProjectReference Include="..\Scanning\Scanning.csproj" />
+      <ProjectReference Include="..\Serialization\Serialization.csproj" />
     </ItemGroup>
 
 </Project>

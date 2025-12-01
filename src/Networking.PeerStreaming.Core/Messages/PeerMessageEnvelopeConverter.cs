@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Drift.Networking.Grpc.Generated;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Drift.Serialization.Converters;
@@ -6,43 +7,19 @@ using Drift.Serialization.Converters;
 namespace Drift.Networking.PeerStreaming.Core.Messages;
 
 internal sealed class PeerMessageEnvelopeConverter : IPeerMessageEnvelopeConverter {
-  private readonly Dictionary<string, Type> _typeMap = new();
-  private readonly JsonSerializerOptions _serializerOptions;
-
-  public PeerMessageEnvelopeConverter( IPeerMessageTypesProvider provider ) : this( provider.Get() ) {
+  public PeerMessage ToEnvelope<T>( IPeerMessage message, string? requestId = null )
+    where T : IPeerMessage {
+    string json = JsonSerializer.Serialize( message, T.JsonInfo );
+    return new PeerMessage { MessageType = T.MessageType, Message = json, };
   }
 
-  public PeerMessageEnvelopeConverter( params Type[] messageTypes ) : this( (IEnumerable<Type>) messageTypes ) {
-  }
-
-  private PeerMessageEnvelopeConverter( IEnumerable<Type> messageTypes ) {
-    foreach ( var type in messageTypes ) {
-      // TODO improve
-      var instance = (IPeerMessage) Activator.CreateInstance( type )!;
-      _typeMap[instance.MessageType] = type;
-    }
-
-    _serializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-    _serializerOptions.Converters.Add( new IpAddressConverter() );
-    _serializerOptions.Converters.Add( new CidrBlockConverter() );
-  }
-
-  public PeerMessage ToEnvelope( IPeerMessage message, string? requestId = null ) {
-    var json = JsonSerializer.Serialize( message, message.GetType(), _serializerOptions );
-    return new PeerMessage { MessageType = message.MessageType, Message = json, };
-  }
-
-  public T FromEnvelope<T>( PeerMessage envelope ) where T : IPeerMessage {
-    if ( !_typeMap.TryGetValue( envelope.MessageType, out var type ) ) {
-      throw new InvalidOperationException( $"Unknown message type: {envelope.MessageType}" );
-    }
-
-    if ( type != typeof(T) ) {
+  public TSelf FromEnvelope<TSelf>( PeerMessage envelope ) where TSelf : IPeerMessage {
+    if ( envelope.MessageType != TSelf.MessageType ) {
       throw new InvalidOperationException(
-        $"Message type mismatch: expected {typeof(T).Name}, got {envelope.MessageType}"
+        $"Envelope contains '{envelope.MessageType}' but caller expects '{TSelf.MessageType}'."
       );
     }
 
-    return (T) JsonSerializer.Deserialize( envelope.Message, type, _serializerOptions )!;
+    return JsonSerializer.Deserialize<TSelf>( envelope.Message, TSelf.JsonInfo.Options )!;
   }
 }

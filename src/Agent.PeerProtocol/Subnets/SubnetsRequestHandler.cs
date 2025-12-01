@@ -9,10 +9,10 @@ namespace Drift.Agent.PeerProtocol.Subnets;
 internal sealed class SubnetsRequestHandler(
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ILogger logger
-) : IPeerMessageHandler<SubnetsRequest> {
-  public string MessageType => "subnetsrequest";
+) : IPeerMessageHandler<SubnetsRequest, SubnetsResponse> {
+  public string MessageType => SubnetsRequest.MessageType;
 
-  public async Task<IPeerMessage?> HandleAsync(
+  public async Task<SubnetsResponse?> HandleAsync(
     SubnetsRequest message,
     CancellationToken cancellationToken = default
   ) {

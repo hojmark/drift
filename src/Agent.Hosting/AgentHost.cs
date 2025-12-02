@@ -50,7 +50,6 @@ public static class AgentHost {
     peerStreamingOptions.StoppingToken = app.Lifetime.ApplicationStopping;
 
     app.MapPeerStreamingServerEndpoints();
-    app.MapGet( "/", () => "Nothing to see here" );
 
     app.Lifetime.ApplicationStarted.Register( () => {
       logger.LogInformation( "Listening for incoming connections on port {Port}", port );

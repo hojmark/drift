@@ -49,14 +49,14 @@ internal sealed class Cluster(
     await connection.SendAsync( envelope );
   }*/
 
-  public async Task<TResponse> SendAndWaitAsync<TReq, TResponse>(
+  public async Task<TResponse> SendAndWaitAsync<TRequest, TResponse>(
     Domain.Agent agent,
-    TReq message,
+    TRequest message,
     TimeSpan? timeout = null,
     CancellationToken cancellationToken = default
-  ) where TResponse : IPeerMessage where TReq : IPeerMessage {
+  ) where TResponse : IPeerResponseMessage where TRequest : IPeerRequestMessage {
     var correlationId = Guid.NewGuid().ToString();
-    var envelope = envelopeConverter.ToEnvelope<TReq>( message );
+    var envelope = envelopeConverter.ToEnvelope<TRequest>( message );
     envelope.CorrelationId = correlationId;
 
     // Register correlator BEFORE sending

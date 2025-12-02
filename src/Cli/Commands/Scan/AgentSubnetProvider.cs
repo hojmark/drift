@@ -1,5 +1,5 @@
 using Drift.Domain;
-using Drift.Networking.Clustering;
+using Drift.Networking.Cluster;
 using Drift.Scanning.Subnets;
 
 namespace Drift.Cli.Commands.Scan;

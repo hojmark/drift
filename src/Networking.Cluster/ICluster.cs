@@ -1,6 +1,6 @@
 using Drift.Networking.PeerStreaming.Core.Abstractions;
 
-namespace Drift.Networking.Clustering;
+namespace Drift.Networking.Cluster;
 
 public interface ICluster {
   //Task SendAsync( Domain.Agent agent, IPeerMessage message, CancellationToken cancellationToken = default );

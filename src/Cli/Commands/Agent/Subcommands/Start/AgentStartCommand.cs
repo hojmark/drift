@@ -7,7 +7,7 @@ using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Domain;
-using Drift.Networking.Clustering;
+using Drift.Networking.Cluster;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start;
 

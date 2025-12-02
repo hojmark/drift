@@ -10,7 +10,7 @@ using Drift.Cli.SpecFile;
 using Drift.Common.Network;
 using Drift.Domain;
 using Drift.Domain.Scan;
-using Drift.Networking.Clustering;
+using Drift.Networking.Cluster;
 using Drift.Scanning.Subnets;
 using Drift.Scanning.Subnets.Interface;
 

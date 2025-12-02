@@ -1,5 +1,5 @@
 using Drift.Agent.PeerProtocol.Subnets;
-using Drift.Networking.Clustering;
+using Drift.Networking.Cluster;
 
 namespace Drift.Cli.Commands.Scan;
 

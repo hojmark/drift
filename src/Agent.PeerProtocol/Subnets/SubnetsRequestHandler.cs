@@ -1,5 +1,3 @@
-using System.Collections;
-using Drift.Networking.Grpc.Generated;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.Logging;

@@ -2,19 +2,10 @@ using Drift.Networking.Grpc.Generated;
 
 namespace Drift.Networking.PeerStreaming.Core.Abstractions;
 
-/*public interface IPeerMessageHandler {
-  string MessageType {
-    get;
-  }
-
-  Task<IPeerMessage?> HandleAsync(
-    PeerMessage envelope,
-    IPeerMessageEnvelopeConverter envelopeConverter,
-    CancellationToken cancellationToken = default
-  );
-}*/
-
 public interface IPeerMessageHandler {
+  /// <summary>
+  /// Gets the message type name that this handler can process.
+  /// </summary>
   string MessageType {
     get;
   }
@@ -27,8 +18,8 @@ public interface IPeerMessageHandler {
 }
 
 public interface IPeerMessageHandler<TRequest, TResponse> : IPeerMessageHandler
-  where TRequest : IPeerMessage
-  where TResponse : IPeerMessage {
+  where TRequest : IPeerRequestMessage
+  where TResponse : IPeerResponseMessage {
   Task<TResponse?> HandleAsync( TRequest message, CancellationToken cancellationToken = default );
 
   async Task<PeerMessage?> IPeerMessageHandler.HandleAsync(

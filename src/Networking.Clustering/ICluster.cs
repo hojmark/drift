@@ -5,12 +5,12 @@ namespace Drift.Networking.Clustering;
 public interface ICluster {
   //Task SendAsync( Domain.Agent agent, IPeerMessage message, CancellationToken cancellationToken = default );
 
-  Task<TResponse> SendAndWaitAsync<TReq, TResponse>(
+  Task<TResponse> SendAndWaitAsync<TRequest, TResponse>(
     Domain.Agent agent,
-    TReq message,
+    TRequest message,
     TimeSpan? timeout = null,
     CancellationToken cancellationToken = default
-  ) where TResponse : IPeerMessage where TReq : IPeerMessage;
+  ) where TResponse : IPeerResponseMessage where TRequest : IPeerRequestMessage;
 
   /*Task BroadcastAsync( PeerMessage message, CancellationToken cancellationToken = default );
   Task<List<CidrBlock>> RequestSubnetsAsync( string peerAddress, CancellationToken cancellationToken = default );

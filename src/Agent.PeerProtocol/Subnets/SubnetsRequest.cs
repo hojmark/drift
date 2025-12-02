@@ -4,11 +4,7 @@ using Drift.Networking.PeerStreaming.Core.Abstractions;
 
 namespace Drift.Agent.PeerProtocol.Subnets;
 
-public sealed class SubnetsRequest : IPeerMessage {
-  static SubnetsRequest() {
-    PeerProtocolTypesProvider.Map[MessageType] = JsonInfo;
-  }
-
+public sealed class SubnetsRequest : IPeerRequestMessage {
   public static string MessageType => "subnetsrequest";
 
   public static JsonTypeInfo JsonInfo => SubnetsRequestJsonContext.Default.SubnetsRequest;

@@ -6,11 +6,7 @@ using Drift.Serialization.Converters;
 
 namespace Drift.Agent.PeerProtocol.Subnets;
 
-public sealed class SubnetsResponse : IPeerMessage {
-  static SubnetsResponse() {
-    PeerProtocolTypesProvider.Map[MessageType] = JsonInfo;
-  }
-
+public sealed class SubnetsResponse : IPeerResponseMessage {
   public static string MessageType => "subnetsresponse";
 
   public required IReadOnlyList<CidrBlock> Subnets {

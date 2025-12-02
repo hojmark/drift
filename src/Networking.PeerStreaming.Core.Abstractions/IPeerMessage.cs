@@ -11,3 +11,7 @@ public interface IPeerMessage {
     get;
   }
 }
+
+public interface IPeerRequestMessage : IPeerMessage;
+
+public interface IPeerResponseMessage : IPeerMessage;

@@ -75,7 +75,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Schemas", "src\Commo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networking.PeerStreaming.Grpc", "src\Networking.PeerStreaming.Grpc\Networking.PeerStreaming.Grpc.csproj", "{8ED3FF22-90D2-4F08-A079-55FE7127D1C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networking.Clustering", "src\Networking.Clustering\Networking.Clustering.csproj", "{091D3DCE-F062-4D40-A8F6-5B6F123ED713}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networking.Cluster", "src\Networking.Cluster\Networking.Cluster.csproj", "{091D3DCE-F062-4D40-A8F6-5B6F123ED713}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networking.PeerStreaming.Core", "src\Networking.PeerStreaming.Core\Networking.PeerStreaming.Core.csproj", "{80445644-7342-4C6D-88E5-BF27126FE9A2}"
 EndProject

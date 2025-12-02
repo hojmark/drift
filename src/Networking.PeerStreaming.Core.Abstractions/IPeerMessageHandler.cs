@@ -18,7 +18,7 @@ public interface IPeerMessageHandler {
 }
 
 public interface IPeerMessageHandler<TRequest, TResponse> : IPeerMessageHandler
-  where TRequest : IPeerRequestMessage
+  where TRequest : IPeerRequestMessage<TResponse>
   where TResponse : IPeerResponseMessage {
   Task<TResponse?> HandleAsync( TRequest message, CancellationToken cancellationToken = default );
 

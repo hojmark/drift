@@ -2,7 +2,7 @@ using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Drift.Networking.PeerStreaming.Core.Messages;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Networking.Clustering;
+namespace Drift.Networking.Cluster;
 
 internal sealed class Cluster(
   IPeerMessageEnvelopeConverter envelopeConverter,

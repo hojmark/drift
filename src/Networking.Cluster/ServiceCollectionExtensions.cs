@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Drift.Networking.Clustering;
+namespace Drift.Networking.Cluster;
 
 public static class ServiceCollectionExtensions {
   public static void AddClustering( this IServiceCollection services ) {

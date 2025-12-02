@@ -5,7 +5,7 @@ namespace Drift.Agent.PeerProtocol.Tests;
 
 internal sealed class PeerMessageHandlerTests {
   private static readonly Assembly ProtocolAssembly = typeof(PeerProtocolAssemblyMarker).Assembly;
-  private static readonly IEnumerable<Type> RequestTypes = GetAllConcreteMessageTypes( typeof(IPeerRequestMessage) );
+  private static readonly IEnumerable<Type> RequestTypes = GetAllConcreteMessageTypes( typeof(IPeerRequestMessage<>) );
   private static readonly IEnumerable<Type> ResponseTypes = GetAllConcreteMessageTypes( typeof(IPeerResponseMessage) );
   private static readonly IEnumerable<Type> HandlerTypes = GetAllConcreteHandlerTypes();
 

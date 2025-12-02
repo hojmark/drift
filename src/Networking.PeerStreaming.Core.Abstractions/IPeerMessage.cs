@@ -12,6 +12,6 @@ public interface IPeerMessage {
   }
 }
 
-public interface IPeerRequestMessage : IPeerMessage;
+public interface IPeerRequestMessage<TResponse> : IPeerMessage where TResponse : IPeerResponseMessage;
 
 public interface IPeerResponseMessage : IPeerMessage;

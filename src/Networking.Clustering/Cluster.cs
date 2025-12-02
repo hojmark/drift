@@ -54,7 +54,7 @@ internal sealed class Cluster(
     TRequest message,
     TimeSpan? timeout = null,
     CancellationToken cancellationToken = default
-  ) where TResponse : IPeerResponseMessage where TRequest : IPeerRequestMessage {
+  ) where TResponse : IPeerResponseMessage where TRequest : IPeerRequestMessage<TResponse> {
     var correlationId = Guid.NewGuid().ToString();
     var envelope = envelopeConverter.ToEnvelope<TRequest>( message );
     envelope.CorrelationId = correlationId;

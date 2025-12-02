@@ -17,7 +17,7 @@ using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
 using Drift.Domain.ExecutionEnvironment;
 using Drift.Domain.Scan;
-using Drift.Networking.Clustering;
+using Drift.Networking.Cluster;
 using Drift.Networking.PeerStreaming.Client;
 using Drift.Networking.PeerStreaming.Core;
 using Drift.Scanning;

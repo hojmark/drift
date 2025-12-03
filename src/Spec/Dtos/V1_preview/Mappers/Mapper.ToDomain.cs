@@ -23,9 +23,8 @@ public static partial class Mapper {
   private static Domain.Agent Map( Agent dto ) {
     var agent = new Domain.Agent();
 
+    agent.Id = dto.Id;
     agent.Address = dto.Address;
-
-    // TODO agent.Id = dto.
 
     return agent;
   }

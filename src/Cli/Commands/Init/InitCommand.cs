@@ -178,7 +178,9 @@ internal class InitCommandHandler(
         return false;
       }
 
-      var scanOptions = new NetworkScanOptions { Cidrs = ( await interfaceSubnetProvider.GetAsync() ).ToList() };
+      var scanOptions = new NetworkScanOptions {
+        Cidrs = ( await interfaceSubnetProvider.GetAsync() ).Select( subnet => subnet.Cidr ).ToList()
+      };
 
       LogSubnetDetails( scanOptions );
 

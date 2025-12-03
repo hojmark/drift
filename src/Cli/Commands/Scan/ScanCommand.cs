@@ -75,7 +75,9 @@ internal class ScanCommandHandler(
       subnetProviders.Add( new PredefinedSubnetProvider( inventory.Network.Subnets ) );
     }
 
-    if ( inventory?.Agents.Any() ?? false ) {
+    var hasAgents = inventory?.Agents.Any() ?? false;
+
+    if ( hasAgents ) {
       subnetProviders.Add(
         new AgentSubnetProvider(
           output.GetLogger(),
@@ -112,8 +114,8 @@ internal class ScanCommandHandler(
         " addresses, estimated scan time is " +
         scanRequest.EstimatedDuration(
           subnet.Cidr ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
-        ") via " +
-        sourceList,
+        ")" +
+        ( hasAgents ? $" via {sourceList}" : string.Empty ),
         ConsoleColor.DarkGray
       );
     }

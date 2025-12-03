@@ -16,7 +16,7 @@ internal sealed class SubnetsRequestHandler(
   ) {
     logger.LogInformation( "Handling subnet request" );
 
-    var subnets = await interfaceSubnetProvider.GetAsync();
+    var subnets = ( await interfaceSubnetProvider.GetAsync() ).Select( s => s.Cidr ).ToList();
 
     logger.LogInformation( "Sending subnets: {Subnets}", string.Join( ", ", subnets ) );
 

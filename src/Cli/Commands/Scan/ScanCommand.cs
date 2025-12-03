@@ -17,14 +17,8 @@ using Drift.Scanning.Subnets.Interface;
 namespace Drift.Cli.Commands.Scan;
 
 /*
- * Ideas:
- *   Interactive mode:
- *   ➤ New host found: 192.168.1.42
- *   ➤ Port 22 no longer open on 192.168.1.10
- *   → Would you like to update the declared state? [y/N]
-
  *   Monitor mode:
- *     drift monitor --reference declared.yaml --interval 10m --notify slack,email,log,webhook
+ *     drift monitor declared.yaml --interval 10m --notify slack,email,log,webhook
  */
 internal class ScanCommand : CommandBase<ScanParameters, ScanCommandHandler> {
   public ScanCommand( IServiceProvider provider ) : base( "scan", "Scan the network and detect drift", provider ) {
@@ -97,27 +91,37 @@ internal class ScanCommandHandler(
     output.Normal.WriteLineVerbose( $"Using {subnetProvider.GetType().Name}" );
     output.Log.LogDebug( "Using {SubnetProviderType}", subnetProvider.GetType().Name );
 
-    var subnets = await subnetProvider.GetAsync();
+    var groupedSubnets = ( await subnetProvider.GetAsync() )
+      .GroupBy( subnet => subnet.Cidr )
+      .Select( group => new { Cidr = group.Key, Sources = group.Select( r => r.Source ).Distinct().ToList() } )
+      .ToList();
 
-    var scanRequest = new NetworkScanOptions { Cidrs = subnets };
+    var scanRequest = new NetworkScanOptions { Cidrs = groupedSubnets.Select( group => group.Cidr ).ToList() };
 
     // TODO many more varieties
-    output.Normal.WriteLine( 0, $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : string.Empty )}" );
-    foreach ( var cidr in subnets ) {
+    output.Normal.WriteLine(
+      0,
+      $"Scanning {groupedSubnets.Count} subnet{( groupedSubnets.Count > 1 ? "s" : string.Empty )}"
+    );
+    foreach ( var subnet in groupedSubnets ) {
+      var sourceList = string.Join( ", ", subnet.Sources );
       // TODO write name if from spec: Ui.WriteLine( 1, $"{subnet.Id}: {subnet.Network}" );
-      output.Normal.Write( 1, $"{cidr}", ConsoleColor.Cyan );
+      output.Normal.Write( 1, $"{subnet.Cidr}", ConsoleColor.Cyan );
       output.Normal.WriteLine(
-        " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
+        " (" + IpNetworkUtils.GetIpRangeCount( subnet.Cidr ) +
         " addresses, estimated scan time is " +
         scanRequest.EstimatedDuration(
-          cidr ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
-        ")", ConsoleColor.DarkGray );
+          subnet.Cidr ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
+        ") via " +
+        sourceList,
+        ConsoleColor.DarkGray
+      );
     }
 
     output.Log.LogInformation(
       "Scanning {SubnetCount} subnet(s): {SubnetList}",
-      subnets.Count,
-      string.Join( ", ", subnets )
+      groupedSubnets.Count,
+      string.Join( ", ", groupedSubnets.Select( s => s.Cidr ) )
     );
 
     Task<int> uiTask;

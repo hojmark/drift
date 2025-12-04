@@ -18,9 +18,9 @@ public interface IPeerMessageHandler {
 }
 
 public interface IPeerMessageHandler<TRequest, TResponse> : IPeerMessageHandler
-  where TRequest : IPeerRequestMessage<TResponse>
-  where TResponse : IPeerResponseMessage {
-  Task<TResponse?> HandleAsync( TRequest message, CancellationToken cancellationToken = default );
+  where TRequest : IPeerRequest<TResponse>
+  where TResponse : IPeerResponse {
+  Task<TResponse> HandleAsync( TRequest message, CancellationToken cancellationToken = default );
 
   async Task<PeerMessage?> IPeerMessageHandler.HandleAsync(
     PeerMessage envelope,
@@ -30,7 +30,7 @@ public interface IPeerMessageHandler<TRequest, TResponse> : IPeerMessageHandler
 
     var response = await HandleAsync( request, cancellationToken );
 
-    if ( response is null ) {
+    if ( response is Empty ) {
       return null;
     }
 

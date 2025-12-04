@@ -12,7 +12,8 @@ internal sealed class PeerStreamManagerTests {
     var cts = new CancellationTokenSource();
     var logger = new StringLogger( TestContext.Out );
     var testMessageHandler = new TestMessageHandler();
-    var dispatcher = new PeerMessageDispatcher( [testMessageHandler], null, null, logger );
+    var envelopeConverter = new PeerMessageEnvelopeConverter();
+    var dispatcher = new PeerMessageDispatcher( [testMessageHandler], envelopeConverter, null, logger );
     var peerStreamManager = new PeerStreamManager(
       logger,
       null,

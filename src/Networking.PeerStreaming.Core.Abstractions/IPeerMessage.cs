@@ -12,6 +12,8 @@ public interface IPeerMessage {
   }
 }
 
-public interface IPeerRequestMessage<TResponse> : IPeerMessage where TResponse : IPeerResponseMessage;
+public interface IPeerRequest<TResponse> : IPeerMessage where TResponse : IPeerResponse;
 
-public interface IPeerResponseMessage : IPeerMessage;
+public interface IPeerResponse : IPeerMessage {
+  static readonly Empty Empty = Empty.Instance;
+}

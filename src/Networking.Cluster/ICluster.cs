@@ -10,7 +10,7 @@ public interface ICluster {
     TRequest message,
     TimeSpan? timeout = null,
     CancellationToken cancellationToken = default
-  ) where TResponse : IPeerResponseMessage where TRequest : IPeerRequestMessage<TResponse>;
+  ) where TResponse : IPeerResponse where TRequest : IPeerRequest<TResponse>;
 
   /*Task BroadcastAsync( PeerMessage message, CancellationToken cancellationToken = default );
   Task<List<CidrBlock>> RequestSubnetsAsync( string peerAddress, CancellationToken cancellationToken = default );

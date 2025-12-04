@@ -11,6 +11,7 @@ internal sealed class PeerMessageHandlerTests {
 
   [Test]
   public void FindMessagesAndHandlersAndMessages() {
+    using var _ = Assert.EnterMultipleScope();
     Assert.That( RequestTypes.ToList(), Has.Count.GreaterThan( 1 ), "No request messages found via reflection" );
     Assert.That( ResponseTypes.ToList(), Has.Count.GreaterThan( 1 ), "No response messages found via reflection" );
     Assert.That( HandlerTypes.ToList(), Has.Count.GreaterThan( 1 ), "No handlers found via reflection" );
@@ -99,7 +100,12 @@ internal sealed class PeerMessageHandlerTests {
     return ProtocolAssembly
       .GetTypes()
       .Where( t => t is { IsAbstract: false, IsInterface: false } )
-      .Where( baseType.IsAssignableFrom )
+      .Where( t =>
+        // Generic base type
+        t.GetInterfaces().Any( i => i.IsGenericType && i.GetGenericTypeDefinition() == baseType ) ||
+        // Non-generic base type
+        baseType.IsAssignableFrom( t )
+      )
       .ToList();
   }
 

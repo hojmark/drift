@@ -154,11 +154,13 @@ public record Settings {
 
 [AdditionalProperties( false )]
 public record Agent {
+  [Required]
   public string Id {
     get;
     set;
   }
 
+  [Required]
   public string Address {
     get;
     set;

@@ -4,7 +4,7 @@ using Drift.Networking.PeerStreaming.Core.Abstractions;
 
 namespace Drift.Networking.PeerStreaming.Tests.Helpers;
 
-internal sealed class TestPeerMessage : IPeerRequestMessage<TestPeerMessage>, IPeerResponseMessage {
+internal sealed class TestPeerMessage : IPeerRequest<TestPeerMessage>, IPeerResponse {
   public static string MessageType => "test-peer-message";
 
   public static JsonTypeInfo JsonInfo => TestPeerMessageJsonContext.Default.TestPeerMessage;

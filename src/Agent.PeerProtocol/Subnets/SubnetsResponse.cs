@@ -6,8 +6,8 @@ using Drift.Serialization.Converters;
 
 namespace Drift.Agent.PeerProtocol.Subnets;
 
-public sealed class SubnetsResponse : IPeerResponseMessage {
-  public static string MessageType => "subnetsresponse";
+public sealed class SubnetsResponse : IPeerResponse {
+  public static string MessageType => "subnets-response";
 
   public required IReadOnlyList<CidrBlock> Subnets {
     get;

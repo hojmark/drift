@@ -111,10 +111,17 @@
       "items": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "address": {
             "type": "string"
           }
         },
+        "required": [
+          "id",
+          "address"
+        ],
         "additionalProperties": false
       }
     }

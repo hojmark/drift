@@ -53,7 +53,7 @@ public static class SpecValidator {
     if ( results.Errors?.Count > 0 ) {
       foreach ( var error in results.Errors ) {
         yield return new ValidationError {
-          Path = results.InstanceLocation.Count == 0 ? "/" : results.InstanceLocation.ToString(),
+          Path = results.InstanceLocation.SegmentCount == 0 ? "/" : results.InstanceLocation.ToString(),
           Message = error.Value ?? "Validation error",
           SchemaPath = results.SchemaLocation.ToString()
         };

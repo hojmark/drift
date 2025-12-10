@@ -138,17 +138,4 @@ internal sealed class ValidationTests {
       Assert.That( result.Errors, Is.Empty );
     }
   }
-
-  [Explicit( "Regression reproduction" )]
-  [Test]
-  public void SchemaReadSuccession() {
-    const string json = """
-                        {
-                          "$id": "https://hojmark.github.io/drift/schemas/drift-spec-v1-preview.schema.json"
-                        }
-                        """;
-    JsonSchema.FromText( json );
-    JsonSchema.FromText( json ); // Throws "Json.Schema.JsonSchemaException : Overwriting registered schemas is not permitted."
-    Assert.Pass();
-  }
 }

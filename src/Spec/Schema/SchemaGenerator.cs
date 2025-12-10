@@ -33,7 +33,9 @@ public static class SchemaGenerator {
       // TODO Publish and test e2e
       .Id( new Uri( $"https://hojmark.github.io/drift/schemas/{version.ToJsonSchemaFileName()}" ) )
       .FromType<T>( SchemaConfiguration )
-      .Build();
+      // Create a new empty schema registry to avoid unit test failure when both creating and reading a schema with the same id in the same test process
+      // See The https://github.com/json-everything/json-everything/issues/957
+      .Build( new BuildOptions { SchemaRegistry = new SchemaRegistry() } );
 
     return JsonSerializer.Serialize( schema, SerializerOptions );
   }

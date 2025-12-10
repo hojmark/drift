@@ -12,16 +12,16 @@
       "properties": {
         "subnets": {
           "type": [
-            "array",
-            "null"
+            "null",
+            "array"
           ],
           "items": {
             "type": "object",
             "properties": {
               "id": {
                 "type": [
-                  "string",
-                  "null"
+                  "null",
+                  "string"
                 ]
               },
               "address": {
@@ -29,8 +29,8 @@
               },
               "enabled": {
                 "type": [
-                  "boolean",
-                  "null"
+                  "null",
+                  "boolean"
                 ]
               }
             },
@@ -42,16 +42,16 @@
         },
         "devices": {
           "type": [
-            "array",
-            "null"
+            "null",
+            "array"
           ],
           "items": {
             "type": "object",
             "properties": {
               "id": {
                 "type": [
-                  "string",
-                  "null"
+                  "null",
+                  "string"
                 ]
               },
               "addresses": {
@@ -67,8 +67,8 @@
                     },
                     "is_id": {
                       "type": [
-                        "boolean",
-                        "null"
+                        "null",
+                        "boolean"
                       ]
                     }
                   },
@@ -89,8 +89,8 @@
               },
               "enabled": {
                 "type": [
-                  "boolean",
-                  "null"
+                  "null",
+                  "boolean"
                 ]
               }
             },

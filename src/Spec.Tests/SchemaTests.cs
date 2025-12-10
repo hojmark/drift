@@ -7,7 +7,7 @@ internal sealed class SchemaTests {
   public void EmbeddedSchemaIsUpdated( SpecVersion version ) {
     // Arrange / Act
     var runtimeGeneratedSchema = SchemaGenerator.Generate( version );
-    var embeddedSchema = SpecSchemaProvider.AsText( version );
+    var embeddedSchema = SpecSchemaProvider.GetAsText( version );
 
     // Assert
     Assert.That( runtimeGeneratedSchema, Is.EqualTo( embeddedSchema ), "Embedded schema is not up to date" );

@@ -6,12 +6,12 @@ using Json.Schema;
 namespace Drift.Spec.Validation;
 
 public static class SpecValidator {
-  public static ValidationResult Validate( string yaml, Schema.SpecVersion specVersion ) {
-    var schema = SpecSchemaProvider.AsText( specVersion );
+  public static ValidationResult Validate( string yaml, SpecVersion version ) {
+    var schema = SpecSchemaProvider.Get( version );
     return Validate( yaml, schema );
   }
 
-  private static ValidationResult Validate( string yaml, string jsonSchema ) {
+  private static ValidationResult Validate( string yaml, JsonSchema schema ) {
     // try {
     // Read YAML and convert to JSON
     var yamlObject = YamlConverter.DeserializeToDto( yaml );
@@ -19,19 +19,15 @@ public static class SpecValidator {
     var jsonString = YamlConverter.SerializeToDto( yamlObject, true );
     var jsonDocument = JsonDocument.Parse( jsonString );
 
-    // Read JSON schema
-    var schema = JsonSchema.FromText( jsonSchema );
-
     // Validate
     var validationResults = schema.Evaluate(
       jsonDocument.RootElement,
       new EvaluationOptions { OutputFormat = OutputFormat.Hierarchical }
     );
 
-    var r = new ValidationResult {
+    return new ValidationResult {
       IsValid = validationResults.IsValid, Errors = ExtractErrors( validationResults ).ToList()
     };
-    return r;
 
     // Throw exceptions
     /*}
@@ -53,16 +49,18 @@ public static class SpecValidator {
     if ( results.Errors?.Count > 0 ) {
       foreach ( var error in results.Errors ) {
         yield return new ValidationError {
-          Path = results.InstanceLocation.Count == 0 ? "/" : results.InstanceLocation.ToString(),
+          Path = results.InstanceLocation.SegmentCount == 0 ? "/" : results.InstanceLocation.ToString(),
           Message = error.Value ?? "Validation error",
           SchemaPath = results.SchemaLocation.ToString()
         };
       }
     }
 
-    foreach ( var detail in results.Details ) {
-      foreach ( var nestedError in ExtractErrors( detail ) ) {
-        yield return nestedError;
+    if ( results.Details != null ) {
+      foreach ( var detail in results.Details ) {
+        foreach ( var nestedError in ExtractErrors( detail ) ) {
+          yield return nestedError;
+        }
       }
     }
   }

@@ -5,13 +5,6 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Transitive pinning group -->
-    <PackageVersion Include="Microsoft.Build" Version="18.0.2" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="18.0.2" />
-    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="18.0.2" />
-    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="18.0.2" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageVersion Include="HLabs.Containers" Version="1.0.0-preview.1" />
     <PackageVersion Include="Humanizer" Version="3.0.1" />
     <PackageVersion Include="IPNetwork2" Version="3.4.832" />

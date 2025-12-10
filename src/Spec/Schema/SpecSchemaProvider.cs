@@ -12,14 +12,8 @@ public static class SpecSchemaProvider {
   }
 
   internal static JsonSchema Get( SpecVersion version ) {
-    return SchemaCache.GetOrAdd(
-      version,
-      v => {
-        return JsonSchema.FromText( GetAsText( v )
-        );
-      } );
+    return SchemaCache.GetOrAdd( version, v => JsonSchema.FromText( GetAsText( v ) ) );
   }
-
 
   private static string GetPath( SpecVersion version ) {
     return $"schemas/{version.ToJsonSchemaFileName()}";

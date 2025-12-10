@@ -1,4 +1,4 @@
-﻿FROM quay.io/fedora/fedora-minimal:42
+﻿FROM quay.io/fedora/fedora-minimal:43
 
 ENV DRIFT_EXECUTION__ENVIRONMENT="container"
 

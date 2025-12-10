@@ -93,11 +93,7 @@ internal sealed class LabelsTest : DriftImageFixture {
     // 40-character hexadecimal Git SHA-1 hash
     private static readonly Regex GitCommitHashRegex = new("^[0-9a-f]{40}$", RegexOptions.IgnoreCase);
 
-    public static bool IsValidGitCommitHash( string? input ) {
-      if ( string.IsNullOrWhiteSpace( input ) ) {
-        return false;
-      }
-
+    public static bool IsValidGitCommitHash( string input ) {
       return GitCommitHashRegex.IsMatch( input );
     }
   }

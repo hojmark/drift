@@ -66,7 +66,14 @@ internal sealed class ExitCodeTests {
     // Assert
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.UnknownError ) );
-      await Verify( output.ToString() + error );
+      await Verify(
+        output +
+        // Avoids full stack trace in the test output (OS path differences, unrelated code changes etc.)
+        string.Join(
+          Environment.NewLine,
+          error.ToString()?.Split( Environment.NewLine ).Take( 2 ) ?? []
+        )
+      );
     }
   }
 

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.SpecFile;
 using Microsoft.Extensions.Logging;
@@ -12,9 +13,9 @@ namespace Drift.Cli.Tests;
   Justification = "Serves as code documentation"
 )]
 // TODO enable on Windows
-[Platform("Linux")]
 internal sealed class SpecFilePathResolverTests {
-  private const string HomeEnvVar = "HOME";
+  private const string HomeEnvVarLinux = "HOME";
+  private const string HomeEnvVarWindows = "USERPROFILE";
   private string? _originalHome;
   private string _tempHome;
 
@@ -23,13 +24,27 @@ internal sealed class SpecFilePathResolverTests {
     _tempHome = Path.Combine( Path.GetTempPath(), "fake-home-" + Guid.NewGuid().ToString() );
     Directory.CreateDirectory( _tempHome );
 
-    _originalHome = Environment.GetEnvironmentVariable( HomeEnvVar );
-    Environment.SetEnvironmentVariable( HomeEnvVar, _tempHome );
+    if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
+      _originalHome = Environment.GetEnvironmentVariable( HomeEnvVarLinux );
+      Environment.SetEnvironmentVariable( HomeEnvVarLinux, _tempHome );
+    }
+
+    if ( RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ) {
+      _originalHome = Environment.GetEnvironmentVariable( HomeEnvVarWindows );
+      Environment.SetEnvironmentVariable( HomeEnvVarWindows, _tempHome );
+    }
   }
 
   [OneTimeTearDown]
   public void TeardownHomeDir() {
-    Environment.SetEnvironmentVariable( HomeEnvVar, _originalHome );
+    if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
+      Environment.SetEnvironmentVariable( HomeEnvVarLinux, _originalHome );
+    }
+
+    if ( RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ) {
+      Environment.SetEnvironmentVariable( HomeEnvVarWindows, _originalHome );
+    }
+
     Directory.Delete( _tempHome, true );
   }
 

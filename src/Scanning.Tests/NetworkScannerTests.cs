@@ -31,7 +31,13 @@ internal sealed class NetworkScannerTests {
       return;
     }
 
-    var subnetScanner = new LinuxPingSubnetScanner( new PredefinedPingTool( successfulIps ) );
+    var pingTool = new PredefinedPingTool( successfulIps );
+
+    PingSubnetScannerBase subnetScanner = RuntimeInformation.IsOSPlatform( OSPlatform.Linux )
+      ? new LinuxPingSubnetScanner( pingTool )
+      : RuntimeInformation.IsOSPlatform( OSPlatform.Windows )
+        ? new WindowsPingSubnetScanner( pingTool )
+        : throw new PlatformNotSupportedException();
 
     var logger = new StringLogger();
 

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Scanning.Scanners;
 
 [SupportedOSPlatform( "windows" )]
-internal sealed class WindowsPingSubnetScanner : PingSubnetScannerBase {
+internal sealed class WindowsPingSubnetScanner( IPingTool pingTool ) : PingSubnetScannerBase {
   protected override IArpTableProvider ArpTables() {
     throw new NotImplementedException();
   }

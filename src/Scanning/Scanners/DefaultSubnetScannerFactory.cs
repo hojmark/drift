@@ -50,7 +50,7 @@ public class DefaultSubnetScannerFactory(
     }
 
     if ( RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ) {
-      return new WindowsPingSubnetScanner();
+      return new WindowsPingSubnetScanner( pingTool );
     }
 
     throw new PlatformNotSupportedException();

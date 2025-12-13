@@ -5,6 +5,7 @@ using Nuke.Common.Tools.Docker;
 
 namespace Drift.Cli.E2ETests;
 
+[Platform("Linux")]
 internal abstract class DriftImageFixture {
   protected static ImageReference DriftImage {
     get;

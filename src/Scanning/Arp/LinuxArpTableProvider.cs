@@ -7,31 +7,8 @@ namespace Drift.Scanning.Arp;
 
 // TODO read from /proc/net/arp instead of spawning processes
 [SupportedOSPlatform( "linux" )]
-internal class LinuxArpTableProvider : IArpTableProvider {
-  private static readonly Lock CacheLock = new();
-  private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds( 1 );
-  private static ArpTable _cache = ArpTable.Empty;
-  private static DateTime _lastUpdated = DateTime.MinValue;
-
-  public ArpTable Cached => GetTable( forceRefresh: false );
-
-  public ArpTable Fresh => GetTable( forceRefresh: true );
-
-  private static ArpTable GetTable( bool forceRefresh ) {
-    lock ( CacheLock ) {
-      var now = DateTime.UtcNow;
-
-      if ( !forceRefresh && ( now - _lastUpdated ) < CacheTtl ) {
-        return _cache;
-      }
-
-      _cache = ReadSystemArpCache();
-      _lastUpdated = now;
-      return _cache;
-    }
-  }
-
-  private static ArpTable ReadSystemArpCache() {
+internal class LinuxArpTableProvider : ArpTableProviderBase {
+  protected override ArpTable ReadSystemArpCache() {
     var map = new Dictionary<IPAddress, MacAddress>();
 
     var startInfo = new ProcessStartInfo {

@@ -26,11 +26,6 @@ internal sealed class NetworkScannerTests {
       .Take( 3 )
     ).ToList();
 
-    if ( !RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
-      Assert.Fail();
-      return;
-    }
-
     var pingTool = new PredefinedPingTool( successfulIps );
 
     PingSubnetScannerBase subnetScanner = RuntimeInformation.IsOSPlatform( OSPlatform.Linux )

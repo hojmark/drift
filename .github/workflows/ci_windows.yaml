@@ -1,0 +1,54 @@
+name: 🔁 🪟 CI
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      verbosity:
+        description: 'MSBuild verbosity level'
+        required: false
+        default: 'normal'
+        type: choice
+        options:
+          - 'quiet'
+          - 'minimal'
+          - 'normal'
+          - 'detailed'
+          - 'diagnostic'
+
+jobs:
+  test:
+    name: Test
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up runner
+        uses: ./.github/actions/setup-runner
+
+      - name: Run tests
+        run: |
+          dotnet run \
+          --project ./build/_build.csproj \
+          --target Test \
+          --commit ${{ github.sha }} \
+          --msbuildverbosity ${{ github.event.inputs.verbosity }}
+
+      - name: Display test results
+        continue-on-error: true
+        if: always()
+        run: dotnet trx --verbosity normal
+
+      # TODO fix publish warnings and re-enable check
+      - name: Check for warnings
+        run: |
+          dotnet run \
+          --project ./build/_build.csproj \
+          --target CheckBuildWarnings

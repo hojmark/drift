@@ -16,6 +16,6 @@ runs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    #- name: Restore .NET tools
-    #  shell: bash
-    #  run: dotnet tool restore
+    - name: Restore .NET tools
+      shell: bash
+      run: dotnet tool restore

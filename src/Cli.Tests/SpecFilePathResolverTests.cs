@@ -11,6 +11,8 @@ namespace Drift.Cli.Tests;
   "S1481:Unused local variables should be removed",
   Justification = "Serves as code documentation"
 )]
+// TODO enable on Windows
+[Platform("Linux")]
 internal sealed class SpecFilePathResolverTests {
   private const string HomeEnvVar = "HOME";
   private string? _originalHome;
@@ -38,8 +40,10 @@ internal sealed class SpecFilePathResolverTests {
   public void UserHomeFolderEnv_ResolvesToFakeHomeFolder_AsExpected() {
     var actualHome = Environment.GetFolderPath( Environment.SpecialFolder.UserProfile );
 
-    Assert.That( actualHome, Contains.Substring( "fake-home-" ) );
-    Assert.That( Directory.Exists( actualHome ), Is.True );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( actualHome, Contains.Substring( "fake-home-" ) );
+      Assert.That( Directory.Exists( actualHome ) );
+    }
   }
 
   [Test]

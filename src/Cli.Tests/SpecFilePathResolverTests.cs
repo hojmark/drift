@@ -12,8 +12,6 @@ namespace Drift.Cli.Tests;
   "S1481:Unused local variables should be removed",
   Justification = "Serves as code documentation"
 )]
-// TODO enable on Windows
-[Platform("Linux")]
 internal sealed class SpecFilePathResolverTests {
   private const string HomeEnvVarLinux = "HOME";
   private const string HomeEnvVarWindows = "USERPROFILE";
@@ -52,6 +50,8 @@ internal sealed class SpecFilePathResolverTests {
   /// <summary>
   /// Checks the environment override used by the test fixture.
   /// </summary>
+  // TODO enable on Windows
+  [Platform("Linux")]
   [Test]
   public void UserHomeFolderEnv_ResolvesToFakeHomeFolder_AsExpected() {
     var actualHome = Environment.GetFolderPath( Environment.SpecialFolder.UserProfile );

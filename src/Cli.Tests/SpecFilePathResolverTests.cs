@@ -13,6 +13,7 @@ namespace Drift.Cli.Tests;
   Justification = "Serves as code documentation"
 )]
 // TODO enable on Windows
+[Platform("Linux")]
 internal sealed class SpecFilePathResolverTests {
   private const string HomeEnvVarLinux = "HOME";
   private const string HomeEnvVarWindows = "USERPROFILE";

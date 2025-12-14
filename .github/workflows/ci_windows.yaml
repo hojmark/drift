@@ -34,12 +34,10 @@ jobs:
         uses: ./.github/actions/setup-runner
 
       - name: Run tests
-        # TODO re-enable TestE2E
         run: |
           dotnet run `
           --project ./build/_build.csproj `
           --target Test `
-          --skip TestE2E `
           --commit ${{ github.sha }} `
           --msbuildverbosity ${{ github.event.inputs.verbosity }}
 

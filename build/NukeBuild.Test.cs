@@ -17,6 +17,11 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 // ReSharper disable UnusedMember.Local
 
 sealed partial class NukeBuild {
+  private string DriftBinaryName =>
+    Platform == DotNetRuntimeIdentifier.linux_x64 ? "drift" :
+    Platform == DotNetRuntimeIdentifier.win_x64 ? "drift.exe" :
+    throw new PlatformNotSupportedException();
+
   Target Test => _ => _
     .DependsOn( TestSelf, TestUnit, TestE2E );
 
@@ -74,7 +79,7 @@ sealed partial class NukeBuild {
         var version = await Versioning.Value.GetVersionAsync();
 
         foreach ( var runtime in SupportedRuntimes ) {
-          var driftBinary = Paths.PublishDirectoryForRuntime( runtime ) / "drift";
+          var driftBinary = Paths.PublishDirectoryForRuntime( runtime ) / DriftBinaryName;
 
           var envVars = new Dictionary<string, string> {
             // { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },

@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Drift.Build.Utilities;
@@ -65,7 +66,13 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
   public string GitHubToken;
 
   [Parameter( $"{nameof(Platform)} - A .NET RID e.g. linux-x64 or win-x64" )]
-  public DotNetRuntimeIdentifier Platform;
+  public DotNetRuntimeIdentifier Platform = IsLocalBuild
+    ? RuntimeInformation.IsOSPlatform( OSPlatform.Linux )
+      ? DotNetRuntimeIdentifier.linux_x64
+      : RuntimeInformation.IsOSPlatform( OSPlatform.Windows )
+        ? DotNetRuntimeIdentifier.win_x64
+        : throw new PlatformNotSupportedException()
+    : null;
 
   private static readonly DotNetRuntimeIdentifier[] SupportedRuntimes = [
     DotNetRuntimeIdentifier.linux_x64,

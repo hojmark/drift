@@ -65,7 +65,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
   [Secret, Parameter( $"{nameof(GitHubToken)} - GitHub token used to create releases" )]
   public string GitHubToken;
 
-  [Parameter( $"{nameof(Platform)} - A .NET RID e.g. linux-x64 or win-x64" )]
+  [Parameter( $"{nameof(Platform)} - A .NET RID but with underscores instead of dashes e.g. linux_x64 or win_x64" )]
   public DotNetRuntimeIdentifier Platform = IsLocalBuild
     ? RuntimeInformation.IsOSPlatform( OSPlatform.Linux )
       ? DotNetRuntimeIdentifier.linux_x64

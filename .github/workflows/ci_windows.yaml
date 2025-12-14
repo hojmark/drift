@@ -40,7 +40,7 @@ jobs:
           --target Test `
           --commit ${{ github.sha }} `
           --msbuildverbosity ${{ github.event.inputs.verbosity }} `
-          --platform win-x64
+          --platform win_x64
 
       - name: Display test results
         continue-on-error: true

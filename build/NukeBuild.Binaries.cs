@@ -18,29 +18,27 @@ sealed partial class NukeBuild {
 
   Target PublishBinaries => _ => _
     .DependsOn( Build, CleanArtifacts )
+    .Requires( () => Platform )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(PublishBinaries) );
 
-        // TODO https://nuke.build/docs/common/cli-tools/#combinatorial-modifications
-        foreach ( var runtime in SupportedRuntimes ) {
-          var publishDir = Paths.PublishDirectoryForRuntime( runtime );
-          var version = await Versioning.Value.GetVersionAsync();
+        var publishDir = Paths.PublishDirectoryForRuntime( Platform );
+        var version = await Versioning.Value.GetVersionAsync();
 
-          Log.Information( "Publishing {Runtime} build to {PublishDir}", runtime, publishDir );
-          DotNetPublish( s => s
-            .SetProject( Solution.Cli )
-            .SetConfiguration( Configuration )
-            .SetOutput( publishDir )
-            .SetSelfContained( true )
-            .SetVersionProperties( version )
-            // TODO if not specifying a RID, apparently only x64 gets built on x64 host
-            .SetRuntime( runtime )
-            .SetProcessAdditionalArguments( $"-bl:{BinaryPublishLogName}" )
-            .EnableNoLogo()
-            .EnableNoRestore()
-            .EnableNoBuild()
-          );
-        }
+        Log.Information( "Publishing {Runtime} build to {PublishDir}", Platform, publishDir );
+        Log.Debug( "Supported runtimes are {SupportedRuntimes}", string.Join( ", ", SupportedRuntimes ) );
+        DotNetPublish( s => s
+          .SetProject( Solution.Cli )
+          .SetConfiguration( Configuration )
+          .SetOutput( publishDir )
+          .SetSelfContained( true )
+          .SetVersionProperties( version )
+          .SetRuntime( Platform )
+          .SetProcessAdditionalArguments( $"-bl:{BinaryPublishLogName}" )
+          .EnableNoLogo()
+          .EnableNoRestore()
+          .EnableNoBuild()
+        );
       }
     );
 

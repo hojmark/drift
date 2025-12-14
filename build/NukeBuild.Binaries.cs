@@ -18,8 +18,8 @@ sealed partial class NukeBuild {
 
   Target PublishBinaries => _ => _
     .DependsOn( Build, CleanArtifacts )
-    .OnlyWhenStatic( () => SupportedRuntimes.Contains( Platform ) )
     .Requires( () => Platform )
+    .Requires( () => SupportedRuntimes.Contains( Platform ) )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(PublishBinaries) );
 

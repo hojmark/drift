@@ -7,16 +7,19 @@
   "prConcurrentLimit": 1,
   "commitMessagePrefix": "chore(deps): ",
   "nuget": {
-    "matchPackageNames": [
-      "*"
-    ],
-    "matchUpdateTypes": [
-      "minor",
-      "patch"
+    "packageRules": [
+      {
+        "matchPackageNames": [
+          "*"
+        ],
+        "matchUpdateTypes": [
+          "minor",
+          "patch"
+        ]
+      }
     ]
   },
   "automerge": false,
   "packageRules": [
-    
   ]
 }

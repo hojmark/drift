@@ -16,7 +16,7 @@ jobs:
         uses: actions/create-github-app-token@v2
         with:
           app-id: Iv23liWqEqKI4vhrLE1i # hojmark-renovate Client ID
-          private-key: ${{ secrets.PRIVATE_KEY }}
+          private-key: ${{ secrets.RENOVATE_APP_PK }}
 
       - name: Run renovate
         run: |

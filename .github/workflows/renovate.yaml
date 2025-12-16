@@ -1,0 +1,29 @@
+name: 🖌️ Renovate
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+
+jobs:
+  renovate:
+    name: Run Renovate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Get app token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: Iv23liWqEqKI4vhrLE1i # hojmark-renovate Client ID
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Run renovate
+        run: |
+          docker run --rm \
+            -e RENOVATE_LOG_LEVEL=info \
+            -e RENOVATE_PLATFORM=github \
+            -e RENOVATE_REPOSITORIES=hojmark/drift \
+            -e RENOVATE_TOKEN=${{ steps.app-token.outputs.token }} \
+            -e RENOVATE_DRY_RUN=full \
+            renovate/renovate:latest

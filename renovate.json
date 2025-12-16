@@ -1,0 +1,29 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "timezone": "Europe/Berlin",
+  "addLabels": [
+    "dependencies"
+  ],
+  "prConcurrentLimit": 1,
+  "commitMessagePrefix": "chore(deps): ",
+  "automerge": false,
+  "dockerfile": {
+    "pinDigests": true
+  },
+  "packageRules": [
+    {
+      "groupName": "all non-major NuGet dependencies",
+      "groupSlug": "nuget-non-major",
+      "matchManagers": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "*"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    }
+  ]
+}

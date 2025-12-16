@@ -4,7 +4,7 @@
   "addLabels": [
     "dependencies"
   ],
-  "prConcurrentLimit": 1,
+  "prConcurrentLimit": 5,
   "commitMessagePrefix": "chore(deps): ",
   "automerge": false,
   "dockerfile": {

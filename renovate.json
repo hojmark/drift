@@ -7,9 +7,12 @@
   "prConcurrentLimit": 1,
   "commitMessagePrefix": "chore(deps): ",
   "automerge": false,
+  "dockerfile": {
+    "pinDigests": true
+  },
   "packageRules": [
     {
-      "groupName": "all NuGet non-major dependencies",
+      "groupName": "all non-major NuGet dependencies",
       "groupSlug": "nuget-minor-patch",
       "matchManagers": [
         "nuget"

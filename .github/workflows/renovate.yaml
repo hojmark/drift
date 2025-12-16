@@ -25,5 +25,4 @@ jobs:
             -e RENOVATE_PLATFORM=github \
             -e RENOVATE_REPOSITORIES=hojmark/drift \
             -e RENOVATE_TOKEN=${{ steps.app-token.outputs.token }} \
-            -e RENOVATE_DRY_RUN=full \
             renovate/renovate:latest

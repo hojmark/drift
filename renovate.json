@@ -9,6 +9,8 @@
   "automerge": false,
   "packageRules": [
     {
+      "groupName": "all NuGet non-major dependencies",
+      "groupSlug": "nuget-minor-patch",
       "matchManagers": [
         "nuget"
       ],

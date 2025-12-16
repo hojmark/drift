@@ -8,5 +8,17 @@
   "commitMessagePrefix": "chore(deps): ",
   "automerge": false,
   "packageRules": [
+    {
+      "matchManagers": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "*"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    }
   ]
 }

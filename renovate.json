@@ -1,3 +1,28 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json"
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "platform": "github",
+  "timezone": "Europe/Berlin",
+  "addLabels": [
+    "dependencies"
+  ],
+  "prConcurrentLimit": 1,
+  "commitMessagePrefix": "chore(deps): ",
+  "automerge": false,
+  "automergeType": "pr",
+  "packageRules": [
+    {
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch",
+      "matchManagers": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "*"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    }
+  ]
 }

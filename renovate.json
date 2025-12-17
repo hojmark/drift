@@ -5,13 +5,23 @@
     "dependencies"
   ],
   "prConcurrentLimit": 5,
-  "ignorePresets": [
-    ":prHourlyLimit2"
-  ],
+  "prHourlyLimit": 0,
   "commitMessagePrefix": "chore(deps): ",
   "automerge": false,
   "dockerfile": {
     "pinDigests": true
+  },
+  "nuget": {
+    "packageRules": [
+      {
+        // See https://github.com/VerifyTests/Verify/issues/1642
+        "description": "Pin Verify version to 31.4.3",
+        "matchPackageNames": [
+          "Verify.NUnit"
+        ],
+        "allowedVersions": "31.4.3"
+      }
+    ]
   },
   "packageRules": [
     {

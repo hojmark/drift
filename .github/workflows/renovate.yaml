@@ -4,6 +4,15 @@ permissions:
 
 on:
   workflow_dispatch:
+    inputs:
+      log-level:
+        description: "Renovate log level"
+        required: false
+        default: 'info'
+        type: choice
+        options:
+          - 'info'
+          - 'debug'
   schedule:
     - cron: '0 6 * * WED' # At 06:00 AM, only on Wednesday
 
@@ -23,7 +32,8 @@ jobs:
       - name: Run Renovate
         run: |
           docker run --rm \
-            -e RENOVATE_LOG_LEVEL=info \
+            -e RENOVATE_LOG_LEVEL=${{ inputs.log_level }} \
+            -e RENOVATE_PRINT_CONFIG=${{ inputs.log_level != 'info' }} \
             -e RENOVATE_PLATFORM=github \
             -e RENOVATE_REPOSITORIES=hojmark/drift \
             -e RENOVATE_TOKEN=${{ steps.app-token.outputs.token }} \

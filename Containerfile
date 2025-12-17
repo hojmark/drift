@@ -1,4 +1,4 @@
-﻿FROM quay.io/fedora/fedora-minimal:43@sha256:a5b4bd9df6d282f8c46b3758ccfb14711ba4c8424710e7838d206cec871135c3
+﻿FROM quay.io/fedora/fedora-minimal:44@sha256:968fb5f8c9ae8fe019bbe6ce61078c9908b8cbec2db09c74d073a698b50fc902
 
 ENV DRIFT_EXECUTION__ENVIRONMENT="container"
 

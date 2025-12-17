@@ -6,11 +6,12 @@
   ],
   "prConcurrentLimit": 5,
   "prHourlyLimit": 0,
-  "commitMessagePrefix": "chore(deps): ",
   "automerge": false,
   "dockerfile": {
     "pinDigests": true
   },
+  "semanticCommits": "enabled",
+  "updatePinnedDependencies": false,
   "packageRules": [
     {
       "groupName": "all non-major NuGet dependencies",
@@ -25,13 +26,6 @@
         "minor",
         "patch"
       ]
-    },
-    {
-      "description": "Skip pinned versions",
-      "matchManagers": [
-        "nuget"
-      ],
-      "matchCurrentValue": "/^\\[[^,]+\\]$/"
     }
   ]
 }

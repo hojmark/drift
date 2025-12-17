@@ -4,6 +4,15 @@ permissions:
 
 on:
   workflow_dispatch:
+    inputs:
+      log-level:
+        description: "Renovate log level"
+        required: false
+        default: 'info'
+        type: choice
+        options:
+          - 'info'
+          - 'debug'
   schedule:
     - cron: '0 6 * * WED' # At 06:00 AM, only on Wednesday
 

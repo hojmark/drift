@@ -4,6 +4,8 @@ permissions:
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 6 ? * WED *' # At 06:00 AM, only on Wednesday
 
 jobs:
   renovate:

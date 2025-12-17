@@ -4,7 +4,10 @@
   "addLabels": [
     "dependencies"
   ],
-  "prConcurrentLimit": 1,
+  "prConcurrentLimit": 5,
+  "ignorePresets": [
+    ":prHourlyLimit2"
+  ],
   "commitMessagePrefix": "chore(deps): ",
   "automerge": false,
   "dockerfile": {

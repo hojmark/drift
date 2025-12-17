@@ -4,6 +4,8 @@ permissions:
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 6 ? * WED *' # At 06:00 AM, only on Wednesday
 
 jobs:
   renovate:
@@ -11,19 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Get app token
+      - name: Get GitHub App token
         id: app-token
         uses: actions/create-github-app-token@v2
         with:
           app-id: Iv23liWqEqKI4vhrLE1i # hojmark-renovate Client ID
-          private-key: ${{ secrets.PRIVATE_KEY }}
+          private-key: ${{ secrets.RENOVATE_APP_PK }}
 
-      - name: Run renovate
+      - name: Run Renovate
         run: |
           docker run --rm \
             -e RENOVATE_LOG_LEVEL=info \
             -e RENOVATE_PLATFORM=github \
             -e RENOVATE_REPOSITORIES=hojmark/drift \
             -e RENOVATE_TOKEN=${{ steps.app-token.outputs.token }} \
-            -e RENOVATE_DRY_RUN=full \
             renovate/renovate:latest

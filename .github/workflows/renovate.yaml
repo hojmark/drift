@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Get hojmark-renovate GitHub App token
+      - name: Get GitHub App token
         id: app-token
         uses: actions/create-github-app-token@v2
         with:

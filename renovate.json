@@ -5,9 +5,7 @@
     "dependencies"
   ],
   "prConcurrentLimit": 5,
-  "ignorePresets": [
-    ":prHourlyLimit2"
-  ],
+  "prHourlyLimit": 0,
   "commitMessagePrefix": "chore(deps): ",
   "automerge": false,
   "dockerfile": {

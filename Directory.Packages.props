@@ -33,7 +33,7 @@
     <PackageVersion Include="Spectre.Console.Cli" Version="0.53.1" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0" />
-    <PackageVersion Include="System.Text.Json" Version="9.0.6" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.1" />
     <PackageVersion Include="System.Threading.RateLimiting" Version="10.0.0" />
     <PackageVersion Include="Testcontainers" Version="4.9.0" />
     <PackageVersion Include="TngTech.ArchUnitNET.NUnit" Version="0.12.3" />

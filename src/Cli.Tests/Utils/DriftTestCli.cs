@@ -52,9 +52,9 @@ internal static class DriftTestCli {
   internal static RunningCliCommand StartAsync(
     string args,
     Action<IServiceCollection> configureServices,
-    CancellationToken testToken
+    CancellationToken cancellationToken
   ) {
-    var cts = CancellationTokenSource.CreateLinkedTokenSource( testToken );
+    var cts = CancellationTokenSource.CreateLinkedTokenSource( cancellationToken );
 
     var task = InvokeAsync(
       args,
@@ -65,10 +65,13 @@ internal static class DriftTestCli {
     return new RunningCliCommand( task, cts );
   }
 
+  /// <summary>
+  /// Starts a new agent asynchronously and waits for it to be ready.
+  /// </summary>
   internal static async Task<RunningCliCommand> StartAgentAsync(
     string args,
     Action<IServiceCollection> configureServices,
-    CancellationToken testToken
+    CancellationToken cancellationToken
   ) {
     var readyTcs = new AgentLifetime();
 
@@ -78,7 +81,7 @@ internal static class DriftTestCli {
         services.AddSingleton( readyTcs );
         configureServices( services );
       },
-      testToken
+      cancellationToken
     );
 
     // Wait for either readiness or command exit
@@ -90,6 +93,4 @@ internal static class DriftTestCli {
 
     return command;
   }
-
-  
 }

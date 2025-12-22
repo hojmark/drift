@@ -19,7 +19,7 @@ using NetworkInterface = Drift.Scanning.Subnets.Interface.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 
-internal sealed class ScanCommandTests {
+internal sealed partial class ScanCommandTests {
   private static readonly INetworkInterface DefaultInterface = new NetworkInterface {
     Description = "eth0", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "192.168.0.0/24" )
   };
@@ -212,79 +212,6 @@ internal sealed class ScanCommandTests {
         .UseFileName(
           $"{nameof(ScanCommandTests)}.{nameof(WithSpec_Success_Test)}.{TestContext.CurrentContext.Test.Name}" );
     }
-  }
-
-  [Test]
-  public async Task RemoteScan() {
-    // Arrange
-    var scanConfig = ConfigureServices(
-      new CidrBlock( "192.168.0.0/24" ),
-      [[new IpV4Address( "192.168.0.100" ), new MacAddress( "11:11:11:11:11:11" )]],
-      new Inventory {
-        Network = new Network(),
-        Agents = [
-          new Domain.Agent { Id = "local1", Address = "http://localhost:51515" },
-          new Domain.Agent { Id = "local2", Address = "http://localhost:51516" }
-        ]
-      }
-    );
-
-    var tcs = new CancellationTokenSource( TimeSpan.FromMinutes( 1 ) );
-
-    await using var agent1 = await DriftTestCli.StartAgentAsync(
-      "--adoptable -v",
-      ConfigureServices(
-        interfaces: new CidrBlock( "192.168.10.0/24" ),
-        discoveredDevices: [
-          [new IpV4Address( "192.168.10.100" ), new MacAddress( "22:22:22:22:22:22" )],
-          [new IpV4Address( "192.168.10.101" ), new MacAddress( "21:21:21:21:21:21" )]
-        ]
-      ),
-      tcs.Token
-    );
-
-    await using var agent2 = await DriftTestCli.StartAgentAsync(
-      "--adoptable -v --port 51516",
-      ConfigureServices(
-        interfaces: new CidrBlock( "192.168.20.0/24" ),
-        discoveredDevices: [[new IpV4Address( "192.168.20.100" ), new MacAddress( "33:33:33:33:33:33" )]]
-      ),
-      tcs.Token
-    );
-
-    RunningCliCommand[] agents = [agent1, agent2];
-
-    // Act
-    Console.WriteLine( "Starting scan..." );
-    var (scanExitCode, scanOutput, scanError) = await DriftTestCli.InvokeAsync(
-      "scan unittest",
-      scanConfig,
-      cancellationToken: tcs.Token
-    );
-
-    Console.WriteLine( "Scan finished" );
-    Console.WriteLine( "----------------" );
-    Console.WriteLine( scanOutput.ToString() + scanError );
-    Console.WriteLine( "----------------" );
-
-    Console.WriteLine( "Signalling agent cancellation..." );
-    await tcs.CancelAsync();
-    tcs.Dispose();
-    Console.WriteLine( "Waiting for agents to shut down..." );
-
-    foreach ( var agent in agents ) {
-      var (agentExitCode, agentOutput, agentError) = await agent.Completion;
-
-      Console.WriteLine( "Agent finished" );
-      Console.WriteLine( "----------------" );
-      Console.WriteLine( agentOutput.ToString() + agentError );
-      Console.WriteLine( "----------------" );
-      Assert.That( agentExitCode, Is.EqualTo( ExitCodes.Success ) );
-    }
-
-    // Assert
-    Assert.That( scanExitCode, Is.EqualTo( ExitCodes.Success ) );
-    await Verify( scanOutput.ToString() + scanError );
   }
 
   [Test]

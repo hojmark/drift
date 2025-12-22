@@ -17,6 +17,11 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 // ReSharper disable UnusedMember.Local
 
 sealed partial class NukeBuild {
+  private string DriftBinaryName =>
+    Platform == DotNetRuntimeIdentifier.linux_x64 ? "drift" :
+    Platform == DotNetRuntimeIdentifier.win_x64 ? "drift.exe" :
+    throw new PlatformNotSupportedException();
+
   Target Test => _ => _
     .DependsOn( TestSelf, TestUnit, TestE2E );
 
@@ -73,38 +78,37 @@ sealed partial class NukeBuild {
 
         var version = await Versioning.Value.GetVersionAsync();
 
-        foreach ( var runtime in SupportedRuntimes ) {
-          var driftBinary = Paths.PublishDirectoryForRuntime( runtime ) / "drift";
+        var driftBinary = Paths.PublishDirectoryForRuntime( Platform ) / DriftBinaryName;
 
-          var envVars = new Dictionary<string, string> {
-            // { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
-            { "DRIFT_BINARY_PATH", driftBinary },
-            // TODO use this!
-            // { "DRIFT_CONTAINER_IMAGE_REF", ImageReference.Localhost( "drift", version ).ToString() }
-            { "DRIFT_CONTAINER_IMAGE_REF", ImageReference.Localhost( "drift", version ).ToString() }
-          };
+        Log.Information( "Running E2E test on {Runtime} using binary {Binary}", Platform, driftBinary );
+        Log.Debug( "Supported runtimes are {SupportedRuntimes}", string.Join( ", ", SupportedRuntimes ) );
 
-          var alternateDockerHost = await FindAlternateDockerHostAsync();
+        var envVars = new Dictionary<string, string> {
+          // { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
+          { "DRIFT_BINARY_PATH", driftBinary },
+          // TODO use this!
+          // { "DRIFT_CONTAINER_IMAGE_REF", ImageReference.Localhost( "drift", version ).ToString() }
+          { "DRIFT_CONTAINER_IMAGE_REF", ImageReference.Localhost( "drift", version ).ToString() }
+        };
 
-          DotNetTest( settings => {
-            if ( alternateDockerHost != null ) {
-              Log.Information( "Using alternate Docker host: {Host}", alternateDockerHost );
-              settings.SetProcessEnvironmentVariable( "DOCKER_HOST", alternateDockerHost );
-            }
+        var alternateDockerHost = await FindAlternateDockerHostAsync();
 
-            return settings
-              .SetProjectFile( Solution.Cli_E2ETests )
-              .SetConfiguration( Configuration )
-              .ConfigureLoggers( MsBuildVerbosityParsed )
-              .SetBlameHangTimeout( "60s" )
-              .EnableNoLogo()
-              .EnableNoRestore()
-              .EnableNoBuild()
-              .AddProcessEnvironmentVariables( envVars );
-          } );
+        DotNetTest( settings => {
+          if ( alternateDockerHost != null ) {
+            Log.Information( "Using alternate Docker host: {Host}", alternateDockerHost );
+            settings.SetProcessEnvironmentVariable( "DOCKER_HOST", alternateDockerHost );
+          }
 
-          Log.Information( "Running E2E test on {Runtime} using binary {Binary}", runtime, driftBinary );
-        }
+          return settings
+            .SetProjectFile( Solution.Cli_E2ETests )
+            .SetConfiguration( Configuration )
+            .ConfigureLoggers( MsBuildVerbosityParsed )
+            .SetBlameHangTimeout( "60s" )
+            .EnableNoLogo()
+            .EnableNoRestore()
+            .EnableNoBuild()
+            .AddProcessEnvironmentVariables( envVars );
+        } );
       }
     );
 

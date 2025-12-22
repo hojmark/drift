@@ -5,6 +5,6 @@ internal sealed class ToolWrapperTests {
   public async Task StdOutTest() {
     var echo = new ToolWrapper( "echo" );
     var result = ( await echo.ExecuteAsync( "Hello world!" ) ).StdOut;
-    Assert.That( result, Is.EqualTo( "Hello world!\n" ) );
+    Assert.That( result, Is.EqualTo( $"Hello world!{Environment.NewLine}" ) );
   }
 }

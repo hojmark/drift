@@ -61,6 +61,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{
 		.github\workflows\ci.yaml = .github\workflows\ci.yaml
 		.github\workflows\release.yaml = .github\workflows\release.yaml
 		.github\workflows\prerelease.yaml = .github\workflows\prerelease.yaml
+		.github\workflows\ci_windows.yaml = .github\workflows\ci_windows.yaml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.E2ETests.Abstractions", "src\Cli.E2ETests.Abstractions\Cli.E2ETests.Abstractions.csproj", "{A2CE629F-8D56-4539-9642-C31B550F7C30}"

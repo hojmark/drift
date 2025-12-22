@@ -54,7 +54,12 @@ internal static class RootCommandFactory {
     ConfigureDefaults( services, toConsole, plainConsole );
     ConfigureBuiltInCommandHandlers( services );
     ConfigureDynamicCommands( services, customCommands ?? [] );
-    configureServices?.Invoke( services );
+
+    if ( configureServices != null ) {
+      configureServices.Invoke( services );
+      // Allow agent host to override it's services with the same configuration
+      services.AddScoped<Action<IServiceCollection>>( _ => configureServices );
+    }
 
     var provider = services.BuildServiceProvider();
     var rootCommand = CreateRootCommand( provider );

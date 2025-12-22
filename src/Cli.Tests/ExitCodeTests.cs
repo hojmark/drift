@@ -26,7 +26,7 @@ internal sealed class ExitCodeTests {
 
     // Act
     var (exitCode, output, error) =
-      await DriftTestCli.InvokeFromTestAsync( ExitCodeCommand, customCommands: customCommands );
+      await DriftTestCli.InvokeAsync( ExitCodeCommand, customCommands: customCommands );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -38,7 +38,7 @@ internal sealed class ExitCodeTests {
   [Test]
   public async Task NonExistingCommand_ReturnsSystemCommandLineDefaultErrorTest() {
     // Arrange
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( NonExistingCommand );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( NonExistingCommand );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -62,7 +62,7 @@ internal sealed class ExitCodeTests {
 
     // Act
     var (exitCode, output, error) =
-      await DriftTestCli.InvokeFromTestAsync( ExceptionThrowingCommand, customCommands: customCommands );
+      await DriftTestCli.InvokeAsync( ExceptionThrowingCommand, customCommands: customCommands );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {

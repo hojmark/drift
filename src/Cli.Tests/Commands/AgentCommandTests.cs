@@ -9,7 +9,7 @@ internal sealed class AgentCommandTests {
   public async Task RespectsCancellationToken() {
     using var tcs = new CancellationTokenSource( TimeSpan.FromSeconds( 5 ) );
 
-    var (exitCode, output, _) = await DriftTestCli.InvokeFromTestAsync(
+    var (exitCode, output, _) = await DriftTestCli.InvokeAsync(
       "agent start --adoptable",
       cancellationToken: tcs.Token
     );

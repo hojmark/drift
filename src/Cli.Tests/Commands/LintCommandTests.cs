@@ -14,7 +14,7 @@ internal sealed class LintCommandTests {
     var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? string.Empty : $" -o {outputFormat}";
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync(
       $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption
     );
 
@@ -36,7 +36,7 @@ internal sealed class LintCommandTests {
     var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? string.Empty : $" -o {outputFormat}";
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync(
       $"lint ../../../../Spec.Tests/resources/{specName}.yaml" + outputOption
     );
 
@@ -51,7 +51,7 @@ internal sealed class LintCommandTests {
   [Test]
   public async Task LintMissingSpec() {
     // Arrange / Act
-    var (exitCode, _, _) = await DriftTestCli.InvokeFromTestAsync( "lint" );
+    var (exitCode, _, _) = await DriftTestCli.InvokeAsync( "lint" );
 
     // Assert
     Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );

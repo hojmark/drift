@@ -20,6 +20,8 @@ using NetworkInterface = Drift.Scanning.Subnets.Interface.NetworkInterface;
 namespace Drift.Cli.Tests.Commands;
 
 internal sealed partial class ScanCommandTests {
+  private const string SpecName = "unittest";
+
   private static readonly INetworkInterface DefaultInterface = new NetworkInterface {
     Description = "eth0", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "192.168.0.0/24" )
   };
@@ -203,7 +205,7 @@ internal sealed partial class ScanCommandTests {
     );
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( "scan unittest", serviceConfig );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( $"scan {SpecName}", serviceConfig );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -255,7 +257,7 @@ internal sealed partial class ScanCommandTests {
 
       if ( inventory != null ) {
         services.AddScoped<ISpecFileProvider>( _ =>
-          new PredefinedSpecProvider( new Dictionary<string, Inventory> { { "unittest", inventory } } )
+          new PredefinedSpecProvider( new Dictionary<string, Inventory> { { SpecName, inventory } } )
         );
       }
 

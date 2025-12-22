@@ -16,16 +16,18 @@ public static class AgentHost {
     ushort port,
     ILogger logger,
     Action<IServiceCollection>? configureServices,
-    CancellationToken cancellationToken
+    CancellationToken cancellationToken,
+    TaskCompletionSource? ready = null
   ) {
-    var app = Build( port, logger, configureServices );
+    var app = Build( port, logger, configureServices, ready );
     return app.RunAsync( cancellationToken );
   }
 
   private static WebApplication Build(
     ushort port,
     ILogger logger,
-    Action<IServiceCollection>? configureServices = null
+    Action<IServiceCollection>? configureServices = null,
+    TaskCompletionSource? ready = null
   ) {
     var builder = WebApplication.CreateSlimBuilder();
 
@@ -54,6 +56,7 @@ public static class AgentHost {
     app.Lifetime.ApplicationStarted.Register( () => {
       logger.LogInformation( "Listening for incoming connections on port {Port}", port );
       logger.LogInformation( "Agent started" );
+      ready?.TrySetResult();
     } );
     app.Lifetime.ApplicationStopping.Register( () => {
       logger.LogInformation( "Agent stopping..." );

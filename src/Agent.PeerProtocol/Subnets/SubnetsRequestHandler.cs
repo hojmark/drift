@@ -10,7 +10,7 @@ internal sealed class SubnetsRequestHandler(
 ) : IPeerMessageHandler<SubnetsRequest, SubnetsResponse> {
   public string MessageType => SubnetsRequest.MessageType;
 
-  public async Task<SubnetsResponse?> HandleAsync(
+  public async Task<SubnetsResponse> HandleAsync(
     SubnetsRequest message,
     CancellationToken cancellationToken = default
   ) {

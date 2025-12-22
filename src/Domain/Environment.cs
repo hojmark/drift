@@ -28,7 +28,7 @@ public record Environment {
 }
 
 public record Agent {
-  public string Id {
+  public string Id { // TODO use AgentId???? or should that only be for internal use
     get;
     set;
   }

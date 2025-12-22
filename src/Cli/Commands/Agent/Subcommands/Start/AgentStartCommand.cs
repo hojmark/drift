@@ -23,7 +23,12 @@ internal class AgentStartCommand : CommandBase<AgentStartParameters, AgentStartC
   }
 }
 
-internal class AgentStartCommandHandler( IOutputManager output ) : ICommandHandler<AgentStartParameters> {
+internal class AgentStartCommandHandler(
+  IOutputManager output,
+  AgentLifetime? agentLifetime,
+  Action<IServiceCollection>? configureServicesOverride
+)
+  : ICommandHandler<AgentStartParameters> {
   public async Task<int> Invoke( AgentStartParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running 'agent start' command" );
     var logger = output.GetLogger();
@@ -52,7 +57,7 @@ internal class AgentStartCommandHandler( IOutputManager output ) : ICommandHandl
 
     output.Log.LogDebug( "Starting agent..." );
 
-    await AgentHost.Run( parameters.Port, logger, ConfigureServices, cancellationToken );
+    await AgentHost.Run( parameters.Port, logger, ConfigureServices, cancellationToken, agentLifetime?.Ready );
 
     output.Log.LogDebug( "Completed 'agent start' command" );
 
@@ -61,6 +66,7 @@ internal class AgentStartCommandHandler( IOutputManager output ) : ICommandHandl
     void ConfigureServices( IServiceCollection services ) {
       RootCommandFactory.ConfigureSubnetProvider( services );
       services.AddPeerProtocol();
+      configureServicesOverride?.Invoke( services );
     }
   }
 

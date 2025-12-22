@@ -18,4 +18,16 @@ internal sealed class AgentCommandTests {
 
     Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
   }
+
+  [Test]
+  public async Task MissingOption() {
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( "agent start" );
+
+    Console.WriteLine( output.ToString() + error );
+
+    await Assert.MultipleAsync( async () => {
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
+      await Verify( output.ToString() + error );
+    } );
+  }
 }

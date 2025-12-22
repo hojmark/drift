@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Networking.PeerStreaming.Core;
 
 public sealed class PeerStream : IPeerStream {
-  private static int _instanceCounter;
+  private static int _instanceCounter; // Being static is not ideal for testing with multiple instances
   private readonly IAsyncStreamReader<PeerMessage> _reader;
   private readonly IAsyncStreamWriter<PeerMessage> _writer;
   private readonly PeerMessageDispatcher _dispatcher;

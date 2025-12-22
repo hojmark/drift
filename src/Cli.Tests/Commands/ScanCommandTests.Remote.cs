@@ -26,7 +26,7 @@ internal sealed partial class ScanCommandTests {
     Console.WriteLine( "Starting agents..." );
     RunningCliCommand[] agents = [
       await DriftTestCli.StartAgentAsync(
-        "--adoptable -v",
+        "--adoptable",
         ConfigureServices(
           interfaces: new CidrBlock( "192.168.10.0/24" ),
           discoveredDevices: [
@@ -37,7 +37,7 @@ internal sealed partial class ScanCommandTests {
         tcs.Token
       ),
       await DriftTestCli.StartAgentAsync(
-        "--adoptable -v --port 51516",
+        "--adoptable --port 51516",
         ConfigureServices(
           interfaces: new CidrBlock( "192.168.20.0/24" ),
           discoveredDevices: [[new IpV4Address( "192.168.20.100" ), new MacAddress( "33:33:33:33:33:33" )]]
@@ -54,10 +54,10 @@ internal sealed partial class ScanCommandTests {
       cancellationToken: tcs.Token
     );
 
-    Console.WriteLine( "Scan finished" );
+    Console.WriteLine( "\nScan finished" );
     Console.WriteLine( "----------------" );
     Console.WriteLine( scanOutput.ToString() + scanError );
-    Console.WriteLine( "----------------" );
+    Console.WriteLine( "----------------\n" );
 
     Console.WriteLine( "Signalling agent cancellation..." );
     await tcs.CancelAsync();
@@ -66,10 +66,10 @@ internal sealed partial class ScanCommandTests {
     foreach ( var agent in agents ) {
       var (agentExitCode, agentOutput, agentError) = await agent.Completion;
 
-      Console.WriteLine( "Agent finished" );
+      Console.WriteLine( "\nAgent finished" );
       Console.WriteLine( "----------------" );
       Console.WriteLine( agentOutput.ToString() + agentError );
-      Console.WriteLine( "----------------" );
+      Console.WriteLine( "----------------\n" );
 
       Assert.That( agentExitCode, Is.EqualTo( ExitCodes.Success ) );
     }

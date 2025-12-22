@@ -14,6 +14,7 @@ using Drift.Domain.Scan;
 using Drift.Scanning.Subnets.Interface;
 using Drift.Scanning.Tests.Utils;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetworkInterface = Drift.Scanning.Subnets.Interface.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
@@ -170,7 +171,7 @@ internal sealed class ScanCommandTests {
     var serviceConfig = ConfigureServices( interfaces, discoveredDevices );
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan", serviceConfig );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( "scan", serviceConfig );
     // var exitCode = await config.InvokeAsync( $"scan -o {outputFormat}" );
 
     // Assert
@@ -202,7 +203,7 @@ internal sealed class ScanCommandTests {
     );
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan unittest", serviceConfig );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( "scan unittest", serviceConfig );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -216,72 +217,72 @@ internal sealed class ScanCommandTests {
   [Test]
   public async Task RemoteScan() {
     // Arrange
-    var serviceConfigScan = ConfigureServices(
-      [
-        new NetworkInterface {
-          Description = "eth1",
-          OperationalStatus = OperationalStatus.Up,
-          UnicastAddress = new CidrBlock( "192.168.0.0/24" )
-        }
-      ],
-      [
-        new DiscoveredDevice { Addresses = [new IpV4Address( "192.168.0.100" ), new MacAddress( "11:11:11:11:11:11" )] }
-      ],
+    var scanConfig = ConfigureServices(
+      new CidrBlock( "192.168.0.0/24" ),
+      [[new IpV4Address( "192.168.0.100" ), new MacAddress( "11:11:11:11:11:11" )]],
       new Inventory {
-        Network = new Network(), Agents = [new Domain.Agent { Id = "local1", Address = "http://localhost:51515" }]
+        Network = new Network(),
+        Agents = [
+          new Domain.Agent { Id = "local1", Address = "http://localhost:51515" },
+          new Domain.Agent { Id = "local2", Address = "http://localhost:51516" }
+        ]
       }
     );
 
-    var serviceConfigAgent = ConfigureServices(
-      [
-        new NetworkInterface {
-          Description = "eth1",
-          OperationalStatus = OperationalStatus.Up,
-          UnicastAddress = new CidrBlock( "192.168.100.0/24" )
-        }
-      ],
-      [
-        new DiscoveredDevice {
-          Addresses = [new IpV4Address( "192.168.100.200" ), new MacAddress( "22:22:22:22:22:22" )]
-        }
-      ]
+    var tcs = new CancellationTokenSource( TimeSpan.FromMinutes( 1 ) );
+
+    await using var agent1 = await DriftTestCli.StartAgentAsync(
+      "--adoptable -v",
+      ConfigureServices(
+        interfaces: new CidrBlock( "192.168.10.0/24" ),
+        discoveredDevices: [
+          [new IpV4Address( "192.168.10.100" ), new MacAddress( "22:22:22:22:22:22" )],
+          [new IpV4Address( "192.168.10.101" ), new MacAddress( "21:21:21:21:21:21" )]
+        ]
+      ),
+      tcs.Token
     );
 
-    var cts = new CancellationTokenSource( TimeSpan.FromSeconds( 800 ) );
+    await using var agent2 = await DriftTestCli.StartAgentAsync(
+      "--adoptable -v --port 51516",
+      ConfigureServices(
+        interfaces: new CidrBlock( "192.168.20.0/24" ),
+        discoveredDevices: [[new IpV4Address( "192.168.20.100" ), new MacAddress( "33:33:33:33:33:33" )]]
+      ),
+      tcs.Token
+    );
+
+    RunningCliCommand[] agents = [agent1, agent2];
 
     // Act
-    Console.WriteLine( "Invoking agent start" );
-    var agentTask = DriftTestCli.InvokeFromTestAsync(
-      "agent start --adoptable -v",
-      serviceConfigAgent,
-      cancellationToken: cts.Token
-    );
-    await Task.Delay( 3000, cts.Token );
-    Console.WriteLine( "Invoking scan" );
-    var (scanExitCode, scanOutput, scanError) = await DriftTestCli.InvokeFromTestAsync(
+    Console.WriteLine( "Starting scan..." );
+    var (scanExitCode, scanOutput, scanError) = await DriftTestCli.InvokeAsync(
       "scan unittest",
-      serviceConfigScan,
-      cancellationToken: cts.Token
+      scanConfig,
+      cancellationToken: tcs.Token
     );
+
     Console.WriteLine( "Scan finished" );
     Console.WriteLine( "----------------" );
     Console.WriteLine( scanOutput.ToString() + scanError );
     Console.WriteLine( "----------------" );
 
-    Console.WriteLine( "Cancelling token" );
-    await cts.CancelAsync();
-    cts.Dispose();
-    Console.WriteLine( "Waiting for agent to shut down" );
+    Console.WriteLine( "Signalling agent cancellation..." );
+    await tcs.CancelAsync();
+    tcs.Dispose();
+    Console.WriteLine( "Waiting for agents to shut down..." );
 
-    var (agentExitCode, agentOutput, agentError) = await agentTask;
+    foreach ( var agent in agents ) {
+      var (agentExitCode, agentOutput, agentError) = await agent.Completion;
 
-    Console.WriteLine( "Agent finished" );
-    Console.WriteLine( "----------------" );
-    Console.WriteLine( agentOutput.ToString() + agentError );
-    Console.WriteLine( "----------------" );
+      Console.WriteLine( "Agent finished" );
+      Console.WriteLine( "----------------" );
+      Console.WriteLine( agentOutput.ToString() + agentError );
+      Console.WriteLine( "----------------" );
+      Assert.That( agentExitCode, Is.EqualTo( ExitCodes.Success ) );
+    }
 
     // Assert
-    Assert.That( agentExitCode, Is.EqualTo( ExitCodes.Success ) );
     Assert.That( scanExitCode, Is.EqualTo( ExitCodes.Success ) );
     await Verify( scanOutput.ToString() + scanError );
   }
@@ -289,7 +290,7 @@ internal sealed class ScanCommandTests {
   [Test]
   public async Task NonExistingSpecOption() {
     // Arrange / Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan blah_spec.yaml" );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( "scan blah_spec.yaml" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -299,13 +300,30 @@ internal sealed class ScanCommandTests {
   }
 
   private static Action<IServiceCollection> ConfigureServices(
+    CidrBlock interfaces,
+    List<List<IDeviceAddress>> discoveredDevices,
+    Inventory? inventory = null
+  ) {
+    return ConfigureServices(
+      [
+        new NetworkInterface {
+          Description = "eth1", OperationalStatus = OperationalStatus.Up, UnicastAddress = interfaces
+        }
+      ],
+      discoveredDevices.Select( deviceAddresses => new DiscoveredDevice { Addresses = deviceAddresses } ).ToList(),
+      inventory
+    );
+  }
+
+  private static Action<IServiceCollection> ConfigureServices(
     List<INetworkInterface> interfaces,
     List<DiscoveredDevice> discoveredDevices,
     Inventory? inventory = null
   ) {
     return services => {
-      services.AddScoped<IInterfaceSubnetProvider>( _ =>
-        new PredefinedInterfaceSubnetProvider( interfaces )
+      services.Replace( ServiceDescriptor.Scoped<IInterfaceSubnetProvider>( _ =>
+          new PredefinedInterfaceSubnetProvider( interfaces )
+        )
       );
 
       if ( inventory != null ) {

@@ -37,7 +37,7 @@ internal sealed class FeatureFlagTest {
     ];
 
     // Act
-    var result = await DriftTestCli.InvokeFromTestAsync( $"{DummyCodeCommand}", customCommands: customCommands );
+    var result = await DriftTestCli.InvokeAsync( $"{DummyCodeCommand}", customCommands: customCommands );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {

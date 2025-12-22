@@ -25,13 +25,16 @@ internal class AgentStartCommand : CommandBase<AgentStartParameters, AgentStartC
 
 internal class AgentStartCommandHandler(
   IOutputManager output,
-  AgentLifetime? agentLifetime,
-  Action<IServiceCollection>? configureServicesOverride
+  AgentLifetime? agentLifetime = null,
+  Action<IServiceCollection>? configureServicesOverride = null
 )
   : ICommandHandler<AgentStartParameters> {
   public async Task<int> Invoke( AgentStartParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running 'agent start' command" );
+
     var logger = output.GetLogger();
+
+    logger.LogInformation( "Agent starting" );
 
     var identity = LoadAgentIdentity();
 

@@ -8,7 +8,7 @@
   "prHourlyLimit": 0,
   "automerge": false,
   "dockerfile": {
-    "pinDigests": true
+    //"pinDigests": true
   },
   "semanticCommits": "enabled",
   "updatePinnedDependencies": false,

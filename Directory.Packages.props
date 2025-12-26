@@ -8,7 +8,7 @@
     <PackageVersion Include="HLabs.Containers" Version="1.0.0-preview.1" />
     <PackageVersion Include="Humanizer" Version="3.0.1" />
     <PackageVersion Include="IPNetwork2" Version="3.4.832" />
-    <PackageVersion Include="JsonSchema.Net" Version="8.0.3" />
+    <PackageVersion Include="JsonSchema.Net" Version="8.0.4" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="6.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
@@ -37,7 +37,7 @@
     <PackageVersion Include="System.Threading.RateLimiting" Version="10.0.1" />
     <PackageVersion Include="Testcontainers" Version="4.9.0" />
     <PackageVersion Include="TngTech.ArchUnitNET.NUnit" Version="0.13.1" />
-    <PackageVersion Include="TUnit" Version="1.5.70" />
+    <PackageVersion Include="TUnit" Version="1.6.28" />
     <PackageVersion Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="16.3.0" />
     <!-- Pinning reason: https://github.com/VerifyTests/Verify/issues/1642 -->
     <PackageVersion Include="Verify.NUnit" Version="[31.4.3]" />

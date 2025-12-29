@@ -11,8 +11,4 @@
     <ProjectReference Include="..\Serialization\Serialization.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Grpc.Net.Client" />
-  </ItemGroup>
-
 </Project>

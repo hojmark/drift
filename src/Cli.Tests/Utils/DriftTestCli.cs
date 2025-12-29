@@ -66,12 +66,12 @@ internal static class DriftTestCli {
   }
 
   /// <summary>
-  /// Starts a new agent asynchronously and waits for it to be ready.
+  /// Starts a new agent asynchronously and returns tasks that complete when it has started.
   /// </summary>
   internal static async Task<RunningCliCommand> StartAgentAsync(
     string args,
-    Action<IServiceCollection> configureServices,
-    CancellationToken cancellationToken
+    CancellationToken cancellationToken,
+    Action<IServiceCollection>? configureServices = null
   ) {
     var readyTcs = new AgentLifetime();
 
@@ -79,7 +79,7 @@ internal static class DriftTestCli {
       "agent start " + args,
       services => {
         services.AddSingleton( readyTcs );
-        configureServices( services );
+        configureServices?.Invoke( services );
       },
       cancellationToken
     );
@@ -88,7 +88,8 @@ internal static class DriftTestCli {
     var completed = await Task.WhenAny( readyTcs.Ready.Task, command.Completion );
 
     if ( completed == command.Completion ) {
-      throw new InvalidOperationException( "Command exited before agent was started" );
+      var com = await command.Completion;
+      throw new InvalidOperationException( "Command exited before agent was started. Details:\n" + com.Error );
     }
 
     return command;

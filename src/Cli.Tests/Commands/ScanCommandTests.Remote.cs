@@ -27,22 +27,22 @@ internal sealed partial class ScanCommandTests {
     RunningCliCommand[] agents = [
       await DriftTestCli.StartAgentAsync(
         "--adoptable",
+        tcs.Token,
         ConfigureServices(
           interfaces: new CidrBlock( "192.168.10.0/24" ),
           discoveredDevices: [
             [new IpV4Address( "192.168.10.100" ), new MacAddress( "22:22:22:22:22:22" )],
             [new IpV4Address( "192.168.10.101" ), new MacAddress( "21:21:21:21:21:21" )]
           ]
-        ),
-        tcs.Token
+        )
       ),
       await DriftTestCli.StartAgentAsync(
         "--adoptable --port 51516",
+        tcs.Token,
         ConfigureServices(
           interfaces: new CidrBlock( "192.168.20.0/24" ),
           discoveredDevices: [[new IpV4Address( "192.168.20.100" ), new MacAddress( "33:33:33:33:33:33" )]]
-        ),
-        tcs.Token
+        )
       )
     ];
 

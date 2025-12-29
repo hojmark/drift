@@ -115,7 +115,9 @@ internal class ScanCommandHandler(
         scanRequest.EstimatedDuration(
           subnet.Cidr ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
         ")" +
-        ( hasAgents ? $" via {sourceList}" : string.Empty ),
+        ( hasAgents
+          ? $" via {sourceList}"
+          : string.Empty ), // TODO print without agentid_ prefix (internal technicality)
         ConsoleColor.DarkGray
       );
     }

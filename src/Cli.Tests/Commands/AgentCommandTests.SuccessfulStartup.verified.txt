@@ -1,0 +1,6 @@
+﻿Agent starting..
+Agent cluster enrollment method is Adoption
+Listening for incoming connections on port 51515
+Agent started
+Agent stopping...
+Agent stopped

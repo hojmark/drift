@@ -4,7 +4,7 @@ using Drift.Cli.Commands.Common.Commands;
 namespace Drift.Cli.Commands.Agent;
 
 internal class AgentCommand : ContainerCommandBase {
-  internal AgentCommand( IServiceProvider provider ) : base( "agent", "Manage the local Drift agent (PREVIEW)" ) {
+  internal AgentCommand( IServiceProvider provider ) : base( "agent", "Manage the local Drift agent" ) {
     Subcommands.Add( new AgentStartCommand( provider ) );
     // Subcommands.Add( new AgentServiceCommand( provider ) );
 

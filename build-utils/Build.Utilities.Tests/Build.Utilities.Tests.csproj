@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="TUnit" />
+    <ProjectReference Include="..\Build.Utilities\Build.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Build.Utilities\Build.Utilities.csproj" />
+    <PackageReference Include="TUnit" />
   </ItemGroup>
 
 </Project>

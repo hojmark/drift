@@ -5,15 +5,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FeatureFlagsDELETE\FeatureFlagsDELETE.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit.Analyzers" />
     <PackageReference Include="NUnit3TestAdapter" />
     <PackageReference Include="Verify.NUnit" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\FeatureFlagsDELETE\FeatureFlagsDELETE.csproj" />
   </ItemGroup>
 
 </Project>

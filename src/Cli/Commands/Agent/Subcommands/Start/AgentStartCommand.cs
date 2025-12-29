@@ -34,7 +34,7 @@ internal class AgentStartCommandHandler(
 
     var logger = output.GetLogger();
 
-    logger.LogInformation( "Agent starting" );
+    logger.LogInformation( "Agent starting.." );
 
     var identity = LoadAgentIdentity();
 

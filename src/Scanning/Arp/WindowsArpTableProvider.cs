@@ -5,15 +5,14 @@ using Drift.Domain.Device.Addresses;
 
 namespace Drift.Scanning.Arp;
 
-// TODO read from /proc/net/arp instead of spawning processes
-[SupportedOSPlatform( "linux" )]
-internal class LinuxArpTableProvider : ArpTableProviderBase {
+[SupportedOSPlatform( "windows" )]
+internal class WindowsArpTableProvider : ArpTableProviderBase {
   protected override ArpTable ReadSystemArpCache() {
     var map = new Dictionary<IPAddress, MacAddress>();
 
     var startInfo = new ProcessStartInfo {
       FileName = "arp",
-      Arguments = "-en",
+      Arguments = "-a",
       RedirectStandardOutput = true,
       UseShellExecute = false,
       CreateNoWindow = true
@@ -31,19 +30,19 @@ internal class LinuxArpTableProvider : ArpTableProviderBase {
         continue;
       }
 
-      if ( line.StartsWith( "Address" ) ) {
+      if ( line.StartsWith( "Interface" ) ) {
         continue; // skip header
       }
 
       var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
 
-      // Defensive: expects at least Address, HWtype, HWaddress
+      // Defensive: expects at least Internet Address, Physical Address, Type
       if ( parts.Length >= 3 &&
            parts[0].Count( c => c == '.' ) == 3 && // Looks like an IP
-           parts[2].Contains( ':' ) // Looks like a MAC
+           parts[1].Contains( ':' ) // Looks like a MAC
          ) {
         var ip = parts[0];
-        var mac = parts[2].ToUpperInvariant();
+        var mac = parts[1].ToUpperInvariant();
 
         var ipParsed = IPAddress.Parse( ip );
         map[ipParsed] = new MacAddress( mac );

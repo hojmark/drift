@@ -1,10 +1,10 @@
 using System.CommandLine;
-using Microsoft.Extensions.DependencyInjection;
+using Drift.Cli.Commands.Common.Parameters;
 
-namespace Drift.Cli.Commands.Common;
+namespace Drift.Cli.Commands.Common.Commands;
 
 internal abstract class CommandBase<TParameters, THandler> : Command
-  where TParameters : DefaultParameters
+  where TParameters : BaseParameters
   where THandler : ICommandHandler<TParameters> {
   protected CommandBase( string name, string description, IServiceProvider provider ) : base( name, description ) {
     Add( CommonParameters.Options.Verbose );
@@ -13,8 +13,8 @@ internal abstract class CommandBase<TParameters, THandler> : Command
     Add( CommonParameters.Options.OutputFormat );
     Add( CommonParameters.Arguments.Spec );
 
-    SetAction( ( parseResult, cancellationToken ) => {
-      using var scope = provider.CreateScope();
+    SetAction( async ( parseResult, cancellationToken ) => {
+      await using var scope = provider.CreateAsyncScope();
       var serviceProvider = scope.ServiceProvider;
 
       serviceProvider.GetRequiredService<ParseResultHolder>().ParseResult = parseResult;
@@ -22,7 +22,7 @@ internal abstract class CommandBase<TParameters, THandler> : Command
       var handler = serviceProvider.GetRequiredService<THandler>();
       var parameters = CreateParameters( parseResult );
 
-      return handler.Invoke( parameters, cancellationToken );
+      return await handler.Invoke( parameters, cancellationToken );
     } );
   }
 

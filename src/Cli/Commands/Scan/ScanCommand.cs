@@ -1,29 +1,24 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Common.Commands;
 using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Interactive.Input;
 using Drift.Cli.Commands.Scan.NonInteractive;
+using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.SpecFile;
 using Drift.Common.Network;
 using Drift.Domain;
 using Drift.Domain.Scan;
+using Drift.Networking.Cluster;
 using Drift.Scanning.Subnets;
 using Drift.Scanning.Subnets.Interface;
-using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan;
 
 /*
- * Ideas:
- *   Interactive mode:
- *   ➤ New host found: 192.168.1.42
- *   ➤ Port 22 no longer open on 192.168.1.10
- *   → Would you like to update the declared state? [y/N]
-
  *   Monitor mode:
- *     drift monitor --reference declared.yaml --interval 10m --notify slack,email,log,webhook
+ *     drift monitor declared.yaml --interval 10m --notify slack,email,log,webhook
  */
 internal class ScanCommand : CommandBase<ScanParameters, ScanCommandHandler> {
   public ScanCommand( IServiceProvider provider ) : base( "scan", "Scan the network and detect drift", provider ) {
@@ -60,23 +55,37 @@ internal class ScanCommandHandler(
   IOutputManager output,
   INetworkScanner scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider,
-  ISpecFileProvider specProvider
+  ISpecFileProvider specProvider,
+  ICluster cluster
 ) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running scan command" );
 
-    Network? network;
+    Inventory? inventory;
 
     try {
-      network = ( await specProvider.GetDeserializedAsync( parameters.SpecFile ) )?.Network;
+      inventory = await specProvider.GetDeserializedAsync( parameters.SpecFile );
     }
     catch ( FileNotFoundException ) {
       return ExitCodes.GeneralError;
     }
 
     var subnetProviders = new List<ISubnetProvider> { interfaceSubnetProvider };
-    if ( network != null ) {
-      subnetProviders.Add( new PredefinedSubnetProvider( network.Subnets ) );
+    if ( inventory?.Network != null ) {
+      subnetProviders.Add( new PredefinedSubnetProvider( inventory.Network.Subnets ) );
+    }
+
+    var hasAgents = inventory?.Agents.Any() ?? false;
+
+    if ( hasAgents ) {
+      subnetProviders.Add(
+        new AgentSubnetProvider(
+          output.GetLogger(),
+          inventory.Agents,
+          cluster,
+          cancellationToken
+        )
+      );
     }
 
     var subnetProvider = new CompositeSubnetProvider( subnetProviders );
@@ -84,38 +93,57 @@ internal class ScanCommandHandler(
     output.Normal.WriteLineVerbose( $"Using {subnetProvider.GetType().Name}" );
     output.Log.LogDebug( "Using {SubnetProviderType}", subnetProvider.GetType().Name );
 
-    var subnets = subnetProvider.Get();
+    var groupedSubnets = ( await subnetProvider.GetAsync() )
+      .GroupBy( subnet => subnet.Cidr )
+      .Select( group => new { Cidr = group.Key, Sources = group.Select( r => r.Source ).Distinct().ToList() } )
+      .ToList();
 
-    var scanRequest = new NetworkScanOptions { Cidrs = subnets };
+    var scanRequest = new NetworkScanOptions { Cidrs = groupedSubnets.Select( group => group.Cidr ).ToList() };
 
     // TODO many more varieties
-    output.Normal.WriteLine( 0, $"Scanning {subnets.Count} subnet{( subnets.Count > 1 ? "s" : string.Empty )}" );
-    foreach ( var cidr in subnets ) {
+    output.Normal.WriteLine(
+      0,
+      $"Scanning {groupedSubnets.Count} subnet{( groupedSubnets.Count > 1 ? "s" : string.Empty )}"
+    );
+    foreach ( var subnet in groupedSubnets ) {
+      var sourceList = string.Join( ", ", subnet.Sources );
       // TODO write name if from spec: Ui.WriteLine( 1, $"{subnet.Id}: {subnet.Network}" );
-      output.Normal.Write( 1, $"{cidr}", ConsoleColor.Cyan );
+      output.Normal.Write( 1, $"{subnet.Cidr}", ConsoleColor.Cyan );
       output.Normal.WriteLine(
-        " (" + IpNetworkUtils.GetIpRangeCount( cidr ) +
+        " (" + IpNetworkUtils.GetIpRangeCount( subnet.Cidr ) +
         " addresses, estimated scan time is " +
         scanRequest.EstimatedDuration(
-          cidr ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
-        ")", ConsoleColor.DarkGray );
+          subnet.Cidr ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
+        ")" +
+        ( hasAgents
+          ? $" via {sourceList}"
+          : string.Empty ), // TODO print without agentid_ prefix (internal technicality)
+        ConsoleColor.DarkGray
+      );
     }
 
     output.Log.LogInformation(
       "Scanning {SubnetCount} subnet(s): {SubnetList}",
-      subnets.Count,
-      string.Join( ", ", subnets )
+      groupedSubnets.Count,
+      string.Join( ", ", groupedSubnets.Select( s => s.Cidr ) )
     );
 
     Task<int> uiTask;
 
     if ( parameters.Interactive ) {
-      var ui = new InteractiveUi( output, network, scanner, scanRequest, new DefaultKeyMap(), parameters.ShowLogPanel );
+      var ui = new InteractiveUi(
+        output,
+        inventory?.Network,
+        scanner,
+        scanRequest,
+        new DefaultKeyMap(),
+        parameters.ShowLogPanel
+      );
       uiTask = ui.RunAsync();
     }
     else {
       var ui = new NonInteractiveUi( output, scanner );
-      uiTask = ui.RunAsync( scanRequest, network, parameters.OutputFormat );
+      uiTask = ui.RunAsync( scanRequest, inventory?.Network, parameters.OutputFormat );
     }
 
     Task.WaitAll( uiTask );

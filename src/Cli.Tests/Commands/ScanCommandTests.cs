@@ -14,11 +14,14 @@ using Drift.Domain.Scan;
 using Drift.Scanning.Subnets.Interface;
 using Drift.Scanning.Tests.Utils;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetworkInterface = Drift.Scanning.Subnets.Interface.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 
-internal sealed class ScanCommandTests {
+internal sealed partial class ScanCommandTests {
+  private const string SpecName = "unittest";
+
   private static readonly INetworkInterface DefaultInterface = new NetworkInterface {
     Description = "eth0", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "192.168.0.0/24" )
   };
@@ -170,7 +173,7 @@ internal sealed class ScanCommandTests {
     var serviceConfig = ConfigureServices( interfaces, discoveredDevices );
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan", serviceConfig );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( "scan", serviceConfig );
     // var exitCode = await config.InvokeAsync( $"scan -o {outputFormat}" );
 
     // Assert
@@ -202,7 +205,7 @@ internal sealed class ScanCommandTests {
     );
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan unittest", serviceConfig );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( $"scan {SpecName}", serviceConfig );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -216,7 +219,7 @@ internal sealed class ScanCommandTests {
   [Test]
   public async Task NonExistingSpecOption() {
     // Arrange / Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan blah_spec.yaml" );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( "scan blah_spec.yaml" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -226,18 +229,35 @@ internal sealed class ScanCommandTests {
   }
 
   private static Action<IServiceCollection> ConfigureServices(
+    CidrBlock interfaces,
+    List<List<IDeviceAddress>> discoveredDevices,
+    Inventory? inventory = null
+  ) {
+    return ConfigureServices(
+      [
+        new NetworkInterface {
+          Description = "eth1", OperationalStatus = OperationalStatus.Up, UnicastAddress = interfaces
+        }
+      ],
+      discoveredDevices.Select( deviceAddresses => new DiscoveredDevice { Addresses = deviceAddresses } ).ToList(),
+      inventory
+    );
+  }
+
+  private static Action<IServiceCollection> ConfigureServices(
     List<INetworkInterface> interfaces,
     List<DiscoveredDevice> discoveredDevices,
     Inventory? inventory = null
   ) {
     return services => {
-      services.AddScoped<IInterfaceSubnetProvider>( _ =>
-        new PredefinedInterfaceSubnetProvider( interfaces )
+      services.Replace( ServiceDescriptor.Scoped<IInterfaceSubnetProvider>( _ =>
+          new PredefinedInterfaceSubnetProvider( interfaces )
+        )
       );
 
       if ( inventory != null ) {
         services.AddScoped<ISpecFileProvider>( _ =>
-          new PredefinedSpecProvider( new Dictionary<string, Inventory> { { "unittest", inventory } } )
+          new PredefinedSpecProvider( new Dictionary<string, Inventory> { { SpecName, inventory } } )
         );
       }
 

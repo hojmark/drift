@@ -13,14 +13,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\build-utils\Build.Utilities\Build.Utilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="HLabs.Containers" />
     <PackageReference Include="Octokit" />
     <PackageReference Include="Semver" />
     <PackageReference Include="Nuke.Common" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\build-utils\Build.Utilities\Build.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

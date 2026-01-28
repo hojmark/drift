@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <RuntimeIdentifiers>linux-x64;linux-musl-x64;linux-arm64;linux-arm</RuntimeIdentifiers>
@@ -14,14 +14,19 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Drift.Cli.Tests" />
+    <!-- For NSubstitute -->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     <EmbeddedResource Include="embedded_resources\**\*" />
     <!-- Options: T: type, M: method, P: property -->
     <AdditionalFiles Include="BannedSymbols.txt" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Agent.Hosting\Agent.Hosting.csproj" />
+    <ProjectReference Include="..\Agent.PeerProtocol\Agent.PeerProtocol.csproj" />
     <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
     <ProjectReference Include="..\Cli.Settings\Cli.Settings.csproj" />
+    <ProjectReference Include="..\Networking.Cluster\Networking.Cluster.csproj" />
     <ProjectReference Include="..\Scanning\Scanning.csproj" />
     <ProjectReference Include="..\Diff\Diff.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />
@@ -32,13 +37,7 @@
   <ItemGroup>
     <PackageReference Include="Humanizer" />
     <PackageReference Include="IPNetwork2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
     <PackageReference Include="NaturalSort.Extension" />
     <PackageReference Include="Serilog.Extensions.Logging" />
     <PackageReference Include="Serilog.Sinks.Console" />

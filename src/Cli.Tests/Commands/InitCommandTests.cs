@@ -78,7 +78,7 @@ internal sealed class InitCommandTests {
   [Test]
   public async Task MissingNameOption() {
     // Arrange / Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "init --overwrite" );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( "init --overwrite" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -95,7 +95,7 @@ internal sealed class InitCommandTests {
 
     try {
       // Act
-      var (exitCode, _, _) = await DriftTestCli.InvokeFromTestAsync(
+      var (exitCode, _, _) = await DriftTestCli.InvokeAsync(
         "init",
         cancellationToken: cancellationTokenSource.Token
       );
@@ -126,7 +126,7 @@ internal sealed class InitCommandTests {
     };
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync(
       $"init {SpecNameWithDiscovery} --discover {outputFormat} {verbose}",
       serviceConfig
     );
@@ -155,7 +155,7 @@ internal sealed class InitCommandTests {
     };
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync(
       $"init {SpecNameWithoutDiscovery}",
       serviceConfig
     );

@@ -2,8 +2,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.TestUtilities;
 
-public sealed class StringLogger( StringWriter? writer = null ) : ILogger {
-  private readonly StringWriter _writer = writer ?? new StringWriter();
+public sealed class StringLogger( TextWriter? writer = null ) : ILogger {
+  private readonly TextWriter _writer = writer ?? new StringWriter();
 
   public void Log<TState>(
     LogLevel logLevel,

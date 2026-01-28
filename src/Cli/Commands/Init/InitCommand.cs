@@ -1,6 +1,6 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Common.Commands;
 using Drift.Cli.Commands.Init.Helpers;
 using Drift.Cli.Commands.Scan.NonInteractive;
 using Drift.Cli.Presentation.Console;
@@ -11,7 +11,6 @@ using Drift.Cli.Presentation.Rendering;
 using Drift.Common.Network;
 using Drift.Domain.Scan;
 using Drift.Scanning.Subnets.Interface;
-using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
 namespace Drift.Cli.Commands.Init;
@@ -179,7 +178,9 @@ internal class InitCommandHandler(
         return false;
       }
 
-      var scanOptions = new NetworkScanOptions { Cidrs = interfaceSubnetProvider.Get().ToList() };
+      var scanOptions = new NetworkScanOptions {
+        Cidrs = ( await interfaceSubnetProvider.GetAsync() ).Select( subnet => subnet.Cidr ).ToList()
+      };
 
       LogSubnetDetails( scanOptions );
 

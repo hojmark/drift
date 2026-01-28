@@ -35,6 +35,10 @@
   One or more addresses (MAC, IPv4, IPv6, and/or hostname) that together serve as a unique identifier for a network
   device.
 
+- **Agent**  
+  A running instance of Drift in agent mode that reports network state to other Drift peers.
+  Agents help ensure full network visibility by uncovering state that's only observable when scanning from specific subnets.
+
 ## Concepts
 
 ### Device ID

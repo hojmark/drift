@@ -9,9 +9,8 @@ internal sealed class CommandTests : DriftImageFixture {
   [Test]
   public async Task ValidCommand_ReturnsSuccessExitCode() {
     // Arrange
-    var container = new ContainerBuilder()
+    var container = new ContainerBuilder( DriftImage.ToString() )
       .WithLogger( NullLogger.Instance )
-      .WithImage( DriftImage.ToString() )
       .WithCommand( "--help" )
       .Build();
 
@@ -35,9 +34,8 @@ internal sealed class CommandTests : DriftImageFixture {
   [Test]
   public async Task InvalidCommand_ReturnsErrorExitCode() {
     // Arrange
-    var container = new ContainerBuilder()
+    var container = new ContainerBuilder( DriftImage.ToString() )
       .WithLogger( NullLogger.Instance )
-      .WithImage( DriftImage.ToString() )
       .WithCommand( "bogus" )
       .Build();
 

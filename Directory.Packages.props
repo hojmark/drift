@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageVersion Include="HLabs.Containers" Version="1.0.0-preview.1" />
     <PackageVersion Include="Humanizer" Version="3.0.1" />
-    <PackageVersion Include="IPNetwork2" Version="3.4.851" />
+    <PackageVersion Include="IPNetwork2" Version="3.4.853" />
     <PackageVersion Include="JsonSchema.Net" Version="9.0.0" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="6.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0" />
@@ -29,7 +29,7 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="Serilog.Sinks.TextWriter" Version="3.0.0" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.18.0.131500" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.19.0.132793" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.53.1" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
     <PackageVersion Include="System.CommandLine" Version="2.0.2" />
@@ -37,7 +37,7 @@
     <PackageVersion Include="System.Threading.RateLimiting" Version="10.0.2" />
     <PackageVersion Include="Testcontainers" Version="4.10.0" />
     <PackageVersion Include="TngTech.ArchUnitNET.NUnit" Version="0.13.2" />
-    <PackageVersion Include="TUnit" Version="1.12.65" />
+    <PackageVersion Include="TUnit" Version="1.12.125" />
     <PackageVersion Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="16.3.0" />
     <!-- Pinning reason: https://github.com/VerifyTests/Verify/issues/1642 -->
     <PackageVersion Include="Verify.NUnit" Version="[31.4.3]" />

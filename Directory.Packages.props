@@ -8,7 +8,7 @@
     <PackageVersion Include="HLabs.Containers" Version="1.0.0-preview.1" />
     <PackageVersion Include="Humanizer" Version="3.0.1" />
     <PackageVersion Include="IPNetwork2" Version="3.4.851" />
-    <PackageVersion Include="JsonSchema.Net" Version="8.0.5" />
+    <PackageVersion Include="JsonSchema.Net" Version="9.0.0" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="6.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />

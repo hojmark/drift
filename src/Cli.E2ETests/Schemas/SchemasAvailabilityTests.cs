@@ -44,6 +44,7 @@ internal sealed class SchemasAvailabilityTests {
     // Assert
     Assert.DoesNotThrow( () => response.EnsureSuccessStatusCode() );
     var content = await response.Content.ReadAsStringAsync();
-    Assert.That( content, Contains.Substring( expectedPartialContent ) );
+    var normalized = content.Replace( "\r\n", "\n" );
+    Assert.That( normalized, Contains.Substring( expectedPartialContent ) );
   }
 }

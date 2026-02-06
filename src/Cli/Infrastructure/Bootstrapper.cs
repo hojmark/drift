@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace Drift.Cli.Infrastructure;
 
 internal static class Bootstrapper {

@@ -1,6 +1,5 @@
 using Drift.Spec.Validation;
 using Drift.TestUtilities;
-using Json.Schema;
 
 namespace Drift.Spec.Tests;
 

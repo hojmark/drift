@@ -57,7 +57,6 @@ internal sealed class LintCommandTests {
     }
   }
 
-
   [Test]
   public async Task LintMissingSpec() {
     // Arrange / Act

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Drift.Cli.E2ETests.Container;
 
+[Platform( "Linux" )]
 internal sealed class CommandTests : DriftImageFixture {
   [Test]
   public async Task ValidCommand_ReturnsSuccessExitCode() {

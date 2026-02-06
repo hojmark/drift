@@ -5,8 +5,6 @@ using Nuke.Common.Tools.Docker;
 
 namespace Drift.Cli.E2ETests;
 
-// TODO can run on linux too, as long as the image is available from the Windows CI runner
-[Platform("Linux")]
 internal abstract class DriftImageFixture {
   protected static ImageReference DriftImage {
     get;

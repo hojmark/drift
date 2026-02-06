@@ -1,7 +1,7 @@
-using System.Runtime.InteropServices;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Tests.Utils;
 using Drift.TestUtilities;
+using Environment = Drift.TestUtilities.Environment;
 
 namespace Drift.Cli.Tests.Commands;
 
@@ -13,7 +13,7 @@ internal sealed class LintCommandTests {
     [Values( "network_single_subnet" )] string specName,
     [Values( "", "normal", "log" )] string outputFormat
   ) {
-    SkipIfNot( platform );
+    Environment.SkipIfNot( platform );
 
     // Arrange
     var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? string.Empty : $" -o {outputFormat}";
@@ -39,7 +39,7 @@ internal sealed class LintCommandTests {
     string specName,
     [Values( "", "normal", "log" )] string outputFormat
   ) {
-    SkipIfNot( platform );
+    Environment.SkipIfNot( platform );
 
     // Arrange
     var outputOption = string.IsNullOrWhiteSpace( outputFormat ) ? string.Empty : $" -o {outputFormat}";
@@ -57,17 +57,6 @@ internal sealed class LintCommandTests {
     }
   }
 
-  private static void SkipIfNot( Platform platform ) {
-    var expectedOs = platform switch {
-      Platform.Linux => OSPlatform.Linux,
-      Platform.Windows => OSPlatform.Windows,
-      _ => throw new PlatformNotSupportedException()
-    };
-
-    if ( !RuntimeInformation.IsOSPlatform( expectedOs ) ) {
-      Assert.Inconclusive( $"Can only be run on {platform}" );
-    }
-  }
 
   [Test]
   public async Task LintMissingSpec() {

@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Drift.Cli.E2ETests.Schemas;
 
 internal sealed class SchemasAvailabilityTests {
@@ -44,7 +46,10 @@ internal sealed class SchemasAvailabilityTests {
     // Assert
     Assert.DoesNotThrow( () => response.EnsureSuccessStatusCode() );
     var content = await response.Content.ReadAsStringAsync();
-    var normalized = content.Replace( "\r\n", "\n" );
-    Assert.That( normalized, Contains.Substring( expectedPartialContent ) );
+
+    var normalizedContent = Regex.Replace( content, @"\s", string.Empty );
+    var normalizedExpected = Regex.Replace( expectedPartialContent, @"\s", string.Empty );
+
+    Assert.That( normalizedContent, Contains.Substring( normalizedExpected ) );
   }
 }

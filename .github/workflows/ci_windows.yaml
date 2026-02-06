@@ -1,4 +1,4 @@
-name: 🔁 🐧 CI
+name: 🔁 🪟 CI
 permissions:
   contents: read
 
@@ -24,11 +24,8 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    env:
-      # https://docs.github.com/en/actions/how-tos/monitor-workflows/enable-debug-logging
-      ACTIONS_RUNNER_DEBUG: false
+    runs-on: windows-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -38,12 +35,12 @@ jobs:
 
       - name: Run tests
         run: |
-          dotnet run \
-          --project ./build/_build.csproj \
-          --target Test \
-          --commit ${{ github.sha }} \
-          --msbuildverbosity ${{ github.event.inputs.verbosity }} \
-          --platform linux_x64
+          dotnet run `
+          --project ./build/_build.csproj `
+          --target Test `
+          --commit ${{ github.sha }} `
+          --msbuildverbosity ${{ github.event.inputs.verbosity }} `
+          --platform win_x64
 
       - name: Display test results
         continue-on-error: true
@@ -53,6 +50,6 @@ jobs:
       # TODO fix publish warnings and re-enable check
       - name: Check for warnings
         run: |
-          dotnet run \
-          --project ./build/_build.csproj \
+          dotnet run `
+          --project ./build/_build.csproj `
           --target CheckBuildWarnings

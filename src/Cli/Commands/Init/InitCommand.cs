@@ -273,7 +273,7 @@ internal class InitCommandHandler(
     var fullPath = Path.GetFullPath( specPath );
 
     output.Normal.Write( $"{Chars.Checkmark}", ConsoleColor.Green );
-    output.Normal.Write( "  Spec created " );
+    output.Normal.Write( " Spec created " );
     output.Normal.WriteLine( TextHelper.Bold( $"{fullPath}" ) );
 
     output.Log.LogInformation( "Spec created: {SpecPath}", specPath );

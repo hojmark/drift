@@ -8,8 +8,8 @@ internal static class Chars {
   internal const string MagnifyingGlass = "🔍" + EmojiStyle;
 
   // TODO consider these. cross/multiplication doesn't have an emoji version
-  internal const string Cross = "✗";
-  internal const string Checkmark = "✔";
+  internal const string Cross = "\u2715";
+  internal const string Checkmark = "\u2713";
 
   /// <summary>
   /// Unicode Variation Selector 16 (VS16): forces emoji-style rendering.

@@ -26,12 +26,13 @@ internal sealed class NetworkScannerTests {
       .Take( 3 )
     ).ToList();
 
-    if ( !RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
-      Assert.Fail();
-      return;
-    }
+    var pingTool = new PredefinedPingTool( successfulIps );
 
-    var subnetScanner = new LinuxPingSubnetScanner( new PredefinedPingTool( successfulIps ) );
+    PingSubnetScannerBase subnetScanner = RuntimeInformation.IsOSPlatform( OSPlatform.Linux )
+      ? new LinuxPingSubnetScanner( pingTool )
+      : RuntimeInformation.IsOSPlatform( OSPlatform.Windows )
+        ? new WindowsPingSubnetScanner( pingTool )
+        : throw new PlatformNotSupportedException();
 
     var logger = new StringLogger();
 

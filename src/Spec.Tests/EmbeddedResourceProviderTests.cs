@@ -18,11 +18,12 @@ internal sealed class EmbeddedResourceProviderTests {
 
     Assert.That( exception.Message, Is.EqualTo(
         """
-        Resource does not exist: notthere.json
-        Resolved assembly path: Drift.Spec.embedded_resources.notthere.json
-        Available resources:
-        - Drift.Spec.embedded_resources.schemas.drift-spec-v1-preview.schema.json
-        """
+          Resource does not exist: notthere.json
+          Resolved assembly path: Drift.Spec.embedded_resources.notthere.json
+          Available resources:
+          - Drift.Spec.embedded_resources.schemas.drift-spec-v1-preview.schema.json
+          """
+          .Replace( "\r", string.Empty ) // Windows compatibility
       )
     );
   }

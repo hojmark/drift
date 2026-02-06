@@ -131,6 +131,8 @@ internal static class RootCommandFactory {
   private static void ConfigureNetworkScanner( IServiceCollection services ) {
     if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
       services.AddSingleton<IPingTool, LinuxPingTool>();
+    } else if ( RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ) {
+      services.AddSingleton<IPingTool, WindowsPingTool>();
     }
     else {
       throw new PlatformNotSupportedException();

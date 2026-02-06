@@ -18,7 +18,7 @@ internal sealed class ReadmeWorkflowTests : DriftBinaryFixture {
 
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( initResult.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-        Assert.That( initResult.StdOut, Contains.Substring( "✔  Spec created /" ) );
+        Assert.That( initResult.StdOut, Contains.Substring( "✓ Spec created /" ) );
       }
 
       await Verify( initResult.StdOut )

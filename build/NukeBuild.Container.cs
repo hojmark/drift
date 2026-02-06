@@ -4,6 +4,7 @@ using Drift.Build.Utilities.ContainerImage;
 using HLabs.Containers;
 using Nuke.Common;
 using Nuke.Common.Tools.Docker;
+using Nuke.Common.Tools.DotNet;
 using Serilog;
 
 // ReSharper disable VariableHidesOuterVariable
@@ -25,6 +26,7 @@ partial class NukeBuild {
 
   Target PublishContainer => _ => _
     .DependsOn( PublishBinaries, CleanArtifacts )
+    .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
     .Requires( () => Commit )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(PublishContainer) );

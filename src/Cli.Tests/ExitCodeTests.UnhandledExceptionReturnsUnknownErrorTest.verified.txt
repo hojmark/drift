@@ -1,6 +1,2 @@
-﻿✗ This exception was thrown from ExceptionCommandHandler
-   at Drift.Cli.Tests.ExitCodeTests.ExceptionCommandHandler.Invoke(DefaultParameters parameters, CancellationToken cancellationToken) in {ProjectDirectory}ExitCodeTests.cs:line 104
-   at Drift.Cli.Commands.Common.CommandBase`2.<>c__DisplayClass0_0.<.ctor>b__0(ParseResult parseResult, CancellationToken cancellationToken) in {SolutionDirectory}src/Cli/Commands/Common/CommandBase.cs:line 25
-   at System.CommandLine.Invocation.AnonymousAsynchronousCommandLineAction.InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
-   at System.CommandLine.Invocation.InvocationPipeline.InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
-   at Drift.Cli.DriftCli.InvokeAsync(String[] args, Boolean toConsole, Boolean plainConsole, Action`1 configureServices, CommandRegistration[] customCommands, Action`1 configureInvocation, CancellationToken cancellationToken) in {SolutionDirectory}src/Cli/DriftCli.cs:line 41
+﻿✕ This exception was thrown from ExceptionCommandHandler
+   at Drift.Cli.Tests.ExitCodeTests.ExceptionCommandHandler.Invoke(DefaultParameters parameters, CancellationToken cancellationToken) in {ProjectDirectory}ExitCodeTests.cs:line 111

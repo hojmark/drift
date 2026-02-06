@@ -6,12 +6,14 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Scanning.Scanners;
 
 [SupportedOSPlatform( "windows" )]
-internal sealed class WindowsPingSubnetScanner : PingSubnetScannerBase {
+internal sealed class WindowsPingSubnetScanner( IPingTool pingTool ) : PingSubnetScannerBase {
+  private static readonly IArpTableProvider ArpTableProvider = new WindowsArpTableProvider();
+
   protected override IArpTableProvider ArpTables() {
-    throw new NotImplementedException();
+    return ArpTableProvider;
   }
 
-  protected override Task<bool> PingAsync( IPAddress ip, ILogger logger, CancellationToken cancellationToken ) {
-    throw new NotImplementedException();
+  protected override async Task<bool> PingAsync( IPAddress ip, ILogger logger, CancellationToken cancellationToken ) {
+    return ( await pingTool.PingAsync( ip, logger, cancellationToken ) ).Success;
   }
 }

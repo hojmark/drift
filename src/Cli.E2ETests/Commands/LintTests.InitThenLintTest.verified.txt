@@ -1,2 +1,2 @@
 ﻿Validating {CurrentDirectory}unittest.spec.yaml  
-✔ Valid
+✓ Valid

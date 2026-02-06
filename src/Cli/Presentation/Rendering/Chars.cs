@@ -9,7 +9,7 @@ internal static class Chars {
 
   // TODO consider these. cross/multiplication doesn't have an emoji version
   internal const string Cross = "✗";
-  internal const string Checkmark = "✔";
+  internal const string Checkmark = "✓";
 
   /// <summary>
   /// Unicode Variation Selector 16 (VS16): forces emoji-style rendering.

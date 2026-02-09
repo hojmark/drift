@@ -81,6 +81,8 @@ internal static class RootCommandFactory {
 
     rootCommand.TreatUnmatchedTokensAsErrors = true;
 
+    rootCommand.AddOpenCli();
+
     AddFigletHeaderToHelpCommand( rootCommand );
 
     return rootCommand;

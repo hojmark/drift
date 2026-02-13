@@ -1,4 +1,4 @@
-using HLabs.Containers;
+using HLabs.ImageReferences;
 using Semver;
 
 namespace Drift.Build.Utilities.Versioning.Abstractions;
@@ -16,5 +16,5 @@ public interface IReleaseInfo {
 
   Task<string> GetGitTagAsync();
 
-  Task<ICollection<ImageReference>> GetImageReferences();
+  Task<ICollection<QualifiedImageRef>> GetImageReferences();
 }

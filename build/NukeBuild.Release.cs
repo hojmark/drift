@@ -29,7 +29,7 @@ internal partial class NukeBuild {
     );
 
   public Target PreRelease => _ => _
-    .DependsOn( PackBinaries, PreReleaseContainer, Test )
+    .DependsOn( PackBinaries, ReleaseContainer, Test )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(PreRelease) );
 

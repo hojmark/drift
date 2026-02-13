@@ -1,10 +1,12 @@
 using System.Linq;
 using Drift.Build.Utilities;
-using Drift.Build.Utilities.ContainerImage;
-using HLabs.Containers;
+using HLabs.ImageReferences;
+using HLabs.ImageReferences.Extensions.Nuke;
+using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Tools.Docker;
 using Serilog;
+using Versioning;
 
 // ReSharper disable VariableHidesOuterVariable
 // ReSharper disable AllUnderscoreLocalParameterName
@@ -23,23 +25,25 @@ partial class NukeBuild {
   [Parameter( "DockerHubPassword - Required for releasing container images to Docker Hub" )]
   public readonly string DockerHubPassword;
 
+  private static readonly PartialImageRef DriftImage = new("drift");
+  private static readonly PartialImageRef LocalDriftImage = DriftImage.With( Registry.Localhost );
+  private static readonly PartialImageRef DockerHubDriftImage = DriftImage.With( Registry.DockerHub, "hojmark" );
+  [CanBeNull] private CanonicalImageRef CanonicalDriftImage = null;
+  [CanBeNull] private ImageId DriftImageId = null;
+
   Target PublishContainer => _ => _
     .DependsOn( PublishBinaries, CleanArtifacts )
     .Requires( () => Commit )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(PublishContainer) );
 
-        // TODO use GetContainerImageReferences (.WithRepo(repo))
         var version = await Versioning.Value.GetVersionAsync();
-        var localTagVersion = ImageReference.Localhost( "drift", version );
 
+        Log.Information( "Building container image..." );
         // var created = DateTime.UtcNow.ToString( "o", CultureInfo.InvariantCulture ); // o = round-trip format / ISO 8601
-
-        Log.Information( "Building container image {Tag}", localTagVersion );
-        DockerTasks.DockerBuild( s => s
+        var output = DockerTasks.DockerBuild( s => s
           .SetPath( RootDirectory )
           .SetFile( "Containerfile" )
-          .SetTag( localTagVersion )
           .SetLabel(
             // Timestamping prevents the build from being idempotent
             // $"\"org.opencontainers.image.created={created}\"",
@@ -48,13 +52,22 @@ partial class NukeBuild {
           )
         );
 
-        // For convenience, tag the image with dev as well
-        var localTagDev = localTagVersion.WithTag( Tag.Dev );
-        Log.Information( "Re-tagging {LocalTagVersion} -> {LocalTagDev}", localTagVersion, localTagDev );
+        var imageId = new ImageId( output.Last().Text );
+        Log.Information( "Image ID is {ImageId}", imageId );
+
+        Log.Information( "Tagging image..." );
+        // For convenience, tag the image with dev
+        var devTag = LocalDriftImage.Qualify( Tag.Dev );
         DockerTasks.DockerTag( s => s
-          .SetSourceImage( localTagVersion )
-          .SetTargetImage( localTagDev )
+          .SetSourceImage( imageId )
+          .SetTargetImage( devTag )
         );
+
+        // Determine canonical image reference
+        var digest = imageId.GetDigest();
+        DriftImageId = imageId;
+        CanonicalDriftImage = LocalDriftImage.Canonicalize( digest );
+        Log.Information( "Canonical reference is {ImageRef}", CanonicalDriftImage );
       }
     );
 
@@ -67,20 +80,18 @@ partial class NukeBuild {
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(ReleaseContainer) );
 
-        var version = await Versioning.Value.GetVersionAsync();
-        var local = ImageReference.Localhost( "drift", version );
-        var @public = ( await Versioning.Value.Release!.GetImageReferences() )
+        var publicReferences = ( await Versioning.Value.Release!.GetImageReferences() )
           .OrderBy( LatestLast ) // Pushing 'latest' last will make sure it appears as the most recent tag on Docker Hub
           .ToArray();
 
-        Push( local, @public.ToArray() );
+        Push( DriftImageId, publicReferences.ToArray() );
 
-        var repos = @public.Select( r => r.Host ).Distinct();
+        var registries = publicReferences.Select( r => r.Registry ).Distinct();
 
-        Log.Information( "🐋 Released to {Repositories}!", string.Join( " and ", repos ) );
+        Log.Information( "🐋 Released to {Registries}!", string.Join( " and ", registries ) );
       }
     );
-
+/*
   /// <summary>
   /// Releases container image to public Docker Hub!
   /// </summary>
@@ -90,41 +101,41 @@ partial class NukeBuild {
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(PreReleaseContainer) );
 
-        var version = await Versioning.Value.GetVersionAsync();
-        var local = ImageReference.Localhost( "drift", version );
-        var publicc = await Versioning.Value.Release!.GetImageReferences();
+        var publicReferences = await Versioning.Value.Release!.GetImageReferences();
 
-        Push( local, publicc.ToArray() );
+        Push( ImageIdDrift, publicReferences.ToArray() );
 
-        var repos = publicc.DistinctBy( r => r.Repository );
+        var registries = publicReferences.DistinctBy( r => r.Registry );
 
-        Log.Information( "🐋 Released to {Repositories}!", string.Join( " and ", repos ) );
+        Log.Information( "🐋 Released to {Registries}!", string.Join( " and ", registries ) );
       }
-    );
+    );*/
 
-  private static int LatestLast( ImageReference r ) {
-    return r.Tag is LatestTag ? 1 : 0;
+  private static int LatestLast( ImageRef r ) {
+    return r.Tag == Tag.Latest ? 1 : 0;
   }
 
-  private void Push( ImageReference source, params ImageReference[] targets ) {
-    ImageReference[] allReferences = [source, ..targets];
-    var loginToDockerHub = allReferences.Any( reference => reference.Host == DockerIoRegistry.Instance );
+  private void Push( ImageId imageId, params QualifiedImageRef[] targets ) {
+    var logInToDockerHub = targets.Any( r => r.Registry == Registry.DockerHub );
 
     try {
-      if ( loginToDockerHub ) {
+      if ( logInToDockerHub ) {
         DockerHubLogin();
       }
 
       Log.Debug(
-        "Pushing {SourceTag} to: {TargetTags}",
-        source,
+        "Pushing {ImageId} to: {TargetTags}",
+        imageId,
         string.Join( ", ", targets.Select( t => t.ToString() ) )
       );
 
       foreach ( var target in targets ) {
-        Log.Debug( "Re-tagging {SourceTag} -> {TargetTag}", source, target );
+        // Unfortunately, Docker (unlike Podman) does not support pushing an image selected by image ID directly to a
+        // registry tag (image ID → registry:tag). A local tag must be created first, which prevents this from being a
+        // single, atomic operation.
+        Log.Debug( "Tagging {ImageId} with {TargetTag}", DriftImageId, target );
         DockerTasks.DockerTag( s => s
-          .SetSourceImage( source )
+          .SetSourceImage( DriftImageId )
           .SetTargetImage( target )
         );
 
@@ -137,7 +148,7 @@ partial class NukeBuild {
       }
     }
     finally {
-      if ( loginToDockerHub ) {
+      if ( logInToDockerHub ) {
         DockerHubLogout();
       }
     }
@@ -145,19 +156,15 @@ partial class NukeBuild {
 
   private void DockerHubLogin() {
     Log.Debug( "Logging in to Docker Hub" );
-
     DockerTasks.DockerLogin( s => s
+      .SetServer( Registry.DockerHub )
       .SetUsername( DockerHubUsername )
       .SetPassword( DockerHubPassword )
-      .SetServer( DockerIoRegistry.Instance )
     );
   }
 
   private static void DockerHubLogout() {
     Log.Debug( "Logging out of Docker Hub" );
-
-    DockerTasks.DockerLogout( s => s
-      .SetServer( "docker.io" )
-    );
+    DockerTasks.DockerLogout( s => s.SetServer( Registry.DockerHub ) );
   }
 }

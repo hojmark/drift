@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HLabs.Containers" />
+    <PackageReference Include="HLabs.ImageReferences" />
     <PackageReference Include="Octokit" />
     <PackageReference Include="Semver" />
     <PackageReference Include="Nuke.Common" />

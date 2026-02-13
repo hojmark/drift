@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Drift.Build.Utilities;
 using Drift.Build.Utilities.MsBuild;
-using HLabs.Containers;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Tooling;
@@ -71,17 +70,16 @@ sealed partial class NukeBuild {
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(TestE2E) );
 
-        var version = await Versioning.Value.GetVersionAsync();
+        var imageRef = CanonicalDriftImage ?? throw new ArgumentNullException( nameof(CanonicalDriftImage) );
+        Log.Information( "Using image {ImageRef}", imageRef );
 
         foreach ( var runtime in SupportedRuntimes ) {
           var driftBinary = Paths.PublishDirectoryForRuntime( runtime ) / "drift";
 
           var envVars = new Dictionary<string, string> {
             // { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
-            { "DRIFT_BINARY_PATH", driftBinary },
-            // TODO use this!
-            // { "DRIFT_CONTAINER_IMAGE_REF", ImageReference.Localhost( "drift", version ).ToString() }
-            { "DRIFT_CONTAINER_IMAGE_REF", ImageReference.Localhost( "drift", version ).ToString() }
+            { "DRIFT_BINARY_PATH", driftBinary }, //
+            { "DRIFT_CONTAINER_IMAGE_REF", imageRef.ToString() }
           };
 
           var alternateDockerHost = await FindAlternateDockerHostAsync();

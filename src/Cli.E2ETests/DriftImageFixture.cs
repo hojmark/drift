@@ -1,12 +1,12 @@
 using System.Text.Json;
 using Drift.Cli.E2ETests.Abstractions;
-using HLabs.Containers;
+using HLabs.ImageReferences;
 using Nuke.Common.Tools.Docker;
 
 namespace Drift.Cli.E2ETests;
 
 internal abstract class DriftImageFixture {
-  protected static ImageReference DriftImage {
+  protected static CanonicalImageRef DriftImage {
     get;
     private set;
   }
@@ -14,10 +14,9 @@ internal abstract class DriftImageFixture {
   [OneTimeSetUp]
   public void Setup() {
     try {
-      // TODO get from env var
-      // var reference = EnvironmentVariable.GetOrThrow( EnvVar.DRIFT_CONTAINER_IMAGE_REF );
-      // DriftImage = ImageReference.Parse( reference );
-      DriftImage = ImageReference.Localhost( "drift", Tag.Dev );
+      var reference = EnvironmentVariable.GetOrThrow( EnvVar.DRIFT_CONTAINER_IMAGE_REF );
+      DriftImage = reference.Image().Canonicalize();
+      // DriftImage = new PartialImageRef( Registry.Localhost, new Repository( "drift" ), new Tag( "dev" ) ).Qualify();
     }
     catch ( Exception e ) {
       if ( !TestUtilities.Environment.IsCi() ) {

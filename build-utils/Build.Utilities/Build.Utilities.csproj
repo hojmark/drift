@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="HLabs.Containers" />
+    <PackageReference Include="HLabs.ImageReferences" />
+    <PackageReference Include="HLabs.ImageReferences.Extensions.Nuke" />
     <PackageReference Include="Humanizer" />
     <PackageReference Include="Semver" />
     <PackageReference Include="Nuke.Common" />

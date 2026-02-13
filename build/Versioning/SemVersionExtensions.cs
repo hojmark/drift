@@ -4,6 +4,9 @@ using Semver;
 namespace Versioning;
 
 internal static class SemVersionExtensions {
+  /*
+   * NUKE build extensions
+   */
   internal static DotNetBuildSettings SetVersionProperties(
     this DotNetBuildSettings settings,
     SemVersion version
@@ -27,7 +30,6 @@ internal static class SemVersionExtensions {
   /*
    * Below methods skips metadata because .NET add the commit hash by itself (somewhere?)
    */
-
   internal static string ToDotNetAssemblyVersion( this SemVersion version ) {
     // Takes major.minor.patch and optional build number
     return version.WithoutPrereleaseOrMetadata().ToString();

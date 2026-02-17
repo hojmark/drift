@@ -34,7 +34,6 @@
         "CleanProjects",
         "PackBinaries",
         "PreRelease",
-        "PreReleaseContainer",
         "PublishBinaries",
         "PublishContainer",
         "Release",

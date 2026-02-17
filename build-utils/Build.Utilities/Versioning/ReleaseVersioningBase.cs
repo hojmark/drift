@@ -1,5 +1,5 @@
 using Drift.Build.Utilities.Versioning.Abstractions;
-using HLabs.Containers;
+using HLabs.ImageReferences;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Git;
@@ -51,9 +51,9 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
     return _cachedGitTag;
   }
 
-  public virtual async Task<ICollection<ImageReference>> GetImageReferences() {
+  public virtual async Task<ICollection<QualifiedImageRef>> GetImageReferences() {
     return [
-      ImageReference.DockerIo( "hojmark", "drift", await GetVersionAsync() )
+      "hojmark/drift".Image().Qualify( await GetVersionAsync() )
     ];
   }
 

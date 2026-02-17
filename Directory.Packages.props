@@ -5,8 +5,8 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="HLabs.ImageReferences" Version="1.0.0-preview.1" />
-    <PackageVersion Include="HLabs.ImageReferences.Extensions.Nuke" Version="1.0.0-preview.1" />
+    <PackageVersion Include="HLabs.ImageReferences" Version="1.0.0-preview.2" />
+    <PackageVersion Include="HLabs.ImageReferences.Extensions.Nuke" Version="1.0.0-preview.2" />
     <PackageVersion Include="Humanizer" Version="3.0.1" />
     <PackageVersion Include="IPNetwork2" Version="3.4.853" />
     <PackageVersion Include="JsonSchema.Net" Version="9.0.0" />

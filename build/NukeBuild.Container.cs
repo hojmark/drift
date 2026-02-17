@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Drift.Build.Utilities;
 using HLabs.ImageReferences;
@@ -28,8 +29,7 @@ partial class NukeBuild {
   private static readonly PartialImageRef DriftImage = new("drift");
   private static readonly PartialImageRef LocalDriftImage = DriftImage.With( Registry.Localhost );
   private static readonly PartialImageRef DockerHubDriftImage = DriftImage.With( Registry.DockerHub, "hojmark" );
-  [CanBeNull] private CanonicalImageRef CanonicalDriftImage = null;
-  [CanBeNull] private ImageId DriftImageId = null;
+  [CanBeNull] private QualifiedImageRef _driftImageRef;
 
   Target PublishContainer => _ => _
     .DependsOn( PublishBinaries, CleanArtifacts )
@@ -39,10 +39,14 @@ partial class NukeBuild {
 
         var version = await Versioning.Value.GetVersionAsync();
 
+        var tag = new Tag( Guid.NewGuid().ToString( "N" ) );
+        _driftImageRef = LocalDriftImage.Qualify( tag );
+
         Log.Information( "Building container image..." );
         // var created = DateTime.UtcNow.ToString( "o", CultureInfo.InvariantCulture ); // o = round-trip format / ISO 8601
-        var output = DockerTasks.DockerBuild( s => s
+        DockerTasks.DockerBuild( s => s
           .SetPath( RootDirectory )
+          .SetTag( _driftImageRef )
           .SetFile( "Containerfile" )
           .SetLabel(
             // Timestamping prevents the build from being idempotent
@@ -52,22 +56,15 @@ partial class NukeBuild {
           )
         );
 
-        var imageId = new ImageId( output.Last().Text );
-        Log.Information( "Image ID is {ImageId}", imageId );
+        Log.Information( "Built image: {ImageRef}", _driftImageRef );
 
         Log.Information( "Tagging image..." );
         // For convenience, tag the image with dev
         var devTag = LocalDriftImage.Qualify( Tag.Dev );
         DockerTasks.DockerTag( s => s
-          .SetSourceImage( imageId )
+          .SetSourceImage( _driftImageRef )
           .SetTargetImage( devTag )
         );
-
-        // Determine canonical image reference
-        var digest = imageId.GetDigest();
-        DriftImageId = imageId;
-        CanonicalDriftImage = LocalDriftImage.Canonicalize( digest );
-        Log.Information( "Canonical reference is {ImageRef}", CanonicalDriftImage );
       }
     );
 
@@ -84,7 +81,7 @@ partial class NukeBuild {
           .OrderBy( LatestLast ) // Pushing 'latest' last will make sure it appears as the most recent tag on Docker Hub
           .ToArray();
 
-        Push( DriftImageId, publicReferences.ToArray() );
+        Push( _driftImageRef, publicReferences.ToArray() );
 
         var registries = publicReferences.Select( r => r.Registry ).Distinct();
 
@@ -115,7 +112,7 @@ partial class NukeBuild {
     return r.Tag == Tag.Latest ? 1 : 0;
   }
 
-  private void Push( ImageId imageId, params QualifiedImageRef[] targets ) {
+  private void Push( QualifiedImageRef source, params QualifiedImageRef[] targets ) {
     var logInToDockerHub = targets.Any( r => r.Registry == Registry.DockerHub );
 
     try {
@@ -124,8 +121,8 @@ partial class NukeBuild {
       }
 
       Log.Debug(
-        "Pushing {ImageId} to: {TargetTags}",
-        imageId,
+        "Pushing {Source} to: {Targets}",
+        source,
         string.Join( ", ", targets.Select( t => t.ToString() ) )
       );
 
@@ -133,13 +130,13 @@ partial class NukeBuild {
         // Unfortunately, Docker (unlike Podman) does not support pushing an image selected by image ID directly to a
         // registry tag (image ID → registry:tag). A local tag must be created first, which prevents this from being a
         // single, atomic operation.
-        Log.Debug( "Tagging {ImageId} with {TargetTag}", DriftImageId, target );
+        Log.Debug( "Tagging {Source} with {Target}", source, target );
         DockerTasks.DockerTag( s => s
-          .SetSourceImage( DriftImageId )
+          .SetSourceImage( source )
           .SetTargetImage( target )
         );
 
-        Log.Information( "Pushing {TargetTag}", target );
+        Log.Information( "Pushing {Target}", target );
         DockerTasks.DockerPush( s => s
           .SetName( target )
         );

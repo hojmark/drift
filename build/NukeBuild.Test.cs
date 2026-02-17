@@ -70,7 +70,7 @@ sealed partial class NukeBuild {
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(TestE2E) );
 
-        var imageRef = CanonicalDriftImage ?? throw new ArgumentNullException( nameof(CanonicalDriftImage) );
+        var imageRef = _driftImageRef ?? throw new ArgumentNullException( nameof(_driftImageRef) );
         Log.Information( "Using image {ImageRef}", imageRef );
 
         foreach ( var runtime in SupportedRuntimes ) {

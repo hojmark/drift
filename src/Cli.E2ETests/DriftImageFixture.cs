@@ -15,15 +15,7 @@ internal abstract class DriftImageFixture {
   public void Setup() {
     try {
       var reference = EnvironmentVariable.GetOrThrow( EnvVar.DRIFT_CONTAINER_IMAGE_REF );
-      try {
-        DriftImage = reference.QualifiedImage();
-      }
-      catch ( Exception e ) {
-        Console.Error.WriteLine( $"Failed to canonicalize image reference: {reference}" );
-        TestContext.Out.WriteLine( $"Failed to canonicalize image reference: {reference}" );
-        throw;
-      }
-      // DriftImage = new PartialImageRef( Registry.Localhost, new Repository( "drift" ), new Tag( "dev" ) ).Qualify();
+      DriftImage = reference.QualifiedImage();
     }
     catch ( Exception e ) {
       if ( !TestUtilities.Environment.IsCi() ) {

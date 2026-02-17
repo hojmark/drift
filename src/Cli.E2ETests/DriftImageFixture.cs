@@ -6,7 +6,7 @@ using Nuke.Common.Tools.Docker;
 namespace Drift.Cli.E2ETests;
 
 internal abstract class DriftImageFixture {
-  protected static CanonicalImageRef DriftImage {
+  protected static QualifiedImageRef DriftImage {
     get;
     private set;
   }
@@ -16,7 +16,7 @@ internal abstract class DriftImageFixture {
     try {
       var reference = EnvironmentVariable.GetOrThrow( EnvVar.DRIFT_CONTAINER_IMAGE_REF );
       try {
-        DriftImage = reference.Image().Canonicalize();
+        DriftImage = reference.QualifiedImage();
       }
       catch ( Exception e ) {
         Console.Error.WriteLine( $"Failed to canonicalize image reference: {reference}" );

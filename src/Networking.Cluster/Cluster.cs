@@ -8,8 +8,10 @@ internal sealed class Cluster(
   IPeerMessageEnvelopeConverter envelopeConverter,
   IPeerStreamManager peerStreamManager,
   PeerResponseCorrelator responseCorrelator,
-  ILogger logger
+  ILogger logger,
+  ClusterOptions? options = null
 ) : ICluster {
+  private readonly ClusterOptions _options = options ?? new ClusterOptions();
   /*public async Task SendAsync<TMessage>(
     Domain.Agent agent,
     TMessage message,
@@ -55,6 +57,19 @@ internal sealed class Cluster(
     TimeSpan? timeout = null,
     CancellationToken cancellationToken = default
   ) where TResponse : IPeerResponse where TRequest : IPeerRequest<TResponse> {
+    return await ExecuteWithRetryAsync(
+      agent,
+      async () => await SendAndWaitInternalAsync<TRequest, TResponse>( agent, message, timeout, cancellationToken ),
+      cancellationToken
+    );
+  }
+
+  private async Task<TResponse> SendAndWaitInternalAsync<TRequest, TResponse>(
+    Domain.Agent agent,
+    TRequest message,
+    TimeSpan? timeout,
+    CancellationToken cancellationToken
+  ) where TResponse : IPeerResponse where TRequest : IPeerRequest<TResponse> {
     var correlationId = Guid.NewGuid().ToString();
     var envelope = envelopeConverter.ToEnvelope<TRequest>( message );
     envelope.CorrelationId = correlationId;
@@ -62,7 +77,7 @@ internal sealed class Cluster(
     // Register correlator BEFORE sending
     var responseTask = responseCorrelator.WaitForResponseAsync(
       correlationId,
-      timeout ?? TimeSpan.FromSeconds( 30 ),
+      timeout ?? _options.DefaultTimeout,
       cancellationToken
     );
 
@@ -83,6 +98,28 @@ internal sealed class Cluster(
     TimeSpan? timeout = null,
     CancellationToken cancellationToken = default
   ) where TFinalResponse : IPeerResponse where TRequest : IPeerMessage {
+    return await ExecuteWithRetryAsync(
+      agent,
+      async () => await SendAndWaitStreamingInternalAsync<TRequest, TFinalResponse>(
+        agent,
+        message,
+        finalMessageType,
+        onProgressUpdate,
+        timeout,
+        cancellationToken
+      ),
+      cancellationToken
+    );
+  }
+
+  private async Task<TFinalResponse> SendAndWaitStreamingInternalAsync<TRequest, TFinalResponse>(
+    Domain.Agent agent,
+    TRequest message,
+    string finalMessageType,
+    Action<Drift.Networking.Grpc.Generated.PeerMessage> onProgressUpdate,
+    TimeSpan? timeout,
+    CancellationToken cancellationToken
+  ) where TFinalResponse : IPeerResponse where TRequest : IPeerMessage {
     var correlationId = Guid.NewGuid().ToString();
     var envelope = envelopeConverter.ToEnvelope<TRequest>( message );
     envelope.CorrelationId = correlationId;
@@ -92,7 +129,7 @@ internal sealed class Cluster(
       correlationId,
       finalMessageType,
       onProgressUpdate,
-      timeout ?? TimeSpan.FromMinutes( 5 ), // Longer timeout for scans
+      timeout ?? _options.StreamingTimeout,
       cancellationToken
     );
 
@@ -103,5 +140,71 @@ internal sealed class Cluster(
     // Final Response
     var response = await responseTask;
     return envelopeConverter.FromEnvelope<TFinalResponse>( response );
+  }
+
+  private async Task<TResult> ExecuteWithRetryAsync<TResult>(
+    Domain.Agent agent,
+    Func<Task<TResult>> operation,
+    CancellationToken cancellationToken
+  ) {
+    var attempt = 0;
+    Exception? lastException = null;
+
+    while ( attempt <= _options.MaxRetryAttempts ) {
+      try {
+        if ( attempt > 0 ) {
+          var delay = CalculateBackoffDelay( attempt );
+          logger.LogDebug(
+            "Retrying operation for agent {AgentId} (attempt {Attempt}/{MaxAttempts}) after {Delay}ms",
+            agent.Id,
+            attempt,
+            _options.MaxRetryAttempts,
+            delay
+          );
+          await Task.Delay( delay, cancellationToken );
+        }
+
+        return await operation();
+      }
+      catch ( OperationCanceledException ) {
+        // Don't retry on cancellation
+        throw;
+      }
+      catch ( Exception ex ) {
+        lastException = ex;
+        attempt++;
+
+        if ( attempt > _options.MaxRetryAttempts ) {
+          logger.LogError(
+            ex,
+            "Operation failed for agent {AgentId} after {Attempts} attempts",
+            agent.Id,
+            attempt
+          );
+          break;
+        }
+
+        logger.LogWarning(
+          ex,
+          "Operation failed for agent {AgentId} (attempt {Attempt}/{MaxAttempts}): {Message}",
+          agent.Id,
+          attempt,
+          _options.MaxRetryAttempts,
+          ex.Message
+        );
+      }
+    }
+
+    // All retries exhausted
+    throw new AggregateException(
+      $"Operation failed for agent {agent.Id} after {attempt} attempts",
+      lastException!
+    );
+  }
+
+  private int CalculateBackoffDelay( int attempt ) {
+    // Exponential backoff: base * 2^(attempt-1)
+    var delay = _options.RetryBaseDelayMs * Math.Pow( 2, attempt - 1 );
+    return (int)Math.Min( delay, _options.RetryMaxDelayMs );
   }
 }

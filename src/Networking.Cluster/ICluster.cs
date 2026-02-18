@@ -1,3 +1,4 @@
+using Drift.Networking.Grpc.Generated;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
 
 namespace Drift.Networking.Cluster;
@@ -11,6 +12,15 @@ public interface ICluster {
     TimeSpan? timeout = null,
     CancellationToken cancellationToken = default
   ) where TResponse : IPeerResponse where TRequest : IPeerRequest<TResponse>;
+
+  Task<TFinalResponse> SendAndWaitStreamingAsync<TRequest, TFinalResponse>(
+    Domain.Agent agent,
+    TRequest message,
+    string finalMessageType,
+    Action<PeerMessage> onProgressUpdate,
+    TimeSpan? timeout = null,
+    CancellationToken cancellationToken = default
+  ) where TFinalResponse : IPeerResponse where TRequest : IPeerMessage;
 
   /*Task BroadcastAsync( PeerMessage message, CancellationToken cancellationToken = default );
   Task<List<CidrBlock>> RequestSubnetsAsync( string peerAddress, CancellationToken cancellationToken = default );

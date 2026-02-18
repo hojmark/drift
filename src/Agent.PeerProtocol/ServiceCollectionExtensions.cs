@@ -1,3 +1,4 @@
+using Drift.Agent.PeerProtocol.Scan;
 using Drift.Agent.PeerProtocol.Subnets;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,7 @@ public static class ServiceCollectionExtensions {
   extension( IServiceCollection services ) {
     public void AddPeerProtocol() {
       services.AddScoped<IPeerMessageHandler, SubnetsRequestHandler>();
+      services.AddScoped<IPeerMessageHandler, ScanSubnetRequestHandler>();
     }
   }
 }

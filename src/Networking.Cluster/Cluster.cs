@@ -74,4 +74,34 @@ internal sealed class Cluster(
     var response = await responseTask;
     return envelopeConverter.FromEnvelope<TResponse>( response );
   }
+
+  public async Task<TFinalResponse> SendAndWaitStreamingAsync<TRequest, TFinalResponse>(
+    Domain.Agent agent,
+    TRequest message,
+    string finalMessageType,
+    Action<Drift.Networking.Grpc.Generated.PeerMessage> onProgressUpdate,
+    TimeSpan? timeout = null,
+    CancellationToken cancellationToken = default
+  ) where TFinalResponse : IPeerResponse where TRequest : IPeerMessage {
+    var correlationId = Guid.NewGuid().ToString();
+    var envelope = envelopeConverter.ToEnvelope<TRequest>( message );
+    envelope.CorrelationId = correlationId;
+
+    // Register streaming correlator BEFORE sending
+    var responseTask = responseCorrelator.WaitForStreamingResponseAsync(
+      correlationId,
+      finalMessageType,
+      onProgressUpdate,
+      timeout ?? TimeSpan.FromMinutes( 5 ), // Longer timeout for scans
+      cancellationToken
+    );
+
+    // Request
+    var connection = peerStreamManager.GetOrCreate( new Uri( agent.Address ), "agentid_" + agent.Id );
+    await connection.SendAsync( envelope );
+
+    // Final Response
+    var response = await responseTask;
+    return envelopeConverter.FromEnvelope<TFinalResponse>( response );
+  }
 }

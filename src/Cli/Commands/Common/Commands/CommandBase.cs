@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common.Parameters;
 
 namespace Drift.Cli.Commands.Common.Commands;
@@ -20,7 +21,15 @@ internal abstract class CommandBase<TParameters, THandler> : Command
       serviceProvider.GetRequiredService<ParseResultHolder>().ParseResult = parseResult;
 
       var handler = serviceProvider.GetRequiredService<THandler>();
-      var parameters = CreateParameters( parseResult );
+
+      TParameters parameters;
+      try {
+        parameters = CreateParameters( parseResult );
+      }
+      catch ( ArgumentException e ) {
+        parseResult.InvocationConfiguration.Error.WriteLine( $"✗ {e.Message}" );
+        return ExitCodes.GeneralError;
+      }
 
       return await handler.Invoke( parameters, cancellationToken );
     } );

@@ -75,8 +75,8 @@ internal sealed partial class ScanCommandTests {
       new Inventory {
         Network = new Network(),
         Agents = [
-          new Domain.Agent { Id = "local1", Address = "http://localhost:51515" },
-          new Domain.Agent { Id = "local2", Address = "http://localhost:51516" }
+          new Domain.Agent { Id = "agentid_local1", Address = "http://localhost:51515" },
+          new Domain.Agent { Id = "agentid_local2", Address = "http://localhost:51516" }
         ]
       }
     );
@@ -148,8 +148,8 @@ internal sealed partial class ScanCommandTests {
       new Inventory {
         Network = new Network(),
         Agents = [
-          new Domain.Agent { Id = "local1", Address = "http://localhost:51515" },
-          new Domain.Agent { Id = "local2", Address = "http://localhost:51516" }
+          new Domain.Agent { Id = "agentid_local1", Address = "http://localhost:51515" },
+          new Domain.Agent { Id = "agentid_local2", Address = "http://localhost:51516" }
         ]
       }
     );
@@ -231,7 +231,7 @@ internal sealed partial class ScanCommandTests {
       new Inventory {
         Network = new Network(),
         Agents = [
-          new Domain.Agent { Id = "local1", Address = "http://localhost:51515" }
+          new Domain.Agent { Id = "agentid_local1", Address = "http://localhost:51515" }
         ]
       }
     );
@@ -286,8 +286,8 @@ internal sealed partial class ScanCommandTests {
       inventory: new Inventory {
         Network = new Network(),
         Agents = [
-          new Domain.Agent { Id = "local1", Address = "http://localhost:51515" },
-          new Domain.Agent { Id = "local2", Address = "http://localhost:51516" }
+          new Domain.Agent { Id = "agentid_local1", Address = "http://localhost:51515" },
+          new Domain.Agent { Id = "agentid_local2", Address = "http://localhost:51516" }
         ]
       }
     );

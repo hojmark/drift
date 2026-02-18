@@ -1,7 +1,7 @@
-﻿Requesting subnets from agent local1
-Received subnet(s) from agent local1: 192.168.10.0/24
-Requesting subnets from agent local2
-Received subnet(s) from agent local2: 192.168.10.0/24
+Requesting subnets from agent agentid_local1
+Received subnet(s) from agent agentid_local1: 192.168.10.0/24
+Requesting subnets from agent agentid_local2
+Received subnet(s) from agent agentid_local2: 192.168.10.0/24
 Scanning 2 subnets
   192.168.0.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via local
   192.168.10.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via agentid_local1, agentid_local2

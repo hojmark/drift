@@ -52,6 +52,18 @@ sealed partial class NukeBuild {
         new ScanAssertion( "Scan completed successfully", output => output.Contains( "Distributed scan completed" ) ),
       ]
     ),
+    new(
+      Name: "subnet-isolation-test",
+      TopologyFile: "subnet-isolation-test.clab.yaml",
+      SpecFile: "subnet-isolation-test-spec.yaml",
+      CliContainer: "clab-drift-subnet-isolation-test-cli",
+      Assertions: [
+        new ScanAssertion( "Subnet-A scanned", output => output.Contains( "192.168.10.0/24" ) ),
+        new ScanAssertion( "Subnet-B scanned", output => output.Contains( "192.168.20.0/24" ) ),
+        new ScanAssertion( "All scan operations successful", output => output.Contains( "7/7 scan operations successful" ) ),
+        new ScanAssertion( "Scan completed successfully", output => output.Contains( "Distributed scan completed" ) ),
+      ]
+    ),
   ];
 
   Target TestContainerlab => _ => _
@@ -202,18 +214,22 @@ sealed partial class NukeBuild {
   /// kernel bridge was created. However, when the network already exists,
   /// containerlab skips the creation step and reuses it — avoiding the fatal lookup.
   ///
-  /// Strategy: remove any stale 'clab' network, then recreate with the correct
-  /// subnet so containerlab always finds it pre-existing on deploy.
+  /// Strategy: try to remove any stale 'clab' network (ignore failure — may be in
+  /// use by another running topology), then create it. Ignore "already exists" errors
+  /// from create — the important thing is the network is present before deploy.
   /// </summary>
   private static void EnsureClabManagementNetwork() {
     Log.Debug( "Pre-creating containerlab management network..." );
 
-    // Ignore failure — network may not exist yet
+    // Ignore failure — network may not exist yet, or may still be in use by another topology
     var rm = ProcessTasks.StartProcess( "docker", "network rm clab" );
     rm.WaitForExit();
 
-    Docker( "network create --subnet 172.20.20.0/24 --ipv6 --subnet 3fff:172:20:20::/64 clab" )
-      .AssertZeroExitCode();
+    // Ignore failure — "network already exists" is acceptable; we just need it to be present
+    var create = ProcessTasks.StartProcess(
+      "docker", "network create --subnet 172.20.20.0/24 --ipv6 --subnet 3fff:172:20:20::/64 clab"
+    );
+    create.WaitForExit();
 
     Log.Debug( "Management network 'clab' ready" );
   }

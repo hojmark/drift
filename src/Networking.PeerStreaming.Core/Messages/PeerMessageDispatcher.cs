@@ -37,15 +37,9 @@ public sealed class PeerMessageDispatcher {
       return;
     }
 
-    // Otherwise, dispatch to handler
+    // Dispatch to handler - handler is responsible for sending response(s)
     if ( _handlers.TryGetValue( message.MessageType, out var handler ) ) {
-      var responseEnvelope = await handler.HandleAsync( message, _envelopeConverter, ct );
-
-      if ( responseEnvelope != null ) {
-        responseEnvelope.ReplyTo = message.CorrelationId;
-        await peerStream.SendAsync( responseEnvelope );
-      }
-
+      await handler.HandleAsync( message, _envelopeConverter, peerStream, ct );
       return;
     }
 

@@ -17,69 +17,6 @@ internal sealed class PeerMessageHandlerTests {
     Assert.That( HandlerTypes.ToList(), Has.Count.GreaterThan( 1 ), "No handlers found via reflection" );
   }
 
-  [Test]
-  public void AllRequestMessagesHaveHandlers_AndNoExtraHandlers() {
-    var handledRequestTypes = HandlerTypes
-      .Select( t => t.GetInterfaces()
-          .First( i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IPeerMessageHandler<,>) )
-          .GetGenericArguments()[0] // 1st generic parameter = TRequest
-      )
-      .ToList();
-
-    var requestsWithoutHandler = RequestTypes
-      .Except( handledRequestTypes )
-      .Select( t => t.Name )
-      .ToList();
-
-    var extraHandlers = handledRequestTypes
-      .Except( RequestTypes )
-      .Select( t => t.Name )
-      .ToList();
-
-    Assert.That(
-      requestsWithoutHandler,
-      Is.Empty,
-      "Request messages without a handler: " + string.Join( ", ", requestsWithoutHandler )
-    );
-
-    Assert.That(
-      extraHandlers,
-      Is.Empty,
-      "Handlers for unknown request messages: " + string.Join( ", ", extraHandlers )
-    );
-  }
-
-  [Test]
-  public void AllResponseMessagesHaveHandlers_AndNoExtraHandlers() {
-    var handledResponseTypes = HandlerTypes
-      .Select( t => t.GetInterfaces()
-        .First( i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IPeerMessageHandler<,>) )
-        .GetGenericArguments()[1] ) // 2nd generic parameter = TResponse
-      .ToList();
-
-    var responsesWithoutHandler = ResponseTypes
-      .Except( handledResponseTypes )
-      .Select( t => t.Name )
-      .ToList();
-
-    var extraHandlers = handledResponseTypes
-      .Except( ResponseTypes )
-      .Select( t => t.Name )
-      .ToList();
-
-    Assert.That(
-      responsesWithoutHandler,
-      Is.Empty,
-      "Response messages without a handler: " + string.Join( ", ", responsesWithoutHandler )
-    );
-
-    Assert.That(
-      extraHandlers,
-      Is.Empty,
-      "Handlers for unknown response messages: " + string.Join( ", ", extraHandlers )
-    );
-  }
-
   [Explicit( "Disabled until interface has settled" )]
   [TestCaseSource( nameof(RequestTypes) )]
   [TestCaseSource( nameof(ResponseTypes) )]
@@ -115,8 +52,7 @@ internal sealed class PeerMessageHandlerTests {
     return ProtocolAssembly
       .GetTypes()
       .Where( t => t is { IsAbstract: false, IsInterface: false } )
-      .Where( t => t.GetInterfaces()
-        .Any( i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IPeerMessageHandler<,>) ) )
+      .Where( t => typeof(IPeerMessageHandler).IsAssignableFrom( t ) )
       .ToList();
   }
 }

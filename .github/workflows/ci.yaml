@@ -48,7 +48,6 @@ jobs:
         if: always()
         run: dotnet trx --verbosity normal
 
-      # TODO fix publish warnings and re-enable check
       - name: Check for warnings
         run: >
           dotnet run
@@ -80,7 +79,6 @@ jobs:
         if: always()
         run: dotnet trx --verbosity normal
 
-      # TODO fix publish warnings and re-enable check
       - name: Check for warnings
         run: |
           dotnet run `

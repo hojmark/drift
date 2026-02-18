@@ -1,5 +1,0 @@
-agents:
-  - id: agentid_cdfc6b0d-8359-4e05-ad54-3bbe9b699b12
-    address: http://172.20.20.3:5000
-    authentication:
-      type: None

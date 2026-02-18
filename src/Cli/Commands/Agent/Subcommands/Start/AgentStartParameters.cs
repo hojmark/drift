@@ -20,12 +20,18 @@ internal record AgentStartParameters : BaseParameters {
     internal static readonly Option<ushort> Port = new("--port", "-p") {
       DefaultValueFactory = _ => 51515, Description = "Set the port used for both adoption and communication"
     };
+
+    internal static readonly Option<string> Id = new("--id") {
+      Description = "Set a specific agent ID (for testing purposes)",
+      Hidden = true
+    };
   }
 
   internal AgentStartParameters( ParseResult parseResult ) : base( parseResult ) {
     Port = parseResult.GetValue( Options.Port );
     Adoptable = parseResult.GetValue( Options.Adoptable );
     Join = parseResult.GetValue( Options.Join );
+    Id = parseResult.GetValue( Options.Id );
 
     if ( !Adoptable && string.IsNullOrWhiteSpace( Join ) ) {
       throw new ArgumentException( "Either --adoptable or --join <token> must be specified." );
@@ -47,6 +53,11 @@ internal record AgentStartParameters : BaseParameters {
   }
 
   public ushort Port {
+    get;
+    set;
+  }
+
+  public string? Id {
     get;
     set;
   }

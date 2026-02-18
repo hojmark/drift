@@ -1,198 +1,106 @@
 # Containerlab Integration Testing
 
-This directory contains containerlab topologies and test scripts for validating the distributed network scanning MVP.
+This directory contains containerlab topologies for testing Drift's distributed network scanning capabilities.
 
 ## Prerequisites
 
 - [Containerlab](https://containerlab.dev/) installed
 - Docker with sufficient resources (at least 4GB RAM, 2 CPUs)
-- `jq` for JSON processing in test scripts
-- Drift Docker image built: `hojmark/drift:latest`
+- Drift Docker image: `localhost:5000/drift:dev`
 
 ## Quick Start
 
-```bash
-# Make test script executable
-chmod +x containerlab/test-integration.sh
-
-# Build Drift Docker image (if not already built)
-docker build -t hojmark/drift:latest .
-
-# Run integration tests
-./containerlab/test-integration.sh
-```
-
-## Topology Overview
-
-### `distributed-scan-mvp.clab.yaml`
-
-This topology creates a realistic multi-segment network to test distributed scanning:
-
-```
-                    Management Network (10.0.0.0/24)
-                            |
-        +-------------------+-------------------+
-        |                   |                   |
-    CLI Node            Agent1              Agent2           Agent3
-  (10.0.0.10)         (10.0.0.11)         (10.0.0.12)      (10.0.0.13)
-                          |                   |             |       |
-                     Segment A           Segment B    Segment A  Segment B
-                  (192.168.10.0/24)   (192.168.20.0/24)
-                          |                   |
-                    +-----+-----+       +-----+-----+
-                    |           |       |           |
-                Target-A1   Target-A2  Target-B1  Target-B2
-              (.10.100)   (.10.101)  (.20.100)  (.20.101)
-```
-
-**Key features:**
-- **Network isolation**: CLI cannot directly reach segment networks
-- **Multi-homed agent**: Agent3 can see both segments (tests overlapping subnets)
-- **Source-based assignment**: Each agent scans subnets it can reach
-- **Result merging**: Agent3 provides additional coverage for both segments
-
-## What Gets Tested
-
-1. **Agent Identity Persistence**
-   - Agents generate and persist UUIDs on first start
-   - Identity survives container restarts
-
-2. **Distributed Subnet Discovery**
-   - Agents report their visible subnets
-   - CLI aggregates subnet information from all agents
-
-3. **Delegated Scanning**
-   - CLI delegates scanning to agents based on subnet visibility
-   - Progress updates stream back to CLI in real-time
-
-4. **Overlapping Subnet Handling**
-   - Multiple agents scanning the same subnet from different positions
-   - Results merged to show complete device list
-
-5. **Retry Logic and Error Handling**
-   - Automatic retry with exponential backoff on transient failures
-   - Warning logs for failed agents
-   - Partial results when some agents fail
-
-6. **Result Aggregation**
-   - Device deduplication across multiple scans
-   - Metadata merging (earliest start, latest end)
-   - Accurate statistics reporting
-
-## Manual Testing
-
-### Deploy the topology
+The easiest way to run containerlab integration tests is via Nuke:
 
 ```bash
-sudo containerlab deploy -t containerlab/distributed-scan-mvp.clab.yaml
+# Run all tests including containerlab integration
+dotnet nuke Test
+
+# Run only containerlab tests
+dotnet nuke TestContainerlab --skip test
+
+# Run a single topology for debugging
+dotnet nuke TestContainerlab --skip test --clab-topology simple-test
+
+# Keep containers running after tests (for debugging)
+dotnet nuke TestContainerlab --skip test --keep-clab-running
 ```
 
-### Check agent health
+## Topologies
 
-```bash
-# Should return 200 OK for healthy agents
-curl http://localhost:5001/health  # agent1
-curl http://localhost:5002/health  # agent2
-curl http://localhost:5003/health  # agent3
+### `simple-test.clab.yaml`
+
+Minimal topology: 1 agent, 1 CLI, 1 target on the management network.
+
+```
+     CLI                 Agent1               Target1
+(172.20.20.x)        (172.20.20.x)         (172.20.20.x)
+       |                    |                     |
+       +--------------------+---------------------+
+                       172.20.20.0/24
 ```
 
-### Verify agent identities
+**Assertions:**
+- `172.20.20.0/24` is scanned
+- 2/2 scan operations successful (local + 1 agent)
+- Scan completes successfully
 
-```bash
-docker exec clab-drift-distributed-scan-mvp-agent1 cat ~/.config/drift/agent/agent-identity.json
-docker exec clab-drift-distributed-scan-mvp-agent2 cat ~/.config/drift/agent/agent-identity.json
-docker exec clab-drift-distributed-scan-mvp-agent3 cat ~/.config/drift/agent/agent-identity.json
+### `cooperation-test.clab.yaml`
+
+Multi-agent cooperation topology: 3 agents, 1 CLI, 5 targets on a flat management network.
+Tests multi-agent coordination and result merging.
+
+```
+CLI + Agent1 + Agent2 + Agent3 + Target1..5
+              |
+         172.20.20.0/24
 ```
 
-### Discover subnets
+**Assertions:**
+- `172.20.20.0/24` is scanned
+- 4/4 scan operations successful (local + 3 agents)
+- Scan completes successfully
 
-```bash
-docker exec clab-drift-distributed-scan-mvp-cli \
-  drift scan discover --spec /path/to/test-inventory.yaml
+## Agent Identity
+
+Agents in these topologies use the `--id` flag to set a fixed, predictable agent ID:
+
+```yaml
+agent1:
+  kind: linux
+  image: localhost:5000/drift:dev
+  cmd: agent start --adoptable --port 5000 --id agentid_test1
 ```
 
-Expected output:
-- `192.168.10.0/24` visible to agent1 and agent3
-- `192.168.20.0/24` visible to agent2 and agent3
+The `--id` flag is hidden from the help output and logs a warning when used — it is only for testing.
 
-### Run distributed scan
+In production, agents generate and persist their own ID at `/root/.config/drift/agent/agent-identity.json`.
 
-```bash
-docker exec clab-drift-distributed-scan-mvp-cli \
-  drift scan --spec /path/to/test-inventory.yaml -o json
-```
+## Nuke Target Parameters
 
-Expected results:
-- All 4 target devices discovered
-- Logs showing scans delegated to appropriate agents
-- Merged results for overlapping subnets
-
-### Test failure scenarios
-
-```bash
-# Stop an agent
-docker stop clab-drift-distributed-scan-mvp-agent2
-
-# Run scan - should see retries and warnings
-docker exec clab-drift-distributed-scan-mvp-cli \
-  drift scan --spec /path/to/test-inventory.yaml
-
-# Check logs for retry attempts and partial results warning
-```
-
-### Cleanup
-
-```bash
-sudo containerlab destroy -t containerlab/distributed-scan-mvp.clab.yaml --cleanup
-```
+| Parameter | Description |
+|---|---|
+| `--clab-topology <name>` | Run only the named topology (e.g. `simple-test`). Runs all if omitted. |
+| `--skip-clab-deploy` | Skip deployment — useful when topology is already running |
+| `--keep-clab-running` | Keep containers running after tests for debugging |
 
 ## Troubleshooting
 
-### Agents not starting
-- Check Docker logs: `docker logs clab-drift-distributed-scan-mvp-agent1`
-- Verify ports are available: `netstat -tlnp | grep -E '500[1-3]'`
-
-### Cannot reach agents from CLI
-- Verify management network connectivity
-- Check agent endpoints in inventory file match containerlab node names
-
-### Scans timing out
-- Increase timeout in ClusterOptions (default: 30s for regular, 5min for streaming)
-- Check network latency between CLI and agents
-
-### Missing devices in results
-- Verify target containers are running: `docker ps | grep target`
-- Check IP addresses are configured: `docker exec <target> ip addr`
-- Ensure agents can ping targets from their segment networks
-
-## CI/CD Integration
-
-To integrate these tests into CI:
-
-```yaml
-test-integration:
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v3
-    
-    - name: Install containerlab
-      run: |
-        sudo sh -c "$(curl -sL https://get.containerlab.dev)"
-    
-    - name: Build Drift image
-      run: docker build -t hojmark/drift:latest .
-    
-    - name: Run integration tests
-      run: |
-        chmod +x containerlab/test-integration.sh
-        ./containerlab/test-integration.sh
-    
-    - name: Upload test results
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: integration-test-results
-        path: |
-          scan-results.json
-          scan-with-failure.log
+**Deploy fails with "Link not found"** — This is a known issue with rootless Podman + pasta networking. The Nuke target works around it by pre-creating the `clab` management network before deploying. If you are deploying manually, run:
+```bash
+docker network rm clab 2>/dev/null; docker network create --subnet 172.20.20.0/24 --ipv6 --subnet 3fff:172:20:20::/64 clab
+containerlab deploy --topo simple-test.clab.yaml
 ```
+
+**Agents not starting** — Check container logs:
+```bash
+docker logs clab-drift-simple-test-agent1
+docker logs clab-drift-cooperation-test-agent1
+```
+
+**Cannot reach agents** — Verify containers are on the management network:
+```bash
+docker network inspect clab
+```
+
+**Connection refused on first scan attempt** — Normal. The agent starts slowly and the client retries automatically.

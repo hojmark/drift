@@ -15,6 +15,7 @@ internal sealed class DistributedNetworkScanner(
   ICluster cluster,
   IPeerMessageEnvelopeConverter converter,
   List<ResolvedSubnet> resolvedSubnets,
+  Inventory inventory,
   ILogger logger
 ) : INetworkScanner {
   public event EventHandler<NetworkScanResult>? ResultUpdated;
@@ -120,12 +121,16 @@ internal sealed class DistributedNetworkScanner(
     }
   }
 
-  private static Domain.Agent MapAgentIdToDomainAgent( AgentId agentId ) {
-    // TODO: Fix this mapping - need proper agent lookup from inventory
-    return new Domain.Agent {
-      Id = agentId.ToString().Replace( "agentid_", string.Empty ),
-      Address = string.Empty
-    };
+  private Domain.Agent MapAgentIdToDomainAgent( AgentId agentId ) {
+    var agentIdStr = agentId.ToString().Replace( "agentid_", string.Empty );
+    var agent = inventory.Agents.FirstOrDefault( a => a.Id == agentIdStr );
+    
+    if ( agent == null ) {
+      logger.LogWarning( "Agent {AgentId} not found in inventory", agentId );
+      return new Domain.Agent { Id = agentIdStr, Address = string.Empty };
+    }
+
+    return agent;
   }
 
   private void LogAgentProgress( AgentId agentId, CidrBlock cidr, byte progressPercentage ) {

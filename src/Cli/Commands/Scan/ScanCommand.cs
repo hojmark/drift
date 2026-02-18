@@ -11,6 +11,7 @@ using Drift.Common.Network;
 using Drift.Domain;
 using Drift.Domain.Scan;
 using Drift.Networking.Cluster;
+using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Drift.Scanning.Subnets;
 using Drift.Scanning.Subnets.Interface;
 
@@ -53,71 +54,102 @@ internal class ScanCommand : CommandBase<ScanParameters, ScanCommandHandler> {
 
 internal class ScanCommandHandler(
   IOutputManager output,
-  INetworkScanner scanner,
+  INetworkScanner localScanner,
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ISpecFileProvider specProvider,
-  ICluster cluster
+  ICluster cluster,
+  IPeerMessageEnvelopeConverter converter
 ) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running scan command" );
 
-    Inventory? inventory;
-
-    try {
-      inventory = await specProvider.GetDeserializedAsync( parameters.SpecFile );
-    }
-    catch ( FileNotFoundException ) {
+    var inventory = await LoadInventoryAsync( parameters.SpecFile );
+    if ( inventory == null ) {
       return ExitCodes.GeneralError;
     }
 
-    var subnetProviders = new List<ISubnetProvider> { interfaceSubnetProvider };
-    if ( inventory?.Network != null ) {
-      subnetProviders.Add( new PredefinedSubnetProvider( inventory.Network.Subnets ) );
+    var resolvedSubnets = await ResolveSubnetsAsync( inventory, cancellationToken );
+    var scanRequest = BuildScanRequest( resolvedSubnets );
+
+    PrintScanSummary( resolvedSubnets, scanRequest, inventory.Agents.Any() );
+
+    var scanner = CreateScanner( inventory, resolvedSubnets );
+    var uiTask = StartUi( parameters, inventory, scanner, scanRequest );
+
+    Task.WaitAll( uiTask );
+
+    output.Log.LogDebug( "scan command completed" );
+
+    return ExitCodes.Success;
+  }
+
+  private async Task<Inventory?> LoadInventoryAsync( FileInfo? specFile ) {
+    try {
+      return await specProvider.GetDeserializedAsync( specFile );
     }
-
-    var hasAgents = inventory?.Agents.Any() ?? false;
-
-    if ( hasAgents ) {
-      subnetProviders.Add(
-        new AgentSubnetProvider(
-          output.GetLogger(),
-          inventory.Agents,
-          cluster,
-          cancellationToken
-        )
-      );
+    catch ( FileNotFoundException ) {
+      return null;
     }
+  }
 
+  private async Task<List<ResolvedSubnet>> ResolveSubnetsAsync( Inventory inventory, CancellationToken cancellationToken ) {
+    var subnetProviders = BuildSubnetProviders( inventory, cancellationToken );
     var subnetProvider = new CompositeSubnetProvider( subnetProviders );
 
     output.Normal.WriteLineVerbose( $"Using {subnetProvider.GetType().Name}" );
     output.Log.LogDebug( "Using {SubnetProviderType}", subnetProvider.GetType().Name );
 
-    var groupedSubnets = ( await subnetProvider.GetAsync() )
+    return await subnetProvider.GetAsync();
+  }
+
+  private List<ISubnetProvider> BuildSubnetProviders( Inventory inventory, CancellationToken cancellationToken ) {
+    var providers = new List<ISubnetProvider> { interfaceSubnetProvider };
+
+    if ( inventory.Network != null ) {
+      providers.Add( new PredefinedSubnetProvider( inventory.Network.Subnets ) );
+    }
+
+    if ( inventory.Agents.Any() ) {
+      providers.Add( new AgentSubnetProvider(
+        output.GetLogger(),
+        inventory.Agents,
+        cluster,
+        cancellationToken
+      ) );
+    }
+
+    return providers;
+  }
+
+  private static NetworkScanOptions BuildScanRequest( List<ResolvedSubnet> resolvedSubnets ) {
+    var uniqueCidrs = resolvedSubnets
+      .Select( rs => rs.Cidr )
+      .Distinct()
+      .ToList();
+
+    return new NetworkScanOptions { Cidrs = uniqueCidrs };
+  }
+
+  private void PrintScanSummary( List<ResolvedSubnet> resolvedSubnets, NetworkScanOptions scanRequest, bool hasAgents ) {
+    var groupedSubnets = resolvedSubnets
       .GroupBy( subnet => subnet.Cidr )
       .Select( group => new { Cidr = group.Key, Sources = group.Select( r => r.Source ).Distinct().ToList() } )
       .ToList();
 
-    var scanRequest = new NetworkScanOptions { Cidrs = groupedSubnets.Select( group => group.Cidr ).ToList() };
-
-    // TODO many more varieties
     output.Normal.WriteLine(
       0,
       $"Scanning {groupedSubnets.Count} subnet{( groupedSubnets.Count > 1 ? "s" : string.Empty )}"
     );
+
     foreach ( var subnet in groupedSubnets ) {
       var sourceList = string.Join( ", ", subnet.Sources );
-      // TODO write name if from spec: Ui.WriteLine( 1, $"{subnet.Id}: {subnet.Network}" );
       output.Normal.Write( 1, $"{subnet.Cidr}", ConsoleColor.Cyan );
       output.Normal.WriteLine(
         " (" + IpNetworkUtils.GetIpRangeCount( subnet.Cidr ) +
         " addresses, estimated scan time is " +
-        scanRequest.EstimatedDuration(
-          subnet.Cidr ) + // TODO .Humanize( 2, CultureInfo.InvariantCulture, minUnit: TimeUnit.Second )
+        scanRequest.EstimatedDuration( subnet.Cidr ) +
         ")" +
-        ( hasAgents
-          ? $" via {sourceList}"
-          : string.Empty ), // TODO print without agentid_ prefix (internal technicality)
+        ( hasAgents ? $" via {sourceList}" : string.Empty ),
         ConsoleColor.DarkGray
       );
     }
@@ -127,29 +159,38 @@ internal class ScanCommandHandler(
       groupedSubnets.Count,
       string.Join( ", ", groupedSubnets.Select( s => s.Cidr ) )
     );
+  }
 
-    Task<int> uiTask;
+  private INetworkScanner CreateScanner( Inventory inventory, List<ResolvedSubnet> resolvedSubnets ) {
+    if ( !inventory.Agents.Any() ) {
+      return localScanner;
+    }
 
+    return new DistributedNetworkScanner(
+      localScanner,
+      cluster,
+      converter,
+      resolvedSubnets,
+      inventory,
+      output.GetLogger()
+    );
+  }
+
+  private Task<int> StartUi( ScanParameters parameters, Inventory inventory, INetworkScanner scanner, NetworkScanOptions scanRequest ) {
     if ( parameters.Interactive ) {
       var ui = new InteractiveUi(
         output,
-        inventory?.Network,
+        inventory.Network,
         scanner,
         scanRequest,
         new DefaultKeyMap(),
         parameters.ShowLogPanel
       );
-      uiTask = ui.RunAsync();
+      return ui.RunAsync();
     }
     else {
       var ui = new NonInteractiveUi( output, scanner );
-      uiTask = ui.RunAsync( scanRequest, inventory?.Network, parameters.OutputFormat );
+      return ui.RunAsync( scanRequest, inventory.Network, parameters.OutputFormat );
     }
-
-    Task.WaitAll( uiTask );
-
-    output.Log.LogDebug( "scan command completed" );
-
-    return ExitCodes.Success;
   }
 }

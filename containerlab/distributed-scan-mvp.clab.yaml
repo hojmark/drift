@@ -1,0 +1,122 @@
+name: drift-distributed-scan-mvp
+
+# Topology for testing distributed network scanning
+# 
+# Network architecture:
+#   - CLI node (controller) on management network
+#   - Agent1 on network segment A (192.168.10.0/24)
+#   - Agent2 on network segment B (192.168.20.0/24)
+#   - Agent3 bridging both segments (multi-homed)
+#   - Target devices on each segment that only agents can see
+#
+# This tests:
+#   - Agent identity persistence
+#   - Distributed scanning across isolated networks
+#   - Overlapping subnet detection from different positions
+#   - Retry logic for transient failures
+#   - Result merging
+
+topology:
+  nodes:
+    # Controller/CLI node - only on management network
+    cli:
+      kind: linux
+      image: hojmark/drift:latest
+      cmd: sleep infinity
+      binds:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+      ports:
+        - "8080:8080"
+      exec:
+        - ip addr add 10.0.0.10/24 dev eth1
+
+    # Agents
+    agent1:
+      kind: linux
+      image: hojmark/drift:latest
+      cmd: agent start --adoptable --port 5000
+      exec:
+        - ip addr add 10.0.0.11/24 dev eth1  # Management
+        - ip addr add 192.168.10.11/24 dev eth2  # Segment A
+      ports:
+        - "5001:5000"
+
+    agent2:
+      kind: linux
+      image: hojmark/drift:latest
+      cmd: agent start --adoptable --port 5000
+      exec:
+        - ip addr add 10.0.0.12/24 dev eth1  # Management
+        - ip addr add 192.168.20.12/24 dev eth2  # Segment B
+      ports:
+        - "5002:5000"
+
+    agent3:
+      kind: linux
+      image: hojmark/drift:latest
+      cmd: agent start --adoptable --port 5000
+      exec:
+        - ip addr add 10.0.0.13/24 dev eth1  # Management
+        - ip addr add 192.168.10.13/24 dev eth2  # Segment A
+        - ip addr add 192.168.20.13/24 dev eth3  # Segment B (multi-homed)
+      ports:
+        - "5003:5000"
+
+    # Target devices on segment A (only visible to agent1 and agent3)
+    target-a1:
+      kind: linux
+      image: alpine:latest
+      cmd: sleep infinity
+      exec:
+        - ip addr add 192.168.10.100/24 dev eth1
+
+    target-a2:
+      kind: linux
+      image: alpine:latest
+      cmd: sleep infinity
+      exec:
+        - ip addr add 192.168.10.101/24 dev eth1
+
+    # Target devices on segment B (only visible to agent2 and agent3)
+    target-b1:
+      kind: linux
+      image: alpine:latest
+      cmd: sleep infinity
+      exec:
+        - ip addr add 192.168.20.100/24 dev eth1
+
+    target-b2:
+      kind: linux
+      image: alpine:latest
+      cmd: sleep infinity
+      exec:
+        - ip addr add 192.168.20.101/24 dev eth1
+
+    # Network bridges
+    mgmt-switch:
+      kind: bridge
+
+    segment-a-switch:
+      kind: bridge
+
+    segment-b-switch:
+      kind: bridge
+
+  links:
+    # Management network (all nodes can reach each other)
+    - endpoints: ["cli:eth1", "mgmt-switch:eth1"]
+    - endpoints: ["agent1:eth1", "mgmt-switch:eth2"]
+    - endpoints: ["agent2:eth1", "mgmt-switch:eth3"]
+    - endpoints: ["agent3:eth1", "mgmt-switch:eth4"]
+
+    # Segment A network (isolated from CLI)
+    - endpoints: ["agent1:eth2", "segment-a-switch:eth1"]
+    - endpoints: ["agent3:eth2", "segment-a-switch:eth2"]
+    - endpoints: ["target-a1:eth1", "segment-a-switch:eth3"]
+    - endpoints: ["target-a2:eth1", "segment-a-switch:eth4"]
+
+    # Segment B network (isolated from CLI)
+    - endpoints: ["agent2:eth2", "segment-b-switch:eth1"]
+    - endpoints: ["agent3:eth3", "segment-b-switch:eth2"]
+    - endpoints: ["target-b1:eth1", "segment-b-switch:eth3"]
+    - endpoints: ["target-b2:eth1", "segment-b-switch:eth4"]

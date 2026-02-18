@@ -17,6 +17,7 @@ internal class AgentStartCommand : CommandBase<AgentStartParameters, AgentStartC
     Options.Add( AgentStartParameters.Options.Port );
     Options.Add( AgentStartParameters.Options.Adoptable );
     Options.Add( AgentStartParameters.Options.Join );
+    Options.Add( AgentStartParameters.Options.Id );
   }
 
   protected override AgentStartParameters CreateParameters( ParseResult result ) {
@@ -37,7 +38,7 @@ internal class AgentStartCommandHandler(
 
     logger.LogInformation( "Agent starting.." );
 
-    var agentId = LoadAgentIdentity();
+    var agentId = LoadAgentIdentity( parameters.Id );
 
     // Check if agent has cluster membership info
     var agentIdentity = AgentIdentity.Load( logger );
@@ -83,10 +84,17 @@ internal class AgentStartCommandHandler(
     }
   }
 
-  private AgentId LoadAgentIdentity() {
+  private AgentId LoadAgentIdentity( string? idOverride ) {
     var logger = output.GetLogger();
     IAgentIdentityLocationProvider locationProvider = new DefaultAgentIdentityLocationProvider();
     var identityFilePath = locationProvider.GetFile();
+
+    // If an ID override is provided, use it directly without loading/saving
+    if ( !string.IsNullOrWhiteSpace( idOverride ) ) {
+      logger.LogWarning( "Agent started with --id flag. This should only be used for testing purposes." );
+      logger.LogInformation( "Using provided agent ID: {AgentId}", idOverride );
+      return new AgentId( idOverride );
+    }
 
     // Load existing identity or create new one
     var identity = AgentIdentity.Load( logger, locationProvider );

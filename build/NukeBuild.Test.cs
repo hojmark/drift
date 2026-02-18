@@ -17,7 +17,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 sealed partial class NukeBuild {
   Target Test => _ => _
-    .DependsOn( TestSelf, TestUnit, TestE2E );
+    .DependsOn( TestSelf, TestUnit, TestE2E, TestContainerlab );
 
   Target TestSelf => _ => _
     .Before( BuildInfo )

@@ -14,7 +14,7 @@ topology:
     agent1:
       kind: linux
       image: localhost:5000/drift:dev
-      cmd: agent start --adoptable --port 5000
+      cmd: agent start --adoptable --port 5000 --id agentid_test1
       ports:
         - "5001:5000"
 

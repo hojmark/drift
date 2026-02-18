@@ -86,7 +86,7 @@ internal static class RootCommandFactory {
     services.AddClustering();
   }
 
-  private static void ConfigureExecutionEnvironment( IServiceCollection services ) {
+  internal static void ConfigureExecutionEnvironment( IServiceCollection services ) {
     services.AddSingleton<IExecutionEnvironmentProvider, CurrentExecutionEnvironmentProvider>();
   }
 
@@ -151,7 +151,7 @@ internal static class RootCommandFactory {
     }
   }
 
-  private static void ConfigureNetworkScanner( IServiceCollection services ) {
+  internal static void ConfigureNetworkScanner( IServiceCollection services ) {
     if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
       services.AddSingleton<IPingTool, LinuxPingTool>();
     }
@@ -161,6 +161,16 @@ internal static class RootCommandFactory {
 
     services.AddScoped<ISubnetScannerFactory, DefaultSubnetScannerFactory>();
     services.AddScoped<INetworkScanner, DefaultNetworkScanner>();
+  }
+
+  /// <summary>
+  /// Configures core services required for agent functionality (scanning, subnet discovery, execution environment).
+  /// This is used both by the CLI when running locally and by agents when handling remote requests.
+  /// </summary>
+  internal static void ConfigureAgentCoreServices( IServiceCollection services ) {
+    ConfigureExecutionEnvironment( services );
+    ConfigureSubnetProvider( services );
+    ConfigureNetworkScanner( services );
   }
 
   private static void AddFigletHeaderToHelpCommand( RootCommand rootCommand ) {

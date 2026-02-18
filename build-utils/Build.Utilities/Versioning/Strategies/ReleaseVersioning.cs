@@ -30,9 +30,9 @@ public sealed class ReleaseVersioning(
 
     // TODO can now use .Latest(), since main release is no longer a prerelease
     // .Latest() does not return prereleases
-    var releases = await gitHubClient.Repository.Release.GetAll(
-      repository.GetGitHubOwner(),
-      repository.GetGitHubName()
+    var releases = await GitHubClient.Repository.Release.GetAll(
+      Repository.GetGitHubOwner(),
+      Repository.GetGitHubName()
     );
     var latest = releases
       .OrderByDescending( r => r.PublishedAt )

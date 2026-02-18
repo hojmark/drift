@@ -86,9 +86,7 @@ sealed partial class NukeBuild {
         var envVars = new Dictionary<string, string> {
           // { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
           { "DRIFT_BINARY_PATH", driftBinary },
-          // TODO use this!
-          // { "DRIFT_CONTAINER_IMAGE_REF", ImageReference.Localhost( "drift", version ).ToString() }
-          { "DRIFT_CONTAINER_IMAGE_REF", ImageReference.Localhost( "drift", version ).ToString() }
+          { "DRIFT_CONTAINER_IMAGE_REF", imageRef.ToString() }
         };
 
         var alternateDockerHost = await FindAlternateDockerHostAsync();

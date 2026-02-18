@@ -230,6 +230,22 @@ internal sealed partial class ScanCommandTests {
   }
 
   private static Action<IServiceCollection> ConfigureServices(
+    CidrBlock? interfaces,
+    List<List<IDeviceAddress>> discoveredDevices,
+    Inventory? inventory = null
+  ) {
+    var interfaceList = interfaces.HasValue 
+      ? [new NetworkInterface { Description = "eth1", OperationalStatus = OperationalStatus.Up, UnicastAddress = interfaces.Value }]
+      : new List<INetworkInterface>();
+    
+    return ConfigureServices(
+      interfaceList,
+      discoveredDevices.Select( deviceAddresses => new DiscoveredDevice { Addresses = deviceAddresses } ).ToList(),
+      inventory
+    );
+  }
+
+  private static Action<IServiceCollection> ConfigureServices(
     CidrBlock interfaces,
     List<List<IDeviceAddress>> discoveredDevices,
     Inventory? inventory = null
@@ -266,7 +282,7 @@ internal sealed partial class ScanCommandTests {
           new NetworkScanResult {
             Metadata = new Metadata { StartedAt = default, EndedAt = default },
             Status = ScanResultStatus.Success,
-            Subnets = [
+            Subnets = interfaces.Count > 0 ? [
               new SubnetScanResult {
                 CidrBlock = DefaultInterface.UnicastAddress!.Value,
                 DiscoveredDevices = discoveredDevices,
@@ -278,7 +294,7 @@ internal sealed partial class ScanCommandTests {
                   )
                   .ToImmutableHashSet()
               }
-            ]
+            ] : []
           }
         )
       );

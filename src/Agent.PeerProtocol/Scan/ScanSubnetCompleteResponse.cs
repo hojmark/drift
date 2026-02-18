@@ -18,7 +18,7 @@ public sealed class ScanSubnetCompleteResponse : IPeerResponse {
 }
 
 [JsonSourceGenerationOptions(
-  Converters = [typeof(CidrBlockConverter), typeof(IpAddressConverter)],
+  Converters = [typeof(CidrBlockConverter), typeof(IpAddressConverter), typeof(DeviceAddressConverter), typeof(IpV4AddressSetConverter)],
   PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase
 )]
 [JsonSerializable( typeof(ScanSubnetCompleteResponse) )]

@@ -63,8 +63,8 @@ internal class ScanCommandHandler(
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running scan command" );
 
-    var inventory = await LoadInventoryAsync( parameters.SpecFile );
-    if ( inventory == null ) {
+    var (inventory, loadFailed) = await LoadInventoryAsync( parameters.SpecFile );
+    if ( loadFailed ) {
       return ExitCodes.GeneralError;
     }
 
@@ -83,12 +83,16 @@ internal class ScanCommandHandler(
     return ExitCodes.Success;
   }
 
-  private async Task<Inventory?> LoadInventoryAsync( FileInfo? specFile ) {
+  private async Task<(Inventory inventory, bool loadFailed)> LoadInventoryAsync( FileInfo? specFile ) {
     try {
-      return await specProvider.GetDeserializedAsync( specFile );
+      var loadedInventory = await specProvider.GetDeserializedAsync( specFile );
+      // If no spec file provided, use empty inventory
+      var inventory = loadedInventory ?? new Inventory { Network = new Network(), Agents = [] };
+      return (inventory, false);
     }
     catch ( FileNotFoundException ) {
-      return null;
+      // Spec file was explicitly provided but not found - this is an error
+      return (new Inventory { Network = new Network(), Agents = [] }, true);
     }
   }
 

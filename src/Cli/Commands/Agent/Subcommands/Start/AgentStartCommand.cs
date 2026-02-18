@@ -1,5 +1,6 @@
 using System.CommandLine;
 using Drift.Agent.Hosting;
+using Drift.Agent.Hosting.Identity;
 using Drift.Agent.PeerProtocol;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common.Commands;
@@ -36,17 +37,21 @@ internal class AgentStartCommandHandler(
 
     logger.LogInformation( "Agent starting.." );
 
-    var identity = LoadAgentIdentity();
+    var agentId = LoadAgentIdentity();
 
-    if ( identity == null ) {
+    // Check if agent has cluster membership info
+    var agentIdentity = AgentIdentity.Load( logger );
+    var isEnrolled = agentIdentity.ClusterId != null;
+
+    if ( !isEnrolled ) {
       logger.LogDebug( "Agent is not enrolled" );
 
       var enrollmentRequest = new EnrollmentRequest( parameters.Adoptable, parameters.Join );
       logger.LogInformation( "Agent cluster enrollment method is {EnrollmentMethod}", enrollmentRequest.Method );
     }
     else {
-      logger.LogDebug( "Agent is enrolled into cluster 'milkyway'" );
-      logger.LogInformation( "Attempting to re-join cluster 'milkyway'..." );
+      logger.LogDebug( "Agent is enrolled into cluster '{ClusterId}'", agentIdentity.ClusterId );
+      logger.LogInformation( "Attempting to re-join cluster '{ClusterId}'...", agentIdentity.ClusterId );
     }
 
     /*Inventory? inventory;
@@ -73,11 +78,23 @@ internal class AgentStartCommandHandler(
     }
   }
 
-  private static AgentId? LoadAgentIdentity() {
-    if ( false ) {
-      return AgentId.New(); // TODO load from file
+  private AgentId LoadAgentIdentity() {
+    var logger = output.GetLogger();
+    IAgentIdentityLocationProvider locationProvider = new DefaultAgentIdentityLocationProvider();
+    var identityFilePath = locationProvider.GetFile();
+
+    // Load existing identity or create new one
+    var identity = AgentIdentity.Load( logger, locationProvider );
+
+    // Save immediately if it's new to persist it
+    if ( !File.Exists( identityFilePath ) ) {
+      identity.Save( logger, locationProvider );
+      logger.LogInformation( "Generated and saved new agent identity: {AgentId}", identity.Id );
+    }
+    else {
+      logger.LogDebug( "Loaded existing agent identity: {AgentId}", identity.Id );
     }
 
-    return null;
+    return identity.Id;
   }
 }

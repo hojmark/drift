@@ -22,6 +22,8 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
   ) {
     _repository = repository;
     _gitHubClient = gitHubClient;
+    Repository = repository;
+    GitHubClient = gitHubClient;
 
     if ( build.ExecutionPlan.Contains( build.Release ) && build.ExecutionPlan.Contains( build.PreRelease ) ) {
       throw new InvalidOperationException(
@@ -40,7 +42,12 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
     }
   }
 
-  [CanBeNull] public IReleaseInfo Release => this;
+  protected GitRepository Repository { get; }
+
+  protected IGitHubClient GitHubClient { get; }
+
+  [CanBeNull]
+  public IReleaseInfo Release => this;
 
   public abstract Task<SemVersion> GetVersionAsync();
 

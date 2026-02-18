@@ -5,12 +5,15 @@ Received subnet(s) from agent local2: 192.168.10.0/24
 Scanning 2 subnets
   192.168.0.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via local
   192.168.10.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via agentid_local1, agentid_local2
-Distributed scan completed: 2/2 subnets successful
+Merged 4 unique devices from 2 scans of 192.168.10.0/24
+Distributed scan completed: 3/3 scan operations successful, 2 unique subnets
 
 192.168.0.0/24 (1 devices)
 └── 192.168.0.100   11-11-11-11-11-11    Online (unknown device)  
 
-192.168.10.0/24 (2 devices)
+192.168.10.0/24 (4 devices)
 ├── 192.168.10.100  22-22-22-22-22-22    Online (unknown device)  
-└── 192.168.10.101  21-21-21-21-21-21    Online (unknown device)  
+├── 192.168.10.101  21-21-21-21-21-21    Online (unknown device)  
+├── 192.168.10.102  44-44-44-44-44-44    Online (unknown device)  
+└── 192.168.10.103  55-55-55-55-55-55    Online (unknown device)  
 

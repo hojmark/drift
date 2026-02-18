@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Drift.Domain;
 using Drift.Domain.Scan;
 using Drift.Networking.Cluster;
@@ -44,20 +45,12 @@ internal sealed class DistributedNetworkScanner(
   }
 
   private List<(SubnetSource Source, List<CidrBlock> Cidrs)> PartitionSubnetsBySource( NetworkScanOptions options ) {
-    // Group subnets by CIDR first, then pick the first source for each unique CIDR
-    // This ensures each subnet is only scanned once, even if multiple agents report it
-    var subnetToSource = resolvedSubnets
+    // Allow each source to scan subnets it can see - don't deduplicate
+    // Different agents may see different devices on the same subnet from their network position
+    return resolvedSubnets
       .Where( rs => options.Cidrs.Contains( rs.Cidr ) )
-      .GroupBy( rs => rs.Cidr )
-      .ToDictionary( 
-        group => group.Key,
-        group => group.First().Source // Use the first source that reported this subnet
-      );
-
-    // Now group by source for parallel scanning
-    return subnetToSource
-      .GroupBy( kvp => kvp.Value )
-      .Select( group => (group.Key, group.Select( kvp => kvp.Key ).ToList()) )
+      .GroupBy( rs => rs.Source )
+      .Select( group => (group.Key, group.Select( rs => rs.Cidr ).Distinct().ToList()) )
       .ToList();
   }
 
@@ -179,10 +172,13 @@ internal sealed class DistributedNetworkScanner(
     ILogger logger
   ) {
     var endTime = DateTime.UtcNow;
+    
+    // Merge results for subnets that were scanned multiple times
+    var mergedResults = MergeOverlappingSubnetResults( allResults, logger );
     var successCount = allResults.Count( s => s.Status == ScanResultStatus.Success );
 
     var finalResult = new NetworkScanResult {
-      Subnets = allResults,
+      Subnets = mergedResults,
       Metadata = new Metadata { StartedAt = startTime, EndedAt = endTime },
       Status = successCount == allResults.Count ? ScanResultStatus.Success : ScanResultStatus.Error,
       Progress = Percentage.Hundred
@@ -191,12 +187,64 @@ internal sealed class DistributedNetworkScanner(
     ResultUpdated?.Invoke( this, finalResult );
 
     logger.LogInformation(
-      "Distributed scan completed: {SuccessCount}/{TotalCount} subnets successful",
+      "Distributed scan completed: {SuccessCount}/{TotalCount} scan operations successful, {UniqueSubnets} unique subnets",
       successCount,
-      allResults.Count
+      allResults.Count,
+      mergedResults.Count
     );
 
     return finalResult;
+  }
+
+  private List<SubnetScanResult> MergeOverlappingSubnetResults( List<SubnetScanResult> allResults, ILogger logger ) {
+    // Group results by CIDR and merge devices from multiple scans
+    var resultsByCidr = allResults
+      .GroupBy( r => r.CidrBlock )
+      .Select( group => {
+        var cidr = group.Key;
+        var scans = group.ToList();
+        
+        if ( scans.Count == 1 ) {
+          return scans[0];
+        }
+
+        // Multiple scans of the same subnet - merge the results
+        logger.LogDebug( "Merging {Count} scan results for subnet {Cidr}", scans.Count, cidr );
+
+        // Combine all discovered devices, using device addresses as the key for deduplication
+        var allDevices = scans
+          .SelectMany( s => s.DiscoveredDevices )
+          .GroupBy( d => string.Join( ",", d.Addresses.OrderBy( a => a.Value ).Select( a => a.Value ) ) )
+          .Select( g => g.First() ) // Take first occurrence of each unique device
+          .ToList();
+
+        // Combine all discovery attempts
+        var allAttempts = scans
+          .SelectMany( s => s.DiscoveryAttempts )
+          .ToImmutableHashSet();
+
+        // Use the earliest start time and latest end time
+        var startTime = scans.Min( s => s.Metadata.StartedAt );
+        var endTime = scans.Max( s => s.Metadata.EndedAt );
+
+        logger.LogInformation(
+          "Merged {DeviceCount} unique devices from {ScanCount} scans of {Cidr}",
+          allDevices.Count,
+          scans.Count,
+          cidr
+        );
+
+        return new SubnetScanResult {
+          CidrBlock = cidr,
+          DiscoveredDevices = allDevices,
+          Metadata = new Metadata { StartedAt = startTime, EndedAt = endTime },
+          Status = scans.All( s => s.Status == ScanResultStatus.Success ) ? ScanResultStatus.Success : ScanResultStatus.Error,
+          DiscoveryAttempts = allAttempts
+        };
+      } )
+      .ToList();
+
+    return resultsByCidr;
   }
 
   private static Percentage CalculateProgress( int completed, int total ) {

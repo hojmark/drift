@@ -3,7 +3,7 @@ Received subnet(s) from agent local1: 192.168.10.0/24
 Scanning 2 subnets
   192.168.0.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via local
   192.168.10.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via agentid_local1
-Distributed scan completed: 2/2 subnets successful
+Distributed scan completed: 2/2 scan operations successful, 2 unique subnets
 
 192.168.0.0/24 (0 devices)
 

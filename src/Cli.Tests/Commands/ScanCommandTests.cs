@@ -11,6 +11,7 @@ using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
+using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
 using Drift.Scanning.Tests.Utils;
 using Microsoft.Extensions.DependencyInjection;
@@ -281,6 +282,23 @@ internal sealed partial class ScanCommandTests {
           }
         )
       );
+
+      // Register ISubnetScannerFactory for agent tests
+      // Build a map of CIDR -> SubnetScanResult based on interfaces
+      var resultsByCidr = interfaces.ToDictionary(
+        iface => iface.UnicastAddress!.Value,
+        iface => new SubnetScanResult {
+          CidrBlock = iface.UnicastAddress!.Value,
+          DiscoveredDevices = discoveredDevices,
+          Metadata = new Metadata { StartedAt = default, EndedAt = default },
+          Status = ScanResultStatus.Success,
+          DiscoveryAttempts = discoveredDevices.Select( d =>
+              new IpV4Address( d.Get( AddressType.IpV4 ) ?? throw new Exception( "Device had no IPv4" ) )
+            )
+            .ToImmutableHashSet()
+        }
+      );
+      services.AddScoped<ISubnetScannerFactory>( _ => new MockSubnetScannerFactory( resultsByCidr ) );
     };
   }
 }

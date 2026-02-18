@@ -135,12 +135,11 @@ internal sealed class DistributedNetworkScanner(
   }
 
   private Domain.Agent MapAgentIdToDomainAgent( AgentId agentId ) {
-    var agentIdStr = agentId.ToString().Replace( "agentid_", string.Empty );
-    var agent = inventory.Agents.FirstOrDefault( a => a.Id == agentIdStr );
+    var agent = inventory.Agents.FirstOrDefault( a => a.Id == agentId.Value );
     
     if ( agent == null ) {
       logger.LogWarning( "Agent {AgentId} not found in inventory", agentId );
-      return new Domain.Agent { Id = agentIdStr, Address = string.Empty };
+      return new Domain.Agent { Id = agentId.Value, Address = string.Empty };
     }
 
     return agent;

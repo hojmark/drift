@@ -82,7 +82,7 @@ internal sealed class Cluster(
     );
 
     // Request
-    var connection = peerStreamManager.GetOrCreate( new Uri( agent.Address ), "agentid_" + agent.Id );
+    var connection = peerStreamManager.GetOrCreate( new Uri( agent.Address ), agent.Id );
     await connection.SendAsync( envelope );
 
     // Response
@@ -134,7 +134,7 @@ internal sealed class Cluster(
     );
 
     // Request
-    var connection = peerStreamManager.GetOrCreate( new Uri( agent.Address ), "agentid_" + agent.Id );
+    var connection = peerStreamManager.GetOrCreate( new Uri( agent.Address ), agent.Id );
     await connection.SendAsync( envelope );
 
     // Final Response

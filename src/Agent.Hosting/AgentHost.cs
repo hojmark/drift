@@ -1,4 +1,4 @@
-﻿using Drift.Agent.PeerProtocol.Subnets;
+using Drift.Agent.PeerProtocol.Subnets;
 using Drift.Networking.PeerStreaming.Client;
 using Drift.Networking.PeerStreaming.Core;
 using Drift.Networking.PeerStreaming.Server;
@@ -42,7 +42,7 @@ public static class AgentHost {
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
-      options.ListenLocalhost( port, o => {
+      options.ListenAnyIP( port, o => {
         o.Protocols = HttpProtocols.Http2; // Allow HTTP/2 over plain HTTP i.e., non-HTTPS
       } );
     } );

@@ -1,5 +1,8 @@
 using System.Collections.Immutable;
 using Drift.Domain;
+using Drift.Domain.Device;
+using Drift.Domain.Device.Addresses;
+using Drift.Domain.Device.Discovered;
 using Drift.Domain.Scan;
 using Drift.Networking.Cluster;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
@@ -234,11 +237,24 @@ internal sealed class DistributedNetworkScanner(
         // Multiple scans of the same subnet - merge the results
         logger.LogDebug( "Merging {Count} scan results for subnet {Cidr}", scans.Count, cidr );
 
-        // Combine all discovered devices, using device addresses as the key for deduplication
+        // Combine all discovered devices, deduplicating by Device ID and unioning addresses
         var allDevices = scans
           .SelectMany( s => s.DiscoveredDevices )
-          .GroupBy( d => string.Join( ",", d.Addresses.OrderBy( a => a.Value ).Select( a => a.Value ) ) )
-          .Select( g => g.First() ) // Take first occurrence of each unique device
+          .GroupBy( d => ( (IAddressableDevice) d ).GetDeviceId().ToString() )
+          .Where( g => g.Key != string.Empty )
+          .Select( g => {
+            // Union addresses from all instances of this device, preserving richest data
+            var mergedAddresses = g
+              .SelectMany( d => d.Addresses )
+              .GroupBy( a => (a.Type, a.Value) )
+              .Select( ag => ag.First() )
+              .ToList<IDeviceAddress>();
+            return new DiscoveredDevice {
+              Addresses = mergedAddresses,
+              Ports = g.SelectMany( d => d.Ports ).Distinct().ToList(),
+              Timestamp = g.Min( d => d.Timestamp )
+            };
+          } )
           .ToList();
 
         // Combine all discovery attempts

@@ -61,6 +61,23 @@ CLI + Agent1 + Agent2 + Agent3 + Target1..5
 - 4/4 scan operations successful (local + 3 agents)
 - Scan completes successfully
 
+### `subnet-isolation-test.clab.yaml`
+
+Subnet isolation topology: 2 agents, 1 CLI, 4 targets. Each agent is connected to its own
+isolated subnet via veth links and an in-container bridge. Tests that each agent only reports
+devices reachable on its own subnet.
+
+```
+CLI ─── mgmt (172.20.20.0/24) ─── Agent1 ─── subnet-a (192.168.10.0/24) ─── Target-A1, Target-A2
+                                └─ Agent2 ─── subnet-b (192.168.20.0/24) ─── Target-B1, Target-B2
+```
+
+**Assertions:**
+- `192.168.10.0/24` is scanned (by Agent1)
+- `192.168.20.0/24` is scanned (by Agent2)
+- 7/7 scan operations successful (mgmt×3 + subnet-a×2 + subnet-b×2)
+- Scan completes successfully
+
 ## Agent Identity
 
 Agents in these topologies use the `--id` flag to set a fixed, predictable agent ID:
@@ -96,6 +113,7 @@ containerlab deploy --topo simple-test.clab.yaml
 ```bash
 docker logs clab-drift-simple-test-agent1
 docker logs clab-drift-cooperation-test-agent1
+docker logs clab-drift-subnet-isolation-test-agent1
 ```
 
 **Cannot reach agents** — Verify containers are on the management network:

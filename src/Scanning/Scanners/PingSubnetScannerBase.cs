@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading.RateLimiting;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -124,6 +125,8 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
     ConcurrentBag<( IPAddress Ip, bool Success, string? Hostname)> pingReplies,
     ArpTable arpTable
   ) {
+    var localMacs = BuildLocalInterfaceMacTable();
+
     return pingReplies.Where( r => r.Success ).Select( pingReply =>
       new DiscoveredDevice { Addresses = CreateAddresses( pingReply ) }
     ).ToList();
@@ -138,9 +141,40 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
       if ( arpTable.TryGetValue( pingReply.Ip, out var mac ) ) {
         list.Add( mac );
       }
+      else if ( localMacs.TryGetValue( pingReply.Ip, out var localMac ) ) {
+        // ARP cache never contains the machine's own IPs. Fall back to reading
+        // the MAC directly from the matching local interface.
+        list.Add( localMac );
+      }
 
       return list;
     }
+  }
+
+  /// <summary>
+  /// Builds a map of local unicast IPv4 addresses to the MAC address of the
+  /// interface that owns them. Used to resolve the MAC for the scanner's own
+  /// IP addresses, which never appear in the ARP cache.
+  /// </summary>
+  private static Dictionary<IPAddress, MacAddress> BuildLocalInterfaceMacTable() {
+    var map = new Dictionary<IPAddress, MacAddress>();
+
+    foreach ( var iface in NetworkInterface.GetAllNetworkInterfaces() ) {
+      var physicalAddress = iface.GetPhysicalAddress();
+      if ( physicalAddress.GetAddressBytes().Length == 0 ) {
+        continue; // loopback and tunnel interfaces have no MAC
+      }
+
+      var macString = string.Join( "-", physicalAddress.GetAddressBytes().Select( b => b.ToString( "X2" ) ) );
+
+      foreach ( var unicast in iface.GetIPProperties().UnicastAddresses ) {
+        if ( unicast.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ) {
+          map[unicast.Address] = new MacAddress( macString );
+        }
+      }
+    }
+
+    return map;
   }
 
   private static async Task<string?> GetHostNameAsync( IPAddress ip, int timeoutMs = 1000 ) {

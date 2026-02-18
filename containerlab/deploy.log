@@ -1,0 +1,9 @@
+20:26:57 INFO Containerlab started version=0.73.0
+20:26:57 INFO Parsing & checking topology file=distributed-scan-mvp.clab.yaml
+20:26:57 INFO Creating docker network name=clab IPv4 subnet=172.20.20.0/24 IPv6 subnet=3fff:172:20:20::/64 MTU=0
+20:26:57 WARN failed gleaning v4 and/or v6 addresses from bridge via netlink, falling back to docker network inspect data
+          
+   ERROR  
+          
+  Failed to lookup link "br-693b75a88b08": Link not found.                                                            
+

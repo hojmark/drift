@@ -1,0 +1,77 @@
+name: drift-network-test
+
+# Test topology using Docker networks for segmentation
+#
+# Network architecture:
+#   - Default management network for CLI and agents
+#   - Custom Docker network "segment-a" for isolated network A
+#   - Custom Docker network "segment-b" for isolated network B
+
+topology:
+  nodes:
+    # Controller/CLI node (only on management network)
+    cli:
+      kind: linux
+      image: localhost:5000/drift:dev
+      entrypoint: /bin/bash
+      cmd: -c "sleep infinity"
+      network-mode: bridge
+      ports:
+        - "8080:8080"
+
+    # Agent with access to management + segment A
+    agent1:
+      kind: linux
+      image: localhost:5000/drift:dev
+      cmd: agent start --adoptable --port 5000
+      ports:
+        - "5001:5000"
+      # eth0 = management, eth1 = segment-a
+
+    # Agent with access to management + segment B
+    agent2:
+      kind: linux
+      image: localhost:5000/drift:dev
+      cmd: agent start --adoptable --port 5000
+      ports:
+        - "5002:5000"
+      # eth0 = management, eth1 = segment-b
+
+    # Target devices on segment A (no management network)
+    target-a1:
+      kind: linux
+      image: alpine:latest
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+      network-mode: none
+
+    target-a2:
+      kind: linux
+      image: alpine:latest
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+      network-mode: none
+
+    # Target devices on segment B (no management network)
+    target-b1:
+      kind: linux
+      image: alpine:latest
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+      network-mode: none
+
+    target-b2:
+      kind: linux
+      image: alpine:latest
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+      network-mode: none
+
+  links:
+    # Note: containerlab will create veth pairs for these links
+    # We'll manually configure them to be on the same subnet
+    - endpoints: ["agent1:eth1", "target-a1:eth1"]
+    - endpoints: ["agent1:eth1", "target-a2:eth1"]
+    
+    - endpoints: ["agent2:eth1", "target-b1:eth1"]
+    - endpoints: ["agent2:eth1", "target-b2:eth1"]

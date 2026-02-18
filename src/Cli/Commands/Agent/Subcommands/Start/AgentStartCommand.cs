@@ -72,8 +72,13 @@ internal class AgentStartCommandHandler(
     return ExitCodes.Success;
 
     void ConfigureServices( IServiceCollection services ) {
-      RootCommandFactory.ConfigureSubnetProvider( services );
+      // Configure core agent services (scanning, subnet discovery, execution environment)
+      RootCommandFactory.ConfigureAgentCoreServices( services );
+      
+      // Add peer protocol message handlers
       services.AddPeerProtocol();
+      
+      // Allow test overrides
       configureServicesOverride?.Invoke( services );
     }
   }

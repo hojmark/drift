@@ -1,0 +1,11 @@
+version: "v1-preview"
+
+network:
+  subnets: []
+  devices: []
+
+agents:
+  - id: agentid_9306de6e-8913-4b9a-b59c-d2e7cc8705e3
+    address: http://172.20.20.3:5000
+    authentication:
+      type: none

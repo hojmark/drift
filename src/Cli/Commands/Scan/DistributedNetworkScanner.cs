@@ -44,10 +44,20 @@ internal sealed class DistributedNetworkScanner(
   }
 
   private List<(SubnetSource Source, List<CidrBlock> Cidrs)> PartitionSubnetsBySource( NetworkScanOptions options ) {
-    return resolvedSubnets
+    // Group subnets by CIDR first, then pick the first source for each unique CIDR
+    // This ensures each subnet is only scanned once, even if multiple agents report it
+    var subnetToSource = resolvedSubnets
       .Where( rs => options.Cidrs.Contains( rs.Cidr ) )
-      .GroupBy( rs => rs.Source )
-      .Select( group => (group.Key, group.Select( rs => rs.Cidr ).ToList()) )
+      .GroupBy( rs => rs.Cidr )
+      .ToDictionary( 
+        group => group.Key,
+        group => group.First().Source // Use the first source that reported this subnet
+      );
+
+    // Now group by source for parallel scanning
+    return subnetToSource
+      .GroupBy( kvp => kvp.Value )
+      .Select( group => (group.Key, group.Select( kvp => kvp.Key ).ToList()) )
       .ToList();
   }
 

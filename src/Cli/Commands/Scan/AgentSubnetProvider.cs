@@ -28,7 +28,7 @@ internal sealed class AgentSubnetProvider(
 
         allSubnets.AddRange( response.Subnets.Select( cidr =>
           new ResolvedSubnet( cidr, SubnetSource.Agent(
-            new AgentId( "agentid_" + agent.Id ) // TODO Fix agent id
+            new AgentId( agent.Id )
           ) ) )
         );
       }

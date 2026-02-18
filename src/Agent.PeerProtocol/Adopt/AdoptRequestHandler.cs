@@ -1,16 +1,24 @@
+using Drift.Networking.Grpc.Generated;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Agent.PeerProtocol.Adopt;
 
-internal sealed class AdoptRequestHandler : IPeerMessageHandler<AdoptRequestPayload, Empty> {
+internal sealed class AdoptRequestHandler : IPeerMessageHandler {
   private readonly ILogger _logger; // Example: inject what you need
 
   public string MessageType => AdoptRequestPayload.MessageType;
 
-  public async Task<Empty> HandleAsync( AdoptRequestPayload message,
-    CancellationToken cancellationToken = default ) {
-    _logger.LogInformation( $"[AdoptRequest] Controller: {message.ControllerId}" );
-    return IPeerResponse.Empty;
+  public Task HandleAsync(
+    PeerMessage envelope,
+    IPeerMessageEnvelopeConverter converter,
+    IPeerStream stream,
+    CancellationToken cancellationToken
+  ) {
+    var message = converter.FromEnvelope<AdoptRequestPayload>( envelope );
+    _logger.LogInformation( "[AdoptRequest] Controller: {ControllerId}", message.ControllerId );
+    
+    // This handler doesn't send a response (Empty response pattern)
+    return Task.CompletedTask;
   }
 }

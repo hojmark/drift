@@ -1,4 +1,4 @@
-﻿using Drift.Networking.PeerStreaming.Core;
+using Drift.Networking.PeerStreaming.Core;
 using Drift.Networking.PeerStreaming.Core.Messages;
 using Drift.Networking.PeerStreaming.Server;
 using Drift.Networking.PeerStreaming.Tests.Helpers;
@@ -12,10 +12,12 @@ internal sealed class InboundTests {
     // Arrange
     using var cts = new CancellationTokenSource();
     var logger = new StringLogger( TestContext.Out );
+    var responseCorrelator = new PeerResponseCorrelator( logger );
+    var envelopeConverter = new PeerMessageEnvelopeConverter();
     var peerStreamManager = new PeerStreamManager(
       logger,
       null,
-      new PeerMessageDispatcher( [], null, null, logger ),
+      new PeerMessageDispatcher( [], envelopeConverter, responseCorrelator, logger ),
       new PeerStreamingOptions { StoppingToken = cts.Token }
     );
 
@@ -44,10 +46,12 @@ internal sealed class InboundTests {
     // Arrange
     using var cts = new CancellationTokenSource();
     var logger = new StringLogger( TestContext.Out );
+    var responseCorrelator = new PeerResponseCorrelator( logger );
+    var envelopeConverter = new PeerMessageEnvelopeConverter();
     var peerStreamManager = new PeerStreamManager(
       logger,
       null,
-      new PeerMessageDispatcher( [], null, null, logger ),
+      new PeerMessageDispatcher( [], envelopeConverter, responseCorrelator, logger ),
       new PeerStreamingOptions { StoppingToken = cts.Token }
     );
     var inboundPeerService = new InboundPeerService( peerStreamManager, logger );

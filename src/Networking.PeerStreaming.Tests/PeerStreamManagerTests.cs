@@ -13,7 +13,8 @@ internal sealed class PeerStreamManagerTests {
     var logger = new StringLogger( TestContext.Out );
     var testMessageHandler = new TestMessageHandler();
     var envelopeConverter = new PeerMessageEnvelopeConverter();
-    var dispatcher = new PeerMessageDispatcher( [testMessageHandler], envelopeConverter, null, logger );
+    var responseCorrelator = new PeerResponseCorrelator( logger );
+    var dispatcher = new PeerMessageDispatcher( [testMessageHandler], envelopeConverter, responseCorrelator, logger );
     var peerStreamManager = new PeerStreamManager(
       logger,
       null,

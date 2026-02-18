@@ -10,30 +10,14 @@ public interface IPeerMessageHandler {
     get;
   }
 
-  Task<PeerMessage?> HandleAsync(
+  /// <summary>
+  /// Handles an incoming peer message. The handler is responsible for sending response(s)
+  /// via the provided stream. Can send multiple responses for streaming scenarios.
+  /// </summary>
+  Task HandleAsync(
     PeerMessage envelope,
     IPeerMessageEnvelopeConverter converter,
+    IPeerStream stream,
     CancellationToken cancellationToken
   );
-}
-
-public interface IPeerMessageHandler<TRequest, TResponse> : IPeerMessageHandler
-  where TRequest : IPeerRequest<TResponse>
-  where TResponse : IPeerResponse {
-  Task<TResponse> HandleAsync( TRequest message, CancellationToken cancellationToken = default );
-
-  async Task<PeerMessage?> IPeerMessageHandler.HandleAsync(
-    PeerMessage envelope,
-    IPeerMessageEnvelopeConverter converter,
-    CancellationToken cancellationToken ) {
-    var request = converter.FromEnvelope<TRequest>( envelope );
-
-    var response = await HandleAsync( request, cancellationToken );
-
-    if ( response is Empty ) {
-      return null;
-    }
-
-    return converter.ToEnvelope<TResponse>( response );
-  }
 }

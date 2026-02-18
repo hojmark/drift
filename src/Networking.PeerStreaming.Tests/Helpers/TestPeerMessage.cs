@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Drift.Networking.Grpc.Generated;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
 
 namespace Drift.Networking.PeerStreaming.Tests.Helpers;
@@ -13,7 +14,7 @@ internal sealed class TestPeerMessage : IPeerRequest<TestPeerMessage>, IPeerResp
 [JsonSerializable( typeof(TestPeerMessage) )]
 internal sealed partial class TestPeerMessageJsonContext : JsonSerializerContext;
 
-internal sealed class TestMessageHandler : IPeerMessageHandler<TestPeerMessage, TestPeerMessage> {
+internal sealed class TestMessageHandler : IPeerMessageHandler {
   public TestPeerMessage? LastMessage {
     get;
     private set;
@@ -21,8 +22,16 @@ internal sealed class TestMessageHandler : IPeerMessageHandler<TestPeerMessage, 
 
   public string MessageType => TestPeerMessage.MessageType;
 
-  public Task<TestPeerMessage?> HandleAsync( TestPeerMessage message, CancellationToken cancellationToken = default ) {
+  public Task HandleAsync(
+    PeerMessage envelope,
+    IPeerMessageEnvelopeConverter converter,
+    IPeerStream stream,
+    CancellationToken cancellationToken
+  ) {
+    var message = converter.FromEnvelope<TestPeerMessage>( envelope );
     LastMessage = message;
-    return Task.FromResult<TestPeerMessage?>( null );
+    
+    // For this test handler, we don't send a response
+    return Task.CompletedTask;
   }
 }

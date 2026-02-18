@@ -118,8 +118,18 @@ internal sealed class DistributedNetworkScanner(
 
       return response.Result;
     }
+    catch ( OperationCanceledException ) {
+      logger.LogWarning( "Scan of subnet {Cidr} via agent {AgentId} was cancelled", cidr, agentSource.AgentId );
+      return CreateFailedScanResult( cidr );
+    }
     catch ( Exception ex ) {
-      logger.LogWarning( ex, "Failed to scan subnet {Cidr} via agent {AgentId}", cidr, agentSource.AgentId );
+      logger.LogWarning(
+        ex,
+        "Failed to scan subnet {Cidr} via agent {AgentId}: {ErrorMessage}. Returning partial results.",
+        cidr,
+        agentSource.AgentId,
+        ex.Message
+      );
       return CreateFailedScanResult( cidr );
     }
   }
@@ -172,10 +182,11 @@ internal sealed class DistributedNetworkScanner(
     ILogger logger
   ) {
     var endTime = DateTime.UtcNow;
-    
+
     // Merge results for subnets that were scanned multiple times
     var mergedResults = MergeOverlappingSubnetResults( allResults, logger );
     var successCount = allResults.Count( s => s.Status == ScanResultStatus.Success );
+    var failureCount = allResults.Count - successCount;
 
     var finalResult = new NetworkScanResult {
       Subnets = mergedResults,
@@ -186,12 +197,25 @@ internal sealed class DistributedNetworkScanner(
 
     ResultUpdated?.Invoke( this, finalResult );
 
-    logger.LogInformation(
-      "Distributed scan completed: {SuccessCount}/{TotalCount} scan operations successful, {UniqueSubnets} unique subnets",
-      successCount,
-      allResults.Count,
-      mergedResults.Count
-    );
+    // Log summary with warnings if there were failures
+    if ( failureCount > 0 ) {
+      var failedSubnets = allResults.Where( s => s.Status == ScanResultStatus.Error ).Select( s => s.CidrBlock ).ToList();
+      logger.LogWarning(
+        "Distributed scan completed with partial results: {SuccessCount}/{TotalCount} scan operations successful, {FailureCount} failed. Failed subnets: {FailedSubnets}",
+        successCount,
+        allResults.Count,
+        failureCount,
+        string.Join( ", ", failedSubnets )
+      );
+    }
+    else {
+      logger.LogInformation(
+        "Distributed scan completed: {SuccessCount}/{TotalCount} scan operations successful, {UniqueSubnets} unique subnets",
+        successCount,
+        allResults.Count,
+        mergedResults.Count
+      );
+    }
 
     return finalResult;
   }

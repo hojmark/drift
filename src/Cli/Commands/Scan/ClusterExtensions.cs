@@ -25,11 +25,12 @@ internal static class ClusterExtensions {
     this ICluster cluster,
     Domain.Agent agent,
     CidrBlock cidr,
+    uint pingsPerSecond,
     IPeerMessageEnvelopeConverter converter,
     Action<ScanSubnetProgressUpdate> onProgressUpdate,
     CancellationToken cancellationToken
   ) {
-    var request = new ScanSubnetRequest { Cidr = cidr, PingsPerSecond = 1000 };
+    var request = new ScanSubnetRequest { Cidr = cidr, PingsPerSecond = pingsPerSecond };
 
     return cluster.SendAndWaitStreamingAsync<ScanSubnetRequest, ScanSubnetCompleteResponse>(
       agent,

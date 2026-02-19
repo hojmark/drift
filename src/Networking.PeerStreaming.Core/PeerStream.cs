@@ -15,28 +15,6 @@ public sealed class PeerStream : IPeerStream {
   private readonly ILogger _logger;
   private readonly CancellationToken _cancellationToken;
 
-  public int InstanceNo {
-    get;
-  } = Interlocked.Increment( ref _instanceCounter );
-
-  private ConnectionSide Side {
-    get;
-  }
-
-  private Uri? Address {
-    get;
-  }
-
-  public required AgentId AgentId {
-    get;
-    init;
-  }
-
-  public Task ReadTask {
-    get;
-    private init;
-  }
-
   public PeerStream(
     IAsyncStreamReader<PeerMessage> reader,
     IAsyncStreamWriter<PeerMessage> writer,
@@ -66,8 +44,30 @@ public sealed class PeerStream : IPeerStream {
     Address = address;
   }
 
+  public int InstanceNo {
+    get;
+  } = Interlocked.Increment( ref _instanceCounter );
+
+  private ConnectionSide Side {
+    get;
+  }
+
+  private Uri? Address {
+    get;
+  }
+
+  public required AgentId AgentId {
+    get;
+    init;
+  }
+
+  public Task ReadTask {
+    get;
+    private init;
+  }
+
   public async Task SendAsync( PeerMessage message ) {
-    await _writer.WriteAsync( message, _cancellationToken ); //TODO also take another cancellation token (combine)
+    await _writer.WriteAsync( message, _cancellationToken ); // TODO also take another cancellation token (combine)
   }
 
   private async Task ReadLoopAsync() {

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.PeerStreaming.Core.Messages;
 
-//TODO private?
+// TODO private?
 public sealed class PeerResponseCorrelator {
   private readonly ConcurrentDictionary<string, TaskCompletionSource<PeerMessage>> _pendingRequests = new();
   private readonly ConcurrentDictionary<string, StreamingResponseHandler> _streamingRequests = new();
@@ -21,7 +21,7 @@ public sealed class PeerResponseCorrelator {
       throw new InvalidOperationException( $"Correlation ID {correlationId} already exists" );
     }
 
-    var cts = CancellationTokenSource.CreateLinkedTokenSource( ct );
+    using var cts = CancellationTokenSource.CreateLinkedTokenSource( ct );
     cts.CancelAfter( timeout );
 
     cts.Token.Register( () => {
@@ -50,7 +50,7 @@ public sealed class PeerResponseCorrelator {
       throw new InvalidOperationException( $"Correlation ID {correlationId} already exists" );
     }
 
-    var cts = CancellationTokenSource.CreateLinkedTokenSource( ct );
+    using var cts = CancellationTokenSource.CreateLinkedTokenSource( ct );
     cts.CancelAfter( timeout );
 
     cts.Token.Register( () => {
@@ -86,8 +86,19 @@ public sealed class PeerResponseCorrelator {
   }
 
   private sealed class StreamingResponseHandler {
-    public required TaskCompletionSource<PeerMessage> CompletionSource { get; init; }
-    public required string FinalMessageType { get; init; }
-    public required Action<PeerMessage> OnProgressUpdate { get; init; }
+    public required TaskCompletionSource<PeerMessage> CompletionSource {
+      get;
+      init;
+    }
+
+    public required string FinalMessageType {
+      get;
+      init;
+    }
+
+    public required Action<PeerMessage> OnProgressUpdate {
+      get;
+      init;
+    }
   }
 }

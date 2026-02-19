@@ -37,7 +37,14 @@ internal sealed class DistributedNetworkScanner(
 
     foreach ( var (source, cidrs) in subnetsBySource ) {
       if ( source is Local ) {
-        await ScanLocalSubnetsAsync( cidrs, options.PingsPerSecond, allSubnetResults, startTime, logger, cancellationToken );
+        await ScanLocalSubnetsAsync(
+          cidrs,
+          options.PingsPerSecond,
+          allSubnetResults,
+          startTime,
+          logger,
+          cancellationToken
+        );
       }
       else if ( source is Scanning.Subnets.Agent agentSource ) {
         await ScanAgentSubnetsAsync( agentSource, cidrs, options.PingsPerSecond, allSubnetResults, cancellationToken );
@@ -53,7 +60,7 @@ internal sealed class DistributedNetworkScanner(
     return resolvedSubnets
       .Where( rs => options.Cidrs.Contains( rs.Cidr ) )
       .GroupBy( rs => rs.Source )
-      .Select( group => (group.Key, group.Select( rs => rs.Cidr ).Distinct().ToList()) )
+      .Select( group => ( group.Key, group.Select( rs => rs.Cidr ).Distinct().ToList() ) )
       .ToList();
   }
 
@@ -67,10 +74,7 @@ internal sealed class DistributedNetworkScanner(
   ) {
     logger.LogDebug( "Scanning {Count} local subnet(s)", cidrs.Count );
 
-    var localOptions = new NetworkScanOptions {
-      Cidrs = cidrs,
-      PingsPerSecond = pingsPerSecond
-    };
+    var localOptions = new NetworkScanOptions { Cidrs = cidrs, PingsPerSecond = pingsPerSecond };
 
     EventHandler<NetworkScanResult> progressHandler = ( _, result ) => {
       var overallResult = BuildProgressResult( allResults, result.Subnets, startTime );
@@ -121,8 +125,8 @@ internal sealed class DistributedNetworkScanner(
 
       return response.Result;
     }
-    catch ( OperationCanceledException ) {
-      logger.LogWarning( "Scan of subnet {Cidr} via agent {AgentId} was cancelled", cidr, agentSource.AgentId );
+    catch ( OperationCanceledException ex ) {
+      logger.LogWarning( ex, "Scan of subnet {Cidr} via agent {AgentId} was cancelled", cidr, agentSource.AgentId );
       return CreateFailedScanResult( cidr );
     }
     catch ( Exception ex ) {
@@ -139,7 +143,7 @@ internal sealed class DistributedNetworkScanner(
 
   private Domain.Agent MapAgentIdToDomainAgent( AgentId agentId ) {
     var agent = inventory.Agents.FirstOrDefault( a => a.Id == agentId.Value );
-    
+
     if ( agent == null ) {
       logger.LogWarning( "Agent {AgentId} not found in inventory", agentId );
       return new Domain.Agent { Id = agentId.Value, Address = string.Empty };
@@ -201,7 +205,8 @@ internal sealed class DistributedNetworkScanner(
 
     // Log summary with warnings if there were failures
     if ( failureCount > 0 ) {
-      var failedSubnets = allResults.Where( s => s.Status == ScanResultStatus.Error ).Select( s => s.CidrBlock ).ToList();
+      var failedSubnets = allResults.Where( s => s.Status == ScanResultStatus.Error ).Select( s => s.CidrBlock )
+        .ToList();
       logger.LogWarning(
         "Distributed scan completed with partial results: {SuccessCount}/{TotalCount} scan operations successful, {FailureCount} failed. Failed subnets: {FailedSubnets}",
         successCount,
@@ -229,7 +234,7 @@ internal sealed class DistributedNetworkScanner(
       .Select( group => {
         var cidr = group.Key;
         var scans = group.ToList();
-        
+
         if ( scans.Count == 1 ) {
           return scans[0];
         }
@@ -246,7 +251,7 @@ internal sealed class DistributedNetworkScanner(
             // Union addresses from all instances of this device, preserving richest data
             var mergedAddresses = g
               .SelectMany( d => d.Addresses )
-              .GroupBy( a => (a.Type, a.Value) )
+              .GroupBy( a => ( a.Type, a.Value ) )
               .Select( ag => ag.First() )
               .ToList<IDeviceAddress>();
             return new DiscoveredDevice {
@@ -277,7 +282,9 @@ internal sealed class DistributedNetworkScanner(
           CidrBlock = cidr,
           DiscoveredDevices = allDevices,
           Metadata = new Metadata { StartedAt = startTime, EndedAt = endTime },
-          Status = scans.All( s => s.Status == ScanResultStatus.Success ) ? ScanResultStatus.Success : ScanResultStatus.Error,
+          Status = scans.All( s => s.Status == ScanResultStatus.Success )
+            ? ScanResultStatus.Success
+            : ScanResultStatus.Error,
           DiscoveryAttempts = allAttempts
         };
       } )

@@ -6,7 +6,11 @@ using Drift.Domain.Device.Addresses;
 namespace Drift.Serialization.Converters;
 
 public sealed class IpV4AddressSetConverter : JsonConverter<IReadOnlySet<IpV4Address>> {
-  public override IReadOnlySet<IpV4Address>? Read( ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options ) {
+  public override IReadOnlySet<IpV4Address>? Read(
+    ref Utf8JsonReader reader,
+    Type typeToConvert,
+    JsonSerializerOptions options
+  ) {
     if ( reader.TokenType != JsonTokenType.StartArray ) {
       throw new JsonException( "Expected array" );
     }
@@ -29,7 +33,7 @@ public sealed class IpV4AddressSetConverter : JsonConverter<IReadOnlySet<IpV4Add
 
   public override void Write( Utf8JsonWriter writer, IReadOnlySet<IpV4Address> value, JsonSerializerOptions options ) {
     writer.WriteStartArray();
-    
+
     foreach ( var ip in value ) {
       JsonSerializer.Serialize( writer, ip.Value, options );
     }

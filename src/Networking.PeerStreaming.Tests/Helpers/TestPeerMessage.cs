@@ -30,7 +30,7 @@ internal sealed class TestMessageHandler : IPeerMessageHandler {
   ) {
     var message = converter.FromEnvelope<TestPeerMessage>( envelope );
     LastMessage = message;
-    
+
     // For this test handler, we don't send a response
     return Task.CompletedTask;
   }

@@ -12,7 +12,9 @@ public interface IPeerMessage {
   }
 }
 
+#pragma warning disable S2326 // TResponse is an intentional phantom type parameter for type-safe request/response pairing
 public interface IPeerRequest<TResponse> : IPeerMessage where TResponse : IPeerResponse;
+#pragma warning restore S2326
 
 public interface IPeerResponse : IPeerMessage {
   static readonly Empty Empty = Empty.Instance;

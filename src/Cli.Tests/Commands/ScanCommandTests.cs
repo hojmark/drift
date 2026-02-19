@@ -234,10 +234,14 @@ internal sealed partial class ScanCommandTests {
     List<List<IDeviceAddress>> discoveredDevices,
     Inventory? inventory = null
   ) {
-    var interfaceList = interfaces.HasValue 
-      ? [new NetworkInterface { Description = "eth1", OperationalStatus = OperationalStatus.Up, UnicastAddress = interfaces.Value }]
+    var interfaceList = interfaces.HasValue
+      ? [
+        new NetworkInterface {
+          Description = "eth1", OperationalStatus = OperationalStatus.Up, UnicastAddress = interfaces.Value
+        }
+      ]
       : new List<INetworkInterface>();
-    
+
     return ConfigureServices(
       interfaceList,
       discoveredDevices.Select( deviceAddresses => new DiscoveredDevice { Addresses = deviceAddresses } ).ToList(),
@@ -282,19 +286,21 @@ internal sealed partial class ScanCommandTests {
           new NetworkScanResult {
             Metadata = new Metadata { StartedAt = default, EndedAt = default },
             Status = ScanResultStatus.Success,
-            Subnets = interfaces.Count > 0 ? [
-              new SubnetScanResult {
-                CidrBlock = DefaultInterface.UnicastAddress!.Value,
-                DiscoveredDevices = discoveredDevices,
-                Metadata = new Metadata { StartedAt = default, EndedAt = default },
-                Status = ScanResultStatus.Success,
-                // TODO could/should also include ip's of non-discovered devices?
-                DiscoveryAttempts = discoveredDevices.Select( d =>
-                    new IpV4Address( d.Get( AddressType.IpV4 ) ?? throw new Exception( "Device had no IPv4" ) )
-                  )
-                  .ToImmutableHashSet()
-              }
-            ] : []
+            Subnets = interfaces.Count > 0
+              ? [
+                new SubnetScanResult {
+                  CidrBlock = DefaultInterface.UnicastAddress!.Value,
+                  DiscoveredDevices = discoveredDevices,
+                  Metadata = new Metadata { StartedAt = default, EndedAt = default },
+                  Status = ScanResultStatus.Success,
+                  // TODO could/should also include ip's of non-discovered devices?
+                  DiscoveryAttempts = discoveredDevices.Select( d =>
+                      new IpV4Address( d.Get( AddressType.IpV4 ) ?? throw new Exception( "Device had no IPv4" ) )
+                    )
+                    .ToImmutableHashSet()
+                }
+              ]
+              : []
           }
         )
       );

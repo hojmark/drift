@@ -14,7 +14,7 @@ internal sealed class InboundPeerService( IPeerStreamManager peerStreamManager, 
     ServerCallContext context
   ) {
     try {
-      logger.LogInformation( "Inbound stream started" );
+      logger.LogInformation( "Inbound stream starting..." );
       var stream = peerStreamManager.Create( requestStream, responseStream, context );
       logger.LogInformation( "Peer stream #{StreamNo} created", stream.InstanceNo );
 

@@ -1,6 +1,7 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common.Parameters;
+using Drift.Cli.Presentation.Console.Managers.Abstractions;
 
 namespace Drift.Cli.Commands.Common.Commands;
 
@@ -27,7 +28,7 @@ internal abstract class CommandBase<TParameters, THandler> : Command
         parameters = CreateParameters( parseResult );
       }
       catch ( ArgumentException e ) {
-        parseResult.InvocationConfiguration.Error.WriteLine( $"✗ {e.Message}" );
+        serviceProvider.GetRequiredService<IOutputManager>().Normal.WriteLineError( $"✗ {e.Message}" );
         return ExitCodes.GeneralError;
       }
 

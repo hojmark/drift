@@ -38,7 +38,7 @@ internal sealed class PeerStreamManagerTests {
 
     // Assert
     Assert.That( testMessageHandler.LastMessage, Is.Not.Null );
-    //Assert.That( testMessageHandler.LastMessage.MessageType, Is.EqualTo( "TestMessageType" ) );
+    // Assert.That( testMessageHandler.LastMessage.MessageType, Is.EqualTo( "TestMessageType" ) );
 
     cts.Dispose();
   }

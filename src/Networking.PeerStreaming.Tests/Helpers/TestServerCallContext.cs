@@ -9,17 +9,17 @@ internal sealed class TestServerCallContext : ServerCallContext {
   private readonly AuthContext _authContext;
   private readonly Dictionary<object, object> _userState;
 
-  public Metadata? ResponseHeaders {
-    get;
-    private set;
-  }
-
   private TestServerCallContext( Metadata requestHeaders, CancellationToken cancellationToken ) {
     _requestHeaders = requestHeaders;
     _cancellationToken = cancellationToken;
     _responseTrailers = new Metadata();
     _authContext = new AuthContext( string.Empty, new Dictionary<string, List<AuthProperty>>() );
     _userState = new Dictionary<object, object>();
+  }
+
+  public Metadata? ResponseHeaders {
+    get;
+    private set;
   }
 
   protected override string MethodCore => "MethodName";
@@ -50,7 +50,16 @@ internal sealed class TestServerCallContext : ServerCallContext {
 
   protected override AuthContext AuthContextCore => _authContext;
 
-  protected override ContextPropagationToken CreatePropagationTokenCore( ContextPropagationOptions options ) {
+  protected override IDictionary<object, object> UserStateCore => _userState;
+
+  public static TestServerCallContext Create(
+    Metadata? requestHeaders = null,
+    CancellationToken cancellationToken = default
+  ) {
+    return new TestServerCallContext( requestHeaders ?? new Metadata(), cancellationToken );
+  }
+
+  protected override ContextPropagationToken CreatePropagationTokenCore( ContextPropagationOptions? options ) {
     throw new NotImplementedException();
   }
 
@@ -61,14 +70,5 @@ internal sealed class TestServerCallContext : ServerCallContext {
 
     ResponseHeaders = responseHeaders;
     return Task.CompletedTask;
-  }
-
-  protected override IDictionary<object, object> UserStateCore => _userState;
-
-  public static TestServerCallContext Create(
-    Metadata? requestHeaders = null,
-    CancellationToken cancellationToken = default
-  ) {
-    return new TestServerCallContext( requestHeaders ?? new Metadata(), cancellationToken );
   }
 }

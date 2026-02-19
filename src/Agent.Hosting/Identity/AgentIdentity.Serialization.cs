@@ -65,7 +65,7 @@ public partial class AgentIdentity {
     var json = JsonSerializer.Serialize( this, AgentIdentityJsonContext.Default.AgentIdentity );
     File.WriteAllText( location.GetFile(), json );
 
-    logger.LogDebug( "Agent identity saved: {AgentId}", Id );
+    // logger.LogDebug( "Agent identity saved: {AgentId}", Id );
   }
 
   private static AgentIdentity CreateNew() {

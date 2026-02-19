@@ -6,6 +6,7 @@ public static class PeerMessageHandlerExtensions {
   /// <summary>
   /// Helper to send a response with the correct correlation ID set.
   /// </summary>
+  /// <typeparam name="TResponse">The type of the response message to send.</typeparam>
   public static async Task SendResponseAsync<TResponse>(
     this IPeerStream stream,
     IPeerMessageEnvelopeConverter converter,
@@ -21,6 +22,7 @@ public static class PeerMessageHandlerExtensions {
   /// Helper to send a response without awaiting (fire and forget).
   /// Useful for progress updates that shouldn't block processing.
   /// </summary>
+  /// <typeparam name="TResponse">The type of the response message to send.</typeparam>
   public static void SendResponseFireAndForget<TResponse>(
     this IPeerStream stream,
     IPeerMessageEnvelopeConverter converter,

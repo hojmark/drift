@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Agent.PeerProtocol.Adopt;
 
 internal sealed class AdoptRequestHandler : IPeerMessageHandler {
-  private readonly ILogger _logger; // Example: inject what you need
+  // private readonly ILogger _logger; // Example: inject what you need
 
   public string MessageType => AdoptRequestPayload.MessageType;
 
@@ -15,9 +15,9 @@ internal sealed class AdoptRequestHandler : IPeerMessageHandler {
     IPeerStream stream,
     CancellationToken cancellationToken
   ) {
-    var message = converter.FromEnvelope<AdoptRequestPayload>( envelope );
-    _logger.LogInformation( "[AdoptRequest] Controller: {ControllerId}", message.ControllerId );
-    
+    // var message = converter.FromEnvelope<AdoptRequestPayload>( envelope );
+    // _logger.LogInformation( "[AdoptRequest] Controller: {ControllerId}", message.ControllerId );
+
     // This handler doesn't send a response (Empty response pattern)
     return Task.CompletedTask;
   }

@@ -1,17 +1,17 @@
 namespace Drift.Agent.PeerProtocol.Adopt;
 
 internal sealed class AdoptResponsePayload {
-  public string Status {
+  public required string Status {
     get;
     set;
   } // "accepted" or "rejected"
 
-  public string AgentId {
+  public required string AgentId {
     get;
     set;
   } // Only with "accepted"
 
-  public string Reason {
+  public required string Reason {
     get;
     set;
   } // Only with "rejected"

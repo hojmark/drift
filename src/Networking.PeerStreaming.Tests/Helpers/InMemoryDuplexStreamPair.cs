@@ -34,13 +34,13 @@ internal static class InMemoryDuplexStreamPair {
   private sealed class InMemoryStreamWriter<T> : IClientStreamWriter<T> where T : class {
     private readonly ChannelWriter<T> _writer;
 
+    internal InMemoryStreamWriter( ChannelWriter<T> writer ) {
+      _writer = writer;
+    }
+
     public WriteOptions? WriteOptions {
       get;
       set;
-    }
-
-    internal InMemoryStreamWriter( ChannelWriter<T> writer ) {
-      _writer = writer;
     }
 
     public async Task WriteAsync( T message ) {
@@ -69,14 +69,14 @@ internal static class InMemoryDuplexStreamPair {
   private class InMemoryStreamReader<T> : IAsyncStreamReader<T> where T : class {
     private readonly ChannelReader<T> _reader;
 
+    internal InMemoryStreamReader( ChannelReader<T> reader ) {
+      _reader = reader;
+    }
+
     public T Current {
       get;
       private set;
     } = null!;
-
-    internal InMemoryStreamReader( ChannelReader<T> reader ) {
-      _reader = reader;
-    }
 
     public virtual async Task<bool> MoveNext( CancellationToken cancellationToken ) {
       if ( await _reader.WaitToReadAsync( cancellationToken ) && _reader.TryRead( out var message ) ) {
@@ -93,6 +93,11 @@ internal static class InMemoryDuplexStreamPair {
     private readonly ChannelWriter<T> _writer;
     private readonly ServerCallContext _context;
 
+    internal InMemoryServerStreamWriter( ChannelWriter<T> writer, ServerCallContext context ) {
+      _writer = writer;
+      _context = context;
+    }
+
     public WriteOptions? WriteOptions {
       get {
         return new WriteOptions();
@@ -101,11 +106,6 @@ internal static class InMemoryDuplexStreamPair {
       set {
         throw new NotSupportedException();
       }
-    }
-
-    internal InMemoryServerStreamWriter( ChannelWriter<T> writer, ServerCallContext context ) {
-      _writer = writer;
-      _context = context;
     }
 
     public Task WriteAsync( T message ) {

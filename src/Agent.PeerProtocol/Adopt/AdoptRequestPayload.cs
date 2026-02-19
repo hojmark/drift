@@ -6,17 +6,17 @@ namespace Drift.Agent.PeerProtocol.Adopt;
 internal sealed class AdoptRequestPayload : IPeerRequest<Empty> {
   public static string MessageType => "adopt-request";
 
-  public string Jwt {
+  public required string Jwt {
     get;
     set;
   }
 
-  public string ControllerId {
+  public required string ControllerId {
     get;
     set;
   }
 
   public static JsonTypeInfo JsonInfo {
     get;
-  }
+  } = null!;
 }

@@ -11,10 +11,11 @@ internal sealed class PeerMessageHandlerTests {
 
   [Test]
   public void FindMessagesAndHandlersAndMessages() {
-    using var _ = Assert.EnterMultipleScope();
-    Assert.That( RequestTypes.ToList(), Has.Count.GreaterThan( 1 ), "No request messages found via reflection" );
-    Assert.That( ResponseTypes.ToList(), Has.Count.GreaterThan( 1 ), "No response messages found via reflection" );
-    Assert.That( HandlerTypes.ToList(), Has.Count.GreaterThan( 1 ), "No handlers found via reflection" );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( RequestTypes.ToList(), Has.Count.GreaterThan( 1 ), "No request messages found via reflection" );
+      Assert.That( ResponseTypes.ToList(), Has.Count.GreaterThan( 1 ), "No response messages found via reflection" );
+      Assert.That( HandlerTypes.ToList(), Has.Count.GreaterThan( 1 ), "No handlers found via reflection" );
+    }
   }
 
   [Explicit( "Disabled until interface has settled" )]

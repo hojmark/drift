@@ -70,7 +70,7 @@ internal sealed class PeerStreamManager(
   }
 
   public async ValueTask DisposeAsync() {
-    logger.LogDebug( "Disposing peer stream manager" );
+    logger.LogDebug( "Disposing peer stream manager (including all streams)" );
     foreach ( var stream in _streams.Values ) {
       logger.LogTrace( "Disposing peer stream #{StreamNo}", stream.InstanceNo );
       await stream.DisposeAsync();

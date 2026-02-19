@@ -35,7 +35,7 @@ public sealed class StringLogger( TextWriter? writer = null ) : ILogger {
   }
 
   public override string ToString() {
-    return _writer.ToString();
+    return _writer.ToString() ?? string.Empty;
   }
 
   private static string ToSerilogStyleLevel( LogLevel logLevel ) {

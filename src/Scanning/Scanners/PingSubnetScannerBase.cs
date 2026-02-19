@@ -167,9 +167,9 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
 
       var macString = string.Join( "-", physicalAddress.GetAddressBytes().Select( b => b.ToString( "X2" ) ) );
 
-      foreach ( var unicast in iface.GetIPProperties().UnicastAddresses ) {
-        if ( unicast.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ) {
-          map[unicast.Address] = new MacAddress( macString );
+      foreach ( var unicastAddress in iface.GetIPProperties().UnicastAddresses.Select( u => u.Address ) ) {
+        if ( unicastAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ) {
+          map[unicastAddress] = new MacAddress( macString );
         }
       }
     }

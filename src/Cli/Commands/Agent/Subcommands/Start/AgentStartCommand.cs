@@ -39,7 +39,7 @@ internal class AgentStartCommandHandler(
 
     logger.LogInformation( "Agent starting.." );
 
-    var agentId = LoadAgentIdentity( parameters.Id );
+    _ = LoadAgentIdentity( parameters.Id );
 
     // Check if agent has cluster membership info
     var agentIdentity = AgentIdentity.Load( logger );

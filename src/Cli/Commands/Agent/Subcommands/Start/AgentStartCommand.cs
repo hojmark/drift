@@ -33,6 +33,7 @@ internal class AgentStartCommandHandler(
   : ICommandHandler<AgentStartParameters> {
   public async Task<int> Invoke( AgentStartParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running 'agent start' command" );
+    output.Log.LogWarning( "Agent mode is experimental" );
 
     var logger = output.GetLogger();
 
@@ -75,10 +76,10 @@ internal class AgentStartCommandHandler(
     void ConfigureServices( IServiceCollection services ) {
       // Configure core agent services (scanning, subnet discovery, execution environment)
       RootCommandFactory.ConfigureAgentCoreServices( services );
-      
+
       // Add peer protocol message handlers
       services.AddPeerProtocol();
-      
+
       // Allow test overrides
       configureServicesOverride?.Invoke( services );
     }

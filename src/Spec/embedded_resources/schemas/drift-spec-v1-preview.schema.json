@@ -105,8 +105,8 @@
     },
     "agents": {
       "type": [
-        "array",
-        "null"
+        "null",
+        "array"
       ],
       "items": {
         "type": "object",

@@ -170,6 +170,8 @@ internal class ScanCommandHandler(
       return localScanner;
     }
 
+    output.WarnAgentPreview();
+
     return new DistributedNetworkScanner(
       localScanner,
       cluster,

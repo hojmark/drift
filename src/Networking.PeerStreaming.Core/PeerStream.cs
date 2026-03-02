@@ -103,7 +103,7 @@ public sealed class PeerStream : IPeerStream {
   }
 
   public async ValueTask DisposeAsync() {
-    Console.WriteLine( "Disposing " + this );
+    _logger.LogTrace( "Disposing {PeerStream}", this );
 
     if ( _writer is IClientStreamWriter<PeerMessage> clientWriter ) {
       // I.e., outgoing stream (client initiated)

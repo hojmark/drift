@@ -1,4 +1,8 @@
-﻿Agent starting..
+Distributed scanning via agents is a preview feature and should be used with caution.
+Agent communication is unencrypted. Do not use on untrusted networks.
+Agents run without authentication. Any client that can reach the agent port can connect.
+Agent adoption (--adoptable / --join) is not yet implemented and has no effect.
+Agent starting...
 Agent cluster enrollment method is Adoption
 Listening for incoming connections on port 51515
 Agent started

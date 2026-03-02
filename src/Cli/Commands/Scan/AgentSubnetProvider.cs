@@ -33,7 +33,11 @@ internal sealed class AgentSubnetProvider(
         );
       }
       catch ( Exception ex ) {
-        logger.LogInformation( ex, "Failed requesting subnets from agent {Id} ({Address})", agent.Id, agent.Address );
+        logger.LogWarning(
+          ex,
+          "Failed requesting subnets from agent {Id} ({Address}) — agent will be excluded from scan", agent.Id,
+          agent.Address
+        );
       }
     }
 

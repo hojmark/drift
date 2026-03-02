@@ -33,11 +33,12 @@ internal class AgentStartCommandHandler(
   : ICommandHandler<AgentStartParameters> {
   public async Task<int> Invoke( AgentStartParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running 'agent start' command" );
-    output.Log.LogWarning( "Agent mode is experimental" );
+
+    output.WarnAgentPreview();
 
     var logger = output.GetLogger();
 
-    logger.LogInformation( "Agent starting.." );
+    logger.LogInformation( "Agent starting..." );
 
     _ = LoadAgentIdentity( parameters.Id );
 

@@ -5,6 +5,10 @@ Received subnet(s) from agent agentid_local2: 192.168.10.0/24
 Scanning 2 subnets
   192.168.0.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via local
   192.168.10.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via agentid_local1, agentid_local2
+Distributed scanning via agents is a preview feature and should be used with caution.
+Agent communication is unencrypted. Do not use on untrusted networks.
+Agents run without authentication. Any client that can reach the agent port can connect.
+Agent adoption (--adoptable / --join) is not yet implemented and has no effect.
 Merged 4 unique devices from 2 scans of 192.168.10.0/24
 Distributed scan completed: 3/3 scan operations successful, 2 unique subnets
 

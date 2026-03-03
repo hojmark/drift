@@ -37,7 +37,8 @@ sealed partial class NukeBuild {
       CliContainer: "clab-drift-simple-test-cli",
       Assertions: [
         new ScanAssertion( "Management subnet scanned", output => output.Contains( "172.20.20.0/24" ) ),
-        new ScanAssertion( "Both scans successful (local + agent)", output => output.Contains( "2/2 scan operations successful" ) ),
+        new ScanAssertion( "Both scans successful (local + agent)",
+          output => output.Contains( "2/2 scan operations successful" ) ),
         new ScanAssertion( "Scan completed successfully", output => output.Contains( "Distributed scan completed" ) ),
       ]
     ),
@@ -48,7 +49,8 @@ sealed partial class NukeBuild {
       CliContainer: "clab-drift-cooperation-test-cli",
       Assertions: [
         new ScanAssertion( "Management subnet scanned", output => output.Contains( "172.20.20.0/24" ) ),
-        new ScanAssertion( "All 4 scans successful (local + 3 agents)", output => output.Contains( "4/4 scan operations successful" ) ),
+        new ScanAssertion( "All 4 scans successful (local + 3 agents)",
+          output => output.Contains( "4/4 scan operations successful" ) ),
         new ScanAssertion( "Scan completed successfully", output => output.Contains( "Distributed scan completed" ) ),
       ]
     ),
@@ -60,7 +62,8 @@ sealed partial class NukeBuild {
       Assertions: [
         new ScanAssertion( "Subnet-A scanned", output => output.Contains( "192.168.10.0/24" ) ),
         new ScanAssertion( "Subnet-B scanned", output => output.Contains( "192.168.20.0/24" ) ),
-        new ScanAssertion( "All scan operations successful", output => output.Contains( "7/7 scan operations successful" ) ),
+        new ScanAssertion( "All scan operations successful",
+          output => output.Contains( "7/7 scan operations successful" ) ),
         new ScanAssertion( "Scan completed successfully", output => output.Contains( "Distributed scan completed" ) ),
       ]
     ),
@@ -81,9 +84,10 @@ sealed partial class NukeBuild {
         }
 
         if ( !await IsContainerlabAvailableAsync() ) {
-          Log.Warning( "containerlab is not installed or not in PATH. Skipping." );
-          Log.Information( "To install containerlab: https://containerlab.dev/install/" );
-          return;
+          throw new Exception(
+            "Containerlab does not appear to be installed or in PATH. " +
+            "See https://containerlab.dev/install/ for installation instructions."
+          );
         }
 
         var clabDir = RootDirectory / "containerlab";

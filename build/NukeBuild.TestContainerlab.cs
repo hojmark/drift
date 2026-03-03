@@ -306,7 +306,7 @@ sealed partial class NukeBuild {
   /// Use a custom logger that routes both stdout and stderr to Debug
   /// to avoid GH Actions annotating every Containerlab log line as an error.
   /// </summary>
-  private static void ClabLogger( OutputType type, string text ) => Log.Debug( "{Text}", text );
+  private static void ClabLogger( OutputType type, string text ) => Log.Debug( text );
 
   private static IProcess Clab( string args, AbsolutePath workDir = null, TimeSpan? timeout = null,
     bool logOutput = true ) =>

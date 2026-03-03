@@ -301,12 +301,20 @@ sealed partial class NukeBuild {
 
   // ── Process helpers ────────────────────────────────────────────────────────
 
+  /// <summary>
+  /// Containerlab writes all its output to stderr by design.
+  /// Use a custom logger that routes both stdout and stderr to Information
+  /// to avoid GH Actions annotating every containerlab log line as an error.
+  /// </summary>
+  private static void ClabLogger( OutputType type, string text ) => Log.Information( "{Text}", text );
+
   private static IProcess Clab( string args, AbsolutePath workDir = null, TimeSpan? timeout = null, bool logOutput = true ) =>
     ProcessTasks.StartProcess(
       "containerlab", args,
       workingDirectory: workDir,
       timeout: (int?) timeout?.TotalMilliseconds,
-      logOutput: logOutput
+      logOutput: logOutput,
+      logger: logOutput ? ClabLogger : null
     );
 
   private static IProcess Docker( string args, AbsolutePath workDir = null, TimeSpan? timeout = null ) =>

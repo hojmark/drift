@@ -40,7 +40,7 @@
         "ReleaseContainer",
         "Restore",
         "Test",
-        "TestContainerlab",
+        "TestClab",
         "TestE2E",
         "TestLocal",
         "TestSelf",
@@ -150,7 +150,7 @@
         },
         "KeepClabRunning": {
           "type": "boolean",
-          "description": "Keep containerlab topology running after tests"
+          "description": "Keep Containerlab topology running after tests"
         },
         "MsBuildVerbosity": {
           "type": "string",
@@ -158,7 +158,7 @@
         },
         "SkipClabDeploy": {
           "type": "boolean",
-          "description": "Skip containerlab deployment (useful for debugging when topology is already running)"
+          "description": "Skip Containerlab deployment (useful for debugging when topology is already running)"
         },
         "Solution": {
           "type": "string",

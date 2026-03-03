@@ -15,17 +15,17 @@ using Serilog;
 // ReSharper disable UnusedMember.Local
 
 sealed partial class NukeBuild {
-  [Parameter( "Skip containerlab deployment (useful for debugging when topology is already running)" )]
+  [Parameter( "Skip Containerlab deployment (useful for debugging when topology is already running)" )]
   readonly bool SkipClabDeploy = false;
 
-  [Parameter( "Keep containerlab topology running after tests" )]
+  [Parameter( "Keep Containerlab topology running after tests" )]
   readonly bool KeepClabRunning = false;
 
   [Parameter( "Run only this topology (e.g. 'simple-test'). Runs all topologies if not specified." )]
   readonly string ClabTopology = null;
 
   /// <summary>
-  /// Defines all containerlab integration test cases.
+  /// Defines all Containerlab integration test cases.
   /// Each test case specifies a topology, its spec file, the CLI container name,
   /// and assertions to validate the scan output.
   /// </summary>
@@ -76,7 +76,7 @@ sealed partial class NukeBuild {
         using var _ = new OperationTimer( nameof(TestClab) );
 
         var imageRef = _driftImageRef ?? throw new ArgumentNullException( nameof(_driftImageRef) );
-        Log.Information( "Using image {ImageRef} for containerlab tests", imageRef );
+        Log.Information( "Using image {ImageRef} for Containerlab tests", imageRef );
 
         if ( !RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
           Log.Warning( "Containerlab tests require Linux. Skipping." );
@@ -90,11 +90,13 @@ sealed partial class NukeBuild {
           );
         }
 
-        var clabDir = RootDirectory / "containerlab";
         var casesToRun = SelectTestCases();
 
-        Log.Information( "Running {Count} containerlab test case(s): {Names}",
-          casesToRun.Length, string.Join( ", ", casesToRun.Select( tc => tc.Name ) ) );
+        Log.Information(
+          "Running {Count} Containerlab test case(s): {Names}",
+          casesToRun.Length,
+          string.Join( ", ", casesToRun.Select( tc => tc.Name ) )
+        );
 
         var total = casesToRun.Length;
         var passed = 0;
@@ -104,7 +106,7 @@ sealed partial class NukeBuild {
           var run = passed + failed + 1;
           Log.Information( "━━━ Test case: {Name} ({Run}/{Total}) ━━━", testCase.Name, run, total );
 
-          if ( await RunTestCaseAsync( clabDir, testCase ) ) {
+          if ( await RunTestCaseAsync( testCase ) ) {
             passed++;
             Log.Information( "PASS: {Name}", testCase.Name );
           }
@@ -117,7 +119,7 @@ sealed partial class NukeBuild {
         Log.Information( "Containerlab integration tests: {Passed} passed, {Failed} failed", passed, failed );
 
         if ( failed > 0 ) {
-          throw new Exception( $"{failed} containerlab test case(s) failed" );
+          throw new Exception( $"{failed} Containerlab test case(s) failed" );
         }
       }
     );
@@ -138,9 +140,9 @@ sealed partial class NukeBuild {
     return selected;
   }
 
-  private async Task<bool> RunTestCaseAsync( AbsolutePath clabDir, ContainerlabTestCase testCase ) {
-    var topoFile = clabDir / testCase.TopologyFile;
-    var specFile = clabDir / testCase.SpecFile;
+  private async Task<bool> RunTestCaseAsync( ContainerlabTestCase testCase ) {
+    var topoFile = Paths.ContainerlabsDirectory / testCase.TopologyFile;
+    var specFile = Paths.ContainerlabsDirectory / testCase.SpecFile;
 
     if ( !File.Exists( topoFile ) ) {
       Log.Error( "Topology file not found: {File}", topoFile );
@@ -157,7 +159,7 @@ sealed partial class NukeBuild {
         Log.Information( "Skipping deployment (--skip-clab-deploy)" );
       }
       else {
-        await DeployContainerlabTopologyAsync( clabDir, testCase.TopologyFile );
+        await DeployTopologyAsync( testCase.TopologyFile );
       }
 
       await RunScanAndAssertAsync( specFile, testCase );
@@ -172,7 +174,7 @@ sealed partial class NukeBuild {
         Log.Information( "Keeping topology running (--keep-clab-running)" );
       }
       else {
-        await DestroyContainerlabTopologyAsync( clabDir, testCase.TopologyFile );
+        await DestroyTopologyAsync( testCase.TopologyFile );
       }
     }
   }
@@ -188,23 +190,30 @@ sealed partial class NukeBuild {
     }
   }
 
-  private static async Task DeployContainerlabTopologyAsync( AbsolutePath clabDir, string topologyFile ) {
+  private static async Task DeployTopologyAsync( string topologyFile ) {
     Log.Information( "Deploying topology: {File}", topologyFile );
 
-    DestroyTopologyIfExists( clabDir, topologyFile );
+    DestroyTopologyIfExists( topologyFile );
     EnsureClabManagementNetwork();
 
-    Clab( $"deploy --topo {topologyFile}", clabDir, timeout: TimeSpan.FromMinutes( 5 ) )
-      .AssertZeroExitCode();
+    Clab(
+      $"deploy --topo {topologyFile}",
+      Paths.ContainerlabsDirectory,
+      timeout: TimeSpan.FromMinutes( 5 )
+    ).AssertZeroExitCode();
 
     Log.Information( "Waiting for containers to be ready..." );
     await Task.Delay( TimeSpan.FromSeconds( 10 ) );
   }
 
-  private static void DestroyTopologyIfExists( AbsolutePath clabDir, string topologyFile ) {
+  private static void DestroyTopologyIfExists( string topologyFile ) {
     try {
-      Clab( $"destroy --topo {topologyFile} --cleanup", clabDir, timeout: TimeSpan.FromMinutes( 2 ), logOutput: false )
-        .AssertZeroExitCode();
+      Clab(
+        $"destroy --topo {topologyFile} --cleanup",
+        Paths.ContainerlabsDirectory,
+        timeout: TimeSpan.FromMinutes( 2 ),
+        logOutput: false
+      ).AssertZeroExitCode();
     }
     catch {
       Log.Debug( "No existing topology to destroy (or destroy failed — continuing)" );
@@ -218,14 +227,14 @@ sealed partial class NukeBuild {
   /// Containerlab always tries `ip link show br-&lt;network-id&gt;` immediately after
   /// creating a new network, which fatally fails ("Link not found") because no
   /// kernel bridge was created. However, when the network already exists,
-  /// containerlab skips the creation step and reuses it — avoiding the fatal lookup.
+  /// Containerlab skips the creation step and reuses it — avoiding the fatal lookup.
   ///
   /// Strategy: try to remove any stale 'clab' network (ignore failure — may be in
   /// use by another running topology), then create it. Ignore "already exists" errors
   /// from create — the important thing is the network is present before deploy.
   /// </summary>
   private static void EnsureClabManagementNetwork() {
-    Log.Debug( "Pre-creating containerlab management network..." );
+    Log.Debug( "Pre-creating Containerlab management network..." );
 
     // Ignore failure — network may not exist yet, or may still be in use by another topology
     var rm = ProcessTasks.StartProcess( "docker", "network rm clab", logOutput: false );
@@ -241,11 +250,14 @@ sealed partial class NukeBuild {
     Log.Debug( "Management network 'clab' ready" );
   }
 
-  private static async Task DestroyContainerlabTopologyAsync( AbsolutePath clabDir, string topologyFile ) {
+  private static async Task DestroyTopologyAsync( string topologyFile ) {
     Log.Information( "Destroying topology: {File}", topologyFile );
     try {
-      Clab( $"destroy --topo {topologyFile} --cleanup", clabDir, timeout: TimeSpan.FromMinutes( 2 ) )
-        .AssertZeroExitCode();
+      Clab(
+        $"destroy --topo {topologyFile} --cleanup",
+        Paths.ContainerlabsDirectory,
+        timeout: TimeSpan.FromMinutes( 2 )
+      ).AssertZeroExitCode();
     }
     catch ( Exception ex ) {
       Log.Warning( "Failed to destroy topology: {Error}", ex.Message );
@@ -326,7 +338,7 @@ sealed partial class NukeBuild {
     );
 }
 
-/// <summary>A containerlab integration test case.</summary>
+/// <summary>A Containerlab integration test case.</summary>
 sealed record ContainerlabTestCase(
   string Name,
   string TopologyFile,

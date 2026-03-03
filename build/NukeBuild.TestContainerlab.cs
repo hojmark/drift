@@ -180,7 +180,7 @@ sealed partial class NukeBuild {
   private static async Task<bool> IsContainerlabAvailableAsync() {
     try {
       var versionOutput = await CommandRunner.RunAsync( "containerlab", "version" );
-      Log.Debug( "\n{Version}", versionOutput.Trim() );
+      Log.Debug( "\n{Version}", versionOutput );
       return true;
     }
     catch {

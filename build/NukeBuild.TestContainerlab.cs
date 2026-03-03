@@ -101,7 +101,7 @@ sealed partial class NukeBuild {
         var failed = 0;
 
         foreach ( var testCase in casesToRun ) {
-          var run = passed + failed;
+          var run = passed + failed + 1;
           Log.Information( "━━━ Test case: {Name} ({Run}/{Total}) ━━━", testCase.Name, run, total );
 
           if ( await RunTestCaseAsync( clabDir, testCase ) ) {
@@ -308,7 +308,8 @@ sealed partial class NukeBuild {
   /// </summary>
   private static void ClabLogger( OutputType type, string text ) => Log.Debug( "{Text}", text );
 
-  private static IProcess Clab( string args, AbsolutePath workDir = null, TimeSpan? timeout = null, bool logOutput = true ) =>
+  private static IProcess Clab( string args, AbsolutePath workDir = null, TimeSpan? timeout = null,
+    bool logOutput = true ) =>
     ProcessTasks.StartProcess(
       "containerlab", args,
       workingDirectory: workDir,

@@ -96,11 +96,13 @@ sealed partial class NukeBuild {
         Log.Information( "Running {Count} containerlab test case(s): {Names}",
           casesToRun.Length, string.Join( ", ", casesToRun.Select( tc => tc.Name ) ) );
 
+        var total = casesToRun.Length;
         var passed = 0;
         var failed = 0;
 
         foreach ( var testCase in casesToRun ) {
-          Log.Information( "━━━ Test case: {Name} ━━━", testCase.Name );
+          var run = passed + failed;
+          Log.Information( "━━━ Test case: {Name} ({Run}/{Total}) ━━━", testCase.Name, run, total );
 
           if ( await RunTestCaseAsync( clabDir, testCase ) ) {
             passed++;
@@ -178,7 +180,7 @@ sealed partial class NukeBuild {
   private static async Task<bool> IsContainerlabAvailableAsync() {
     try {
       var versionOutput = await CommandRunner.RunAsync( "containerlab", "version" );
-      Log.Debug( "containerlab version: {Version}", versionOutput.Trim() );
+      Log.Debug( "\n{Version}", versionOutput.Trim() );
       return true;
     }
     catch {
@@ -201,7 +203,7 @@ sealed partial class NukeBuild {
 
   private static void DestroyTopologyIfExists( AbsolutePath clabDir, string topologyFile ) {
     try {
-      Clab( $"destroy --topo {topologyFile} --cleanup", clabDir, timeout: TimeSpan.FromMinutes( 2 ) )
+      Clab( $"destroy --topo {topologyFile} --cleanup", clabDir, timeout: TimeSpan.FromMinutes( 2 ), logOutput: false )
         .AssertZeroExitCode();
     }
     catch {
@@ -226,12 +228,13 @@ sealed partial class NukeBuild {
     Log.Debug( "Pre-creating containerlab management network..." );
 
     // Ignore failure — network may not exist yet, or may still be in use by another topology
-    var rm = ProcessTasks.StartProcess( "docker", "network rm clab" );
+    var rm = ProcessTasks.StartProcess( "docker", "network rm clab", logOutput: false );
     rm.WaitForExit();
 
     // Ignore failure — "network already exists" is acceptable; we just need it to be present
     var create = ProcessTasks.StartProcess(
-      "docker", "network create --subnet 172.20.20.0/24 --ipv6 --subnet 3fff:172:20:20::/64 clab"
+      "docker", "network create --subnet 172.20.20.0/24 --ipv6 --subnet 3fff:172:20:20::/64 clab",
+      logOutput: false
     );
     create.WaitForExit();
 
@@ -298,11 +301,12 @@ sealed partial class NukeBuild {
 
   // ── Process helpers ────────────────────────────────────────────────────────
 
-  private static IProcess Clab( string args, AbsolutePath workDir = null, TimeSpan? timeout = null ) =>
+  private static IProcess Clab( string args, AbsolutePath workDir = null, TimeSpan? timeout = null, bool logOutput = true ) =>
     ProcessTasks.StartProcess(
       "containerlab", args,
       workingDirectory: workDir,
-      timeout: (int?) timeout?.TotalMilliseconds
+      timeout: (int?) timeout?.TotalMilliseconds,
+      logOutput: logOutput
     );
 
   private static IProcess Docker( string args, AbsolutePath workDir = null, TimeSpan? timeout = null ) =>

@@ -4,9 +4,14 @@ using Drift.Domain;
 
 namespace Drift.Common.Network;
 
-// TODO use library for some of these implementations?
 // TODO weak typing: ip address and subnet mask shares type
 public static class IpNetworkUtils {
+  private static readonly IPNetwork2[] Rfc1918Ranges = [
+    IPNetwork2.IANA_ABLK_RESERVED1, // 10.0.0.0/8
+    IPNetwork2.IANA_BBLK_RESERVED1, // 172.16.0.0/12
+    IPNetwork2.IANA_CBLK_RESERVED1, // 192.168.0.0/16
+  ];
+
   /// <summary>
   /// Determines the IP <em>network</em> address (e.g. 192.168.0.0) based on an IP <em>host</em> address (e.g. 192.168.0.42) and subnet mask (e.g. 255.255.255.0).
   /// </summary>
@@ -58,21 +63,11 @@ public static class IpNetworkUtils {
   /// See alsohttps://www.rfc-editor.org/rfc/rfc1918.html#section-3.
   /// </remarks>
   public static bool IsPrivateIpV4( IPAddress ip ) {
-    if ( ip.AddressFamily == AddressFamily.InterNetworkV6 ) {
-      // Support should be possible to add... see RFC4193.
-      throw new ArgumentException( "IPv6 addresses are not supported.", nameof(ip) );
-    }
-
     if ( ip.AddressFamily != AddressFamily.InterNetwork ) {
-      return false;
+      throw new ArgumentException( "Only IPv4 addresses are supported.", nameof(ip) );
     }
 
-    var ipBytes = ip.GetAddressBytes();
-
-    return
-      ipBytes[0] == 10 || // 10.0.0.0/8
-      ( ipBytes[0] == 172 && ipBytes[1] >= 16 && ipBytes[1] <= 31 ) || // 172.16.0.0/12
-      ( ipBytes[0] == 192 && ipBytes[1] == 168 ); // 192.168.0.0/16
+    return Rfc1918Ranges.Any( range => range.Contains( ip ) );
   }
 
   /// <summary>

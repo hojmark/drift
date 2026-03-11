@@ -25,13 +25,13 @@ jobs:
       - name: Release
         env:
           CUSTOM_VERSION: ${{ github.event.inputs.customVersion }}
-        run: |
-          dotnet run \
-            --project ./build/_build.csproj \
-            --target PreRelease \
-            --commit ${{ github.sha }} \
-            --githubtoken ${{ secrets.GITHUB_TOKEN }} \
-            --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }} \
+        run: >
+          dotnet run
+            --project ./build/_build.csproj
+            --target PreRelease
+            --commit ${{ github.sha }}
+            --githubtoken ${{ secrets.GITHUB_TOKEN }}
+            --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }}
             --customversion $CUSTOM_VERSION
 
       - name: Display test results

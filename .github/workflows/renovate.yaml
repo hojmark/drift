@@ -30,11 +30,11 @@ jobs:
           private-key: ${{ secrets.RENOVATE_APP_PK }}
 
       - name: Run Renovate
-        run: |
-          docker run --rm \
-            -e RENOVATE_LOG_LEVEL=${{ inputs.log_level }} \
-            -e RENOVATE_PRINT_CONFIG=${{ inputs.log_level != 'info' }} \
-            -e RENOVATE_PLATFORM=github \
-            -e RENOVATE_REPOSITORIES=hojmark/drift \
-            -e RENOVATE_TOKEN=${{ steps.app-token.outputs.token }} \
-            renovate/renovate:latest
+        run: >
+          docker run --rm
+          -e RENOVATE_LOG_LEVEL=${{ inputs.log_level }}
+          -e RENOVATE_PRINT_CONFIG=${{ inputs.log_level != 'info' }}
+          -e RENOVATE_PLATFORM=github
+          -e RENOVATE_REPOSITORIES=hojmark/drift 
+          -e RENOVATE_TOKEN=${{ steps.app-token.outputs.token }}
+          renovate/renovate:latest

@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  audit:
-    name: Vulnerability audit
+  nuget-audit:
+    name: NuGet packages
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -36,6 +36,18 @@ jobs:
       # NU1903:	Package with high severity detected
       # NU1904:	Package with critical severity detected
       # NU1905:	An audit source does not provide a vulnerability database
-      - name: Audit
+      - name: Audit NuGet packages
         run: >
-          dotnet restore Drift.sln -p:WarningsAsErrors='"NU1900;NU1901;NU1902;NU1903;NU1904;NU1905"'
+          dotnet restore Drift.sln
+          -p:WarningsAsErrors='"NU1900;NU1901;NU1902;NU1903;NU1904;NU1905"'
+
+  container-audit:
+    name: Container image
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Audit container image
+        run: >
+          docker run --rm anchore/grype:latest
+          --fail-on high
+          hojmark/drift:latest

@@ -20,11 +20,11 @@ jobs:
       - name: Release
         run: >
           dotnet run
-            --project ./build/_build.csproj
-            --target Release
-            --commit ${{ github.sha }}
-            --githubtoken ${{ secrets.GITHUB_TOKEN }}
-            --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }} 
+          --project ./build/_build.csproj
+          --target Release
+          --commit ${{ github.sha }}
+          --githubtoken ${{ secrets.GITHUB_TOKEN }}
+          --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }}
 
       - name: Display test results
         continue-on-error: true

@@ -6,6 +6,8 @@ changelog:
     authors:
       - dependabot
       - github-actions
+      - hojmark-renovate
+      - github-advanced-security
 
   categories:
     - title: ✨ Enhancements

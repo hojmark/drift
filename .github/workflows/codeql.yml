@@ -12,12 +12,10 @@
 name: "CodeQL"
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '25 22 * * 1'
+    - cron: '0 6 * * WED' # At 06:00 AM, only on Wednesday
 
 jobs:
   analyze:

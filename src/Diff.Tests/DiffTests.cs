@@ -13,7 +13,7 @@ using JsonConverter = Drift.Serialization.JsonConverter;
 
 namespace Drift.Diff.Tests;
 
-internal sealed class DiffTest {
+internal sealed class DiffTests {
   private static readonly NetworkScanResult ScanResult1 = new() {
     Metadata = new Metadata {
       StartedAt = DateTime.Parse( "2025-04-24T12:20:08.4219405+02:00", CultureInfo.InvariantCulture ).ToUniversalTime(),

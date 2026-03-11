@@ -1,6 +1,6 @@
 namespace Drift.Cli.E2ETests.Container;
 
-internal sealed class PortTest : DriftImageFixture {
+internal sealed class PortTests : DriftImageFixture {
   [Explicit( "Not implemented yet" )]
   [Test]
   public void AgentPortIsExposed() {

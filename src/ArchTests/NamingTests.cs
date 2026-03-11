@@ -16,20 +16,11 @@ internal sealed class NamingTests : DriftArchitectureFixture {
     rule.Check( DriftArchitecture );
   }
 
-  [Explicit( "Fix architecture" )] // TODO
   [Test]
   public void TestClassesShouldEndWithTests() {
-    /*
-     * Assembly names are "FullName" e.g. "Drift.Cli.E2ETests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
-     */
-    /*var testClasses = Classes()
-      .That()
-      .ResideInAssemblyMatching( @".*\.Tests," )
-      .Or()
-      .ResideInAssemblyMatching( @".*\.E2ETests," );*/
-
+    // TODO enable for TUnit when migrated
     var rule = Members().That()
-      .HaveAnyAttributes( typeof(TestAttribute) )
+      .HaveAnyAttributes( typeof(TestAttribute) /*, typeof(TUnit.Core.TestAttribute)*/ )
       .Should()
       .BeDeclaredInTypesThat()
       .HaveNameEndingWith( "Tests" )

@@ -13,9 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Set up runner
-        uses: ./.github/actions/setup-runner
-
       - name: Get latest release tag
         id: release
         env:
@@ -28,6 +25,9 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ steps.release.outputs.tag }}
+
+      - name: Set up runner
+        uses: ./.github/actions/setup-runner
 
       # From https://learn.microsoft.com/en-us/nuget/concepts/auditing-packages
       # NU1900:	Error communicating with package source, while getting vulnerability information.

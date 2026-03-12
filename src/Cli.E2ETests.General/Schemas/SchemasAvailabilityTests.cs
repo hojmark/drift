@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Drift.Cli.E2ETests.Schemas;
+namespace Drift.Cli.E2ETests.General.Schemas;
 
 internal sealed class SchemasAvailabilityTests {
   [Explicit( "For now, use schema directly from GitHub repo" )]

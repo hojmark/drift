@@ -1,7 +1,7 @@
 using Drift.Cli.E2ETests.Abstractions;
 using Drift.Common;
 
-namespace Drift.Cli.E2ETests;
+namespace Drift.Cli.E2ETests.Binary;
 
 internal abstract class DriftBinaryFixture {
   protected static ToolWrapper DriftBinary {

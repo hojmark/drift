@@ -70,7 +70,26 @@ sealed partial class NukeBuild {
     );
 
   Target TestE2E => _ => _
-    .DependsOn( TestE2E_Binary, TestE2E_Container );
+    .DependsOn( TestE2E_General, TestE2E_Binary, TestE2E_Container );
+
+  Target TestE2E_General => _ => _
+    .After( TestUnit )
+    .Executes( () => {
+        using var _ = new OperationTimer( nameof(TestE2E_General) );
+
+        Log.Information( "Running general E2E tests" );
+
+        DotNetTest( settings => settings
+          .SetProjectFile( Solution.Cli_E2ETests_General )
+          .SetConfiguration( Configuration )
+          .ConfigureLoggers( MsBuildVerbosityParsed )
+          .SetBlameHangTimeout( "60s" )
+          .EnableNoLogo()
+          .EnableNoRestore()
+          .EnableNoBuild()
+        );
+      }
+    );
 
   Target TestE2E_Binary => _ => _
     .DependsOn( PublishBinaries )
@@ -85,7 +104,7 @@ sealed partial class NukeBuild {
         var envVars = new Dictionary<string, string> { { "DRIFT_BINARY_PATH", driftBinary }, };
 
         DotNetTest( settings => settings
-          .SetProjectFile( Solution.Cli_E2ETests )
+          .SetProjectFile( Solution.Cli_E2ETests_Binary )
           .SetConfiguration( Configuration )
           .ConfigureLoggers( MsBuildVerbosityParsed )
           .SetBlameHangTimeout( "60s" )
@@ -113,8 +132,7 @@ sealed partial class NukeBuild {
         Log.Debug( "Supported runtimes are {SupportedRuntimes}", string.Join( ", ", SupportedRuntimes ) );
 
         var envVars = new Dictionary<string, string> {
-          { "DRIFT_BINARY_PATH", driftBinary },
-          { "DRIFT_CONTAINER_IMAGE_REF", imageRef.ToString() }
+          { "DRIFT_BINARY_PATH", driftBinary }, { "DRIFT_CONTAINER_IMAGE_REF", imageRef.ToString() }
         };
 
         var alternateDockerHost = await FindAlternateDockerHostAsync();
@@ -126,7 +144,7 @@ sealed partial class NukeBuild {
           }
 
           return settings
-            .SetProjectFile( Solution.Cli_E2ETests )
+            .SetProjectFile( Solution.Cli_E2ETests_Container )
             .SetConfiguration( Configuration )
             .ConfigureLoggers( MsBuildVerbosityParsed )
             .SetBlameHangTimeout( "60s" )

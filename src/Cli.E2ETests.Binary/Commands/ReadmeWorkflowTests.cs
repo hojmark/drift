@@ -1,7 +1,7 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
 
-namespace Drift.Cli.E2ETests.Commands;
+namespace Drift.Cli.E2ETests.Binary.Commands;
 
 internal sealed class ReadmeWorkflowTests : DriftBinaryFixture {
   // TODO implement

@@ -1,6 +1,6 @@
-﻿using Drift.Cli.Abstractions;
+using Drift.Cli.Abstractions;
 
-namespace Drift.Cli.E2ETests.Commands;
+namespace Drift.Cli.E2ETests.Binary.Commands;
 
 internal sealed class LintTests : DriftBinaryFixture {
   private const string SpecName = "unittest";

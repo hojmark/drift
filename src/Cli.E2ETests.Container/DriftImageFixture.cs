@@ -3,7 +3,7 @@ using Drift.Cli.E2ETests.Abstractions;
 using HLabs.ImageReferences;
 using Nuke.Common.Tools.Docker;
 
-namespace Drift.Cli.E2ETests;
+namespace Drift.Cli.E2ETests.Container;
 
 internal abstract class DriftImageFixture {
   protected static QualifiedImageRef DriftImage {

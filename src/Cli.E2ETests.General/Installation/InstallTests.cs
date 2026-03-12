@@ -3,14 +3,14 @@ using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
 using Drift.Common;
 
-namespace Drift.Cli.E2ETests.Installation;
+namespace Drift.Cli.E2ETests.General.Installation;
 
 [SuppressMessage(
   "Minor Code Smell",
-  "S2325:Methods and properties that don\'t access instance data should be static",
+  "S2325:Methods and properties that don't access instance data should be static",
   Justification = "Unimplemented test methods should not be static"
 )]
-[Platform("Linux")]
+[Platform( "Linux" )]
 internal sealed class InstallTests {
   // TODO split test into at least two parts
   [Test]

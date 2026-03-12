@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using DotNet.Testcontainers.Builders;
 using Drift.Cli.Abstractions;
 using Microsoft.Extensions.Logging.Abstractions;

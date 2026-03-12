@@ -20,7 +20,8 @@ state, Drift can detect issues like unknown devices or unexpected subnet access,
 
 You can install Drift by either:
 
-- Downloading the latest release from the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse), or
+- Downloading the latest release from
+  the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse), or
 - Running the installation script:
 
     ```bash
@@ -36,6 +37,23 @@ You can install Drift by either:
 #### Run
 
 ```bash
+# Create a network spec using auto-discovery
+drift init
+
+# Scan and detect drift
+drift scan -i
+```
+
+### Windows x64
+
+#### Install
+
+Download `drift.exe` from the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse) and place
+it somewhere on your `PATH`.
+
+#### Run
+
+```powershell
 # Create a network spec using auto-discovery
 drift init
 
@@ -106,7 +124,8 @@ JSON Schemas are available to enable editor auto-completion and validation:
   }
   ```
 
-There’s no official documentation site yet — if you run into trouble, feel free to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a).
+There’s no official documentation site yet — if you run into trouble, feel free
+to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a).
 
 ### ▸ What can be automatically discovered?
 

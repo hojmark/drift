@@ -70,21 +70,49 @@ sealed partial class NukeBuild {
     );
 
   Target TestE2E => _ => _
+    .DependsOn( TestE2E_Binary, TestE2E_Container );
+
+  Target TestE2E_Binary => _ => _
+    .DependsOn( PublishBinaries )
+    .After( TestUnit )
+    .Executes( () => {
+        using var _ = new OperationTimer( nameof(TestE2E_Binary) );
+
+        var driftBinary = Paths.PublishDirectoryForRuntime( Platform ) / DriftBinaryName;
+
+        Log.Information( "Running binary E2E tests on {Runtime} using binary {Binary}", Platform, driftBinary );
+
+        var envVars = new Dictionary<string, string> { { "DRIFT_BINARY_PATH", driftBinary }, };
+
+        DotNetTest( settings => settings
+          .SetProjectFile( Solution.Cli_E2ETests )
+          .SetConfiguration( Configuration )
+          .ConfigureLoggers( MsBuildVerbosityParsed )
+          .SetBlameHangTimeout( "60s" )
+          .EnableNoLogo()
+          .EnableNoRestore()
+          .EnableNoBuild()
+          .AddProcessEnvironmentVariables( envVars )
+        );
+      }
+    );
+
+  Target TestE2E_Container => _ => _
     .DependsOn( PublishBinaries, PublishContainer )
     .After( TestUnit )
+    .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
     .Executes( async () => {
-        using var _ = new OperationTimer( nameof(TestE2E) );
+        using var _ = new OperationTimer( nameof(TestE2E_Container) );
 
         var imageRef = _driftImageRef ?? throw new ArgumentNullException( nameof(_driftImageRef) );
         Log.Information( "Using image {ImageRef}", imageRef );
 
         var driftBinary = Paths.PublishDirectoryForRuntime( Platform ) / DriftBinaryName;
 
-        Log.Information( "Running E2E test on {Runtime} using binary {Binary}", Platform, driftBinary );
+        Log.Information( "Running container E2E tests on {Runtime} using binary {Binary}", Platform, driftBinary );
         Log.Debug( "Supported runtimes are {SupportedRuntimes}", string.Join( ", ", SupportedRuntimes ) );
 
         var envVars = new Dictionary<string, string> {
-          // { nameof(EnvVar.DRIFT_BINARY_PATH), driftBinary },
           { "DRIFT_BINARY_PATH", driftBinary },
           { "DRIFT_CONTAINER_IMAGE_REF", imageRef.ToString() }
         };

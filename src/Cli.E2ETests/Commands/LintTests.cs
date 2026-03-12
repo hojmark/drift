@@ -3,11 +3,17 @@
 namespace Drift.Cli.E2ETests.Commands;
 
 internal sealed class LintTests : DriftBinaryFixture {
+  private const string SpecName = "unittest";
+  private const string SpecFileName = $"{SpecName}.spec.yaml";
+
   [Test]
   public async Task InitThenLintTest() {
     try {
+      // Clean up any leftover spec file from a previous run
+      File.Delete( SpecFileName );
+
       // Arrange
-      var initResult = await DriftBinary.ExecuteAsync( "init unittest" );
+      var initResult = await DriftBinary.ExecuteAsync( $"init {SpecName}" );
 
       TestContext.Out.WriteLine( "STD OUT:\n" + initResult.StdOut );
       TestContext.Out.WriteLine( "ERR OUT:\n" + initResult.ErrOut );
@@ -19,7 +25,7 @@ internal sealed class LintTests : DriftBinaryFixture {
       }
 
       // Act
-      var lintResult = await DriftBinary.ExecuteAsync( "lint unittest" );
+      var lintResult = await DriftBinary.ExecuteAsync( $"lint {SpecName}" );
 
       TestContext.Out.WriteLine( "STD OUT:\n" + initResult.StdOut );
       TestContext.Out.WriteLine( "ERR OUT:\n" + initResult.ErrOut );
@@ -31,8 +37,8 @@ internal sealed class LintTests : DriftBinaryFixture {
         Assert.That( lintResult.ErrOut, Is.Empty );
       }
     }
-    catch ( Exception ex ) {
-      Assert.Fail( ex.Message );
+    finally {
+      File.Delete( SpecFileName );
     }
   }
 }

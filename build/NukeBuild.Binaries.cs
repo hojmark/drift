@@ -14,7 +14,8 @@ using Target = Nuke.Common.Target;
 // ReSharper disable UnusedMember.Local
 
 sealed partial class NukeBuild {
-  private static readonly string[] FilesToDistribute = ["drift", "drift.dbg"];
+  private static readonly string[] FilesToDistributeLinux = ["drift", "drift.dbg"];
+  private static readonly string[] FilesToDistributeWindows = ["drift.exe"];
 
   Target PublishBinaries => _ => _
     .DependsOn( Build, CleanArtifacts )
@@ -49,15 +50,23 @@ sealed partial class NukeBuild {
         using var _ = new OperationTimer( nameof(PackBinaries) );
 
         var version = await Versioning.Value.GetVersionAsync();
+        var publishDir = Paths.PublishDirectoryForRuntime( Platform );
 
-        foreach ( var runtime in SupportedRuntimes ) {
-          var publishDir = Paths.PublishDirectoryForRuntime( runtime );
-          var artifactFile = Paths.ArtifactsDirectory / $"drift_{version.WithoutMetadata()}_{runtime}.tar.gz";
+        var isWindows = Platform == DotNetRuntimeIdentifier.win_x64;
+        var extension = isWindows ? "zip" : "tar.gz";
+        var filesToDistribute = isWindows ? FilesToDistributeWindows : FilesToDistributeLinux;
+        var artifactFile = Paths.ArtifactsDirectory / $"drift_{version.WithoutMetadata()}_{Platform}.{extension}";
 
-          Log.Information( "Creating {ArtifactFile}", artifactFile );
+        Log.Information( "Creating {ArtifactFile}", artifactFile );
+
+        if ( isWindows ) {
+          Log.Debug( "Including files matching: {Files}", string.Join( ", ", filesToDistribute ) );
+          publishDir.ZipTo( artifactFile, f => filesToDistribute.Contains( f.Name ), fileMode: FileMode.CreateNew );
+        }
+        else {
           var files = publishDir
             .GetFiles()
-            .Where( file => FilesToDistribute.Contains( file.Name ) )
+            .Where( file => filesToDistribute.Contains( file.Name ) )
             .ToList();
           Log.Debug( "Including files: {Files}", string.Join( ", ", files.Select( f => f.Name ) ) );
           publishDir.TarGZipTo( artifactFile, files, fileMode: FileMode.CreateNew );

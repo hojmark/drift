@@ -48,8 +48,8 @@ drift scan -i
 
 #### Install
 
-Download `drift.exe` from the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse) and place
-it somewhere on your `PATH`.
+Download the `.zip` archive from the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse),
+extract `drift.exe`, and place it somewhere on your `PATH`.
 
 #### Run
 

@@ -43,6 +43,7 @@
         "TestE2E",
         "TestE2E_Binary",
         "TestE2E_Container",
+        "TestE2E_General",
         "TestLocal",
         "TestSelf",
         "TestUnit"

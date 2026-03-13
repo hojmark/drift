@@ -12,18 +12,11 @@ namespace Drift.Cli.E2ETests.General.Installation;
 )]
 [Platform( "Linux" )]
 internal sealed class InstallTests {
+  private static readonly string InstallScript = GetInstallScript();
+
   // TODO split test into at least two parts
   [Test]
   public async Task InstallLatestVersion() {
-    // Arrange: find the install.sh script
-    var repoRoot = TestContext.CurrentContext.TestDirectory;
-    while ( !File.Exists( Path.Combine( repoRoot, "install.sh" ) ) && repoRoot != "/" ) {
-      repoRoot = Path.GetDirectoryName( repoRoot )!;
-    }
-
-    var installScript = Path.Combine( repoRoot, "install.sh" );
-    Assert.That( File.Exists( installScript ), $"Could not find install.sh at repo root: {installScript}" );
-
     // Arrange: create a temporary install directory
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-" + Guid.NewGuid() );
@@ -37,7 +30,7 @@ internal sealed class InstallTests {
       // Act: run the install script
       var installProcess =
         await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
-          .ExecuteAsync( installScript );
+          .ExecuteAsync( InstallScript );
 
       Console.WriteLine( "------------------- install.sh output ----------------------" );
 
@@ -100,16 +93,46 @@ internal sealed class InstallTests {
     }
   }
 
+  private static string GetInstallScript() {
+    var repoRoot = TestContext.CurrentContext.TestDirectory;
+    while ( !File.Exists( Path.Combine( repoRoot, "install.sh" ) ) && repoRoot != "/" ) {
+      repoRoot = Path.GetDirectoryName( repoRoot )!;
+    }
+
+    var installScript = Path.Combine( repoRoot, "install.sh" );
+    Assert.That( File.Exists( installScript ), $"Could not find install.sh at repo root: {installScript}" );
+
+    return installScript;
+  }
+
   // [Test]
   public Task InstallSpecificVersion() {
     return Task.CompletedTask;
     // TODO
   }
 
-  // [Test]
-  public Task InstallNonExistingVersion() {
-    return Task.CompletedTask;
-    // TODO
+  [Test]
+  public async Task InstallNonExistingVersion() {
+    // Arrange / Act
+    var installProcess = await new ToolWrapper( "bash" ).ExecuteAsync( InstallScript + " vBOGUS" );
+
+    Console.WriteLine( "------------------- install.sh ----------------------" );
+
+    await TestContext.Out.WriteLineAsync( installProcess.StdOut );
+    if ( !string.IsNullOrWhiteSpace( installProcess.ErrOut ) ) {
+      await TestContext.Out.WriteLineAsync( $"STDERR: {installProcess.ErrOut}" );
+    }
+
+    Console.WriteLine( "-----------------------------------------------------" );
+
+    // Assert
+    Assert.That(
+      installProcess.ExitCode,
+      Is.EqualTo( 1 ),
+      $"install.sh unexpectedly didn't fail: {installProcess.StdOut}"
+    );
+    await Verify( installProcess.StdOut )
+      .UseTextForParameters( "INSTALL_OUTPUT" );
   }
 
   // [Test]

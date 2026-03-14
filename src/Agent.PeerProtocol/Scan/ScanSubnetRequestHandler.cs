@@ -1,3 +1,4 @@
+using Drift.Domain;
 using Drift.Domain.Scan;
 using Drift.Networking.Grpc.Generated;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
@@ -20,46 +21,17 @@ internal sealed class ScanSubnetRequestHandler(
   ) {
     logger.LogInformation( "Handling scan subnet request" );
 
-    // Deserialize request
     var request = converter.FromEnvelope<ScanSubnetRequest>( envelope );
     var options = new SubnetScanOptions { Cidr = request.Cidr, PingsPerSecond = request.PingsPerSecond };
 
     logger.LogInformation( "Starting scan of {Cidr}", request.Cidr );
 
-    // Create scanner and subscribe to progress
     var scanner = subnetScannerFactory.Get( request.Cidr );
-    var lastProgressPercentage = (byte) 0;
+    var policy = new ProgressUpdatePolicy( stream, converter, envelope, request.Cidr, logger );
 
-    void ProgressHandler( object? sender, SubnetScanResult result ) {
-      var progressPercentage = result.Progress.Value;
-
-      // Send progress update every 5%
-      if ( progressPercentage >= lastProgressPercentage + 5 ||
-           ( progressPercentage == 100 && lastProgressPercentage < 100 )
-         ) {
-        lastProgressPercentage = progressPercentage;
-
-        var progressUpdate = new ScanSubnetProgressUpdate {
-          ProgressPercentage = progressPercentage,
-          DevicesFound = result.DiscoveredDevices.Count,
-          Status = result.Status.ToString()
-        };
-
-        // Fire and forget - don't await to avoid blocking scan
-        stream.SendResponseFireAndForget( converter, progressUpdate, envelope.CorrelationId );
-
-        logger.LogDebug(
-          "Sent progress update: {Progress}% for {Cidr}",
-          progressPercentage,
-          request.Cidr
-        );
-      }
-    }
-
-    scanner.ResultUpdated += ProgressHandler;
+    scanner.ResultUpdated += policy.Handle;
 
     try {
-      // Execute the scan
       var result = await scanner.ScanAsync( options, logger, cancellationToken );
 
       logger.LogInformation(
@@ -68,12 +40,73 @@ internal sealed class ScanSubnetRequestHandler(
         result.DiscoveredDevices.Count
       );
 
-      // Send final complete response
       var completeResponse = new ScanSubnetCompleteResponse { Result = result };
       await stream.SendResponseAsync( converter, completeResponse, envelope.CorrelationId );
     }
     finally {
-      scanner.ResultUpdated -= ProgressHandler;
+      scanner.ResultUpdated -= policy.Handle;
+    }
+  }
+
+  private sealed class ProgressUpdatePolicy {
+    private readonly IPeerStream _stream;
+    private readonly IPeerMessageEnvelopeConverter _converter;
+    private readonly PeerMessage _envelope;
+    private readonly CidrBlock _cidr;
+    private readonly ILogger _logger;
+
+    private byte _lastProgressPercentage;
+    private uint _lastDeviceCount;
+    private DateTime _lastSentAt = DateTime.UtcNow;
+
+    public EventHandler<SubnetScanResult> Handle {
+      get;
+    }
+
+    public ProgressUpdatePolicy(
+      IPeerStream stream,
+      IPeerMessageEnvelopeConverter converter,
+      PeerMessage envelope,
+      CidrBlock cidr,
+      ILogger logger
+    ) {
+      _stream = stream;
+      _converter = converter;
+      _envelope = envelope;
+      _cidr = cidr;
+      _logger = logger;
+      Handle = OnResultUpdated;
+    }
+
+    private void OnResultUpdated( object? sender, SubnetScanResult result ) {
+      var progressPercentage = result.Progress.Value;
+      var deviceCount = result.DiscoveredDevices.Count;
+      var now = DateTime.UtcNow;
+
+      bool progressThresholdReached = progressPercentage >= _lastProgressPercentage + 5;
+      bool isFirstCompletion = progressPercentage == 100 && _lastProgressPercentage < 100;
+      bool heartbeatDue = now - _lastSentAt > TimeSpan.FromSeconds( 10 );
+      bool firstDeviceDiscovered = deviceCount > 0 && _lastDeviceCount == 0;
+
+      if ( !( progressThresholdReached || isFirstCompletion || heartbeatDue || firstDeviceDiscovered ) ) {
+        return;
+      }
+
+      _lastProgressPercentage = progressPercentage;
+      _lastDeviceCount = (uint) deviceCount;
+      _lastSentAt = now;
+
+      var progressUpdate = new ScanSubnetProgressUpdate {
+        ProgressPercentage = progressPercentage, DevicesFound = deviceCount, Status = result.Status.ToString()
+      };
+
+      _stream.SendResponseFireAndForget( _converter, progressUpdate, _envelope.CorrelationId );
+
+      _logger.LogDebug(
+        "Sent progress update: {Progress}% for {Cidr}",
+        progressPercentage,
+        _cidr
+      );
     }
   }
 }

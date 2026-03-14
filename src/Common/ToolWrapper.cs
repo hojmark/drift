@@ -24,9 +24,7 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
       RedirectStandardOutput = true,
       RedirectStandardError = true,
       UseShellExecute = false, // Do not use the OS shell
-      CreateNoWindow = true,
-      StandardOutputEncoding = Encoding.UTF8,
-      StandardErrorEncoding = Encoding.UTF8
+      CreateNoWindow = true
     };
 
     if ( environment != null ) {

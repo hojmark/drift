@@ -76,7 +76,8 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
           Status = ScanResultStatus.InProgress,
           DiscoveredDevices = ToDiscoveredDevices( pingReplies, ArpTables().Cached ),
           DiscoveryAttempts = ToDiscoveryAttempts( ipRange, completed ),
-          Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
+          // Intermediate result should never report 100%, so cap at 99%
+          Progress = new((byte) Math.Min( 99, Math.Ceiling( ( (double) completed / total ) * 100 ) )),
           CidrBlock = cidr
         };
 

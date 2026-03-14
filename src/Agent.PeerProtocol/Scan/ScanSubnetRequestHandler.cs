@@ -22,10 +22,7 @@ internal sealed class ScanSubnetRequestHandler(
 
     // Deserialize request
     var request = converter.FromEnvelope<ScanSubnetRequest>( envelope );
-    var options = new SubnetScanOptions {
-      Cidr = request.Cidr,
-      PingsPerSecond = request.PingsPerSecond
-    };
+    var options = new SubnetScanOptions { Cidr = request.Cidr, PingsPerSecond = request.PingsPerSecond };
 
     logger.LogInformation( "Starting scan of {Cidr}", request.Cidr );
 
@@ -37,7 +34,9 @@ internal sealed class ScanSubnetRequestHandler(
       var progressPercentage = result.Progress.Value;
 
       // Send progress update every 5%
-      if ( progressPercentage >= lastProgressPercentage + 5 || progressPercentage == 100 ) {
+      if ( progressPercentage >= lastProgressPercentage + 5 ||
+           ( progressPercentage == 100 && lastProgressPercentage < 100 )
+         ) {
         lastProgressPercentage = progressPercentage;
 
         var progressUpdate = new ScanSubnetProgressUpdate {

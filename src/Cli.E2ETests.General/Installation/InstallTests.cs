@@ -1,97 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
-using Drift.Cli.Abstractions;
-using Drift.Common;
-
 namespace Drift.Cli.E2ETests.General.Installation;
 
-[SuppressMessage(
-  "Minor Code Smell",
-  "S2325:Methods and properties that don't access instance data should be static",
-  Justification = "Unimplemented test methods should not be static"
-)]
 [Platform( "Linux" )]
-internal sealed class InstallTests {
+internal sealed partial class InstallTests {
   private static readonly string InstallScript = GetInstallScript();
-
-  // TODO split test into at least two parts
-  [Test]
-  public async Task InstallLatestVersion() {
-    // Arrange: create a temporary install directory
-    var tempDir = Path.GetTempPath();
-    var installDir = Path.Combine( tempDir, "drift-install-" + Guid.NewGuid() );
-    Directory.CreateDirectory( installDir );
-    var driftBinary = Path.Combine( installDir, "drift" );
-
-    Console.WriteLine( $"Created temp install directory: {installDir}" );
-    Console.WriteLine();
-
-    try {
-      // Act: run the install script
-      var installProcess =
-        await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
-          .ExecuteAsync( InstallScript );
-
-      Console.WriteLine( "------------------- install.sh output ----------------------" );
-
-      await TestContext.Out.WriteLineAsync( installProcess.StdOut );
-      if ( !string.IsNullOrWhiteSpace( installProcess.ErrOut ) ) {
-        await TestContext.Out.WriteLineAsync( $"STDERR: {installProcess.ErrOut}" );
-      }
-
-      Console.WriteLine( "------------------------------------------------------------" );
-
-      // Assert: binary exists
-      using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.Zero, $"install.sh failed: {installProcess.ErrOut}" );
-        Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
-      }
-
-      // Assert: install.sh output
-      await Verify( installProcess.StdOut )
-        .UseTextForParameters( "INSTALL_OUTPUT" )
-        .ScrubLinesWithReplace( line =>
-          Regex.Replace(
-            Regex.Replace(
-              line,
-              @"drift_[\w\.\-]+_linux-x64\.tar\.gz",
-              "drift_{VERSION}_linux-x64.tar.gz"
-            ),
-            @"Installed Drift CLI [\w\.\-]+ successfully!",
-            "Installed Drift CLI {VERSION} successfully!"
-          )
-        );
-
-      // Act: run drift
-      var driftProcess = await new ToolWrapper( driftBinary ).ExecuteAsync( "--help" );
-
-      Console.WriteLine( "------------------- drift output ----------------------" );
-
-      await TestContext.Out.WriteLineAsync( driftProcess.StdOut );
-      if ( !string.IsNullOrWhiteSpace( driftProcess.ErrOut ) ) {
-        await TestContext.Out.WriteLineAsync( $"STDERR: {driftProcess.ErrOut}" );
-      }
-
-      Console.WriteLine( "------------------------------------------------------------" );
-
-      // Assert: drift output
-      using ( Assert.EnterMultipleScope() ) {
-        Assert.That( driftProcess.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-        Assert.That( driftProcess.StdOut, Is.Not.Null );
-        Assert.That( driftProcess.StdOut, Contains.Substring( "-?, -h, --help  Show help and usage information" ) );
-        Assert.That( driftProcess.ErrOut, Is.Empty );
-      }
-    }
-    finally {
-      try {
-        Directory.Delete( installDir, true );
-        Console.WriteLine( $"Deleted temp install directory: {installDir}" );
-      }
-      catch ( Exception ex ) {
-        Console.WriteLine( $"Warning: Failed to delete temp dir {installDir}: {ex.Message}" );
-      }
-    }
-  }
 
   private static string GetInstallScript() {
     var repoRoot = TestContext.CurrentContext.TestDirectory;
@@ -105,45 +16,13 @@ internal sealed class InstallTests {
     return installScript;
   }
 
-  // [Test]
-  public Task InstallSpecificVersion() {
-    return Task.CompletedTask;
-    // TODO
-  }
-
-  [Test]
-  public async Task InstallNonExistingVersion() {
-    // Arrange / Act
-    var installProcess = await new ToolWrapper( "bash" ).ExecuteAsync( InstallScript + " vBOGUS" );
-
-    Console.WriteLine( "------------------- install.sh ----------------------" );
-
-    await TestContext.Out.WriteLineAsync( installProcess.StdOut );
-    if ( !string.IsNullOrWhiteSpace( installProcess.ErrOut ) ) {
-      await TestContext.Out.WriteLineAsync( $"STDERR: {installProcess.ErrOut}" );
+  private static void PrintInstallOutput( (string StdOut, string ErrOut, int ExitCode, bool Cancelled) result ) {
+    Console.WriteLine( "------------------- install.sh output ----------------------" );
+    Console.WriteLine( result.StdOut );
+    if ( !string.IsNullOrWhiteSpace( result.ErrOut ) ) {
+      Console.WriteLine( $"\nSTDERR:\n {result.ErrOut}" );
     }
 
-    Console.WriteLine( "-----------------------------------------------------" );
-
-    // Assert
-    Assert.That(
-      installProcess.ExitCode,
-      Is.EqualTo( 1 ),
-      $"install.sh unexpectedly didn't fail: {installProcess.StdOut}"
-    );
-    await Verify( installProcess.StdOut )
-      .UseTextForParameters( "INSTALL_OUTPUT" );
-  }
-
-  // [Test]
-  public Task InstallWithVerbose() {
-    return Task.CompletedTask;
-    // TODO
-  }
-
-  // [Test]
-  public Task InstallWithoutInstallerPrerequisites() {
-    return Task.CompletedTask;
-    // TODO
+    Console.WriteLine( "------------------------------------------------------------" );
   }
 }

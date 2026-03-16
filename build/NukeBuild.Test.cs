@@ -117,7 +117,7 @@ sealed partial class NukeBuild {
     );
 
   Target TestE2E_Container => _ => _
-    .DependsOn( PublishBinaries, PublishContainer )
+    .DependsOn( PublishBinaries, BuildContainerImage )
     .After( TestUnit )
     .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
     .Executes( async () => {

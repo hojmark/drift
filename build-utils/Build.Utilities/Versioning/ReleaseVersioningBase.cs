@@ -25,9 +25,9 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
     Repository = repository;
     GitHubClient = gitHubClient;
 
-    if ( build.ExecutionPlan.Contains( build.Release ) && build.ExecutionPlan.Contains( build.PreRelease ) ) {
+    if ( build.ExecutionPlan.Contains( build.CreateRelease ) && build.ExecutionPlan.Contains( build.CreatePreRelease ) ) {
       throw new InvalidOperationException(
-        $"Execution plan cannot contain both {nameof(build.Release)} and {nameof(build.PreRelease)}"
+        $"Execution plan cannot contain both {nameof(build.CreateRelease)} and {nameof(build.CreatePreRelease)}"
       );
     }
 

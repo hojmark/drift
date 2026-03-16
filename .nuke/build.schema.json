@@ -25,6 +25,7 @@
       "type": "string",
       "enum": [
         "Build",
+        "BuildContainerImage",
         "BuildInfo",
         "CheckBuildWarnings",
         "CheckPublishBinariesWarnings",
@@ -32,13 +33,13 @@
         "Clean",
         "CleanArtifacts",
         "CleanProjects",
+        "CreatePreRelease",
+        "CreateRelease",
         "PackBinaries",
-        "PreRelease",
         "PublishBinaries",
-        "PublishContainer",
-        "Release",
-        "ReleaseContainer",
+        "PushContainerImage",
         "Restore",
+        "TagContainerImageForRelease",
         "Test",
         "TestE2E",
         "TestE2E_Binary",
@@ -131,6 +132,10 @@
             "Debug",
             "Release"
           ]
+        },
+        "ContainerImageRef": {
+          "type": "string",
+          "description": "ContainerImageRef - Qualified image reference to push to Docker Hub with versioned tag"
         },
         "CustomVersion": {
           "type": "string",

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using Drift.Build.Utilities;
 using HLabs.ImageReferences;
@@ -23,6 +24,9 @@ partial class NukeBuild {
 
   private static readonly string DockerHubUsername = "hojmark";
 
+  [Parameter( "ContainerImageRef - Qualified image reference to push to Docker Hub with versioned tag" )]
+  public readonly string ContainerImageRef;
+
   [Secret] //
   [Parameter( "DockerHubPassword - Required for releasing container images to Docker Hub" )]
   public readonly string DockerHubPassword;
@@ -32,12 +36,12 @@ partial class NukeBuild {
   private static readonly PartialImageRef DockerHubDriftImage = DriftImage.With( Registry.DockerHub, "hojmark" );
   [CanBeNull] private QualifiedImageRef _driftImageRef;
 
-  Target PublishContainer => _ => _
+  Target BuildContainerImage => _ => _
     .DependsOn( PublishBinaries, CleanArtifacts )
     .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
     .Requires( () => Commit )
     .Executes( async () => {
-        using var _ = new OperationTimer( nameof(PublishContainer) );
+        using var _ = new OperationTimer( nameof(BuildContainerImage) );
 
         var version = await Versioning.Value.GetVersionAsync();
 
@@ -70,45 +74,64 @@ partial class NukeBuild {
       }
     );
 
-  /// <summary>
-  /// Releases container image to public Docker Hub!
-  /// </summary>
-  Target ReleaseContainer => _ => _
+  Target PushContainerImage => _ => _
     .DependsOn( TestE2E )
-    .Requires( () => DockerHubPassword ) // TODO require that login is successful
+    .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
+    .Requires( () => DockerHubPassword )
+    .Executes( () => {
+        using var _ = new OperationTimer( nameof(PushContainerImage) );
+
+        var remoteRef = DockerHubDriftImage.Qualify( _driftImageRef!.Tag );
+
+        Log.Information( "Pushing {Source} → {Target}", _driftImageRef, remoteRef );
+
+        DockerHubLogin();
+        try {
+          DockerTasks.DockerTag( s => s
+            .SetSourceImage( _driftImageRef )
+            .SetTargetImage( remoteRef )
+          );
+          DockerTasks.DockerPush( s => s.SetName( remoteRef ) );
+        }
+        finally {
+          DockerHubLogout();
+        }
+
+        // Write image ref to a file so the workflow can read it and pass it to the release job as a job output
+        var tagFile = Paths.ArtifactsDirectory / "container-image-ref.txt";
+        File.WriteAllText( tagFile, remoteRef.ToString() );
+        Log.Information( "Container image ref written to {RefFile}: {Ref}", tagFile, remoteRef );
+      }
+    );
+
+  Target TagContainerImageForRelease => _ => _
+    .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
+    .Requires( () => DockerHubPassword )
+    .Requires( () => ContainerImageRef )
     .Executes( async () => {
-        using var _ = new OperationTimer( nameof(ReleaseContainer) );
+        using var _ = new OperationTimer( nameof(TagContainerImageForRelease) );
+
+        var sourceRef = ContainerImageRef.QualifiedImage();
 
         var publicReferences = ( await Versioning.Value.Release!.GetImageReferences() )
-          .OrderBy( LatestLast ) // Pushing 'latest' last will make sure it appears as the most recent tag on Docker Hub
+          .OrderBy( LatestLast ) // Pushing 'latest' last ensures it appears as most recent on Docker Hub
           .ToArray();
 
-        Push( _driftImageRef, publicReferences.ToArray() );
+        Log.Information( "Pulling {SourceRef}...", sourceRef );
+
+        DockerHubLogin();
+        try {
+          DockerTasks.DockerPull( s => s.SetName( sourceRef.ToString() ) );
+          Push( sourceRef, publicReferences );
+        }
+        finally {
+          DockerHubLogout();
+        }
 
         var registries = publicReferences.Select( r => r.Registry ).Distinct();
-
         Log.Information( "🐋 Released to {Registries}!", string.Join( " and ", registries ) );
       }
     );
-/*
-  /// <summary>
-  /// Releases container image to public Docker Hub!
-  /// </summary>
-  Target PreReleaseContainer => _ => _
-    .DependsOn( TestE2E )
-    .Requires( () => DockerHubPassword )
-    .Executes( async () => {
-        using var _ = new OperationTimer( nameof(PreReleaseContainer) );
-
-        var publicReferences = await Versioning.Value.Release!.GetImageReferences();
-
-        Push( ImageIdDrift, publicReferences.ToArray() );
-
-        var registries = publicReferences.DistinctBy( r => r.Registry );
-
-        Log.Information( "🐋 Released to {Registries}!", string.Join( " and ", registries ) );
-      }
-    );*/
 
   private static int LatestLast( ImageRef r ) {
     return r.Tag == Tag.Latest ? 1 : 0;

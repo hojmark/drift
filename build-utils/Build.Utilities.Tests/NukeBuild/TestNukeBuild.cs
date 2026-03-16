@@ -14,12 +14,12 @@ internal class TestNukeBuild : Nuke.Common.NukeBuild, INukeRelease {
     set;
   }
 
-  public Target Release => _ => _
+  public Target CreateRelease => _ => _
     .Executes( () => {
       }
     );
 
-  public Target PreRelease => _ => _
+  public Target CreatePreRelease => _ => _
     .Executes( () => {
       }
     );

@@ -15,18 +15,18 @@ public sealed class VersioningStrategyFactory( INukeRelease build ) {
     IGitHubClient gitHubClient,
     GitRepository repository
   ) {
-    if ( build.ExecutionPlan.Contains( build.Release ) && build.ExecutionPlan.Contains( build.PreRelease ) ) {
+    if ( build.ExecutionPlan.Contains( build.CreateRelease ) && build.ExecutionPlan.Contains( build.CreatePreRelease ) ) {
       throw new InvalidOperationException(
-        $"Execution plan cannot contain both {nameof(build.Release)} and {nameof(build.PreRelease)}"
+        $"Execution plan cannot contain both {nameof(build.CreateRelease)} and {nameof(build.CreatePreRelease)}"
       );
     }
 
     IVersioningStrategy strategy = new DefaultVersioning( build );
 
-    if ( build.ExecutionPlan.Contains( build.Release ) ) {
+    if ( build.ExecutionPlan.Contains( build.CreateRelease ) ) {
       strategy = new ReleaseVersioning( build, configuration, customVersion, repository, gitHubClient );
     }
-    else if ( build.ExecutionPlan.Contains( build.PreRelease ) ) {
+    else if ( build.ExecutionPlan.Contains( build.CreatePreRelease ) ) {
       strategy = new PreReleaseVersioning( build, configuration, customVersion, repository, gitHubClient );
     }
 

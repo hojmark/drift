@@ -43,7 +43,7 @@ internal sealed class VersioningTests {
   [Test]
   public async Task MultipleReleaseTargetsThrows() {
     // Arrange
-    var build = new TestNukeBuild().WithExecutionPlan( b => b.Release, b => b.PreRelease );
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.CreateRelease, b => b.CreatePreRelease );
 
     // Act
     var factory = new VersioningStrategyFactory( build );
@@ -52,13 +52,13 @@ internal sealed class VersioningTests {
     );
 
     // Assert
-    await Assert.That( exception.Message ).IsEqualTo( "Execution plan cannot contain both Release and PreRelease" );
+    await Assert.That( exception.Message ).IsEqualTo( "Execution plan cannot contain both CreateRelease and CreatePreRelease" );
   }
 
   [Test]
   public async Task LocalReleaseThrows() {
     // Arrange
-    var build = new TestNukeBuild().WithExecutionPlan( b => b.PreRelease ).AllowLocalRelease( false );
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.CreatePreRelease ).AllowLocalRelease( false );
 
     // Act
     var factory = new VersioningStrategyFactory( build );
@@ -77,7 +77,7 @@ internal sealed class VersioningTests {
   [Test]
   public void PreReleaseWithoutCustomVersionThrows() {
     // Arrange
-    var build = new TestNukeBuild().WithExecutionPlan( b => b.PreRelease ).AllowLocalRelease();
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.CreatePreRelease ).AllowLocalRelease();
 
     // Act
     var factory = new VersioningStrategyFactory( build );
@@ -90,7 +90,7 @@ internal sealed class VersioningTests {
   [Test]
   public void PreReleaseWithDebugConfigurationThrows() {
     // Arrange
-    var build = new TestNukeBuild().WithExecutionPlan( b => b.PreRelease ).AllowLocalRelease();
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.CreatePreRelease ).AllowLocalRelease();
 
     // Act
     var factory = new VersioningStrategyFactory( build );
@@ -102,7 +102,7 @@ internal sealed class VersioningTests {
   [Test]
   public async Task PreReleaseValid() {
     // Arrange
-    var build = new TestNukeBuild().WithExecutionPlan( b => b.PreRelease ).AllowLocalRelease();
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.CreatePreRelease ).AllowLocalRelease();
 
     // Act
     var factory = new VersioningStrategyFactory( build );
@@ -115,7 +115,7 @@ internal sealed class VersioningTests {
   [Test]
   public async Task PreReleaseVersionIsTemporallyConsistent() {
     // Arrange
-    var build = new TestNukeBuild().WithExecutionPlan( b => b.PreRelease ).AllowLocalRelease();
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.CreatePreRelease ).AllowLocalRelease();
 
     // Act
     var factory = new VersioningStrategyFactory( build );
@@ -131,7 +131,7 @@ internal sealed class VersioningTests {
   [Test]
   public void ReleaseWithCustomVersionThrows() {
     // Arrange
-    var build = new TestNukeBuild().WithExecutionPlan( b => b.Release ).AllowLocalRelease();
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.CreateRelease ).AllowLocalRelease();
 
     // Act
     var factory = new VersioningStrategyFactory( build );
@@ -144,7 +144,7 @@ internal sealed class VersioningTests {
   [Test]
   public void ReleaseWithDebugConfigurationThrows() {
     // Arrange
-    var build = new TestNukeBuild().WithExecutionPlan( b => b.Release ).AllowLocalRelease();
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.CreateRelease ).AllowLocalRelease();
 
     // Act
     var factory = new VersioningStrategyFactory( build );
@@ -157,7 +157,7 @@ internal sealed class VersioningTests {
   [Test]
   public async Task ReleaseValid() {
     // Arrange
-    var build = new TestNukeBuild().WithExecutionPlan( b => b.Release ).AllowLocalRelease();
+    var build = new TestNukeBuild().WithExecutionPlan( b => b.CreateRelease ).AllowLocalRelease();
 
     // Act
     var factory = new VersioningStrategyFactory( build );

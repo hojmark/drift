@@ -64,7 +64,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\ci.yaml = .github\workflows\ci.yaml
 		.github\workflows\release.yaml = .github\workflows\release.yaml
-		.github\workflows\prerelease.yaml = .github\workflows\prerelease.yaml
 		.github\workflows\audit.yaml = .github\workflows\audit.yaml
 		.github\workflows\renovate.yaml = .github\workflows\renovate.yaml
 		.github\workflows\codeql.yml = .github\workflows\codeql.yml

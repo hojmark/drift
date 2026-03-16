@@ -2,6 +2,15 @@ name: ⛴️ Release
 
 on:
   workflow_dispatch:
+    inputs:
+      prerelease:
+        description: "Pre-release"
+        type: boolean
+        default: true
+      customVersion:
+        description: "Override version e.g. '0.0.0-attempt.42' (pre-release only)"
+        required: false
+        type: string
 
 jobs:
   build-linux:
@@ -28,7 +37,8 @@ jobs:
             --commit ${{ github.sha }} \
             --platform linux_x64 \
             --configuration Release \
-            --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }}
+            --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }} \
+            ${{ inputs.customVersion != '' && format('--customversion {0}', inputs.customVersion) || '' }}
           echo "container-image-ref=$(cat artifacts/container-image-ref.txt)" >> $GITHUB_OUTPUT
 
       - name: Upload artifacts
@@ -65,6 +75,7 @@ jobs:
           --commit ${{ github.sha }}
           --platform win_x64
           --configuration Release
+          ${{ inputs.customVersion != '' && format('--customversion {0}', inputs.customVersion) || '' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -79,9 +90,9 @@ jobs:
         run: dotnet trx --verbosity normal
 
   release:
-    name: Release
+    name: ${{ inputs.prerelease && 'Pre-release' || 'Release' }}
     runs-on: ubuntu-latest
-    needs: [build-linux, build-windows]
+    needs: [ build-linux, build-windows ]
     permissions:
       contents: write
     timeout-minutes: 5
@@ -108,9 +119,10 @@ jobs:
         run: >
           dotnet run
           --project ./build/_build.csproj
-          --target CreateRelease
+          --target ${{ inputs.prerelease && 'CreatePreRelease' || 'CreateRelease' }}
           --commit ${{ github.sha }}
           --configuration Release
           --githubtoken ${{ secrets.GITHUB_TOKEN }}
           --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }}
           --containerimageref ${{ needs.build-linux.outputs.container-image-ref }}
+          ${{ inputs.customVersion != '' && format('--customversion {0}', inputs.customVersion) || '' }}

@@ -8,7 +8,7 @@ on:
         type: boolean
         default: true
       customVersion:
-        description: "Override version e.g. '0.0.0-attempt.42' (pre-release only)"
+        description: "Pre-release version e.g. '0.0.0-attempt.42'"
         required: false
         type: string
 

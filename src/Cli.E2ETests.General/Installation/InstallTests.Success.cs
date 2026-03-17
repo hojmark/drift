@@ -14,9 +14,6 @@ internal sealed partial class InstallTests {
     Directory.CreateDirectory( installDir );
     var driftBinary = Path.Combine( installDir, "drift" );
 
-    Console.WriteLine( $"Created temp install directory: {installDir}" );
-    Console.WriteLine();
-
     try {
       // Act: run the install script
       var installProcess =
@@ -27,7 +24,7 @@ internal sealed partial class InstallTests {
 
       // Assert: binary exists
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.Zero, $"install.sh failed: {installProcess.ErrOut}" );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
@@ -67,13 +64,7 @@ internal sealed partial class InstallTests {
       }
     }
     finally {
-      try {
-        Directory.Delete( installDir, true );
-        Console.WriteLine( $"Deleted temp install directory: {installDir}" );
-      }
-      catch ( Exception ex ) {
-        Console.WriteLine( $"Warning: Failed to delete temp dir {installDir}: {ex.Message}" );
-      }
+      DeleteBestEffort( installDir );
     }
   }
 
@@ -98,7 +89,7 @@ internal sealed partial class InstallTests {
 
       // Assert: exit code and binary presence
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.Zero, $"install.sh failed: {installProcess.ErrOut}" );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
@@ -123,12 +114,7 @@ internal sealed partial class InstallTests {
       }
     }
     finally {
-      try {
-        Directory.Delete( installDir, true );
-      }
-      catch ( Exception ex ) {
-        Console.WriteLine( $"Warning: Failed to delete temp dir {installDir}: {ex.Message}" );
-      }
+      DeleteBestEffort( installDir );
     }
   }
 
@@ -151,16 +137,16 @@ internal sealed partial class InstallTests {
 
       // Assert: install succeeded
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.Zero, $"install.sh --verbose failed: {installProcess.ErrOut}" );
+        Assert.That(
+          installProcess.ExitCode,
+          Is.EqualTo( ExitCodeSuccess ),
+          $"install.sh --verbose failed: {installProcess.ErrOut}"
+        );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
       // Assert: verbose mode was activated (banner line emitted by install.sh)
-      Assert.That(
-        installProcess.StdOut,
-        Contains.Substring( "Verbose mode is ON" ),
-        "Expected verbose banner in output"
-      );
+      Assert.That( installProcess.StdOut, Contains.Substring( "Verbose mode is ON" ) );
 
       // Assert: set -x trace output is present in stderr (bash writes xtrace to stderr)
       Assert.That(
@@ -170,12 +156,54 @@ internal sealed partial class InstallTests {
       );
     }
     finally {
-      try {
-        Directory.Delete( installDir, true );
+      DeleteBestEffort( installDir );
+    }
+  }
+
+  /// <summary>
+  /// install.sh should succeed (exit 0) when TARGET_ROOT already holds a symlink that points
+  /// to the correct binary (lines ~192-194). The script must not error or overwrite the symlink.
+  /// </summary>
+  [Test]
+  public async Task SymlinkNotTouchedWhenAlreadyCorrect() {
+    var tempDir = Path.GetTempPath();
+    var installDir = Path.Combine( tempDir, "drift-install-symlink-ok-" + Guid.NewGuid() );
+    var targetRootDir = Path.Combine( tempDir, "drift-root-ok-" + Guid.NewGuid() );
+    Directory.CreateDirectory( installDir );
+    Directory.CreateDirectory( targetRootDir );
+
+    // Run the install once so the real binary lands in installDir.
+    var firstInstall = await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
+      .ExecuteAsync( InstallScript );
+
+    var driftBinary = Path.Combine( installDir, "drift" );
+    var existingSymlink = Path.Combine( targetRootDir, "drift" );
+
+    // Pre-create a symlink that already points at the installed binary.
+    File.CreateSymbolicLink( existingSymlink, driftBinary );
+
+    var patchedScript = await WritePatchedInstallScriptAsync();
+
+    try {
+      // Act: run install again with TARGET_ROOT already correct.
+      var script = $"TARGET_ROOT={existingSymlink} DRIFT_INSTALL_DIR={installDir} /usr/bin/bash {patchedScript}";
+      var installProcess = await new ToolWrapper( "bash" ).ExecuteAsync( $"-c \"{script}\"" );
+
+      PrintInstallOutput( installProcess );
+
+      // Assert: script exits successfully and symlink is still intact.
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( File.Exists( existingSymlink ), Is.True, "Symlink should still exist after re-install" );
+
+        var symlinkTarget = new FileInfo( existingSymlink ).LinkTarget;
+        Assert.That( symlinkTarget, Is.EqualTo( driftBinary ), "Symlink should still point to the correct binary" );
       }
-      catch ( Exception ex ) {
-        Console.WriteLine( $"Warning: Failed to delete temp dir {installDir}: {ex.Message}" );
-      }
+
+      _ = firstInstall; // suppress unused-variable warning; first install output not asserted
+    }
+    finally {
+      DeleteBestEffort( installDir, targetRootDir, patchedScript );
     }
   }
 }

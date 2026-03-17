@@ -2,6 +2,8 @@ namespace Drift.Cli.E2ETests.General.Installation;
 
 [Platform( "Linux" )]
 internal sealed partial class InstallTests {
+  private const int ExitCodeSuccess = 0;
+  private const int ExitCodeFailure = 1;
   private static readonly string InstallScript = GetInstallScript();
 
   private static string GetInstallScript() {
@@ -14,6 +16,22 @@ internal sealed partial class InstallTests {
     Assert.That( File.Exists( installScript ), $"Could not find install.sh at repo root: {installScript}" );
 
     return installScript;
+  }
+
+  private static void DeleteBestEffort( params string[] paths ) {
+    foreach ( var path in paths ) {
+      try {
+        if ( Directory.Exists( path ) ) {
+          Directory.Delete( path, true );
+        }
+        else {
+          File.Delete( path );
+        }
+      }
+      catch {
+        // best-effort cleanup
+      }
+    }
   }
 
   private static void PrintInstallOutput( (string StdOut, string ErrOut, int ExitCode, bool Cancelled) result ) {

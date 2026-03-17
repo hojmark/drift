@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace Drift.Cli.Presentation.Rendering;
 
 internal static class Chars {
@@ -9,7 +11,12 @@ internal static class Chars {
 
   // TODO consider these. cross/multiplication doesn't have an emoji version
   internal const string Cross = "\u2715";
-  internal const string Checkmark = "\u2713";
+
+  // U+2713 (✓) is not in Windows OEM code pages (CP437/CP850), so we use
+  // U+221A (√) on Windows, which is available in CP850 (byte 0xFB).
+  // On non-Windows platforms (Linux, macOS), U+2713 (✓) is the canonical checkmark.
+  internal static readonly string Checkmark =
+    RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ? "\u221A" : "\u2713";
 
   /// <summary>
   /// Unicode Variation Selector 16 (VS16): forces emoji-style rendering.

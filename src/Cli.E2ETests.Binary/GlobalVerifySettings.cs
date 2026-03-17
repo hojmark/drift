@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Drift.TestUtilities;
 
-namespace Drift.Cli.Tests;
+namespace Drift.Cli.E2ETests.Binary;
 
 internal static class GlobalVerifySettings {
   [ModuleInitializer]

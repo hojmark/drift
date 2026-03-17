@@ -38,8 +38,8 @@ jobs:
             --platform linux_x64 \
             --configuration Release \
             --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }} \
+            --releasetype ${{ inputs.prerelease && 'PreRelease' || 'Release' }} \
             ${{ inputs.customVersion != '' && format('--customversion {0}', inputs.customVersion) || '' }}
-          echo "container-image-ref=$(cat artifacts/container-image-ref.txt)" >> $GITHUB_OUTPUT
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -75,6 +75,7 @@ jobs:
           --commit ${{ github.sha }}
           --platform win_x64
           --configuration Release
+          --releasetype ${{ inputs.prerelease && 'PreRelease' || 'Release' }}
           ${{ inputs.customVersion != '' && format('--customversion {0}', inputs.customVersion) || '' }}
 
       - name: Upload artifacts
@@ -125,4 +126,5 @@ jobs:
           --githubtoken ${{ secrets.GITHUB_TOKEN }}
           --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }}
           --containerimageref ${{ needs.build-linux.outputs.container-image-ref }}
+          --releasetype ${{ inputs.prerelease && 'PreRelease' || 'Release' }}
           ${{ inputs.customVersion != '' && format('--customversion {0}', inputs.customVersion) || '' }}

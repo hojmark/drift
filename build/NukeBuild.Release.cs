@@ -1,6 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Drift.Build.Utilities;
+using Drift.Build.Utilities.Versioning.Abstractions;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.DotNet;
@@ -13,7 +14,7 @@ using Serilog;
 // ReSharper disable UnusedMember.Local
 
 internal partial class NukeBuild {
-  public bool AllowLocalRelease => false;
+  ReleaseType INukeRelease.ReleaseType => ReleaseType;
 
   Target CreateLinuxArtifacts => _ => _
     .DependsOn( PackBinaries, PushContainerImage )

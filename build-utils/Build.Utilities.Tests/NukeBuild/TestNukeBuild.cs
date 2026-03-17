@@ -9,10 +9,10 @@ internal class TestNukeBuild : Nuke.Common.NukeBuild, INukeRelease {
     ExecutionPlan = new List<ExecutableTarget>();
   }
 
-  public bool AllowLocalRelease {
+  public ReleaseType ReleaseType {
     get;
     set;
-  }
+  } = ReleaseType.None;
 
   public Target CreateRelease => _ => _
     .Executes( () => {

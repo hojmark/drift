@@ -1,6 +1,5 @@
 using Drift.Build.Utilities.Versioning.Abstractions;
 using HLabs.ImageReferences;
-using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Git;
 using Nuke.Common.Tools.GitHub;
@@ -15,7 +14,6 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
   private string? _cachedGitTag;
 
   protected ReleaseVersioningBase(
-    INukeRelease build,
     Configuration configuration,
     GitRepository repository,
     IGitHubClient gitHubClient
@@ -25,16 +23,6 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
     Repository = repository;
     GitHubClient = gitHubClient;
 
-    if ( build.ExecutionPlan.Contains( build.CreateRelease ) && build.ExecutionPlan.Contains( build.CreatePreRelease ) ) {
-      throw new InvalidOperationException(
-        $"Execution plan cannot contain both {nameof(build.CreateRelease)} and {nameof(build.CreatePreRelease)}"
-      );
-    }
-
-    if ( NukeBuild.IsLocalBuild && !build.AllowLocalRelease ) {
-      throw new InvalidOperationException( "A local release build was prevented" );
-    }
-
     if ( configuration != Configuration.Release ) {
       throw new InvalidOperationException(
         $"Releases must be built with {nameof(Configuration)}.{nameof(Configuration.Release)}"
@@ -42,11 +30,14 @@ public abstract class ReleaseVersioningBase : IVersioningStrategy, IReleaseInfo 
     }
   }
 
-  protected GitRepository Repository { get; }
+  protected GitRepository Repository {
+    get;
+  }
 
-  protected IGitHubClient GitHubClient { get; }
+  protected IGitHubClient GitHubClient {
+    get;
+  }
 
-  [CanBeNull]
   public IReleaseInfo Release => this;
 
   public abstract Task<SemVersion> GetVersionAsync();

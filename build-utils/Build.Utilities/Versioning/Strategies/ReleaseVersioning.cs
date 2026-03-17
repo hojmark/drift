@@ -1,5 +1,4 @@
 using System.Globalization;
-using Drift.Build.Utilities.Versioning.Abstractions;
 using HLabs.ImageReferences;
 using Nuke.Common.Git;
 using Nuke.Common.Tools.GitHub;
@@ -10,12 +9,11 @@ using Serilog;
 namespace Drift.Build.Utilities.Versioning.Strategies;
 
 public sealed class ReleaseVersioning(
-  INukeRelease build,
   Configuration configuration,
   string? customVersion,
   GitRepository repository,
   IGitHubClient gitHubClient
-) : ReleaseVersioningBase( build, configuration, repository, gitHubClient ) {
+) : ReleaseVersioningBase( configuration, repository, gitHubClient ) {
   private SemVersion? _cachedVersion;
 
   public override async Task<SemVersion> GetVersionAsync() {

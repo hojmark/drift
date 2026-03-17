@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using Drift.Build.Utilities;
 using Drift.Build.Utilities.MsBuild;
 using Drift.Build.Utilities.Versioning;
@@ -64,6 +63,9 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
 
   [Secret, Parameter( $"{nameof(GitHubToken)} - GitHub token used to create releases" )]
   public string GitHubToken;
+
+  [Parameter( $"{nameof(ReleaseType)} - None (default/safe), PreRelease, or Release" )]
+  public ReleaseType ReleaseType = ReleaseType.None;
 
   [Parameter( $"{nameof(Platform)} - A .NET RID but with underscores instead of dashes e.g. linux_x64 or win_x64" )]
   public DotNetRuntimeIdentifier Platform = IsLocalBuild
@@ -153,13 +155,6 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
         }
 
         Log.Information( "BUILD INFORMATION:\n{BuildInfo}", builder.ToString() );
-
-        if ( Versioning.Value.Release != null && IsLocalBuild ) {
-          var delay = TimeSpan.FromSeconds( 10 );
-          Log.Warning( "⚠️ LOCAL RELEASE BUILD ⚠️" );
-          Log.Warning( "Continuing in {Delay} seconds...", (int) delay.TotalSeconds );
-          await Task.Delay( delay );
-        }
       }
     );
 }

@@ -11,7 +11,7 @@ public interface INukeRelease : INukeBuild {
     get;
   }
 
-  bool AllowLocalRelease {
+  ReleaseType ReleaseType {
     get;
   }
 }

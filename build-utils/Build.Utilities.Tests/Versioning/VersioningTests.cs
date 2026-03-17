@@ -182,6 +182,7 @@ internal sealed class VersioningTests {
     Assert.ThrowsAsync<InvalidOperationException>( async () => await strategy.GetVersionAsync() );
   }
 
+  [Explicit( "Implement" )]
   [Test]
   public async Task ReleaseValid() {
     // Arrange

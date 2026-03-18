@@ -8,10 +8,7 @@ namespace Drift.Build.Utilities.DockerHub;
 public sealed class DockerHubClient( string? dockerHubUsername, string? dockerHubPassword ) : IDisposable {
   private const uint PageSize = 100;
 
-#pragma warning disable S1075
   private readonly HttpClient _http = new() { BaseAddress = new Uri( "https://hub.docker.com" ) };
-#pragma warning restore S1075
-
 
   public async Task<List<Tag>> ListTags( ImageRef imageRef ) {
     ArgumentNullException.ThrowIfNull( imageRef );

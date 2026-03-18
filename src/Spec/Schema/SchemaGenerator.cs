@@ -26,10 +26,7 @@ public static class SchemaGenerator {
 
   private static string Generate<T>( SpecVersion version ) {
     var schema = new JsonSchemaBuilder()
-      // Justification: this never needs to be dynamic
-#pragma warning disable S1075
       .Schema( new Uri( "https://json-schema.org/draft/2020-12/schema" ) )
-#pragma warning restore S1075
       // TODO Publish and test e2e
       .Id( new Uri( $"https://hojmark.github.io/drift/schemas/{version.ToJsonSchemaFileName()}" ) )
       .FromType<T>( SchemaConfiguration )

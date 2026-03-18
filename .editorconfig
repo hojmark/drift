@@ -215,6 +215,8 @@ dotnet_diagnostic.SA1309.severity = none
 dotnet_diagnostic.SA1204.severity = suggestion
 # Extract this nested ternary operation into an independent statement
 dotnet_diagnostic.S3358.severity = suggestion
+# Refactor your code not to use hardcoded absolute paths or URIs.
+dotnet_diagnostic.S1075.severity = suggestion
 
 # Buggy analyzers
 # SA1502 ElementMustNotBeOnASingleLine (throwing exceptions)

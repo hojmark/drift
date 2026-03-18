@@ -14,7 +14,7 @@ using Target = Nuke.Common.Target;
 // ReSharper disable UnusedMember.Local
 
 sealed partial class NukeBuild {
-  private static readonly string[] FilesToDistributeLinux = ["drift", "drift.dbg"];
+  private static readonly string[] FilesToDistributeLinux = ["drift" /*, "drift.dbg"*/]; // TODO utilize debug symbols
   private static readonly string[] FilesToDistributeWindows = ["drift.exe"];
 
   Target PublishBinaries => _ => _
@@ -59,17 +59,12 @@ sealed partial class NukeBuild {
 
         Log.Information( "Creating {ArtifactFile}", artifactFile );
 
+        Log.Debug( "Including files: {Files}", string.Join( ", ", filesToDistribute ) );
         if ( isWindows ) {
-          Log.Debug( "Including files matching: {Files}", string.Join( ", ", filesToDistribute ) );
           publishDir.ZipTo( artifactFile, f => filesToDistribute.Contains( f.Name ), fileMode: FileMode.CreateNew );
         }
         else {
-          var files = publishDir
-            .GetFiles()
-            .Where( file => filesToDistribute.Contains( file.Name ) )
-            .ToList();
-          Log.Debug( "Including files: {Files}", string.Join( ", ", files.Select( f => f.Name ) ) );
-          publishDir.TarGZipTo( artifactFile, files, fileMode: FileMode.CreateNew );
+          publishDir.TarGZipTo( artifactFile, f => filesToDistribute.Contains( f.Name ), fileMode: FileMode.CreateNew );
         }
       }
     );

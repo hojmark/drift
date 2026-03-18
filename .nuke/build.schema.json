@@ -21,6 +21,15 @@
         "VSCode"
       ]
     },
+    "ReleaseType": {
+      "type": "string",
+      "description": "",
+      "enum": [
+        "None",
+        "PreRelease",
+        "Release"
+      ]
+    },
     "ExecutableTarget": {
       "type": "string",
       "enum": [
@@ -32,9 +41,12 @@
         "CheckWarnings",
         "Clean",
         "CleanArtifacts",
+        "CleanContainerImages",
         "CleanProjects",
+        "CreateLinuxArtifacts",
         "CreatePreRelease",
         "CreateRelease",
+        "CreateWindowsArtifacts",
         "PackBinaries",
         "PublishBinaries",
         "PushContainerImage",
@@ -193,6 +205,10 @@
             "win81_x64",
             "win81_x86"
           ]
+        },
+        "ReleaseType": {
+          "description": "ReleaseType - None (default/safe), PreRelease, or Release",
+          "$ref": "#/definitions/ReleaseType"
         },
         "Solution": {
           "type": "string",

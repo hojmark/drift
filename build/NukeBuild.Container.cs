@@ -1,10 +1,12 @@
 using System;
 using System.Linq;
+using System.Text.Json.Nodes;
 using Drift.Build.Utilities;
 using HLabs.ImageReferences;
 using HLabs.ImageReferences.Extensions.Nuke;
 using JetBrains.Annotations;
 using Nuke.Common;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Docker;
 using Nuke.Common.Tools.DotNet;
 using Serilog;
@@ -103,6 +105,7 @@ partial class NukeBuild {
     );
 
   Target TagContainerImageForRelease => _ => _
+    .Triggers( CleanContainerImages )
     .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
     .Requires( () => DockerHubPassword )
     .Requires( () => ContainerImageRef )
@@ -127,6 +130,46 @@ partial class NukeBuild {
 
         var registries = publicReferences.Select( r => r.Registry ).Distinct();
         Log.Information( "🐋 Released to {Registries}!", string.Join( " and ", registries ) );
+      }
+    );
+
+  Target CleanContainerImages => _ => _
+    .DependsOn( CleanStagingTags /*, DeleteUntaggedImages*/ );
+
+  Target CleanStagingTags => _ => _
+    .Requires( () => DockerHubPassword )
+    .Executes( () => {
+        var creds = $"{DockerHubUsername}:{DockerHubPassword}";
+        var repo = DockerHubDriftImage.ToString();
+
+        // List tags
+        var listResult = ProcessTasks.StartProcess( "skopeo", $"list-tags docker://{repo}" ).AssertZeroExitCode();
+        var json = string.Join( "", listResult.Output.Select( o => o.Text ) );
+        var tags = JsonNode.Parse( json )!["Tags"]!
+          .AsArray()
+          .Select( t => t!.GetValue<string>() )
+          .Where( t => t.StartsWith( "staging." ) )
+          .ToList();
+
+        if ( tags.Count == 0 ) {
+          Log.Information( "No staging tags found" );
+          return;
+        }
+
+        // Delete stating tags
+        Log.Information( "Deleting {Count} staging tag(s): {Tags}", tags.Count, tags );
+        foreach ( var tag in tags ) {
+          ProcessTasks.StartProcess( "skopeo", $"delete --creds {creds} docker://{repo}:{tag}" ).AssertZeroExitCode();
+          Log.Information( "Deleted {Tag}", tag );
+        }
+      }
+    );
+
+  Target DeleteUntaggedImages => _ => _
+    .Requires( () => DockerHubPassword )
+    .After( CleanStagingTags )
+    .Executes( () => {
+        // Implement
       }
     );
 

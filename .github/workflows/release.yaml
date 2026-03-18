@@ -37,6 +37,7 @@ jobs:
             --commit ${{ github.sha }} \
             --platform linux_x64 \
             --configuration Release \
+            --githubtoken ${{ secrets.GITHUB_TOKEN }}
             --dockerhubpassword ${{ secrets.DOCKER_HUB_PAT_RW }} \
             --releasetype ${{ inputs.prerelease && 'PreRelease' || 'Release' }} \
             ${{ inputs.customVersion != '' && format('--customversion {0}', inputs.customVersion) || '' }}
@@ -75,6 +76,7 @@ jobs:
           --commit ${{ github.sha }}
           --platform win_x64
           --configuration Release
+          --githubtoken ${{ secrets.GITHUB_TOKEN }}
           --releasetype ${{ inputs.prerelease && 'PreRelease' || 'Release' }}
           ${{ inputs.customVersion != '' && format('--customversion {0}', inputs.customVersion) || '' }}
 

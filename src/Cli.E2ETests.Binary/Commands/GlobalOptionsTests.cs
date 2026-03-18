@@ -37,5 +37,7 @@ internal sealed class GlobalOptionsTests : DriftBinaryFixture {
       Assert.That( resultH.ErrOut, Is.Empty );
       Assert.That( resultHelp.ErrOut, Is.Empty );
     }
+
+    await Verify( resultHelp.StdOut );
   }
 }

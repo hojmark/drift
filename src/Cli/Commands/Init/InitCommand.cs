@@ -263,7 +263,7 @@ internal class InitCommandHandler(
       return true;
     }
 
-    output.Normal.WriteError( $"{Chars.Cross} Spec file already exists:" );
+    output.Normal.WriteError( $"{Chars.Cross} Spec file already exists: " );
     output.Normal.WriteLineError( TextHelper.Bold( path ) );
     output.Log.LogError( "Spec file already exists: {SpecPath}", path );
     return false;

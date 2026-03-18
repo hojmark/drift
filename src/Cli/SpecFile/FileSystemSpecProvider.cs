@@ -60,8 +60,8 @@ internal class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvid
   }
 
   // HACK define in spec or use file name? if using file name, centralize parsing logic
-  private static NetworkId GetNetworkId( FileInfo file ) {
-    var regex = new Regex( @".*\/(\S+)\.spec\.(?:yaml|yml)$", RegexOptions.None, TimeSpan.FromSeconds( 1 ) );
+  internal static NetworkId GetNetworkId( FileInfo file ) {
+    var regex = new Regex( @".*[/\\](\S+)\.spec\.(?:yaml|yml)$", RegexOptions.None, TimeSpan.FromSeconds( 1 ) );
     var match = regex.Match( file.ToString() );
     return new NetworkId( match.Groups[1].Value );
   }

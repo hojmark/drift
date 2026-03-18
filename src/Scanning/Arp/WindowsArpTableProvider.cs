@@ -8,8 +8,6 @@ namespace Drift.Scanning.Arp;
 [SupportedOSPlatform( "windows" )]
 internal class WindowsArpTableProvider : ArpTableProviderBase {
   protected override ArpTable ReadSystemArpCache() {
-    var map = new Dictionary<IPAddress, MacAddress>();
-
     var startInfo = new ProcessStartInfo {
       FileName = "arp",
       Arguments = "-a",
@@ -23,29 +21,40 @@ internal class WindowsArpTableProvider : ArpTableProviderBase {
       throw new InvalidOperationException( "Failed to start 'arp' process." );
     }
 
-    while ( !proc.StandardOutput.EndOfStream ) {
-      var line = proc.StandardOutput.ReadLine();
-      // Console.WriteLine( line );
+    return ParseArpOutput( proc.StandardOutput );
+  }
+
+  /// <summary>
+  /// Parses the output of <c>arp -a</c> on Windows into an <see cref="ArpTable"/>.
+  /// </summary>
+  /// <remarks>
+  /// Windows <c>arp -a</c> separates MAC octets with hyphens, e.g.:
+  /// <code>
+  ///   192.168.1.1           00-11-22-33-44-55     dynamic
+  /// </code>
+  /// </remarks>
+  internal static ArpTable ParseArpOutput( TextReader reader ) {
+    var map = new Dictionary<IPAddress, MacAddress>();
+
+    string? line;
+    while ( ( line = reader.ReadLine() ) != null ) {
       if ( string.IsNullOrWhiteSpace( line ) ) {
         continue;
       }
 
       if ( line.StartsWith( "Interface" ) ) {
-        continue; // skip header
+        continue; // skip section headers
       }
 
       var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
 
-      // Defensive: expects at least Internet Address, Physical Address, Type
+      // Expects at least: Internet Address, Physical Address, Type
       if ( parts.Length >= 3 &&
-           parts[0].Count( c => c == '.' ) == 3 && // Looks like an IP
-           parts[1].Contains( ':' ) // Looks like a MAC
+           parts[0].Count( c => c == '.' ) == 3 && // looks like an IPv4 address
+           parts[1].Contains( '-' ) // Windows MACs use hyphens: 00-11-22-33-44-55
          ) {
-        var ip = parts[0];
-        var mac = parts[1].ToUpperInvariant();
-
-        var ipParsed = IPAddress.Parse( ip );
-        map[ipParsed] = new MacAddress( mac );
+        var ipParsed = IPAddress.Parse( parts[0] );
+        map[ipParsed] = new MacAddress( parts[1] );
       }
     }
 

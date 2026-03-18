@@ -105,7 +105,7 @@ partial class NukeBuild {
   Target TagContainerImageForRelease => _ => _
     .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
     .Requires( () => DockerHubPassword )
-    .Requires( () => ContainerImageRef.QualifiedImage() )
+    .Requires( () => ContainerImageRef )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(TagContainerImageForRelease) );
 

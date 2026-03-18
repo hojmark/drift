@@ -101,7 +101,7 @@ internal class ScanLayout( NetworkId? networkId ) {
     );
   }
 
-  private static Markup BuildFooter(  /*int scroll, int maxScroll, int selectedIndex, List<UiSubnet> subnets */ ) {
+  private static Markup BuildFooter( /*int scroll, int maxScroll, int selectedIndex, List<UiSubnet> subnets */ ) {
     const string keyColor = "bold";
     const string actionColor = "";
 

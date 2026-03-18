@@ -162,6 +162,9 @@ partial class NukeBuild {
           ProcessTasks.StartProcess( "skopeo", $"delete --creds {creds} docker://{repo}:{tag}" ).AssertZeroExitCode();
           Log.Information( "Deleted {Tag}", tag );
         }
+
+        // List tags again
+        ProcessTasks.StartProcess( "skopeo", $"list-tags docker://{repo}" ).AssertZeroExitCode();
       }
     );
 

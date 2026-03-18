@@ -80,7 +80,7 @@ jobs:
         run: dotnet trx --verbosity normal
 
       - name: Check for warnings
-        run: |
-          dotnet run `
-          --project ./build/_build.csproj `
+        run: >
+          dotnet run
+          --project ./build/_build.csproj
           --target CheckBuildWarnings

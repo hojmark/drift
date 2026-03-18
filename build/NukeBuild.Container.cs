@@ -1,12 +1,14 @@
 using System;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json.Nodes;
 using Drift.Build.Utilities;
 using HLabs.ImageReferences;
 using HLabs.ImageReferences.Extensions.Nuke;
 using JetBrains.Annotations;
 using Nuke.Common;
-using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Docker;
 using Nuke.Common.Tools.DotNet;
 using Serilog;
@@ -138,16 +140,31 @@ partial class NukeBuild {
 
   Target CleanStagingTags => _ => _
     .Requires( () => DockerHubPassword )
-    .Executes( () => {
-        var creds = $"{DockerHubUsername}:{DockerHubPassword}";
-        var repo = DockerHubDriftImage.ToString();
+    .Executes( async () => {
+        var imageName = $"{DockerHubUsername}/drift";
+
+        using var http = new HttpClient { BaseAddress = new Uri( "https://hub.docker.com" ) };
+
+        // Authenticate
+        var loginBody = JsonNode.Parse( "{}" )!.AsObject();
+        loginBody["username"] = DockerHubUsername;
+        loginBody["password"] = DockerHubPassword;
+        var loginResponse = await http.PostAsync(
+          "/v2/users/login",
+          new StringContent( loginBody.ToJsonString(), Encoding.UTF8, "application/json" )
+        );
+        loginResponse.EnsureSuccessStatusCode();
+        var loginJson = JsonNode.Parse( await loginResponse.Content.ReadAsStringAsync() );
+        var token = loginJson!["token"]!.GetValue<string>();
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( "Bearer", token );
 
         // List tags
-        var listResult = ProcessTasks.StartProcess( "skopeo", $"list-tags docker://{repo}" ).AssertZeroExitCode();
-        var json = string.Join( "", listResult.Output.Select( o => o.Text ) );
-        var tags = JsonNode.Parse( json )!["Tags"]!
+        var tagsResponse = await http.GetAsync( $"/v2/repositories/{imageName}/tags/?page_size=100" );
+        tagsResponse.EnsureSuccessStatusCode();
+        var tagsJson = JsonNode.Parse( await tagsResponse.Content.ReadAsStringAsync() );
+        var tags = tagsJson!["results"]!
           .AsArray()
-          .Select( t => t!.GetValue<string>() )
+          .Select( t => t!["name"]!.GetValue<string>() )
           .Where( t => t.StartsWith( "staging." ) )
           .ToList();
 
@@ -156,15 +173,13 @@ partial class NukeBuild {
           return;
         }
 
-        // Delete stating tags
+        // Delete staging tags (tag-only, image/manifest untouched)
         Log.Information( "Deleting {Count} staging tag(s): {Tags}", tags.Count, tags );
         foreach ( var tag in tags ) {
-          ProcessTasks.StartProcess( "skopeo", $"delete --creds {creds} docker://{repo}:{tag}" ).AssertZeroExitCode();
-          Log.Information( "Deleted {Tag}", tag );
+          var response = await http.DeleteAsync( $"/v2/repositories/{imageName}/tags/{tag}/" );
+          response.EnsureSuccessStatusCode();
+          Log.Information( "Deleted tag {Tag}", tag );
         }
-
-        // List tags again
-        ProcessTasks.StartProcess( "skopeo", $"list-tags docker://{repo}" ).AssertZeroExitCode();
       }
     );
 

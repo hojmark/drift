@@ -42,17 +42,23 @@ jobs:
             --releasetype ${{ inputs.prerelease && 'PreRelease' || 'Release' }} \
             ${{ inputs.customVersion != '' && format('--customversion {0}', inputs.customVersion) || '' }}
 
+      - name: Display test results
+        continue-on-error: true
+        if: always()
+        run: dotnet trx --verbosity normal
+
+      - name: Check for warnings
+        run: >
+          dotnet run
+          --project ./build/_build.csproj
+          --target CheckBuildWarnings
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-linux
           path: artifacts/
           if-no-files-found: error
-
-      - name: Display test results
-        continue-on-error: true
-        if: always()
-        run: dotnet trx --verbosity normal
 
   build-windows:
     name: 🪟 Build
@@ -80,17 +86,23 @@ jobs:
           --releasetype ${{ inputs.prerelease && 'PreRelease' || 'Release' }}
           ${{ inputs.customVersion != '' && format('--customversion {0}', inputs.customVersion) || '' }}
 
+      - name: Display test results
+        continue-on-error: true
+        if: always()
+        run: dotnet trx --verbosity normal
+
+      - name: Check for warnings
+        run: >
+          dotnet run
+          --project ./build/_build.csproj
+          --target CheckBuildWarnings
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-windows
           path: artifacts/
           if-no-files-found: error
-
-      - name: Display test results
-        continue-on-error: true
-        if: always()
-        run: dotnet trx --verbosity normal
 
   release:
     name: ${{ inputs.prerelease && 'Pre-release' || 'Release' }}

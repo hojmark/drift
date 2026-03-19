@@ -133,6 +133,10 @@ try {
   $UserPath = [System.Environment]::GetEnvironmentVariable("PATH", "User") ?? ""
   $PathEntries = $UserPath -split ";" | Where-Object { $_ -ne "" }
 
+
+  Write-Note "Adding $InstallDir to user PATH..."
+  Write-Note "Restart your terminal for PATH changes to take effect."
+  
   if ($PathEntries -notcontains $InstallDir) {
     Write-Note "Adding $InstallDir to user PATH..."
     $NewPath = ($PathEntries + $InstallDir) -join ";"

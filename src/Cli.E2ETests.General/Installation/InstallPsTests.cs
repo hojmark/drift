@@ -1,19 +1,19 @@
 namespace Drift.Cli.E2ETests.General.Installation;
 
-[Platform( "Linux" )]
-internal sealed partial class InstallTests {
+[Platform( "Win" )]
+internal sealed partial class InstallPsTests {
   private const int ExitCodeSuccess = 0;
   private const int ExitCodeFailure = 1;
   private static readonly string InstallScript = GetInstallScript();
 
   private static string GetInstallScript() {
     var repoRoot = TestContext.CurrentContext.TestDirectory;
-    while ( !File.Exists( Path.Combine( repoRoot, "install.sh" ) ) && repoRoot != "/" ) {
+    while ( !File.Exists( Path.Combine( repoRoot, "install.ps1" ) ) && repoRoot != Path.GetPathRoot( repoRoot ) ) {
       repoRoot = Path.GetDirectoryName( repoRoot )!;
     }
 
-    var installScript = Path.Combine( repoRoot, "install.sh" );
-    Assert.That( File.Exists( installScript ), $"Could not find install.sh at repo root: {installScript}" );
+    var installScript = Path.Combine( repoRoot, "install.ps1" );
+    Assert.That( File.Exists( installScript ), $"Could not find install.ps1 at repo root: {installScript}" );
 
     return installScript;
   }
@@ -35,7 +35,7 @@ internal sealed partial class InstallTests {
   }
 
   private static void PrintInstallOutput( (string StdOut, string ErrOut, int ExitCode, bool Cancelled) result ) {
-    Console.WriteLine( "------------------- install.sh output ----------------------" );
+    Console.WriteLine( "------------------- install.ps1 output ----------------------" );
 
     Console.WriteLine( result.StdOut );
 
@@ -43,6 +43,6 @@ internal sealed partial class InstallTests {
       Console.WriteLine( $"\nSTDERR:\n {result.ErrOut}" );
     }
 
-    Console.WriteLine( "------------------------------------------------------------" );
+    Console.WriteLine( "--------------------------------------------------------------" );
   }
 }

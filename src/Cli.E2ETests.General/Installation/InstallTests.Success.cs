@@ -16,8 +16,7 @@ internal sealed partial class InstallTests {
 
     try {
       // Act: run the install script
-      var installProcess =
-        await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
+      var installProcess = await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( InstallScript );
 
       PrintInstallOutput( installProcess );

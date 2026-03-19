@@ -14,7 +14,7 @@ $ErrorActionPreference = "Stop"
 function Write-Step   { param([string]$Msg) Write-Host $Msg }
 function Write-Ok     { param([string]$Msg) Write-Host "✅ $Msg" -ForegroundColor Green }
 function Write-Fail   { param([string]$Msg) Write-Host "❌ $Msg" -ForegroundColor Red }
-function Write-Note   { param([string]$Msg) Write-Host "   $Msg" -ForegroundColor Gray }
+function Write-Note   { param([string]$Msg) Write-Host "   $Msg" -ForegroundColor DarkGray }
 
 function Exit-WithError {
   param([string]$Msg)
@@ -121,7 +121,7 @@ try {
 
   # ── Install ──────────────────────────────────────────────────────────────────
 
-  Write-Step "🚀 Installing to $InstallDir..."
+  Write-Step "🚀 Installing..."
   if (-not (Test-Path $InstallDir)) {
     New-Item -ItemType Directory -Path $InstallDir | Out-Null
   }

@@ -113,16 +113,18 @@ internal sealed partial class InstallPsTests {
       // Assert: install.ps1 output snapshot
       await Verify( installProcess.StdOut )
         .UseTextForParameters( "INSTALL_OUTPUT" )
-        .ScrubLinesWithReplace( line =>
-          Regex.Replace(
-            Regex.Replace(
-              line,
-              @"🚀 Installing to .+\.\.\.",
-              "🚀 Installing to {INSTALL_DIR}..."
-            ),
-            @"   Adding .+ to user PATH\.\.\.",
-            "   Adding {INSTALL_DIR} to user PATH..."
-          )
+        .ScrubLinesWithReplace( line => {
+            // TODO keep escape sequences...
+            // Strip ANSI escape sequences
+            var stripped = Regex.Replace( line, @"\x1b\[[0-9;]*m", string.Empty );
+            stripped = Regex.Replace( stripped, @"🚀 Installing to .+\.\.\.", "🚀 Installing to {INSTALL_DIR}..." );
+            stripped = Regex.Replace(
+              stripped,
+              @"   Adding .+ to user PATH\.\.\.",
+              "   Adding {INSTALL_DIR} to user PATH..."
+            );
+            return stripped;
+          }
         );
 
       // Act: confirm the installed binary is executable

@@ -54,9 +54,9 @@ metadata and do not affect how the device is identified or matched.
 Download the binary from the [Releases page](https://github.com/hojmark/drift/releases) and move it to your preferred
 location.
 
-### Script (`install.sh`)
+### Linux script (`install.sh`)
 
-Use the installation script to download and install Drift to your workstation, server or as part of an automation
+Use the installation script to download and install Drift to your workstation, server, or as part of an automation
 pipeline.
 
 Arguments, options and environment variables for `install.sh`:
@@ -66,7 +66,7 @@ Arguments, options and environment variables for `install.sh`:
 
 - **`<tag>`** (argument)  
   Installs a specific version of Drift. Upgrades or downgrades if a binary is already present.  
-  To find available tags, visit the [Releases page](https://github.com/hojmark/drift/releases).
+  To find available tags, visit the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse).
   Example tag: `v1.0.0-alpha.42`
 
 - **`--verbose`** (option)  
@@ -75,6 +75,30 @@ Arguments, options and environment variables for `install.sh`:
 - **`DRIFT_INSTALL_DIR`** (environment variable)  
   By default, the script puts the `drift` binary into `/usr/local/bin`. Set this variable to change the installation
   directory.
+
+### Windows script (`install.ps1`)
+
+Use the PowerShell installation script to download and install Drift on Windows.
+
+Named parameters and environment variables for `install.ps1`:
+
+- **(no parameters)**  
+  Installs the latest version of Drift. Upgrades the existing binary if already present.
+
+- **`-Version <tag>`** (parameter)  
+  Installs a specific version of Drift. Upgrades or downgrades if a binary is already present.  
+  To find available tags, visit the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse).
+  Example: `-Version v1.0.0-alpha.42`
+
+- **`-InstallDir <path>`** (parameter)  
+  Overrides the installation directory. Defaults to `%LOCALAPPDATA%\Programs\drift`.  
+  The script will add the chosen directory to the current user's `PATH` automatically if it isn't already present.
+
+- **`DRIFT_INSTALL_DIR`** (environment variable)  
+  Alternative to `-InstallDir`. Ignored if `-InstallDir` is passed explicitly.
+
+- **`GITHUB_TOKEN`** (environment variable)  
+  Optional. Pass a GitHub personal access token to avoid GitHub API rate limits.
 
 ### Container Image
 

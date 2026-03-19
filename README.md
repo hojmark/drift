@@ -12,9 +12,9 @@ state, Drift can detect issues like unknown devices or unexpected subnet access,
 
 ![Scan command console output](screenshot-scan.png)
 
-## 🚀 Getting started
+## Getting started
 
-### Linux x64
+### Linux 🐧
 
 #### Install
 
@@ -29,7 +29,7 @@ You can install Drift by either:
     ```
 
   ℹ️ **What does the script do?**  
-  It fetches the latest version and puts the `drift` binary into `/usr/local/bin`.
+  It fetches the latest version, and puts `drift` into `/usr/local/bin`.
   If Drift is already installed, it will be updated to the latest version.
   For more info see [Installation Options - Script](./README_dev.md#script-installsh),
   or [view the source code](./install.sh).
@@ -44,12 +44,26 @@ drift init
 drift scan -i
 ```
 
-### Windows x64
+### Windows 🪟
 
 #### Install
 
-Download the `.zip` archive from the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse),
-extract `drift.exe`, and place it somewhere on your `PATH`.
+You can install Drift by either:
+
+- Downloading the latest release from
+  the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse), or
+- Running the installation script in PowerShell:
+
+    ```powershell
+    irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex
+    ```
+
+  ℹ️ **What does the script do?**  
+  It fetches the latest version, extracts `drift.exe` to `%LOCALAPPDATA%\Programs\drift`, and adds that directory to
+  your user `PATH` automatically.
+  If Drift is already installed, it will be updated to the latest version.
+  For more info see [Installation Options - Script](./README_dev.md#script-installps1),
+  or [view the source code](./install.ps1).
 
 #### Run
 
@@ -66,7 +80,7 @@ drift scan -i
 #### Run
 
 ```bash
-# Scan (interactive)
+# Scan host network
 docker run -it --rm --network host docker.io/hojmark/drift scan -i
 ```
 

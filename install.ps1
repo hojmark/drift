@@ -99,7 +99,7 @@ New-Item -ItemType Directory -Path $TmpDir | Out-Null
 try {
   $ZipPath = Join-Path $TmpDir $Asset.name
 
-  Write-Step "🔽 Downloading $($Asset.name)..."
+  Write-Step "🔽 Downloading `e[1m$($Asset.name)`e[0m..."
 
   $DownloadHeaders = $Headers.Clone()
   $DownloadHeaders["Accept"] = "application/octet-stream"
@@ -144,4 +144,4 @@ try {
   Remove-Item -Path $TmpDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-Write-Ok "Installed Drift CLI $VersionDisplay successfully!"
+Write-Ok "`e[1mInstalled Drift CLI $VersionDisplay successfully!`e[0m..."

@@ -4,7 +4,7 @@ using Drift.Common;
 
 namespace Drift.Cli.E2ETests.General.Installation;
 
-internal sealed partial class InstallTests {
+internal sealed partial class InstallShTests {
   // TODO split test into at least two parts
   [Test]
   public async Task InstallLatestVersion() {

@@ -2,7 +2,7 @@ using Drift.Common;
 
 namespace Drift.Cli.E2ETests.General.Installation;
 
-internal sealed partial class InstallTests {
+internal sealed partial class InstallShTests {
   /// <summary>
   /// Returns the path to a patched copy of install.sh where the hard-coded <c>TARGET_ROOT=""</c>
   /// assignment (which fires whenever DRIFT_INSTALL_DIR is set) is replaced with

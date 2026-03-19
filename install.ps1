@@ -45,7 +45,7 @@ if ($env:GITHUB_TOKEN) {
   $Headers["Authorization"] = "Bearer $env:GITHUB_TOKEN"
 }
 
-$Platform = "win_x64"
+$Platform = "win-x64"
 
 if ($Version -eq "") {
   Write-Step "🔍 Fetching latest version..."

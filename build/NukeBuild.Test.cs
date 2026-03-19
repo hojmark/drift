@@ -73,6 +73,7 @@ sealed partial class NukeBuild {
     .DependsOn( TestE2E_General, TestE2E_Binary, TestE2E_Container );
 
   Target TestE2E_General => _ => _
+    .DependsOn( Build )
     .After( TestUnit )
     .Executes( () => {
         using var _ = new OperationTimer( nameof(TestE2E_General) );

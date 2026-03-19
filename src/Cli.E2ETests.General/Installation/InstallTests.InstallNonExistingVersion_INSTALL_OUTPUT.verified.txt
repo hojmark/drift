@@ -1,2 +1,2 @@
 ﻿🔍 Fetching version vBOGUS...
-[0;31m❌ Tag 'vBOGUS' not found on GitHub. Please ensure you typed the tag correctly, or see the list of available releases: https://github.com/hojmark/drift/releases[0m
+[0;31m❌ Tag 'vBOGUS' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions.[0m

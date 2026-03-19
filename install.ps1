@@ -9,6 +9,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Ensure emoji and other Unicode characters are captured correctly when stdout is redirected
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding             = [System.Text.Encoding]::UTF8
+
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 function Write-Step   { param([string]$Msg) Write-Host $Msg }

@@ -7,6 +7,7 @@ namespace Drift.Cli.E2ETests.General.Installation;
 internal sealed partial class InstallPsTests {
   // TODO split test into at least two parts
   [Test]
+  [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
   public async Task InstallLatestVersion() {
     // Arrange: create a temporary install directory
     var tempDir = Path.GetTempPath();
@@ -79,7 +80,9 @@ internal sealed partial class InstallPsTests {
   /// </summary>
   [Test]
   public async Task InstallSpecificVersion() {
-    const string version = "v1.0.0-alpha.5";
+    // NOTE: this must be the oldest tag that has a *_win-x64.zip asset.
+    // Update when a newer stable release with Windows assets is available.
+    const string version = "v0.0.0-windows.10.20260319202632";
 
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-specific-" + Guid.NewGuid() );
@@ -108,7 +111,19 @@ internal sealed partial class InstallPsTests {
       );
 
       // Assert: install.ps1 output snapshot
-      await Verify( installProcess.StdOut ).UseTextForParameters( "INSTALL_OUTPUT" );
+      await Verify( installProcess.StdOut )
+        .UseTextForParameters( "INSTALL_OUTPUT" )
+        .ScrubLinesWithReplace( line =>
+          Regex.Replace(
+            Regex.Replace(
+              line,
+              @"🚀 Installing to .+\.\.\.",
+              "🚀 Installing to {INSTALL_DIR}..."
+            ),
+            @"   Adding .+ to user PATH\.\.\.",
+            "   Adding {INSTALL_DIR} to user PATH..."
+          )
+        );
 
       // Act: confirm the installed binary is executable
       var driftProcess = await new ToolWrapper( driftBinary ).ExecuteAsync( "--help" );
@@ -129,6 +144,7 @@ internal sealed partial class InstallPsTests {
   /// install.ps1 should create the install directory if it does not already exist.
   /// </summary>
   [Test]
+  [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
   public async Task InstallCreatesDirectoryIfMissing() {
     var tempDir = Path.GetTempPath();
     // Point to a directory that does not exist yet
@@ -162,6 +178,7 @@ internal sealed partial class InstallPsTests {
   /// install.ps1 should append the install directory to the User PATH when it is not already present.
   /// </summary>
   [Test]
+  [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
   public async Task InstallAddsToUserPath() {
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-path-" + Guid.NewGuid() );
@@ -208,6 +225,7 @@ internal sealed partial class InstallPsTests {
   /// is already present.
   /// </summary>
   [Test]
+  [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
   public async Task InstallDoesNotDuplicateInUserPath() {
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-nodup-" + Guid.NewGuid() );

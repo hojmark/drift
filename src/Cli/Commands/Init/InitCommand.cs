@@ -263,7 +263,7 @@ internal class InitCommandHandler(
       return true;
     }
 
-    output.Normal.WriteError( $"{Chars.Cross} Spec file already exists:" );
+    output.Normal.WriteError( $"{Chars.Cross} Spec file already exists: " );
     output.Normal.WriteLineError( TextHelper.Bold( path ) );
     output.Log.LogError( "Spec file already exists: {SpecPath}", path );
     return false;
@@ -273,7 +273,7 @@ internal class InitCommandHandler(
     var fullPath = Path.GetFullPath( specPath );
 
     output.Normal.Write( $"{Chars.Checkmark}", ConsoleColor.Green );
-    output.Normal.Write( "  Spec created " );
+    output.Normal.Write( " Spec created " );
     output.Normal.WriteLine( TextHelper.Bold( $"{fullPath}" ) );
 
     output.Log.LogInformation( "Spec created: {SpecPath}", specPath );

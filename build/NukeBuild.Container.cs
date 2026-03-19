@@ -1,11 +1,13 @@
 using System;
 using System.Linq;
 using Drift.Build.Utilities;
+using Drift.Build.Utilities.DockerHub;
 using HLabs.ImageReferences;
 using HLabs.ImageReferences.Extensions.Nuke;
 using JetBrains.Annotations;
 using Nuke.Common;
 using Nuke.Common.Tools.Docker;
+using Nuke.Common.Tools.DotNet;
 using Serilog;
 using Versioning;
 
@@ -22,6 +24,9 @@ partial class NukeBuild {
 
   private static readonly string DockerHubUsername = "hojmark";
 
+  [Parameter( "ContainerImageRef - Qualified image reference to push to Docker Hub with versioned tag" )]
+  public readonly string ContainerImageRef = null;
+
   [Secret] //
   [Parameter( "DockerHubPassword - Required for releasing container images to Docker Hub" )]
   public readonly string DockerHubPassword;
@@ -31,16 +36,16 @@ partial class NukeBuild {
   private static readonly PartialImageRef DockerHubDriftImage = DriftImage.With( Registry.DockerHub, "hojmark" );
   [CanBeNull] private QualifiedImageRef _driftImageRef;
 
-  Target PublishContainer => _ => _
+  Target BuildContainerImage => _ => _
     .DependsOn( PublishBinaries, CleanArtifacts )
+    .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
     .Requires( () => Commit )
     .Executes( async () => {
-        using var _ = new OperationTimer( nameof(PublishContainer) );
+        using var _ = new OperationTimer( nameof(BuildContainerImage) );
 
         var version = await Versioning.Value.GetVersionAsync();
 
-        var tag = new Tag( Guid.NewGuid().ToString( "N" ) );
-        _driftImageRef = LocalDriftImage.Qualify( tag );
+        _driftImageRef = LocalDriftImage.Qualify( new Tag( $"staging.{Guid.NewGuid().ToString( "N" )}" ) );
 
         Log.Information( "Building container image..." );
         // var created = DateTime.UtcNow.ToString( "o", CultureInfo.InvariantCulture ); // o = round-trip format / ISO 8601
@@ -68,86 +73,125 @@ partial class NukeBuild {
       }
     );
 
-  /// <summary>
-  /// Releases container image to public Docker Hub!
-  /// </summary>
-  Target ReleaseContainer => _ => _
+  Target PushContainerImage => _ => _
     .DependsOn( TestE2E )
-    .Requires( () => DockerHubPassword ) // TODO require that login is successful
+    .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
+    .Requires( () => DockerHubPassword )
+    .Executes( () => {
+        using var _ = new OperationTimer( nameof(PushContainerImage) );
+
+        var remoteRef = DockerHubDriftImage.Qualify( _driftImageRef!.Tag );
+
+        Log.Information( "Pushing {Source} → {Target}", _driftImageRef, remoteRef );
+
+        DockerHubLogin();
+        try {
+          DockerTasks.DockerTag( s => s
+            .SetSourceImage( _driftImageRef )
+            .SetTargetImage( remoteRef )
+          );
+          DockerTasks.DockerPush( s => s.SetName( remoteRef ) );
+        }
+        finally {
+          DockerHubLogout();
+        }
+
+        // Expose the staging image ref as a job output so the release job can consume it via --containerimageref.
+        GitHubActions.SetOutput( "container-image-ref", remoteRef.ToString() );
+
+        Log.Information( "Container image ref: {Ref}", remoteRef );
+      }
+    );
+
+  Target TagContainerImageForRelease => _ => _
+    .Triggers( CleanContainerImages )
+    .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
+    .Requires( () => DockerHubPassword )
+    .Requires( () => ContainerImageRef )
     .Executes( async () => {
-        using var _ = new OperationTimer( nameof(ReleaseContainer) );
+        using var _ = new OperationTimer( nameof(TagContainerImageForRelease) );
+
+        var sourceRef = ContainerImageRef.QualifiedImage();
 
         var publicReferences = ( await Versioning.Value.Release!.GetImageReferences() )
-          .OrderBy( LatestLast ) // Pushing 'latest' last will make sure it appears as the most recent tag on Docker Hub
+          .OrderBy( LatestLast ) // Pushing 'latest' last ensures it appears as most recent on Docker Hub
           .ToArray();
 
-        Push( _driftImageRef, publicReferences.ToArray() );
+        Log.Information( "Pulling {SourceRef}...", sourceRef );
+        DockerHubLogin();
+        try {
+          DockerTasks.DockerPull( s => s.SetName( sourceRef.ToString() ) );
+          Push( sourceRef, publicReferences );
+        }
+        finally {
+          DockerHubLogout();
+        }
 
         var registries = publicReferences.Select( r => r.Registry ).Distinct();
-
         Log.Information( "🐋 Released to {Registries}!", string.Join( " and ", registries ) );
       }
     );
-/*
-  /// <summary>
-  /// Releases container image to public Docker Hub!
-  /// </summary>
-  Target PreReleaseContainer => _ => _
-    .DependsOn( TestE2E )
+
+  Target CleanContainerImages => _ => _
+    .DependsOn( CleanStagingTags /*, DeleteUntaggedImages*/ );
+
+  Target CleanStagingTags => _ => _
     .Requires( () => DockerHubPassword )
     .Executes( async () => {
-        using var _ = new OperationTimer( nameof(PreReleaseContainer) );
+        using var dockerHubClient = new DockerHubClient( DockerHubUsername, DockerHubPassword );
 
-        var publicReferences = await Versioning.Value.Release!.GetImageReferences();
+        var tags = await dockerHubClient.ListTags( DockerHubDriftImage );
+        var tagsStaging = tags.Where( t => t.ToString().StartsWith( "staging." ) ).ToList();
 
-        Push( ImageIdDrift, publicReferences.ToArray() );
+        if ( !tagsStaging.Any() ) {
+          Log.Information( "No staging tags found" );
+          return;
+        }
 
-        var registries = publicReferences.DistinctBy( r => r.Registry );
+        Log.Information( "Deleting {Count} staging tag(s): {Tags}", tagsStaging.Count, tagsStaging );
 
-        Log.Information( "🐋 Released to {Registries}!", string.Join( " and ", registries ) );
+        foreach ( var tag in tagsStaging ) {
+          await dockerHubClient.DeleteTag( DockerHubDriftImage.With( tag ) );
+          Log.Information( "Deleted tag {Tag}", tag );
+        }
       }
-    );*/
+    );
+
+  Target DeleteUntaggedImages => _ => _
+    .Requires( () => DockerHubPassword )
+    .After( CleanStagingTags )
+    .Executes( () => {
+        // Implement
+      }
+    );
 
   private static int LatestLast( ImageRef r ) {
     return r.Tag == Tag.Latest ? 1 : 0;
   }
 
-  private void Push( QualifiedImageRef source, params QualifiedImageRef[] targets ) {
-    var logInToDockerHub = targets.Any( r => r.Registry == Registry.DockerHub );
+  private static void Push( QualifiedImageRef source, params QualifiedImageRef[] targets ) {
+    Log.Debug(
+      "Pushing {Source} to: {Targets}",
+      source,
+      string.Join( ", ", targets.Select( t => t.ToString() ) )
+    );
 
-    try {
-      if ( logInToDockerHub ) {
-        DockerHubLogin();
-      }
-
-      Log.Debug(
-        "Pushing {Source} to: {Targets}",
-        source,
-        string.Join( ", ", targets.Select( t => t.ToString() ) )
+    foreach ( var target in targets ) {
+      // Unfortunately, Docker (unlike Podman) does not support pushing an image selected by image ID directly to a
+      // registry tag (image ID → registry:tag). A local tag must be created first, which prevents this from being a
+      // single, atomic operation.
+      Log.Debug( "Tagging {Source} with {Target}", source, target );
+      DockerTasks.DockerTag( s => s
+        .SetSourceImage( source )
+        .SetTargetImage( target )
       );
 
-      foreach ( var target in targets ) {
-        // Unfortunately, Docker (unlike Podman) does not support pushing an image selected by image ID directly to a
-        // registry tag (image ID → registry:tag). A local tag must be created first, which prevents this from being a
-        // single, atomic operation.
-        Log.Debug( "Tagging {Source} with {Target}", source, target );
-        DockerTasks.DockerTag( s => s
-          .SetSourceImage( source )
-          .SetTargetImage( target )
-        );
+      Log.Information( "Pushing {Target}", target );
+      DockerTasks.DockerPush( s => s
+        .SetName( target )
+      );
 
-        Log.Information( "Pushing {Target}", target );
-        DockerTasks.DockerPush( s => s
-          .SetName( target )
-        );
-
-        Log.Information( "Pushed {TargetTag}", target );
-      }
-    }
-    finally {
-      if ( logInToDockerHub ) {
-        DockerHubLogout();
-      }
+      Log.Information( "Pushed {TargetTag}", target );
     }
   }
 

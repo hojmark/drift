@@ -1,5 +1,4 @@
 using System.Numerics;
-using Drift.Build.Utilities.Versioning.Abstractions;
 using Nuke.Common.Git;
 using Octokit;
 using Semver;
@@ -7,12 +6,11 @@ using Semver;
 namespace Drift.Build.Utilities.Versioning.Strategies;
 
 public sealed class PreReleaseVersioning(
-  INukeRelease build,
   Configuration configuration,
   string? customVersion,
   GitRepository repository,
   IGitHubClient gitHubClient
-) : ReleaseVersioningBase( build, configuration, repository, gitHubClient ) {
+) : ReleaseVersioningBase( configuration, repository, gitHubClient ) {
   private string? _timestamp; // Cache to support multiple calls to GetVersionAsync()
 
   public override Task<SemVersion> GetVersionAsync() {

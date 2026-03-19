@@ -1,3 +1,4 @@
+using Drift.Cli.Presentation.Rendering;
 using Drift.Domain;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -68,7 +69,7 @@ internal class ScanLayout( NetworkId? networkId ) {
     // TODO update with actual path
     return id == null
       ? new Markup( "[yellow bold]unknown network[/]" )
-      : new Markup( $"[bold]{( InteractiveUi.FakeData ? "main-site" : id.Value )}[/] [green]✔[/]" ) {
+      : new Markup( $"[bold]{( InteractiveUi.FakeData ? "main-site" : id.Value )}[/] [green]{Chars.Checkmark}[/]" ) {
         Justification = Justify.Left
       };
   }

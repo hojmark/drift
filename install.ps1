@@ -144,4 +144,4 @@ try {
   Remove-Item -Path $TmpDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-Write-Ok "`e[1mInstalled Drift CLI $VersionDisplay successfully!`e[0m..."
+Write-Ok "`e[1mInstalled Drift CLI $VersionDisplay successfully!`e[0m"

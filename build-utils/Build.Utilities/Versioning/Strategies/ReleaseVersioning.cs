@@ -10,7 +10,6 @@ namespace Drift.Build.Utilities.Versioning.Strategies;
 
 public sealed class ReleaseVersioning(
   Configuration configuration,
-  string? customVersion,
   GitRepository repository,
   IGitHubClient gitHubClient
 ) : ReleaseVersioningBase( configuration, repository, gitHubClient ) {
@@ -22,10 +21,6 @@ public sealed class ReleaseVersioning(
   }
 
   private async Task<SemVersion> GetVersionInternalAsync() {
-    if ( customVersion != null ) {
-      throw new InvalidOperationException( "Cannot specify a custom version when releasing" );
-    }
-
     // TODO can now use .Latest(), since main release is no longer a prerelease
     // .Latest() does not return prereleases
     var releases = await GitHubClient.Repository.Release.GetAll(

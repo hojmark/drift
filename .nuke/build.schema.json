@@ -49,6 +49,7 @@
         "CreateRelease",
         "CreateWindowsArtifacts",
         "DeleteUntaggedImages",
+        "OutputVersion",
         "PackBinaries",
         "PublishBinaries",
         "PushContainerImage",
@@ -151,14 +152,14 @@
           "type": "string",
           "description": "ContainerImageRef - Qualified image reference to push to Docker Hub with versioned tag"
         },
-        "CustomVersion": {
-          "type": "string",
-          "description": "CustomVersion - e.g. '3.1.5-preview.5'"
-        },
         "DockerHubPassword": {
           "type": "string",
           "description": "DockerHubPassword - Required for releasing container images to Docker Hub",
           "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
+        "ExactVersion": {
+          "type": "string",
+          "description": "ExactVersion - Fully-qualified pre-computed version e.g. '1.2.0-windows.9.20260319202632'"
         },
         "GitHubToken": {
           "type": "string",
@@ -207,6 +208,10 @@
             "win81_x64",
             "win81_x86"
           ]
+        },
+        "PrereleaseIdentifiers": {
+          "type": "string",
+          "description": "PrereleaseIdentifiers - Dot-separated pre-release identifiers e.g. 'attempt.42'"
         },
         "ReleaseType": {
           "description": "ReleaseType - None (default/safe), PreRelease, or Release",

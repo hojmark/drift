@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Drift.Build.Utilities.Tests.NukeBuild;
 using Drift.Build.Utilities.Versioning;
 using Drift.Build.Utilities.Versioning.Strategies;
@@ -30,7 +31,7 @@ internal sealed class VersioningTests {
 
     // Act
     var factory = new VersioningStrategyFactory( build );
-    var strategy = factory.Create( Configuration.Debug, null, null, null );
+    var strategy = factory.Create( Configuration.Debug, null, null, null, null );
     var version = await strategy.GetVersionAsync();
 
     // Assert
@@ -48,7 +49,7 @@ internal sealed class VersioningTests {
     // Act
     var factory = new VersioningStrategyFactory( build );
     var exception = Assert.Throws<InvalidOperationException>( () =>
-      factory.Create( Configuration.Release, null, null, null )
+      factory.Create( Configuration.Release, null, null, null, null )
     );
 
     // Assert
@@ -86,7 +87,7 @@ internal sealed class VersioningTests {
     // Act
     var factory = new VersioningStrategyFactory( build );
     var exception = Assert.Throws<InvalidOperationException>( () =>
-      factory.Create( Configuration.Release, null, null, null )
+      factory.Create( Configuration.Release, null, null, null, null )
     );
 
     // Assert
@@ -94,7 +95,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public void PreReleaseWithoutCustomVersionThrows() {
+  public void PreReleaseWithoutVersionThrows() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreatePreRelease )
@@ -102,17 +103,17 @@ internal sealed class VersioningTests {
 
     // Act
     var factory = new VersioningStrategyFactory( build );
-    var strategy = factory.Create( Configuration.Release, null, null, null );
+    var strategy = factory.Create( Configuration.Release, null, null, null, null );
 
     // Assert
     Assert.ThrowsAsync<InvalidOperationException>( async () => await strategy.GetVersionAsync() );
   }
 
-  public static IEnumerable<Func<TestNukeBuild, (TestNukeBuild Build, string? CustomVersion)>>
+  public static IEnumerable<Func<TestNukeBuild, (TestNukeBuild Build, string? PrereleaseIdentifiers)>>
     DebugConfigurationCases() {
     yield return b => (
       b.WithExecutionPlan( x => x.CreatePreRelease ).WithReleaseType( ReleaseType.PreRelease ),
-      "0.0.0-custom"
+      "custom"
     );
     yield return b => (
       b.WithExecutionPlan( x => x.CreateRelease ).WithReleaseType( ReleaseType.Release ),
@@ -123,15 +124,16 @@ internal sealed class VersioningTests {
   [Test]
   [MethodDataSource( nameof(DebugConfigurationCases) )]
   public void DebugConfigurationThrows(
-    Func<TestNukeBuild, (TestNukeBuild Build, string? CustomVersion)> caseFactory ) {
+    Func<TestNukeBuild, (TestNukeBuild Build, string? PrereleaseIdentifiers)> caseFactory ) {
     // Arrange
-    var (build, customVersion) = caseFactory( new TestNukeBuild() );
+    var (build, prereleaseIdentifiers) = caseFactory( new TestNukeBuild() );
 
     // Act
     var factory = new VersioningStrategyFactory( build );
 
     // Assert
-    Assert.Throws<InvalidOperationException>( () => factory.Create( Configuration.Debug, customVersion, null, null ) );
+    Assert.Throws<InvalidOperationException>( () =>
+      factory.Create( Configuration.Debug, prereleaseIdentifiers, null, null, null ) );
   }
 
   [Test]
@@ -143,10 +145,30 @@ internal sealed class VersioningTests {
 
     // Act
     var factory = new VersioningStrategyFactory( build );
-    var strategy = factory.Create( Configuration.Release, "0.0.0-custom", null, null );
+    var strategy = factory.Create( Configuration.Release, "custom", null, null, null );
+    var version = await strategy.GetVersionAsync();
 
-    // Assert
-    await Assert.That( async () => await strategy.GetVersionAsync() ).ThrowsNothing(); // TODO test the version!
+    // Assert: prefix is preserved and a 14-digit timestamp is appended
+    using ( Assert.Multiple() ) {
+      await Assert.That( version.ToString() ).StartsWith( "0.0.0-custom." );
+      await Assert.That( version.PrereleaseIdentifiers[version.PrereleaseIdentifiers.Count - 1].ToString() )
+        .Matches( new Regex( @"^\d{14}$" ) );
+    }
+  }
+
+  [Test]
+  public void PreReleaseRejectsFullSemVerString() {
+    // Arrange
+    var build = new TestNukeBuild()
+      .WithExecutionPlan( b => b.CreatePreRelease )
+      .WithReleaseType( ReleaseType.PreRelease );
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Release, "0.0.0-custom", null, null, null );
+
+    // Assert: full semver strings must be rejected — only dot-separated identifiers are accepted
+    Assert.ThrowsAsync<InvalidOperationException>( async () => await strategy.GetVersionAsync() );
   }
 
   [Test]
@@ -158,17 +180,17 @@ internal sealed class VersioningTests {
 
     // Act
     var factory = new VersioningStrategyFactory( build );
-    var strategy = factory.Create( Configuration.Release, "0.0.0-custom", null, null );
+    var strategy = factory.Create( Configuration.Release, "custom", null, null, null );
     var versionBefore = await strategy.GetVersionAsync();
-    Task.Delay( 1500 ).Wait();
+    Task.Delay( 1500 ).Wait(); // Ensure wall-clock time advances past the 1-second timestamp resolution
     var versionAfter = await strategy.GetVersionAsync();
 
-    // Assert
+    // Assert: _timestamp is cached — both calls return the same version despite the delay
     await Assert.That( versionBefore ).IsEqualTo( versionAfter );
   }
 
   [Test]
-  public void ReleaseWithCustomVersionThrows() {
+  public void ReleaseWithPrereleaseIdentifiersThrows() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreateRelease )
@@ -176,10 +198,11 @@ internal sealed class VersioningTests {
 
     // Act
     var factory = new VersioningStrategyFactory( build );
-    var strategy = factory.Create( Configuration.Release, "0.0.0-custom", null, null );
 
-    // Assert
-    Assert.ThrowsAsync<InvalidOperationException>( async () => await strategy.GetVersionAsync() );
+    // Assert: rejected eagerly in the factory — prereleaseIdentifiers is meaningless for a Release build
+    Assert.Throws<InvalidOperationException>( () =>
+      factory.Create( Configuration.Release, "custom", null, null, null )
+    );
   }
 
   [Explicit( "Implement" )]
@@ -192,42 +215,112 @@ internal sealed class VersioningTests {
 
     // Act
     var factory = new VersioningStrategyFactory( build );
-    var strategy = factory.Create( Configuration.Release, null, null, null );
+    var strategy = factory.Create( Configuration.Release, null, null, null, null );
 
     // Assert
     await Assert.That( async () => await strategy.GetVersionAsync() ).ThrowsNothing();
   }
 
   public static IEnumerable<Func<NukeBuildWithArbitraryTarget, (NukeBuildWithArbitraryTarget Build, string?
-      CustomVersion, Type ExpectedStrategyType)>>
+      BuildVersion, string? ExactVersion, Type ExpectedStrategyType)>>
     ReleaseTypePropagatesCases() {
     yield return b => (
       b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.Release ),
+      null,
       null,
       typeof(ReleaseVersioning)
     );
     yield return b => (
       b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.PreRelease ),
-      "0.0.0-custom",
+      "custom",
+      null,
       typeof(PreReleaseVersioning)
+    );
+    yield return b => (
+      b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.PreRelease ),
+      null,
+      "0.0.0-custom.20260319202632",
+      typeof(ExactVersioning)
+    );
+    yield return b => (
+      b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.Release ),
+      null,
+      "1.5.0",
+      typeof(ExactVersioning)
     );
   }
 
   [Test]
   [MethodDataSource( nameof(ReleaseTypePropagatesCases) )]
   public async Task ReleaseTypePropagatesWithoutReleaseTargetInPlan(
-    Func<NukeBuildWithArbitraryTarget, (NukeBuildWithArbitraryTarget Build, string? CustomVersion, Type
-      ExpectedStrategyType)> caseFactory ) {
+    Func<NukeBuildWithArbitraryTarget, (NukeBuildWithArbitraryTarget Build, string? BuildVersion, string? ExactVersion,
+      Type ExpectedStrategyType)> caseFactory ) {
     // Arrange — build jobs pass --releasetype but run an arbitrary target, not CreateRelease/CreatePreRelease
     // ReleaseType should still select the matching versioning strategy (for correct artifact naming)
-    var (build, customVersion, expectedStrategyType) = caseFactory( new NukeBuildWithArbitraryTarget() );
+    var (build, buildVersion, exactVersion, expectedStrategyType) = caseFactory( new NukeBuildWithArbitraryTarget() );
 
     // Act
     var factory = new VersioningStrategyFactory( build );
-    var strategy = factory.Create( Configuration.Release, customVersion, null, null );
+    var strategy = factory.Create( Configuration.Release, buildVersion, exactVersion, null, null );
 
-    // Assert — strategy matches ReleaseType, not DefaultVersioning
+    // Assert — strategy matches expected type
     await Assert.That( strategy.GetType() ).IsEqualTo( expectedStrategyType );
+  }
+
+  [Test]
+  public async Task ExactVersioningValid() {
+    // Arrange
+    var build = new TestNukeBuild()
+      .WithExecutionPlan( b => b.CreatePreRelease )
+      .WithReleaseType( ReleaseType.PreRelease );
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Release, null, "0.0.0-windows.10.20260319202632", null, null );
+    var version = await strategy.GetVersionAsync();
+
+    // Assert: exact version returned verbatim
+    await Assert.That( version.ToString() ).IsEqualTo( "0.0.0-windows.10.20260319202632" );
+  }
+
+  [Test]
+  public void ExactVersioningWithNullThrows() {
+    // Arrange — construct directly since the factory treats whitespace-only as "not set"
+    var strategy = new ExactVersioning( Configuration.Release, "   ", null!, null! );
+
+    // Assert
+    Assert.ThrowsAsync<InvalidOperationException>( async () => await strategy.GetVersionAsync() );
+  }
+
+  [Test]
+  public async Task ExactVersioningValidWithReleaseType() {
+    // Arrange — exactVersion is now valid for Release builds too
+    var build = new TestNukeBuild()
+      .WithExecutionPlan( b => b.CreateRelease )
+      .WithReleaseType( ReleaseType.Release );
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Release, null, "1.5.0", null, null );
+
+    // Assert: ExactVersioning is selected regardless of ReleaseType
+    await Assert.That( strategy.GetType() ).IsEqualTo( typeof(ExactVersioning) );
+  }
+
+  [Test]
+  public async Task ExactVersioningValidWithReleaseVersion() {
+    // Arrange — a plain release version (non-prerelease) is accepted verbatim
+    var build = new TestNukeBuild()
+      .WithExecutionPlan( b => b.CreateRelease )
+      .WithReleaseType( ReleaseType.Release );
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Release, null, "1.5.0", null, null );
+    var version = await strategy.GetVersionAsync();
+
+    // Assert
+    await Assert.That( version.ToString() ).IsEqualTo( "1.5.0" );
   }
 }
 

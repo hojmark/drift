@@ -1,4 +1,3 @@
-using System.Numerics;
 using Nuke.Common.Git;
 using Octokit;
 using Semver;
@@ -7,59 +6,49 @@ namespace Drift.Build.Utilities.Versioning.Strategies;
 
 public sealed class PreReleaseVersioning(
   Configuration configuration,
-  string? customVersion,
+  string? prereleaseIdentifiers,
   GitRepository repository,
   IGitHubClient gitHubClient
 ) : ReleaseVersioningBase( configuration, repository, gitHubClient ) {
   private string? _timestamp; // Cache to support multiple calls to GetVersionAsync()
 
   public override Task<SemVersion> GetVersionAsync() {
-    if ( string.IsNullOrWhiteSpace( customVersion ) ) {
+    if ( string.IsNullOrWhiteSpace( prereleaseIdentifiers ) ) {
       throw new InvalidOperationException(
-        "Must specify custom version when releasing a pre-release version"
+        "Must specify pre-release identifiers when releasing a pre-release version"
       );
     }
 
-    var ver = SemVersion.Parse( customVersion );
-
-    if ( !( ver.Major == 0 && ver.Minor == 0 && ver.Patch == 0 ) ) {
+    if ( SemVersion.TryParse( prereleaseIdentifiers, out _ ) ) {
       throw new InvalidOperationException(
-        "Custom version must start with 0.0.0 when releasing a pre-release version" );
+        $"Pre-release identifiers must not be a full version string (e.g. use 'attempt.42' not '0.0.0-attempt.42'). Got: '{prereleaseIdentifiers}'"
+      );
     }
 
-    if ( !ver.IsPrerelease ) {
-      throw new InvalidOperationException(
-        "Custom version must be a prerelease when releasing a pre-release version" );
-    }
+    ValidateIdentifiers( prereleaseIdentifiers );
 
-    if ( ver.PrereleaseIdentifiers.Contains( new PrereleaseIdentifier( "alpha" ) ) ) {
-      throw new InvalidOperationException(
-        "Custom version must not contain 'alpha' when releasing a pre-release version" );
-    }
+    var parsed = SemVersion.ParsedFrom( 0, 0, 0, prereleaseIdentifiers );
 
-    var updatedPrereleaseIdentifiers = ver.PrereleaseIdentifiers.ToList();
+    var identifiers = parsed.PrereleaseIdentifiers.ToList();
     _timestamp ??= DateTime.UtcNow.ToString( "yyyyMMddHHmmss" );
-    var date = new PrereleaseIdentifier( _timestamp );
-    updatedPrereleaseIdentifiers.Add( date );
+    identifiers.Add( new PrereleaseIdentifier( _timestamp ) );
 
-    var updatedMetadata = ver.MetadataIdentifiers.ToList();
-    /*var preReleaseIdentifier = new MetadataIdentifier( "prerelease" );
-    if ( !updatedMetadata.Contains( preReleaseIdentifier ) ) {
-      updatedMetadata.Add( preReleaseIdentifier );
-    }*/
-
-    var version = new SemVersion(
-      new BigInteger( 0 ),
-      new BigInteger( 0 ),
-      new BigInteger( 0 ),
-      updatedPrereleaseIdentifiers,
-      updatedMetadata
-    );
-
-    return Task.FromResult( version );
+    return Task.FromResult( new SemVersion(
+      parsed.Major,
+      parsed.Minor,
+      parsed.Patch,
+      identifiers,
+      parsed.MetadataIdentifiers
+    ) );
   }
 
   public override async Task<string> GetNameAsync() {
     return CreateReleaseName( await GetVersionAsync(), includeMetadata: true );
+  }
+
+  private static void ValidateIdentifiers( string identifiers ) {
+    if ( identifiers.Split( '.' ).Contains( "alpha" ) ) {
+      throw new InvalidOperationException( "Pre-release identifiers must not contain 'alpha'" );
+    }
   }
 }

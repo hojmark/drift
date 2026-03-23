@@ -34,7 +34,13 @@ using ProductHeaderValue = Octokit.ProductHeaderValue;
 sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
   public NukeBuild() {
     Versioning = new Lazy<IVersioningStrategy>( () =>
-      new VersioningStrategyFactory( this ).Create( Configuration, CustomVersion, GitHubClient, Repository )
+      new VersioningStrategyFactory( this ).Create(
+        Configuration,
+        PrereleaseIdentifiers,
+        ExactVersion,
+        GitHubClient,
+        Repository
+      )
     );
   }
 
@@ -43,8 +49,11 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
   [Parameter( $"{nameof(Configuration)} - Configuration to build - Default is 'Debug' (local) or 'Release' (server)" )]
   public readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-  [Parameter( $"{nameof(CustomVersion)} - e.g. '3.1.5-preview.5'" )]
-  public readonly string CustomVersion;
+  [Parameter( $"{nameof(PrereleaseIdentifiers)} - Dot-separated pre-release identifiers e.g. 'attempt.42'" )]
+  public readonly string PrereleaseIdentifiers;
+
+  [Parameter( $"{nameof(ExactVersion)} - Fully-qualified pre-computed version e.g. '1.2.0-windows.9.20260319202632'" )]
+  public readonly string ExactVersion;
 
   [Parameter( $"{nameof(Commit)} - e.g. '4c16978aa41a3b435c0b2e34590f1759c1dc0763'" )]
   public string Commit = IsLocalBuild ? "0000000000000000000000000000000000000000" : null;
@@ -122,6 +131,17 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
       PublishDirectory / id.ToString();
   }
 
+  Target OutputVersion => _ => _
+    .Executes( async () => {
+        var version = await Versioning.Value.GetVersionAsync();
+        var versionString = version.WithoutMetadata().ToString();
+
+        Log.Information( "Version: {Version}", versionString );
+
+        GitHubActions.SetOutput( "version", versionString );
+      }
+    );
+
   Target BuildInfo => _ => _
     .Before( CleanProjects, CleanArtifacts, Restore )
     .DependentFor( Build )
@@ -135,13 +155,10 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
         );
 
         var versionStrategy = Versioning.Value.GetType().Name.Replace( "Versioning", string.Empty );
-        var versionProvided = string.IsNullOrEmpty( CustomVersion ) ? "[none]" : CustomVersion;
         var versionDetermined = await Versioning.Value.GetVersionAsync();
 
         var builder = new StringBuilder();
-        // builder.AppendLine( $"Configuration        : {Configuration}" );
         builder.AppendLine( $"Version strategy     : {versionStrategy}" );
-        builder.AppendLine( $"Version provided     : {versionProvided}" );
         builder.AppendLine( $"Version determined   : {versionDetermined}" );
 
         if ( Versioning.Value.Release is { } release ) {

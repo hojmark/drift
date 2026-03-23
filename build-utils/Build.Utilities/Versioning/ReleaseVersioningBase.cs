@@ -1,6 +1,5 @@
 using Drift.Build.Utilities.Versioning.Abstractions;
 using HLabs.ImageReferences;
-using Nuke.Common;
 using Nuke.Common.Git;
 using Nuke.Common.Tools.GitHub;
 using Octokit;

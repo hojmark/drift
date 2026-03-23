@@ -66,12 +66,12 @@ jobs:
         uses: ./.github/actions/setup-runner
 
       - name: Run tests
-        run: |
-          dotnet run `
-          --project ./build/_build.csproj `
-          --target Test `
-          --commit ${{ github.sha }} `
-          --msbuildverbosity ${{ github.event.inputs.verbosity }} `
+        run: >
+          dotnet run
+          --project ./build/_build.csproj
+          --target Test
+          --commit ${{ github.sha }}
+          --msbuildverbosity ${{ github.event.inputs.verbosity }}
           --platform win_x64
 
       - name: Display test results

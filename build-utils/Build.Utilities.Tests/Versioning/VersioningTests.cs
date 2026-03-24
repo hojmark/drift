@@ -2,7 +2,12 @@ using System.Text.RegularExpressions;
 using Drift.Build.Utilities.Tests.NukeBuild;
 using Drift.Build.Utilities.Versioning;
 using Drift.Build.Utilities.Versioning.Strategies;
+using Microsoft.Extensions.Time.Testing;
+using NSubstitute;
 using Nuke.Common;
+using Nuke.Common.Git;
+using Nuke.Common.Tools.GitHub;
+using Octokit;
 using Assert = TUnit.Assertions.Assert;
 
 namespace Drift.Build.Utilities.Tests.Versioning;
@@ -136,7 +141,8 @@ internal sealed class VersioningTests {
 
     // Assert
     Assert.Throws<InvalidOperationException>( () =>
-      factory.Create( Configuration.Debug, prereleaseIdentifiers, null, null, null ) );
+      factory.Create( Configuration.Debug, prereleaseIdentifiers, null, null, null )
+    );
   }
 
   [Test]
@@ -177,18 +183,19 @@ internal sealed class VersioningTests {
   [Test]
   public async Task PreReleaseVersionIsTemporallyConsistent() {
     // Arrange
+    var timeProvider = new FakeTimeProvider();
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreatePreRelease )
       .WithReleaseType( ReleaseType.PreRelease );
 
     // Act
-    var factory = new VersioningStrategyFactory( build );
+    var factory = new VersioningStrategyFactory( build, timeProvider );
     var strategy = factory.Create( Configuration.Release, "custom", null, null, null );
     var versionBefore = await strategy.GetVersionAsync();
-    Task.Delay( 1500 ).Wait(); // Ensure wall-clock time advances past the 1-second timestamp resolution
+    timeProvider.Advance( TimeSpan.FromSeconds( 2 ) ); // Advance time past the 1-second timestamp resolution
     var versionAfter = await strategy.GetVersionAsync();
 
-    // Assert: _timestamp is cached — both calls return the same version despite the delay
+    // Assert: _timestamp is cached — both calls return the same version despite the time advancement
     await Assert.That( versionBefore ).IsEqualTo( versionAfter );
   }
 
@@ -208,7 +215,6 @@ internal sealed class VersioningTests {
     );
   }
 
-  [Explicit( "Implement" )]
   [Test]
   public async Task ReleaseValid() {
     // Arrange
@@ -216,38 +222,64 @@ internal sealed class VersioningTests {
       .WithExecutionPlan( b => b.CreateRelease )
       .WithReleaseType( ReleaseType.Release );
 
+    var gitRepository = GitRepository.FromUrl( "https://github.com/test-owner/test-repo" );
+
+    var gitHubClient = Substitute.For<IGitHubClient>();
+    var releasesClient = Substitute.For<IReleasesClient>();
+
+    var latestRelease = new Release(
+      url: "https://api.github.com/repos/test-owner/test-repo/releases/1",
+      htmlUrl: "https://github.com/test-owner/test-repo/releases/tag/v0.0.0-alpha.1",
+      assetsUrl: "https://api.github.com/repos/test-owner/test-repo/releases/1/assets",
+      uploadUrl: "https://uploads.github.com/repos/test-owner/test-repo/releases/1/assets{?name,label}",
+      id: 1,
+      nodeId: "MDc6UmVsZWFzZTE=",
+      tagName: "v0.0.0-alpha.1",
+      targetCommitish: "main",
+      name: "v0.0.0-alpha.1",
+      body: "Test release",
+      draft: false,
+      prerelease: true,
+      createdAt: DateTimeOffset.UtcNow.AddDays( -1 ),
+      publishedAt: DateTimeOffset.UtcNow.AddDays( -1 ),
+      author: null!,
+      tarballUrl: "https://api.github.com/repos/test-owner/test-repo/tarball/v0.0.0-alpha.1",
+      zipballUrl: "https://api.github.com/repos/test-owner/test-repo/zipball/v0.0.0-alpha.1",
+      assets: []
+    );
+
+    releasesClient.GetAll( "test-owner", "test-repo" ).Returns( [latestRelease] );
+    gitHubClient.Repository.Release.Returns( releasesClient );
+
     // Act
     var factory = new VersioningStrategyFactory( build );
-    var strategy = factory.Create( Configuration.Release, null, null, null, null );
+    var strategy = factory.Create( Configuration.Release, null, null, gitHubClient, gitRepository );
+    var version = await strategy.GetVersionAsync();
 
     // Assert
-    await Assert.That( async () => await strategy.GetVersionAsync() ).ThrowsNothing();
+    await Assert.That( version.ToString() ).IsEqualTo( "0.0.0-alpha.2" );
   }
 
-  public static IEnumerable<Func<NukeBuildWithArbitraryTarget, (NukeBuildWithArbitraryTarget Build, string?
-      BuildVersion, string? ExactVersion, Type ExpectedStrategyType)>>
+  public static IEnumerable<Func<NukeBuildWithArbitraryTarget,
+      (NukeBuildWithArbitraryTarget Build, string? ExactVersion, Type ExpectedStrategyType)>>
     ReleaseTypePropagatesCases() {
     yield return b => (
       b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.Release ),
-      null,
       null,
       typeof(ReleaseVersioning)
     );
     yield return b => (
       b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.PreRelease ),
       "custom",
-      null,
       typeof(PreReleaseVersioning)
     );
     yield return b => (
       b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.PreRelease ),
-      null,
       "0.0.0-custom.20260319202632",
       typeof(ExactVersioning)
     );
     yield return b => (
       b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.Release ),
-      null,
       "1.5.0",
       typeof(ExactVersioning)
     );
@@ -256,15 +288,15 @@ internal sealed class VersioningTests {
   [Test]
   [MethodDataSource( nameof(ReleaseTypePropagatesCases) )]
   public async Task ReleaseTypePropagatesWithoutReleaseTargetInPlan(
-    Func<NukeBuildWithArbitraryTarget, (NukeBuildWithArbitraryTarget Build, string? BuildVersion, string? ExactVersion,
+    Func<NukeBuildWithArbitraryTarget, (NukeBuildWithArbitraryTarget Build, string? ExactVersion,
       Type ExpectedStrategyType)> caseFactory ) {
     // Arrange — build jobs pass --releasetype but run an arbitrary target, not CreateRelease/CreatePreRelease
     // ReleaseType should still select the matching versioning strategy (for correct artifact naming)
-    var (build, buildVersion, exactVersion, expectedStrategyType) = caseFactory( new NukeBuildWithArbitraryTarget() );
+    var (build, exactVersion, expectedStrategyType) = caseFactory( new NukeBuildWithArbitraryTarget() );
 
     // Act
     var factory = new VersioningStrategyFactory( build );
-    var strategy = factory.Create( Configuration.Release, buildVersion, exactVersion, null, null );
+    var strategy = factory.Create( Configuration.Release, null, exactVersion, null, null );
 
     // Assert — strategy matches expected type
     await Assert.That( strategy.GetType() ).IsEqualTo( expectedStrategyType );
@@ -296,23 +328,8 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public async Task ExactVersioningValidWithReleaseType() {
-    // Arrange — exactVersion is now valid for Release builds too
-    var build = new TestNukeBuild()
-      .WithExecutionPlan( b => b.CreateRelease )
-      .WithReleaseType( ReleaseType.Release );
-
-    // Act
-    var factory = new VersioningStrategyFactory( build );
-    var strategy = factory.Create( Configuration.Release, null, "1.5.0", null, null );
-
-    // Assert: ExactVersioning is selected regardless of ReleaseType
-    await Assert.That( strategy.GetType() ).IsEqualTo( typeof(ExactVersioning) );
-  }
-
-  [Test]
   public async Task ExactVersioningValidWithReleaseVersion() {
-    // Arrange — a plain release version (non-prerelease) is accepted verbatim
+    // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreateRelease )
       .WithReleaseType( ReleaseType.Release );
@@ -323,6 +340,7 @@ internal sealed class VersioningTests {
     var version = await strategy.GetVersionAsync();
 
     // Assert
+    await Assert.That( strategy.GetType() ).IsEqualTo( typeof(ExactVersioning) );
     await Assert.That( version.ToString() ).IsEqualTo( "1.5.0" );
   }
 }

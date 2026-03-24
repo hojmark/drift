@@ -7,14 +7,14 @@ using Serilog;
 
 namespace Drift.Build.Utilities.Versioning;
 
-public sealed class VersioningStrategyFactory( INukeRelease build ) {
+public sealed class VersioningStrategyFactory( INukeRelease build, TimeProvider? timeProvider = null ) {
   public IVersioningStrategy Create(
     Configuration configuration,
     string? prereleaseIdentifiers,
     string? exactVersion,
     // Maybe wrap below two in custom type
-    IGitHubClient? gitHubClient,
-    GitRepository? repository
+    IGitHubClient gitHubClient,
+    GitRepository repository
   ) {
     var releaseType = build.ReleaseType;
     var planHasCreateRelease = build.ExecutionPlan.Contains( build.CreateRelease );
@@ -51,7 +51,7 @@ public sealed class VersioningStrategyFactory( INukeRelease build ) {
         );
       }
 
-      var strategy = new ExactVersioning( configuration, exactVersion, repository!, gitHubClient! );
+      var strategy = new ExactVersioning( configuration, exactVersion, repository, gitHubClient );
       Log.Information( "Versioning strategy is {Strategy}", strategy.GetType().Name );
       return strategy;
     }
@@ -70,12 +70,13 @@ public sealed class VersioningStrategyFactory( INukeRelease build ) {
     // above already caught that.
 
     IVersioningStrategy baseStrategy = releaseType switch {
-      ReleaseType.Release => new ReleaseVersioning( configuration, repository!, gitHubClient! ),
+      ReleaseType.Release => new ReleaseVersioning( configuration, repository, gitHubClient ),
       ReleaseType.PreRelease => new PreReleaseVersioning(
         configuration,
         prereleaseIdentifiers,
-        repository!,
-        gitHubClient!
+        repository,
+        gitHubClient,
+        timeProvider ?? TimeProvider.System
       ),
       ReleaseType.None => new DefaultVersioning( build ),
       _ => throw new InvalidOperationException( $"Unknown {nameof(ReleaseType)}: {releaseType}" ),

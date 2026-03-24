@@ -8,7 +8,8 @@ public sealed class PreReleaseVersioning(
   Configuration configuration,
   string? prereleaseIdentifiers,
   GitRepository repository,
-  IGitHubClient gitHubClient
+  IGitHubClient gitHubClient,
+  TimeProvider timeProvider
 ) : ReleaseVersioningBase( configuration, repository, gitHubClient ) {
   private string? _timestamp; // Cache to support multiple calls to GetVersionAsync()
 
@@ -30,7 +31,7 @@ public sealed class PreReleaseVersioning(
     var parsed = SemVersion.ParsedFrom( 0, 0, 0, prereleaseIdentifiers );
 
     var identifiers = parsed.PrereleaseIdentifiers.ToList();
-    _timestamp ??= DateTime.UtcNow.ToString( "yyyyMMddHHmmss" );
+    _timestamp ??= timeProvider.GetUtcNow().ToString( "yyyyMMddHHmmss" );
     identifiers.Add( new PrereleaseIdentifier( _timestamp ) );
 
     return Task.FromResult( new SemVersion(

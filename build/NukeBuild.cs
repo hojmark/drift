@@ -149,7 +149,7 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
         using var _ = new OperationTimer( nameof(BuildInfo) );
 
         Log.Information(
-          "MSBuild console output verbosity is {Verbosity} (parsed from {ParsedVerbosity})",
+          "MSBuild console output verbosity is {VerbosityParsed} (parsed from {VerbosityRaw})",
           MsBuildVerbosityParsed,
           MsBuildVerbosity
         );

@@ -53,34 +53,36 @@ internal sealed class VersioningTests {
     );
 
     // Assert
-    await Assert.That( exception.Message )
-      .IsEqualTo( "Execution plan cannot contain both CreateRelease and CreatePreRelease" );
+    await Assert.That( exception.Message ).IsEqualTo(
+      $"Execution plan cannot contain both {nameof(TestNukeBuild.CreateRelease)} and {nameof(TestNukeBuild.CreatePreRelease)}"
+    );
   }
 
   public static IEnumerable<Func<TestNukeBuild, (TestNukeBuild Build, string ExpectedMessageContains)>>
     MismatchedReleaseTypeCases() {
     yield return b => (
       b.WithExecutionPlan( x => x.CreateRelease ).WithReleaseType( ReleaseType.None ),
-      nameof(ReleaseType.Release)
+      "CreateRelease requires ReleaseType to be Release but got None"
     );
     yield return b => (
       b.WithExecutionPlan( x => x.CreatePreRelease ).WithReleaseType( ReleaseType.None ),
-      nameof(ReleaseType.PreRelease)
+      "CreatePreRelease requires ReleaseType to be PreRelease but got None"
     );
     yield return b => (
       b.WithExecutionPlan( x => x.CreateRelease ).WithReleaseType( ReleaseType.PreRelease ),
-      nameof(ReleaseType.Release)
+      "CreateRelease requires ReleaseType to be Release but got PreRelease"
     );
     yield return b => (
       b.WithExecutionPlan( x => x.CreatePreRelease ).WithReleaseType( ReleaseType.Release ),
-      nameof(ReleaseType.PreRelease)
+      "CreatePreRelease requires ReleaseType to be PreRelease but got Release"
     );
   }
 
   [Test]
   [MethodDataSource( nameof(MismatchedReleaseTypeCases) )]
   public async Task MismatchedReleaseTypeThrows(
-    Func<TestNukeBuild, (TestNukeBuild Build, string ExpectedMessageContains)> caseFactory ) {
+    Func<TestNukeBuild, (TestNukeBuild Build, string ExpectedMessageContains)> caseFactory
+  ) {
     // Arrange
     var (build, expectedMessageContains) = caseFactory( new TestNukeBuild() );
 
@@ -91,6 +93,7 @@ internal sealed class VersioningTests {
     );
 
     // Assert
+    Console.WriteLine( exception.Message );
     await Assert.That( exception.Message ).Contains( expectedMessageContains );
   }
 

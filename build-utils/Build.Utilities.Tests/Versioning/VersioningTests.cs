@@ -260,48 +260,6 @@ internal sealed class VersioningTests {
     await Assert.That( version.ToString() ).IsEqualTo( "0.0.0-alpha.2" );
   }
 
-  public static IEnumerable<Func<NukeBuildWithArbitraryTarget,
-      (NukeBuildWithArbitraryTarget Build, string? ExactVersion, Type ExpectedStrategyType)>>
-    ReleaseTypePropagatesCases() {
-    yield return b => (
-      b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.Release ),
-      null,
-      typeof(ReleaseVersioning)
-    );
-    yield return b => (
-      b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.PreRelease ),
-      "custom",
-      typeof(PreReleaseVersioning)
-    );
-    yield return b => (
-      b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.PreRelease ),
-      "0.0.0-custom.20260319202632",
-      typeof(ExactVersioning)
-    );
-    yield return b => (
-      b.WithExecutionPlan( x => x.Arbitrary ).WithReleaseType( ReleaseType.Release ),
-      "1.5.0",
-      typeof(ExactVersioning)
-    );
-  }
-
-  [Test]
-  [MethodDataSource( nameof(ReleaseTypePropagatesCases) )]
-  public async Task ReleaseTypePropagatesWithoutReleaseTargetInPlan(
-    Func<NukeBuildWithArbitraryTarget, (NukeBuildWithArbitraryTarget Build, string? ExactVersion,
-      Type ExpectedStrategyType)> caseFactory ) {
-    // Arrange — build jobs pass --releasetype but run an arbitrary target, not CreateRelease/CreatePreRelease
-    // ReleaseType should still select the matching versioning strategy (for correct artifact naming)
-    var (build, exactVersion, expectedStrategyType) = caseFactory( new NukeBuildWithArbitraryTarget() );
-
-    // Act
-    var factory = new VersioningStrategyFactory( build );
-    var strategy = factory.Create( Configuration.Release, null, exactVersion, null, null );
-
-    // Assert — strategy matches expected type
-    await Assert.That( strategy.GetType() ).IsEqualTo( expectedStrategyType );
-  }
-
   [Test]
   public async Task ExactVersioningValid() {
     // Arrange

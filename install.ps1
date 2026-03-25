@@ -8,6 +8,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -80,15 +82,11 @@ if ($Version -eq "") {
     Exit-WithError "Tag '$Version' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
   }
 
-  if ($null -eq $Release) {
+  if ($null -eq $Release -or $null -eq $Release.tag_name) {
     Exit-WithError "Tag '$Version' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
   }
 
   $Asset = @($Release.assets) | Where-Object { $_.name -like "*_${Platform}.zip" } | Select-Object -First 1
-
-  $DbgAssets = @($Release.assets)
-  foreach ($a in $DbgAssets) { Write-Step "DEBUG_ASSET: name='$($a.name)' like_match=$($a.name -like "*_${Platform}.zip")" }
-  Write-Step "DEBUG: asset_count=$($DbgAssets.Count) platform=$Platform asset_found=$($null -ne $Asset)"
 }
 
 if ($null -eq $Asset) {

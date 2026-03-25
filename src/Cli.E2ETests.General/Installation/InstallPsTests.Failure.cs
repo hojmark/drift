@@ -5,11 +5,13 @@ namespace Drift.Cli.E2ETests.General.Installation;
 internal sealed partial class InstallPsTests {
   /// <summary>
   /// install.ps1 should exit with an error when a tag that does not exist on GitHub is requested.
+  /// Runs under both PowerShell 7 (pwsh) and Windows PowerShell 5.1 (powershell).
   /// </summary>
-  [Test]
-  public async Task InstallNonExistingVersion() {
+  [TestCase( "pwsh" )]
+  [TestCase( "powershell" )]
+  public async Task InstallNonExistingVersion( string shell ) {
     // Arrange / Act
-    var installProcess = await new ToolWrapper( "pwsh" ).ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" vBOGUS" );
+    var installProcess = await new ToolWrapper( shell ).ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" vBOGUS" );
 
     PrintInstallOutput( installProcess );
 

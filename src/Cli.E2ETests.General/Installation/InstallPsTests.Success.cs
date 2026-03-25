@@ -77,9 +77,11 @@ internal sealed partial class InstallPsTests {
 
   /// <summary>
   /// install.ps1 should successfully install a specific version when a valid tag is provided.
+  /// Runs under both PowerShell 7 (pwsh) and Windows PowerShell 5.1 (powershell).
   /// </summary>
-  [Test]
-  public async Task InstallSpecificVersion() {
+  [TestCase( "pwsh" )]
+  [TestCase( "powershell" )]
+  public async Task InstallSpecificVersion( string shell ) {
     // NOTE: this must be the oldest tag that has a *_win-x64.zip asset.
     // Update when a newer stable release with Windows assets is available.
     const string version = "v0.0.0-windows.10.20260319202632";
@@ -92,7 +94,7 @@ internal sealed partial class InstallPsTests {
     try {
       // Act
       var installProcess =
-        await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
+        await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" {version}" );
 
       PrintInstallOutput( installProcess );

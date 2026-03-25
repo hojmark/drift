@@ -29,9 +29,6 @@ internal sealed partial class InstallShTests {
     await Verify( installProcess.StdOut ).UseTextForParameters( "INSTALL_OUTPUT" );
   }
 
-  /// <summary>
-  /// install.sh should exit with error when an unknown argument is passed (line ~108).
-  /// </summary>
   [Test]
   public async Task UnknownArgument() {
     // Arrange / Act
@@ -46,10 +43,6 @@ internal sealed partial class InstallShTests {
     }
   }
 
-  /// <summary>
-  /// install.sh should refuse to create a symlink at TARGET_ROOT when a regular (non-symlink)
-  /// file already exists there (line ~187).
-  /// </summary>
   [Test]
   public async Task SymlinkRefusedWhenRegularFileExistsAtTargetRoot() {
     var tempDir = Path.GetTempPath();
@@ -87,10 +80,6 @@ internal sealed partial class InstallShTests {
     }
   }
 
-  /// <summary>
-  /// install.sh should refuse to update an existing symlink at TARGET_ROOT when it points
-  /// to a different binary than the one just installed (line ~196).
-  /// </summary>
   [Test]
   public async Task SymlinkRefusedWhenExistingSymlinkPointsElsewhere() {
     var tempDir = Path.GetTempPath();
@@ -130,12 +119,6 @@ internal sealed partial class InstallShTests {
     }
   }
 
-  /// <summary>
-  /// install.sh should exit with error when required dependencies are missing, the user answers
-  /// "y" to install them, but no package manager (apt/dnf/pacman) is available (line ~63).
-  /// Uses an empty PATH so command -v curl/jq/tar and all package managers fail, then answers
-  /// "y" to the install prompt.
-  /// </summary>
   [Test]
   public async Task MissingDependenciesUserAnswersYesButNoPackageManager() {
     var installDir = Path.Combine( Path.GetTempPath(), "drift-install-nodeps-yes-" + Guid.NewGuid() );
@@ -171,11 +154,6 @@ internal sealed partial class InstallShTests {
     }
   }
 
-  /// <summary>
-  /// install.sh should exit with error when required dependencies are missing and the user
-  /// declines to install them (line ~75).
-  /// Uses an empty PATH so command -v curl/jq/tar all fail, then answers "n" to the prompt.
-  /// </summary>
   [Test]
   public async Task MissingDependenciesWithNoPackageManager() {
     var installDir = Path.Combine( Path.GetTempPath(), "drift-install-nodeps-" + Guid.NewGuid() );

@@ -162,10 +162,6 @@ internal sealed partial class InstallShTests {
     }
   }
 
-  /// <summary>
-  /// install.sh should successfully upgrade from a specific previous version to the latest,
-  /// with the installed binary reflecting the correct version at each step.
-  /// </summary>
   [Test]
   public async Task UpgradeFromPreviousVersion() {
     // NOTE: update this constant when a new Linux release is published that supersedes alpha.5

@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 
 # Ensure emoji and other Unicode characters are captured correctly when stdout is redirected
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$OutputEncoding             = [System.Text.Encoding]::UTF8
+$OutputEncoding           = [System.Text.Encoding]::UTF8
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -103,7 +103,7 @@ New-Item -ItemType Directory -Path $TmpDir | Out-Null
 try {
   $ZipPath = Join-Path $TmpDir $Asset.name
 
-  Write-Step "🔽 Downloading `e[1m$($Asset.name)`e[0m..."
+  Write-Step "🔽 Downloading $([char]27)[1m$($Asset.name)$([char]27)[0m..."
 
   $DownloadHeaders = $Headers.Clone()
   $DownloadHeaders["Accept"] = "application/octet-stream"
@@ -134,7 +134,8 @@ try {
 
   # ── PATH ─────────────────────────────────────────────────────────────────────
 
-  $UserPath = [System.Environment]::GetEnvironmentVariable("PATH", "User") ?? ""
+  $UserPath = [System.Environment]::GetEnvironmentVariable("PATH", "User")
+  if ($null -eq $UserPath) { $UserPath = "" }
   $PathEntries = $UserPath -split ";" | Where-Object { $_ -ne "" }
 
   if ($PathEntries -notcontains $InstallDir) {
@@ -148,4 +149,4 @@ try {
   Remove-Item -Path $TmpDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-Write-Ok "`e[1mInstalled Drift CLI $VersionDisplay successfully!`e[0m"
+Write-Ok "$([char]27)[1mInstalled Drift CLI $VersionDisplay successfully!$([char]27)[0m"

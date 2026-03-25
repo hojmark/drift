@@ -9,17 +9,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Ensure emoji and other Unicode characters are captured correctly when stdout is redirected.
-# Writing via [Console]::Out bypasses the PS host stream and honours OutputEncoding in PS 5.1.
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$OutputEncoding             = [System.Text.Encoding]::UTF8
-
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-function Write-Step   { param([string]$Msg) [Console]::Out.WriteLine($Msg) }
-function Write-Ok     { param([string]$Msg) [Console]::Out.WriteLine("✅ $Msg") }
-function Write-Fail   { param([string]$Msg) [Console]::Out.WriteLine("❌ $Msg") }
-function Write-Note   { param([string]$Msg) [Console]::Out.WriteLine("   $Msg") }
+function Write-Step   { param([string]$Msg) Write-Output $Msg }
+function Write-Ok     { param([string]$Msg) Write-Output "✅ $Msg" }
+function Write-Fail   { param([string]$Msg) Write-Output "❌ $Msg" }
+function Write-Note   { param([string]$Msg) Write-Output "   $Msg" }
 
 function Exit-WithError {
   param([string]$Msg)
@@ -90,6 +85,8 @@ if ($Version -eq "") {
   }
 
   $Asset = @($Release.assets) | Where-Object { $_.name -like "*_${Platform}.zip" } | Select-Object -First 1
+
+  Write-Step "DEBUG: asset count=$(@($Release.assets).Count) asset0name=$(if (@($Release.assets).Count -gt 0) { @($Release.assets)[0].name } else { 'NONE' }) platform=$Platform"
 }
 
 if ($null -eq $Asset) {

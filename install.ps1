@@ -19,12 +19,22 @@ if ($UseEmoji) {
   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 }
 
+# Build emoji strings at runtime so no non-ASCII bytes appear in this source file.
+# PowerShell 5.1 reads files using the system code page when no BOM is present,
+# which would corrupt raw UTF-8 multi-byte sequences embedded in string literals.
+$EmojiSearch    = [char]::ConvertFromUtf32(0x1F50D)  # 🔍
+$EmojiDown      = [char]::ConvertFromUtf32(0x1F53D)  # 🔽
+$EmojiPackage   = [char]::ConvertFromUtf32(0x1F4E6)  # 📦
+$EmojiRocket    = [char]::ConvertFromUtf32(0x1F680)  # 🚀
+$EmojiOk        = [char]::ConvertFromUtf32(0x2705)   # ✅
+$EmojiFail      = [char]::ConvertFromUtf32(0x274C)   # ❌
+
 function Write-Step {
   param([string]$Emoji, [string]$Msg)
   if ($UseEmoji) { Write-Output "$Emoji $Msg" } else { Write-Output ">> $Msg" }
 }
-function Write-Ok   { param([string]$Msg) if ($UseEmoji) { Write-Output "✅ $Msg" } else { Write-Output "[OK] $Msg" } }
-function Write-Fail { param([string]$Msg) if ($UseEmoji) { Write-Output "❌ $Msg" } else { Write-Output "[ERROR] $Msg" } }
+function Write-Ok   { param([string]$Msg) if ($UseEmoji) { Write-Output "$EmojiOk $Msg" } else { Write-Output "[OK] $Msg" } }
+function Write-Fail { param([string]$Msg) if ($UseEmoji) { Write-Output "$EmojiFail $Msg" } else { Write-Output "[ERROR] $Msg" } }
 function Write-Note { param([string]$Msg) Write-Output "   $Msg" }
 
 function Exit-WithError {
@@ -59,7 +69,7 @@ if ($env:GITHUB_TOKEN) {
 $Platform = "win-x64"
 
 if ($Version -eq "") {
-  Write-Step "🔍" "Fetching latest version..."
+  Write-Step $EmojiSearch "Fetching latest version..."
 
   try {
     $Releases = Invoke-RestMethod -Uri "$ApiBase/releases" -Headers $Headers -ErrorAction Stop
@@ -83,7 +93,7 @@ if ($Version -eq "") {
   # Normalise: accept both "1.2.3" and "v1.2.3"
   if (-not $Version.StartsWith("v")) { $Version = "v$Version" }
 
-  Write-Step "🔍" "Fetching version $Version..."
+  Write-Step $EmojiSearch "Fetching version $Version..."
 
   try {
     $Release = Invoke-RestMethod -Uri "$ApiBase/releases/tags/$Version" -Headers $Headers -ErrorAction Stop
@@ -114,7 +124,7 @@ New-Item -ItemType Directory -Path $TmpDir | Out-Null
 try {
   $ZipPath = Join-Path $TmpDir $Asset.name
 
-  Write-Step "🔽" "Downloading $($Asset.name)..."
+  Write-Step $EmojiDown "Downloading $($Asset.name)..."
 
   $DownloadHeaders = $Headers.Clone()
   $DownloadHeaders["Accept"] = "application/octet-stream"
@@ -126,7 +136,7 @@ try {
 
   # ── Extract ─────────────────────────────────────────────────────────────────
 
-  Write-Step "📦" "Extracting..."
+  Write-Step $EmojiPackage "Extracting..."
   Expand-Archive -Path $ZipPath -DestinationPath $TmpDir -Force
 
   $ExtractedExe = Join-Path $TmpDir "drift.exe"
@@ -136,7 +146,7 @@ try {
 
   # ── Install ──────────────────────────────────────────────────────────────────
 
-  Write-Step "🚀" "Installing..."
+  Write-Step $EmojiRocket "Installing..."
   if (-not (Test-Path $InstallDir)) {
     New-Item -ItemType Directory -Path $InstallDir | Out-Null
   }

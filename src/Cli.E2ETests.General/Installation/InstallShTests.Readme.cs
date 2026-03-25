@@ -1,3 +1,4 @@
+using Drift.Cli.Abstractions;
 using Drift.Common;
 
 namespace Drift.Cli.E2ETests.General.Installation;
@@ -35,14 +36,14 @@ internal sealed partial class InstallShTests {
 
       // Assert: install succeeded and binary is present
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
       // Assert: installed binary is functional
       var driftProcess = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( driftProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( driftProcess.ExitCode, Is.EqualTo( ExitCodes.Success ) );
         Assert.That( driftProcess.StdOut, Is.Not.Empty );
       }
     }

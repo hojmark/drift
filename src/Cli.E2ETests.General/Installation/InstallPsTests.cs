@@ -4,8 +4,8 @@ namespace Drift.Cli.E2ETests.General.Installation;
 
 [Platform( "Win" )]
 internal sealed partial class InstallPsTests {
-  private const int ExitCodeSuccess = 0;
-  private const int ExitCodeFailure = 1;
+  private const int ScriptExitCodeSuccess = 0;
+  private const int ScriptExitCodeFailure = 1;
   private static readonly string InstallScript = GetInstallScript();
 
   private static string GetInstallScript() {

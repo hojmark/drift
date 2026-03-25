@@ -18,7 +18,7 @@ internal sealed partial class InstallPsTests {
     PrintInstallOutput( installProcess, shell );
 
     // Assert
-    Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeFailure ) );
+    Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeFailure ) );
     await Verify( installProcess.StdOut ).UseTextForParameters( $"{shell}_INSTALL_OUTPUT" );
   }
 }

@@ -17,13 +17,13 @@ internal sealed partial class InstallShTests {
     try {
       // Act: run the install script
       var installProcess = await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
-          .ExecuteAsync( InstallScript );
+        .ExecuteAsync( InstallScript );
 
       PrintInstallOutput( installProcess );
 
       // Assert: binary exists
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
@@ -88,7 +88,7 @@ internal sealed partial class InstallShTests {
 
       // Assert: exit code and binary presence
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
@@ -138,7 +138,7 @@ internal sealed partial class InstallShTests {
       using ( Assert.EnterMultipleScope() ) {
         Assert.That(
           installProcess.ExitCode,
-          Is.EqualTo( ExitCodeSuccess ),
+          Is.EqualTo( ScriptExitCodeSuccess ),
           $"install.sh --verbose failed: {installProcess.ErrOut}"
         );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
@@ -183,16 +183,17 @@ internal sealed partial class InstallShTests {
 
       // Assert: first install succeeded
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( firstInstall.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( firstInstall.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
       // Assert: binary reports the previous version
-      var versionAfterFirst = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
+      var firstRun = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
+      Assert.That( firstRun.ExitCode, Is.EqualTo( ExitCodes.Success ) );
       Assert.That(
-        versionAfterFirst.StdOut,
+        firstRun.StdOut,
         Contains.Substring( "1.0.0-alpha.5" ),
-        $"Expected --version to report previous version after first install, got: {versionAfterFirst.StdOut}"
+        $"Expected --version to report previous version after first install, got: {firstRun.StdOut}"
       );
 
       // Act: upgrade by installing the latest (no version arg), reusing the same install directory
@@ -203,16 +204,17 @@ internal sealed partial class InstallShTests {
 
       // Assert: upgrade succeeded
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( secondInstall.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( secondInstall.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
       // Assert: binary now reports a version newer than the one we started with
-      var versionAfterSecond = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
+      var secondRun = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
+      Assert.That( firstRun.ExitCode, Is.EqualTo( ExitCodes.Success ) );
       Assert.That(
-        versionAfterSecond.StdOut,
-        Is.Not.EqualTo( versionAfterFirst.StdOut ),
-        $"Expected --version to change after upgrading to latest, but it stayed: {versionAfterSecond.StdOut}"
+        secondRun.StdOut,
+        Is.Not.EqualTo( firstRun.StdOut ),
+        $"Expected --version to change after upgrading to latest, but it stayed: {secondRun.StdOut}"
       );
     }
     finally {
@@ -253,7 +255,7 @@ internal sealed partial class InstallShTests {
 
       // Assert: script exits successfully and symlink is still intact.
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
         Assert.That( File.Exists( existingSymlink ), Is.True, "Symlink should still exist after re-install" );
 
         var symlinkTarget = new FileInfo( existingSymlink ).LinkTarget;

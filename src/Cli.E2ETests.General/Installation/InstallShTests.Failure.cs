@@ -25,7 +25,7 @@ internal sealed partial class InstallShTests {
     PrintInstallOutput( installProcess );
 
     // Assert
-    Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeFailure ) );
+    Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeFailure ) );
     await Verify( installProcess.StdOut ).UseTextForParameters( "INSTALL_OUTPUT" );
   }
 
@@ -41,7 +41,7 @@ internal sealed partial class InstallShTests {
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
-      Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeFailure ) );
+      Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeFailure ) );
       Assert.That( installProcess.StdOut, Contains.Substring( "Unknown argument: --unknown-flag" ) );
     }
   }
@@ -74,7 +74,7 @@ internal sealed partial class InstallShTests {
 
       // Assert
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeFailure ) );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeFailure ) );
         Assert.That(
           installProcess.StdOut,
           Contains.Substring( "Refusing to create symlink" ),
@@ -117,7 +117,7 @@ internal sealed partial class InstallShTests {
 
       // Assert
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeFailure ) );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeFailure ) );
         Assert.That(
           installProcess.StdOut,
           Contains.Substring( "Refusing to update symlink" ),
@@ -156,7 +156,7 @@ internal sealed partial class InstallShTests {
       using ( Assert.EnterMultipleScope() ) {
         Assert.That(
           installProcess.ExitCode,
-          Is.EqualTo( ExitCodeFailure ),
+          Is.EqualTo( ScriptExitCodeFailure ),
           $"Expected exit code 1 when no package manager is available. Output: {installProcess.StdOut}"
         );
         Assert.That(
@@ -194,7 +194,7 @@ internal sealed partial class InstallShTests {
       PrintInstallOutput( installProcess );
 
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeFailure ) );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeFailure ) );
         Assert.That(
           installProcess.StdOut,
           Contains.Substring( "Installation cancelled" ),

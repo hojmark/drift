@@ -25,7 +25,7 @@ internal sealed partial class InstallPsTests {
 
       // Assert: binary exists
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
@@ -104,7 +104,7 @@ internal sealed partial class InstallPsTests {
 
       // Assert: exit code and binary presence
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
@@ -154,7 +154,7 @@ internal sealed partial class InstallPsTests {
   /// </summary>
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
-  [Ignore("No latest Windows version available yet")]
+  [Ignore( "No latest Windows version available yet" )]
   public async Task UpgradeFromPreviousVersion( string shell ) {
     // NOTE: update this constant when a new Windows release is published that supersedes
     // windows.10 as the second most recent. It must be a tag with a win-x64 asset.
@@ -177,7 +177,7 @@ internal sealed partial class InstallPsTests {
 
       // Assert: first install succeeded
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( firstInstall.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( firstInstall.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
@@ -198,7 +198,7 @@ internal sealed partial class InstallPsTests {
 
       // Assert: upgrade succeeded
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( secondInstall.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( secondInstall.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
 
@@ -239,7 +239,7 @@ internal sealed partial class InstallPsTests {
 
       // Assert
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
         Assert.That( Directory.Exists( installDir ), Is.True, "Install dir should have been created" );
         Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
       }
@@ -277,7 +277,7 @@ internal sealed partial class InstallPsTests {
 
       PrintInstallOutput( installProcess, shell );
 
-      Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+      Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
 
       // Read User PATH after install (from the registry, not the current process env)
       var pathAfterInstall =
@@ -326,7 +326,7 @@ internal sealed partial class InstallPsTests {
             .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\"" );
 
         PrintInstallOutput( installProcess, shell );
-        Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
       }
 
       // Assert: exactly one occurrence of installDir in User PATH

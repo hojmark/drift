@@ -160,6 +160,67 @@ internal sealed partial class InstallShTests {
   }
 
   /// <summary>
+  /// install.sh should successfully upgrade from a specific previous version to the latest,
+  /// with the installed binary reflecting the correct version at each step.
+  /// </summary>
+  [Test]
+  public async Task UpgradeFromPreviousVersion() {
+    // NOTE: update this constant when a new Linux release is published that supersedes alpha.5
+    // as the second most recent. It must be a tag with a linux-x64 asset.
+    const string previousVersion = "v1.0.0-alpha.5";
+
+    var tempDir = Path.GetTempPath();
+    var installDir = Path.Combine( tempDir, "drift-install-upgrade-" + Guid.NewGuid() );
+    Directory.CreateDirectory( installDir );
+    var driftBinary = Path.Combine( installDir, "drift" );
+
+    try {
+      // Act: install the specific previous version
+      var firstInstall = await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
+        .ExecuteAsync( $"{InstallScript} {previousVersion}" );
+
+      PrintInstallOutput( firstInstall );
+
+      // Assert: first install succeeded
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( firstInstall.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
+      }
+
+      // Assert: binary reports the previous version
+      var versionAfterFirst = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
+      Assert.That(
+        versionAfterFirst.StdOut,
+        Contains.Substring( "1.0.0-alpha.5" ),
+        $"Expected --version to report previous version after first install, got: {versionAfterFirst.StdOut}"
+      );
+
+      // Act: upgrade by installing the latest (no version arg), reusing the same install directory
+      var secondInstall = await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
+        .ExecuteAsync( InstallScript );
+
+      PrintInstallOutput( secondInstall );
+
+      // Assert: upgrade succeeded
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( secondInstall.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
+      }
+
+      // Assert: binary now reports a version newer than the one we started with
+      var versionAfterSecond = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
+      Assert.That(
+        versionAfterSecond.StdOut,
+        Is.Not.EqualTo( versionAfterFirst.StdOut ),
+        $"Expected --version to change after upgrading to latest, but it stayed: {versionAfterSecond.StdOut}"
+      );
+    }
+    finally {
+      DeleteBestEffort( installDir );
+    }
+  }
+
+  /// <summary>
   /// install.sh should succeed (exit 0) when TARGET_ROOT already holds a symlink that points
   /// to the correct binary (lines ~192-194). The script must not error or overwrite the symlink.
   /// </summary>

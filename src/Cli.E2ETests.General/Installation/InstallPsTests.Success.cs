@@ -148,6 +148,74 @@ internal sealed partial class InstallPsTests {
   }
 
   /// <summary>
+  /// install.ps1 should successfully upgrade from a specific previous version to the latest,
+  /// with the installed binary reflecting the correct version at each step.
+  /// Runs under both PowerShell 7 (pwsh) and Windows PowerShell 5.1 (powershell).
+  /// </summary>
+  [TestCase( "pwsh" )]
+  [TestCase( "powershell" )]
+  [Ignore("No latest Windows version available yet")]
+  public async Task UpgradeFromPreviousVersion( string shell ) {
+    // NOTE: update this constant when a new Windows release is published that supersedes
+    // windows.10 as the second most recent. It must be a tag with a win-x64 asset.
+    const string previousVersion = "v0.0.0-windows.10.20260319202632";
+
+    var tempDir = Path.GetTempPath();
+    var installDir = Path.Combine( tempDir, "drift-install-ps-upgrade-" + Guid.NewGuid() );
+    Directory.CreateDirectory( installDir );
+    var driftBinary = Path.Combine( installDir, "drift.exe" );
+
+    await AssertShellIsAvailable( shell );
+
+    try {
+      // Act: install the specific previous version
+      var firstInstall =
+        await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
+          .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" {previousVersion}" );
+
+      PrintInstallOutput( firstInstall, shell );
+
+      // Assert: first install succeeded
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( firstInstall.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
+      }
+
+      // Assert: binary reports the previous version
+      var versionAfterFirst = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
+      Assert.That(
+        versionAfterFirst.StdOut,
+        Contains.Substring( "0.0.0-windows.10" ),
+        $"Expected --version to report previous version after first install, got: {versionAfterFirst.StdOut}"
+      );
+
+      // Act: upgrade by installing the latest (no version arg), reusing the same install directory
+      var secondInstall =
+        await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
+          .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\"" );
+
+      PrintInstallOutput( secondInstall, shell );
+
+      // Assert: upgrade succeeded
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( secondInstall.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
+        Assert.That( File.Exists( driftBinary ), Is.True, $"Drift binary not found at {driftBinary}" );
+      }
+
+      // Assert: binary now reports a version newer than the one we started with
+      var versionAfterSecond = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
+      Assert.That(
+        versionAfterSecond.StdOut,
+        Is.Not.EqualTo( versionAfterFirst.StdOut ),
+        $"Expected --version to change after upgrading to latest, but it stayed: {versionAfterSecond.StdOut}"
+      );
+    }
+    finally {
+      DeleteBestEffort( installDir );
+    }
+  }
+
+  /// <summary>
   /// install.ps1 should create the install directory if it does not already exist.
   /// </summary>
   [TestCase( "pwsh" )]

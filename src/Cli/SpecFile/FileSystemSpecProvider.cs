@@ -43,6 +43,7 @@ internal class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvid
       using ( var sr = new StreamReader( fs ) ) {
         specFileContents = await sr.ReadToEndAsync();
       }
+
       var valid = SpecValidator.Validate( specFileContents, SpecVersion.V1_preview ).IsValid;
 
       output.Normal.WriteLineValidity( valid );

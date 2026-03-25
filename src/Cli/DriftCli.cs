@@ -21,7 +21,8 @@ internal static class DriftCli {
     var error = Console.Error;
 
     try {
-      await Bootstrapper.BootstrapAsync();
+      Console.OutputEncoding = System.Text.Encoding.UTF8;
+      Console.InputEncoding = System.Text.Encoding.UTF8;
 
       var rootCommand = RootCommandFactory.Create(
         toConsole: toConsole,

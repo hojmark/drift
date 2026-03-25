@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using Drift.Build.Utilities;
 using Drift.Build.Utilities.MsBuild;
 using Drift.Build.Utilities.Versioning;
@@ -34,7 +34,13 @@ using ProductHeaderValue = Octokit.ProductHeaderValue;
 sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
   public NukeBuild() {
     Versioning = new Lazy<IVersioningStrategy>( () =>
-      new VersioningStrategyFactory( this ).Create( Configuration, CustomVersion, GitHubClient, Repository )
+      new VersioningStrategyFactory( this ).Create(
+        Configuration,
+        PrereleaseIdentifiers,
+        ExactVersion,
+        GitHubClient,
+        Repository
+      )
     );
   }
 
@@ -43,8 +49,11 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
   [Parameter( $"{nameof(Configuration)} - Configuration to build - Default is 'Debug' (local) or 'Release' (server)" )]
   public readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-  [Parameter( $"{nameof(CustomVersion)} - e.g. '3.1.5-preview.5'" )]
-  public readonly string CustomVersion;
+  [Parameter( $"{nameof(PrereleaseIdentifiers)} - Dot-separated pre-release identifiers e.g. 'attempt.42'" )]
+  public readonly string PrereleaseIdentifiers;
+
+  [Parameter( $"{nameof(ExactVersion)} - Fully-qualified pre-computed version e.g. '1.2.0-windows.9.20260319202632'" )]
+  public readonly string ExactVersion;
 
   [Parameter( $"{nameof(Commit)} - e.g. '4c16978aa41a3b435c0b2e34590f1759c1dc0763'" )]
   public string Commit = IsLocalBuild ? "0000000000000000000000000000000000000000" : null;
@@ -64,8 +73,21 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
   [Secret, Parameter( $"{nameof(GitHubToken)} - GitHub token used to create releases" )]
   public string GitHubToken;
 
+  [Parameter( $"{nameof(ReleaseType)} - None (default/safe), PreRelease, or Release" )]
+  public ReleaseType ReleaseType = ReleaseType.None;
+
+  [Parameter( $"{nameof(Platform)} - A .NET RID but with underscores instead of dashes e.g. linux_x64 or win_x64" )]
+  public DotNetRuntimeIdentifier Platform = IsLocalBuild
+    ? RuntimeInformation.IsOSPlatform( OSPlatform.Linux )
+      ? DotNetRuntimeIdentifier.linux_x64
+      : RuntimeInformation.IsOSPlatform( OSPlatform.Windows )
+        ? DotNetRuntimeIdentifier.win_x64
+        : throw new PlatformNotSupportedException()
+    : null;
+
   private static readonly DotNetRuntimeIdentifier[] SupportedRuntimes = [
     DotNetRuntimeIdentifier.linux_x64,
+    DotNetRuntimeIdentifier.win_x64
     // TODO support more architectures
     /*
       , DotNetRuntimeIdentifier.linux_musl_x64
@@ -109,6 +131,17 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
       PublishDirectory / id.ToString();
   }
 
+  Target OutputVersion => _ => _
+    .Executes( async () => {
+        var version = await Versioning.Value.GetVersionAsync();
+        var versionString = version.WithoutMetadata().ToString();
+
+        Log.Information( "Version: {Version}", versionString );
+
+        GitHubActions.SetOutput( "version", versionString );
+      }
+    );
+
   Target BuildInfo => _ => _
     .Before( CleanProjects, CleanArtifacts, Restore )
     .DependentFor( Build )
@@ -116,19 +149,16 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
         using var _ = new OperationTimer( nameof(BuildInfo) );
 
         Log.Information(
-          "MSBuild console output verbosity is {Verbosity} (parsed from {ParsedVerbosity})",
+          "MSBuild console output verbosity is {VerbosityParsed} (parsed from {VerbosityRaw})",
           MsBuildVerbosityParsed,
           MsBuildVerbosity
         );
 
         var versionStrategy = Versioning.Value.GetType().Name.Replace( "Versioning", string.Empty );
-        var versionProvided = string.IsNullOrEmpty( CustomVersion ) ? "[none]" : CustomVersion;
         var versionDetermined = await Versioning.Value.GetVersionAsync();
 
         var builder = new StringBuilder();
-        // builder.AppendLine( $"Configuration        : {Configuration}" );
         builder.AppendLine( $"Version strategy     : {versionStrategy}" );
-        builder.AppendLine( $"Version provided     : {versionProvided}" );
         builder.AppendLine( $"Version determined   : {versionDetermined}" );
 
         if ( Versioning.Value.Release is { } release ) {
@@ -142,13 +172,6 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
         }
 
         Log.Information( "BUILD INFORMATION:\n{BuildInfo}", builder.ToString() );
-
-        if ( Versioning.Value.Release != null && IsLocalBuild ) {
-          var delay = TimeSpan.FromSeconds( 10 );
-          Log.Warning( "⚠️ LOCAL RELEASE BUILD ⚠️" );
-          Log.Warning( "Continuing in {Delay} seconds...", (int) delay.TotalSeconds );
-          await Task.Delay( delay );
-        }
       }
     );
 }

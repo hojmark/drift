@@ -14,33 +14,33 @@ using Target = Nuke.Common.Target;
 // ReSharper disable UnusedMember.Local
 
 sealed partial class NukeBuild {
-  private static readonly string[] FilesToDistribute = ["drift", "drift.dbg"];
+  private static readonly string[] FilesToDistributeLinux = ["drift" /*, "drift.dbg"*/]; // TODO utilize debug symbols
+  private static readonly string[] FilesToDistributeWindows = ["drift.exe"];
 
   Target PublishBinaries => _ => _
     .DependsOn( Build, CleanArtifacts )
+    .Requires( () => Platform )
+    .Requires( () => SupportedRuntimes.Contains( Platform ) )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(PublishBinaries) );
 
-        // TODO https://nuke.build/docs/common/cli-tools/#combinatorial-modifications
-        foreach ( var runtime in SupportedRuntimes ) {
-          var publishDir = Paths.PublishDirectoryForRuntime( runtime );
-          var version = await Versioning.Value.GetVersionAsync();
+        var publishDir = Paths.PublishDirectoryForRuntime( Platform );
+        var version = await Versioning.Value.GetVersionAsync();
 
-          Log.Information( "Publishing {Runtime} build to {PublishDir}", runtime, publishDir );
-          DotNetPublish( s => s
-            .SetProject( Solution.Cli )
-            .SetConfiguration( Configuration )
-            .SetOutput( publishDir )
-            .SetSelfContained( true )
-            .SetVersionProperties( version )
-            // TODO if not specifying a RID, apparently only x64 gets built on x64 host
-            .SetRuntime( runtime )
-            .SetProcessAdditionalArguments( $"-bl:{BinaryPublishLogName}" )
-            .EnableNoLogo()
-            .EnableNoRestore()
-            .EnableNoBuild()
-          );
-        }
+        Log.Information( "Publishing {Runtime} build to {PublishDir}", Platform, publishDir );
+        Log.Debug( "Supported runtimes are {SupportedRuntimes}", string.Join( ", ", SupportedRuntimes ) );
+        DotNetPublish( s => s
+          .SetProject( Solution.Cli )
+          .SetConfiguration( Configuration )
+          .SetOutput( publishDir )
+          .SetSelfContained( true )
+          .SetVersionProperties( version )
+          .SetRuntime( Platform )
+          .SetProcessAdditionalArguments( $"-bl:{BinaryPublishLogName}" )
+          .EnableNoLogo()
+          .EnableNoRestore()
+          .EnableNoBuild()
+        );
       }
     );
 
@@ -50,18 +50,21 @@ sealed partial class NukeBuild {
         using var _ = new OperationTimer( nameof(PackBinaries) );
 
         var version = await Versioning.Value.GetVersionAsync();
+        var publishDir = Paths.PublishDirectoryForRuntime( Platform );
 
-        foreach ( var runtime in SupportedRuntimes ) {
-          var publishDir = Paths.PublishDirectoryForRuntime( runtime );
-          var artifactFile = Paths.ArtifactsDirectory / $"drift_{version.WithoutMetadata()}_{runtime}.tar.gz";
+        var isWindows = Platform == DotNetRuntimeIdentifier.win_x64;
+        var extension = isWindows ? "zip" : "tar.gz";
+        var filesToDistribute = isWindows ? FilesToDistributeWindows : FilesToDistributeLinux;
+        var artifactFile = Paths.ArtifactsDirectory / $"drift_{version.WithoutMetadata()}_{Platform}.{extension}";
 
-          Log.Information( "Creating {ArtifactFile}", artifactFile );
-          var files = publishDir
-            .GetFiles()
-            .Where( file => FilesToDistribute.Contains( file.Name ) )
-            .ToList();
-          Log.Debug( "Including files: {Files}", string.Join( ", ", files.Select( f => f.Name ) ) );
-          publishDir.TarGZipTo( artifactFile, files, fileMode: FileMode.CreateNew );
+        Log.Information( "Creating {ArtifactFile}", artifactFile );
+
+        Log.Debug( "Including files: {Files}", string.Join( ", ", filesToDistribute ) );
+        if ( isWindows ) {
+          publishDir.ZipTo( artifactFile, f => filesToDistribute.Contains( f.Name ), fileMode: FileMode.CreateNew );
+        }
+        else {
+          publishDir.TarGZipTo( artifactFile, f => filesToDistribute.Contains( f.Name ), fileMode: FileMode.CreateNew );
         }
       }
     );

@@ -18,7 +18,7 @@ try {
   var serialized = SchemaGenerator.Generate( version );
   await File.WriteAllTextAsync( filePath, serialized );
   Console.ForegroundColor = ConsoleColor.Green;
-  Console.WriteLine( $"✔ Generated spec schema for version {version} ({filePath})" );
+  Console.WriteLine( $"✓ Generated spec schema for version {version} ({filePath})" );
   Environment.Exit( 0 );
 }
 catch ( Exception ex ) {

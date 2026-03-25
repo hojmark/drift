@@ -9,7 +9,7 @@
   <Folder Name="/Workflows/Actions/runner-setup/">
     <File Path=".github\actions\setup-runner\action.yml" />
   </Folder>
-  <Project Path="build\_build.csproj" Type="Classic C#" />
-  <Project Path="build-utils\Build.Utilities.Tests\Build.Utilities.Tests.csproj" Type="Classic C#" />
-  <Project Path="build-utils\Build.Utilities\Build.Utilities.csproj" Type="Classic C#" />
+  <Project Path="build\_build.csproj" Type="C#" />
+  <Project Path="build-utils\Build.Utilities.Tests\Build.Utilities.Tests.csproj" Type="C#" />
+  <Project Path="build-utils\Build.Utilities\Build.Utilities.csproj" Type="C#" />
 </Solution>

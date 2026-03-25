@@ -5,36 +5,24 @@
 
 Drift is a command-line tool that gives you confidence to change your network configuration and firewall rules, knowing
 you’ll be alerted if your network drifts from its desired state. By comparing the actual network state to your declared
-state, Drift can detect issues like unknown devices or unexpected subnet access, helping you maintain network integrity.
+state, Drift detects issues like unknown devices or unexpected subnet access, helping you maintain network integrity.
 
-
----
 
 ![Scan command console output](screenshot-scan.png)
 
-## 🚀 Getting started
+## Getting started
 
-### Linux x64
+### Linux 🐧
 
-#### Install
+Install
 
-You can install Drift by either:
+```bash
+curl -sSL https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.sh | bash
+```
 
-- Downloading the latest release from the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse), or
-- Running the installation script:
+If Drift is already installed, it will be updated to the latest version.
 
-    ```bash
-    curl -sSL https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.sh | bash
-    ```
-
-  ℹ️ **What does the script do?**  
-  It fetches the latest version and puts the `drift` binary into `/usr/local/bin`.
-  If Drift is already installed, it will be updated to the latest version.
-  For more info see [Installation Options - Script](./README_dev.md#script-installsh),
-  or [view the source code](./install.sh).
-
-#### Run
-
+Then run
 ```bash
 # Create a network spec using auto-discovery
 drift init
@@ -43,12 +31,33 @@ drift init
 drift scan -i
 ```
 
-### Container
+### Windows 🪟
 
-#### Run
+> [!IMPORTANT]
+> If script execution is blocked, run `powershell.exe -ExecutionPolicy Unrestricted` before running the install command.
+
+Install
+
+```powershell
+irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex
+```
+
+If Drift is already installed, it will be updated to the latest version.
+
+Then run
+
+```powershell
+# Create a network spec using auto-discovery
+drift init
+
+# Scan and detect drift
+drift scan -i
+```
+
+### Container 🐋
 
 ```bash
-# Scan (interactive)
+# Scan the host network
 docker run -it --rm --network host docker.io/hojmark/drift scan -i
 ```
 
@@ -90,14 +99,16 @@ A user settings file can be created at `~/.config/drift/settings.json`.
 
 JSON Schemas are available to enable editor auto-completion and validation:
 
-- [**Network spec schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json)  
+- [**Network spec schema
+  **](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json)  
   Add the `yaml-language-server` comment at the top of your spec file:
   ```yaml
   # yaml-language-server: $schema=https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json
   network:
   ...
   ```
-- [**User settings schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Cli.Settings/embedded_resources/schemas/drift-settings-v1-preview.schema.json)  
+- [**User settings schema
+  **](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Cli.Settings/embedded_resources/schemas/drift-settings-v1-preview.schema.json)  
   Add the `$schema` property at the top of your settings file:
   ```json
   {
@@ -106,7 +117,8 @@ JSON Schemas are available to enable editor auto-completion and validation:
   }
   ```
 
-There’s no official documentation site yet — if you run into trouble, feel free to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a).
+There’s no official documentation site yet — if you run into trouble, feel free
+to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a).
 
 ### ▸ What can be automatically discovered?
 

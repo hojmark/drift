@@ -143,7 +143,7 @@ else
 
   STATUS=$(echo "$RESP" | jq -r '.status // empty')
   if [ "$STATUS" = "404" ]; then
-    exit_with_error "Tag '${VERSION}' not found on GitHub. Please ensure you typed the tag correctly, or see the list of available releases: https://github.com/hojmark/drift/releases"
+    exit_with_error "Tag '${VERSION}' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
   fi
   ASSET_ID=$(echo "$RESP" | jq -r ".assets[] | select(.name | endswith(\"${PLATFORM}.tar.gz\")) | .id")
 fi

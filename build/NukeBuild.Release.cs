@@ -1,8 +1,10 @@
 using System.IO;
 using System.Threading.Tasks;
 using Drift.Build.Utilities;
+using Drift.Build.Utilities.Versioning.Abstractions;
 using Nuke.Common;
 using Nuke.Common.IO;
+using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitHub;
 using Octokit;
 using Serilog;
@@ -12,12 +14,20 @@ using Serilog;
 // ReSharper disable UnusedMember.Local
 
 internal partial class NukeBuild {
-  public bool AllowLocalRelease => false;
+  ReleaseType INukeRelease.ReleaseType => ReleaseType;
 
-  public Target Release => _ => _
-    .DependsOn( PackBinaries, ReleaseContainer, Test )
+  Target CreateLinuxArtifacts => _ => _
+    .DependsOn( PackBinaries, PushContainerImage )
+    .OnlyWhenDynamic( () => Platform == DotNetRuntimeIdentifier.linux_x64 );
+
+  Target CreateWindowsArtifacts => _ => _
+    .DependsOn( PackBinaries )
+    .OnlyWhenDynamic( () => Platform == DotNetRuntimeIdentifier.win_x64 );
+
+  public Target CreateRelease => _ => _
+    .DependsOn( TagContainerImageForRelease ) // <- "Releases" the container image
     .Executes( async () => {
-        using var _ = new OperationTimer( nameof(Release) );
+        using var _ = new OperationTimer( nameof(CreateRelease) );
 
         Log.Information( "🚨🌍🚢 RELEASING 🚢🌍🚨" );
 
@@ -28,16 +38,16 @@ internal partial class NukeBuild {
       }
     );
 
-  public Target PreRelease => _ => _
-    .DependsOn( PackBinaries, ReleaseContainer, Test )
+  public Target CreatePreRelease => _ => _
+    .DependsOn( TagContainerImageForRelease ) // <- "Releases" the container image
     .Executes( async () => {
-        using var _ = new OperationTimer( nameof(PreRelease) );
+        using var _ = new OperationTimer( nameof(CreatePreRelease) );
 
         Log.Information( "🏗️ PRE-RELEASING 🏗️" );
 
         var release = await CreateDraftRelease( prerelease: true );
 
-        Log.Information( "🐱 Released {ReleaseName} to GitHub!", release.Name );
+        Log.Information( "🐱 Pre-released {ReleaseName} to GitHub!", release.Name );
       }
     );
 

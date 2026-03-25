@@ -21,26 +21,45 @@
         "VSCode"
       ]
     },
+    "ReleaseType": {
+      "type": "string",
+      "description": "",
+      "enum": [
+        "None",
+        "PreRelease",
+        "Release"
+      ]
+    },
     "ExecutableTarget": {
       "type": "string",
       "enum": [
         "Build",
+        "BuildContainerImage",
         "BuildInfo",
         "CheckBuildWarnings",
         "CheckPublishBinariesWarnings",
         "CheckWarnings",
         "Clean",
         "CleanArtifacts",
+        "CleanContainerImages",
         "CleanProjects",
+        "CleanStagingTags",
+        "CreateLinuxArtifacts",
+        "CreatePreRelease",
+        "CreateRelease",
+        "CreateWindowsArtifacts",
+        "DeleteUntaggedImages",
+        "OutputVersion",
         "PackBinaries",
-        "PreRelease",
         "PublishBinaries",
-        "PublishContainer",
-        "Release",
-        "ReleaseContainer",
+        "PushContainerImage",
         "Restore",
+        "TagContainerImageForRelease",
         "Test",
         "TestE2E",
+        "TestE2E_Binary",
+        "TestE2E_Container",
+        "TestE2E_General",
         "TestLocal",
         "TestSelf",
         "TestUnit"
@@ -129,14 +148,18 @@
             "Release"
           ]
         },
-        "CustomVersion": {
+        "ContainerImageRef": {
           "type": "string",
-          "description": "CustomVersion - e.g. '3.1.5-preview.5'"
+          "description": "ContainerImageRef - Qualified image reference to push to Docker Hub with versioned tag"
         },
         "DockerHubPassword": {
           "type": "string",
           "description": "DockerHubPassword - Required for releasing container images to Docker Hub",
           "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
+        "ExactVersion": {
+          "type": "string",
+          "description": "ExactVersion - Fully-qualified pre-computed version e.g. '1.2.0-windows.9.20260319202632'"
         },
         "GitHubToken": {
           "type": "string",
@@ -146,6 +169,53 @@
         "MsBuildVerbosity": {
           "type": "string",
           "description": "MsBuildVerbosity - Console output verbosity - Default is 'normal'"
+        },
+        "Platform": {
+          "type": "string",
+          "description": "Platform - A .NET RID but with underscores instead of dashes e.g. linux_x64 or win_x64",
+          "enum": [
+            "linux_arm",
+            "linux_arm64",
+            "linux_musl_x64",
+            "linux_x64",
+            "osx_10_10_x64",
+            "osx_10_11_x64",
+            "osx_10_12_x64",
+            "osx_10_13_x64",
+            "osx_10_14_x64",
+            "osx_10_15_x64",
+            "osx_11_0_arm64",
+            "osx_11_0_x64",
+            "osx_12_arm64",
+            "osx_12_x64",
+            "osx_x64",
+            "rhel_6_x64",
+            "rhel_x64",
+            "tizen",
+            "tizen_4_0_0",
+            "tizen_5_0_0",
+            "win_arm",
+            "win_arm64",
+            "win_x64",
+            "win_x86",
+            "win10_arm",
+            "win10_arm64",
+            "win10_x64",
+            "win10_x86",
+            "win7_x64",
+            "win7_x86",
+            "win81_arm",
+            "win81_x64",
+            "win81_x86"
+          ]
+        },
+        "PrereleaseIdentifiers": {
+          "type": "string",
+          "description": "PrereleaseIdentifiers - Dot-separated pre-release identifiers e.g. 'attempt.42'"
+        },
+        "ReleaseType": {
+          "description": "ReleaseType - None (default/safe), PreRelease, or Release",
+          "$ref": "#/definitions/ReleaseType"
         },
         "Solution": {
           "type": "string",

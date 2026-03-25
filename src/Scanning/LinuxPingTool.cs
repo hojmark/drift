@@ -14,6 +14,7 @@ public class LinuxPingTool : IPingTool {
     CancellationToken cancellationToken = default
   ) {
     var tool = new ToolWrapper( "ping" );
+    // c = stop after <count> replies, W = time to wait for response
     var result = await tool.ExecuteAsync( $"-c 1 -W 1 {ip}", logger, cancellationToken );
     return new PingResult( result.ExitCode == 0 );
   }

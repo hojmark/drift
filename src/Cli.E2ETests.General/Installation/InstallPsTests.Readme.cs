@@ -20,7 +20,6 @@ internal sealed partial class InstallPsTests {
 
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
-  [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
   public async Task ReadmeInstallCommand( string shell ) {
     // Arrange
     var tempDir = Path.GetTempPath();

@@ -86,7 +86,9 @@ if ($Version -eq "") {
 
   $Asset = @($Release.assets) | Where-Object { $_.name -like "*_${Platform}.zip" } | Select-Object -First 1
 
-  Write-Step "DEBUG: asset count=$(@($Release.assets).Count) asset0name=$(if (@($Release.assets).Count -gt 0) { @($Release.assets)[0].name } else { 'NONE' }) platform=$Platform"
+  $DbgAssets = @($Release.assets)
+  foreach ($a in $DbgAssets) { Write-Step "DEBUG_ASSET: name='$($a.name)' like_match=$($a.name -like "*_${Platform}.zip")" }
+  Write-Step "DEBUG: asset_count=$($DbgAssets.Count) platform=$Platform asset_found=$($null -ne $Asset)"
 }
 
 if ($null -eq $Asset) {

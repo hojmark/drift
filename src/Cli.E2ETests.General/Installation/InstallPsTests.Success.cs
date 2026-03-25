@@ -44,8 +44,8 @@ internal sealed partial class InstallPsTests {
                 @"Installed Drift CLI [\w\.\-]+ successfully!",
                 "Installed Drift CLI {VERSION} successfully!"
               ),
-              @"🚀 Installing to .+\.\.\.",
-              "🚀 Installing to {INSTALL_DIR}..."
+              @">> Installing to .+\.\.\.",
+              ">> Installing to {INSTALL_DIR}..."
             ),
             @"   Adding .+ to user PATH\.\.\.",
             "   Adding {INSTALL_DIR} to user PATH..."
@@ -122,7 +122,7 @@ internal sealed partial class InstallPsTests {
             // TODO keep escape sequences...
             // Strip ANSI escape sequences
             var stripped = Regex.Replace( line, @"\x1b\[[0-9;]*m", string.Empty );
-            stripped = Regex.Replace( stripped, @"🚀 Installing to .+\.\.\.", "🚀 Installing to {INSTALL_DIR}..." );
+            stripped = Regex.Replace( stripped, @">> Installing to .+\.\.\.", ">> Installing to {INSTALL_DIR}..." );
             stripped = Regex.Replace(
               stripped,
               @"   Adding .+ to user PATH\.\.\.",

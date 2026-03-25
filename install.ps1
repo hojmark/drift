@@ -9,13 +9,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 $OutputEncoding = [System.Text.Encoding]::UTF8
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-function Write-Step   { param([string]$Msg) Write-Output $Msg }
-function Write-Ok     { param([string]$Msg) Write-Output "✅ $Msg" }
-function Write-Fail   { param([string]$Msg) Write-Output "❌ $Msg" }
+function Write-Step   { param([string]$Msg) Write-Output ">> $Msg" }
+function Write-Ok     { param([string]$Msg) Write-Output "[OK] $Msg" }
+function Write-Fail   { param([string]$Msg) Write-Output "[ERROR] $Msg" }
 function Write-Note   { param([string]$Msg) Write-Output "   $Msg" }
 
 function Exit-WithError {
@@ -50,7 +49,7 @@ if ($env:GITHUB_TOKEN) {
 $Platform = "win-x64"
 
 if ($Version -eq "") {
-  Write-Step "🔍 Fetching latest version..."
+  Write-Step "Fetching latest version..."
 
   try {
     $Releases = Invoke-RestMethod -Uri "$ApiBase/releases" -Headers $Headers -ErrorAction Stop
@@ -74,7 +73,7 @@ if ($Version -eq "") {
   # Normalise: accept both "1.2.3" and "v1.2.3"
   if (-not $Version.StartsWith("v")) { $Version = "v$Version" }
 
-  Write-Step "🔍 Fetching version $Version..."
+  Write-Step "Fetching version $Version..."
 
   try {
     $Release = Invoke-RestMethod -Uri "$ApiBase/releases/tags/$Version" -Headers $Headers -ErrorAction Stop
@@ -82,7 +81,7 @@ if ($Version -eq "") {
     Exit-WithError "Tag '$Version' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
   }
 
-  if ($null -eq $Release -or $null -eq $Release.tag_name) {
+  if ($null -eq $Release -or [string]::IsNullOrEmpty($Release.tag_name)) {
     Exit-WithError "Tag '$Version' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
   }
 
@@ -105,7 +104,7 @@ New-Item -ItemType Directory -Path $TmpDir | Out-Null
 try {
   $ZipPath = Join-Path $TmpDir $Asset.name
 
-  Write-Step "🔽 Downloading $($Asset.name)..."
+  Write-Step "Downloading $($Asset.name)..."
 
   $DownloadHeaders = $Headers.Clone()
   $DownloadHeaders["Accept"] = "application/octet-stream"
@@ -117,7 +116,7 @@ try {
 
   # ── Extract ─────────────────────────────────────────────────────────────────
 
-  Write-Step "📦 Extracting..."
+  Write-Step "Extracting..."
   Expand-Archive -Path $ZipPath -DestinationPath $TmpDir -Force
 
   $ExtractedExe = Join-Path $TmpDir "drift.exe"
@@ -127,7 +126,7 @@ try {
 
   # ── Install ──────────────────────────────────────────────────────────────────
 
-  Write-Step "🚀 Installing..."
+  Write-Step "Installing..."
   if (-not (Test-Path $InstallDir)) {
     New-Item -ItemType Directory -Path $InstallDir | Out-Null
   }

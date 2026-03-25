@@ -6,7 +6,6 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Nuke.Common;
 using Nuke.Common.Git;
-using Nuke.Common.Tools.GitHub;
 using Octokit;
 using Assert = TUnit.Assertions.Assert;
 

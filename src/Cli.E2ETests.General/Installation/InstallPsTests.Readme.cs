@@ -22,6 +22,7 @@ internal sealed partial class InstallPsTests {
   [TestCase( "powershell" )]
   [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
   public async Task ReadmeInstallCommand( string shell ) {
+    // Arrange
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-readme-ps-" + Guid.NewGuid() );
     Directory.CreateDirectory( installDir );

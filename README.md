@@ -38,18 +38,18 @@ drift scan -i
 
 #### Install
 
+```powershell
+irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex
+```
+
+If Drift is already installed, it will be updated to the latest version.
+
 > [!NOTE]
 > If scripts are blocked, run the following:
 > ```
 > powershell.exe -ExecutionPolicy Unrestricted
 > ```
 > Then execute the install command in the same window.
-
-```powershell
-irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex
-```
-
-If Drift is already installed, it will be updated to the latest version.
 
 #### Run
 

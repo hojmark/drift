@@ -11,7 +11,9 @@ $ErrorActionPreference = "Stop"
 
 # Ensure emoji and other Unicode characters are captured correctly when stdout is redirected
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$OutputEncoding           = [System.Text.Encoding]::UTF8
+$OutputEncoding             = [System.Text.Encoding]::UTF8
+
+$Esc = [char]27
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -103,7 +105,7 @@ New-Item -ItemType Directory -Path $TmpDir | Out-Null
 try {
   $ZipPath = Join-Path $TmpDir $Asset.name
 
-  Write-Step "🔽 Downloading $([char]27)[1m$($Asset.name)$([char]27)[0m..."
+  Write-Step "🔽 Downloading ${Esc}[1m$($Asset.name)${Esc}[0m..."
 
   $DownloadHeaders = $Headers.Clone()
   $DownloadHeaders["Accept"] = "application/octet-stream"
@@ -149,4 +151,4 @@ try {
   Remove-Item -Path $TmpDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-Write-Ok "$([char]27)[1mInstalled Drift CLI $VersionDisplay successfully!$([char]27)[0m"
+Write-Ok "${Esc}[1mInstalled Drift CLI $VersionDisplay successfully!${Esc}[0m"

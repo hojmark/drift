@@ -8,7 +8,6 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 

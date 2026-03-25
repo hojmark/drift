@@ -5,9 +5,9 @@ using Drift.Domain.Device.Addresses;
 
 namespace Drift.Scanning.Arp;
 
-// TODO read from /proc/net/arp instead of spawning processes
-[SupportedOSPlatform( "linux" )]
 internal class LinuxArpTableProvider : ArpTableProviderBase {
+  // TODO read from /proc/net/arp instead of spawning processes
+  [SupportedOSPlatform( "linux" )]
   protected override ArpTable ReadSystemArpCache() {
     var startInfo = new ProcessStartInfo {
       FileName = "arp",

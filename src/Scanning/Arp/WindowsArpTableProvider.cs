@@ -5,8 +5,8 @@ using Drift.Domain.Device.Addresses;
 
 namespace Drift.Scanning.Arp;
 
-[SupportedOSPlatform( "windows" )]
 internal class WindowsArpTableProvider : ArpTableProviderBase {
+  [SupportedOSPlatform( "windows" )]
   protected override ArpTable ReadSystemArpCache() {
     var startInfo = new ProcessStartInfo {
       FileName = "arp",

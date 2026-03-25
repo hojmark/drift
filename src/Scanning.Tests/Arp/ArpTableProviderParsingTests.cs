@@ -4,10 +4,6 @@ using Drift.Scanning.Arp;
 
 namespace Drift.Scanning.Tests.Arp;
 
-// The ParseArpOutput methods are pure string parsing with no OS-specific APIs.
-// The [SupportedOSPlatform] attribute on their parent classes exists because those
-// classes also spawn OS-specific processes, but the parsing itself is cross-platform.
-#pragma warning disable CA1416
 internal sealed class ArpTableProviderParsingTests {
   [Test]
   public void WindowsArpTableProvider_ParsesHyphenSeparatedMacs() {
@@ -22,14 +18,16 @@ internal sealed class ArpTableProviderParsingTests {
 
     var table = WindowsArpTableProvider.ParseArpOutput( new StringReader( output ) );
 
-    Assert.That( table.TryGetValue( IPAddress.Parse( "192.168.1.1" ), out var mac1 ), Is.True );
-    Assert.That( mac1, Is.EqualTo( new MacAddress( "00-11-22-33-44-55" ) ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( table.TryGetValue( IPAddress.Parse( "192.168.1.1" ), out var mac1 ), Is.True );
+      Assert.That( mac1, Is.EqualTo( new MacAddress( "00-11-22-33-44-55" ) ) );
 
-    Assert.That( table.TryGetValue( IPAddress.Parse( "192.168.1.2" ), out var mac2 ), Is.True );
-    Assert.That( mac2, Is.EqualTo( new MacAddress( "AA-BB-CC-DD-EE-FF" ) ) );
+      Assert.That( table.TryGetValue( IPAddress.Parse( "192.168.1.2" ), out var mac2 ), Is.True );
+      Assert.That( mac2, Is.EqualTo( new MacAddress( "AA-BB-CC-DD-EE-FF" ) ) );
 
-    Assert.That( table.TryGetValue( IPAddress.Parse( "224.0.0.22" ), out var mac3 ), Is.True );
-    Assert.That( mac3, Is.EqualTo( new MacAddress( "01-00-5E-00-00-16" ) ) );
+      Assert.That( table.TryGetValue( IPAddress.Parse( "224.0.0.22" ), out var mac3 ), Is.True );
+      Assert.That( mac3, Is.EqualTo( new MacAddress( "01-00-5E-00-00-16" ) ) );
+    }
   }
 
   [Test]
@@ -60,11 +58,13 @@ internal sealed class ArpTableProviderParsingTests {
 
     var table = LinuxArpTableProvider.ParseArpOutput( new StringReader( output ) );
 
-    Assert.That( table.TryGetValue( IPAddress.Parse( "192.168.1.1" ), out var mac1 ), Is.True );
-    Assert.That( mac1, Is.EqualTo( new MacAddress( "00-11-22-33-44-55" ) ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( table.TryGetValue( IPAddress.Parse( "192.168.1.1" ), out var mac1 ), Is.True );
+      Assert.That( mac1, Is.EqualTo( new MacAddress( "00-11-22-33-44-55" ) ) );
 
-    Assert.That( table.TryGetValue( IPAddress.Parse( "192.168.1.2" ), out var mac2 ), Is.True );
-    Assert.That( mac2, Is.EqualTo( new MacAddress( "AA-BB-CC-DD-EE-FF" ) ) );
+      Assert.That( table.TryGetValue( IPAddress.Parse( "192.168.1.2" ), out var mac2 ), Is.True );
+      Assert.That( mac2, Is.EqualTo( new MacAddress( "AA-BB-CC-DD-EE-FF" ) ) );
+    }
   }
 
   [Test]
@@ -78,7 +78,9 @@ internal sealed class ArpTableProviderParsingTests {
 
     var table = LinuxArpTableProvider.ParseArpOutput( new StringReader( output ) );
 
-    Assert.That( table.TryGetValue( IPAddress.Parse( "10.0.0.1" ), out var mac ), Is.True );
-    Assert.That( mac, Is.EqualTo( new MacAddress( "DE-AD-BE-EF-00-01" ) ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( table.TryGetValue( IPAddress.Parse( "10.0.0.1" ), out var mac ), Is.True );
+      Assert.That( mac, Is.EqualTo( new MacAddress( "DE-AD-BE-EF-00-01" ) ) );
+    }
   }
 }

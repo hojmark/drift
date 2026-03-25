@@ -84,7 +84,7 @@ internal sealed partial class InstallPsTests {
   public async Task InstallSpecificVersion( string shell ) {
     // NOTE: this must be the oldest tag that has a *_win-x64.zip asset.
     // Update when a newer stable release with Windows assets is available.
-    const string version = "v0.0.0-windows.10.20260319202632";
+    const string version = "v0.0.0-windows.11.20260323204120";
 
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-specific-" + Guid.NewGuid() );

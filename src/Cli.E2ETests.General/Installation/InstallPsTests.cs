@@ -49,7 +49,7 @@ internal sealed partial class InstallPsTests {
     (string StdOut, string ErrOut, int ExitCode, bool Cancelled) result,
     string shell
   ) {
-    Console.WriteLine( "--------------- install.ps1 output ({shell}) -----------------" );
+    Console.WriteLine( $"--------------- install.ps1 output ({shell}) -----------------" );
 
     Console.WriteLine( result.StdOut );
 

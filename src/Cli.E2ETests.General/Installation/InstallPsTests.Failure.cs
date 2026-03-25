@@ -15,7 +15,7 @@ internal sealed partial class InstallPsTests {
     // Arrange / Act
     var installProcess = await new ToolWrapper( shell ).ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" vBOGUS" );
 
-    PrintInstallOutput( installProcess );
+    PrintInstallOutput( installProcess, shell );
 
     // Assert
     Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeFailure ) );

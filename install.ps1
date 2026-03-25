@@ -9,20 +9,17 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Ensure emoji and other Unicode characters are captured correctly when stdout is redirected
+# Ensure emoji and other Unicode characters are captured correctly when stdout is redirected.
+# Writing via [Console]::Out bypasses the PS host stream and honours OutputEncoding in PS 5.1.
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding             = [System.Text.Encoding]::UTF8
 
-# Set the Windows console code page to UTF-8 so that emoji and other Unicode
-# characters are written as UTF-8 bytes when stdout is redirected (PS 5.1).
-& "$env:SystemRoot\System32\chcp.com" 65001 | Out-Null
-
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-function Write-Step   { param([string]$Msg) Write-Host $Msg }
-function Write-Ok     { param([string]$Msg) Write-Host "✅ $Msg" -ForegroundColor Green }
-function Write-Fail   { param([string]$Msg) Write-Host "❌ $Msg" -ForegroundColor Red }
-function Write-Note   { param([string]$Msg) Write-Host "   $Msg" -ForegroundColor DarkGray }
+function Write-Step   { param([string]$Msg) [Console]::Out.WriteLine($Msg) }
+function Write-Ok     { param([string]$Msg) [Console]::Out.WriteLine("✅ $Msg") }
+function Write-Fail   { param([string]$Msg) [Console]::Out.WriteLine("❌ $Msg") }
+function Write-Note   { param([string]$Msg) [Console]::Out.WriteLine("   $Msg") }
 
 function Exit-WithError {
   param([string]$Msg)
@@ -85,6 +82,10 @@ if ($Version -eq "") {
   try {
     $Release = Invoke-RestMethod -Uri "$ApiBase/releases/tags/$Version" -Headers $Headers -ErrorAction Stop
   } catch {
+    Exit-WithError "Tag '$Version' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
+  }
+
+  if ($null -eq $Release) {
     Exit-WithError "Tag '$Version' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
   }
 

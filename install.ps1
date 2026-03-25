@@ -13,6 +13,10 @@ $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding             = [System.Text.Encoding]::UTF8
 
+# Set the Windows console code page to UTF-8 so that emoji and other Unicode
+# characters are written as UTF-8 bytes when stdout is redirected (PS 5.1).
+& "$env:SystemRoot\System32\chcp.com" 65001 | Out-Null
+
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 function Write-Step   { param([string]$Msg) Write-Host $Msg }
@@ -55,7 +59,7 @@ if ($Version -eq "") {
   Write-Step "🔍 Fetching latest version..."
 
   try {
-    $Releases = Invoke-RestMethod -Uri "$ApiBase/releases" -Headers $Headers
+    $Releases = Invoke-RestMethod -Uri "$ApiBase/releases" -Headers $Headers -ErrorAction Stop
   } catch {
     Exit-WithError "Failed to fetch releases from GitHub: $_"
   }
@@ -70,7 +74,7 @@ if ($Version -eq "") {
   }
 
   $Version = $Release.tag_name
-  $Asset   = $Release.assets | Where-Object { $_.name -like "*_${Platform}.zip" } | Select-Object -First 1
+  $Asset   = @($Release.assets) | Where-Object { $_.name -like "*_${Platform}.zip" } | Select-Object -First 1
 
 } else {
   # Normalise: accept both "1.2.3" and "v1.2.3"
@@ -79,12 +83,12 @@ if ($Version -eq "") {
   Write-Step "🔍 Fetching version $Version..."
 
   try {
-    $Release = Invoke-RestMethod -Uri "$ApiBase/releases/tags/$Version" -Headers $Headers
+    $Release = Invoke-RestMethod -Uri "$ApiBase/releases/tags/$Version" -Headers $Headers -ErrorAction Stop
   } catch {
     Exit-WithError "Tag '$Version' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
   }
 
-  $Asset = $Release.assets | Where-Object { $_.name -like "*_${Platform}.zip" } | Select-Object -First 1
+  $Asset = @($Release.assets) | Where-Object { $_.name -like "*_${Platform}.zip" } | Select-Object -First 1
 }
 
 if ($null -eq $Asset) {

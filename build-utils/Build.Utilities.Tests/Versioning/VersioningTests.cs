@@ -250,7 +250,7 @@ internal sealed class VersioningTests {
       assets: []
     );
 
-    releasesClient.GetAll( "test-owner", "test-repo" ).Returns( [latestRelease] );
+    releasesClient.GetLatest( "test-owner", "test-repo" ).Returns( latestRelease );
     gitHubClient.Repository.Release.Returns( releasesClient );
 
     // Act

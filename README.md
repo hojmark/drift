@@ -5,7 +5,7 @@
 
 Drift is a command-line tool that gives you confidence to change your network configuration and firewall rules, knowing
 you’ll be alerted if your network drifts from its desired state. By comparing the actual network state to your declared
-state, Drift can detect issues like unknown devices or unexpected subnet access, helping you maintain network integrity.
+state, Drift detects issues like unknown devices or unexpected subnet access, helping you maintain network integrity.
 
 
 ![Scan command console output](screenshot-scan.png)
@@ -14,7 +14,7 @@ state, Drift can detect issues like unknown devices or unexpected subnet access,
 
 ### Linux 🐧
 
-#### Install
+Install
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.sh | bash
@@ -22,8 +22,7 @@ curl -sSL https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/instal
 
 If Drift is already installed, it will be updated to the latest version.
 
-#### Run
-
+Then run
 ```bash
 # Create a network spec using auto-discovery
 drift init
@@ -34,7 +33,10 @@ drift scan -i
 
 ### Windows 🪟
 
-#### Install
+> [!IMPORTANT]
+> If script execution is blocked, run `powershell.exe -ExecutionPolicy Unrestricted` before running the install command.
+
+Install
 
 ```powershell
 irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex
@@ -42,14 +44,7 @@ irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 
 
 If Drift is already installed, it will be updated to the latest version.
 
-> [!NOTE]
-> If scripts are blocked, run the following:
-> ```
-> powershell.exe -ExecutionPolicy Unrestricted
-> ```
-> Then execute the install command in the same window.
-
-#### Run
+Then run
 
 ```powershell
 # Create a network spec using auto-discovery
@@ -60,8 +55,6 @@ drift scan -i
 ```
 
 ### Container 🐋
-
-#### Run
 
 ```bash
 # Scan the host network

@@ -76,15 +76,10 @@ internal sealed partial class InstallPsTests {
     }
   }
 
-  /// <summary>
-  /// install.ps1 should successfully install a specific version when a valid tag is provided.
-  /// Runs under both PowerShell 7 (pwsh) and Windows PowerShell 5.1 (powershell).
-  /// </summary>
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
   public async Task InstallSpecificVersion( string shell ) {
-    // NOTE: this must be the oldest tag that has a *_win-x64.zip asset.
-    // Update when a newer stable release with Windows assets is available.
+    // TODO Update when a newer stable release with Windows assets is available.
     const string version = "v0.0.0-windows.11.20260323204120";
 
     var tempDir = Path.GetTempPath();
@@ -119,10 +114,7 @@ internal sealed partial class InstallPsTests {
       await Verify( installProcess.StdOut )
         .UseTextForParameters( $"{shell}_INSTALL_OUTPUT" )
         .ScrubLinesWithReplace( line => {
-            // TODO keep escape sequences...
-            // Strip ANSI escape sequences
-            var stripped = Regex.Replace( line, @"\x1b\[[0-9;]*m", string.Empty );
-            stripped = Regex.Replace( stripped, @">> Installing to .+\.\.\.", ">> Installing to {INSTALL_DIR}..." );
+            var stripped = Regex.Replace( line, @">> Installing to .+\.\.\.", ">> Installing to {INSTALL_DIR}..." );
             stripped = Regex.Replace(
               stripped,
               @"   Adding .+ to user PATH\.\.\.",
@@ -147,17 +139,11 @@ internal sealed partial class InstallPsTests {
     }
   }
 
-  /// <summary>
-  /// install.ps1 should successfully upgrade from a specific previous version to the latest,
-  /// with the installed binary reflecting the correct version at each step.
-  /// Runs under both PowerShell 7 (pwsh) and Windows PowerShell 5.1 (powershell).
-  /// </summary>
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
   [Ignore( "No latest Windows version available yet" )]
   public async Task UpgradeFromPreviousVersion( string shell ) {
-    // NOTE: update this constant when a new Windows release is published that supersedes
-    // windows.10 as the second most recent. It must be a tag with a win-x64 asset.
+    // TODO Update when a newer stable release with Windows assets is available.
     const string previousVersion = "v0.0.0-windows.10.20260319202632";
 
     var tempDir = Path.GetTempPath();
@@ -215,9 +201,6 @@ internal sealed partial class InstallPsTests {
     }
   }
 
-  /// <summary>
-  /// install.ps1 should create the install directory if it does not already exist.
-  /// </summary>
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
   [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
@@ -250,9 +233,6 @@ internal sealed partial class InstallPsTests {
     }
   }
 
-  /// <summary>
-  /// install.ps1 should append the install directory to the User PATH when it is not already present.
-  /// </summary>
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
   [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
@@ -297,10 +277,6 @@ internal sealed partial class InstallPsTests {
     }
   }
 
-  /// <summary>
-  /// install.ps1 should not add a duplicate entry to the User PATH when the install directory
-  /// is already present.
-  /// </summary>
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
   [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]

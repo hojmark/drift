@@ -13,8 +13,6 @@ $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding             = [System.Text.Encoding]::UTF8
 
-$Esc = [char]27
-
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 function Write-Step   { param([string]$Msg) Write-Host $Msg }
@@ -105,7 +103,7 @@ New-Item -ItemType Directory -Path $TmpDir | Out-Null
 try {
   $ZipPath = Join-Path $TmpDir $Asset.name
 
-  Write-Step "🔽 Downloading ${Esc}[1m$($Asset.name)${Esc}[0m..."
+  Write-Step "🔽 Downloading $($Asset.name)..."
 
   $DownloadHeaders = $Headers.Clone()
   $DownloadHeaders["Accept"] = "application/octet-stream"
@@ -151,4 +149,4 @@ try {
   Remove-Item -Path $TmpDir -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-Write-Ok "${Esc}[1mInstalled Drift CLI $VersionDisplay successfully!${Esc}[0m"
+Write-Ok "Installed Drift CLI $VersionDisplay successfully!"

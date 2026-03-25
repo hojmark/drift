@@ -9,19 +9,17 @@ param(
 
 $ErrorActionPreference = "Stop"
 $OutputEncoding = [System.Text.Encoding]::UTF8
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-function Write-Step   { param([string]$Msg) [Console]::Out.WriteLine($Msg) }
-function Write-Ok     { param([string]$Msg) [Console]::Out.WriteLine("✅ $Msg") }
-function Write-Fail   { param([string]$Msg) [Console]::Out.WriteLine("❌ $Msg") }
-function Write-Note   { param([string]$Msg) [Console]::Out.WriteLine("   $Msg") }
+function Write-Step   { param([string]$Msg) Write-Output $Msg }
+function Write-Ok     { param([string]$Msg) Write-Output "✅ $Msg" }
+function Write-Fail   { param([string]$Msg) Write-Output "❌ $Msg" }
+function Write-Note   { param([string]$Msg) Write-Output "   $Msg" }
 
 function Exit-WithError {
   param([string]$Msg)
   Write-Fail $Msg
-  [Console]::Out.Flush()
   exit 1
 }
 

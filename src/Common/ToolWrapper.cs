@@ -9,9 +9,9 @@ namespace Drift.Common;
 public class ToolWrapper( string toolPath, Dictionary<string, string?>? environment = null ) {
   private readonly string _toolPath = toolPath ?? throw new ArgumentNullException( nameof(toolPath) );
 
-  public event DataReceivedEventHandler? OutputDataReceived;
+  public event Action<string?>? OutputDataReceived;
 
-  public event DataReceivedEventHandler? ErrorDataReceived;
+  public event Action<string?>? ErrorDataReceived;
 
   public async Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> ExecuteAsync(
     string arguments,
@@ -23,8 +23,8 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
       Arguments = arguments,
       RedirectStandardOutput = true,
       RedirectStandardError = true,
-      StandardOutputEncoding = Encoding.UTF8,
-      StandardErrorEncoding = Encoding.UTF8,
+      StandardOutputEncoding = new UTF8Encoding( false ),
+      StandardErrorEncoding = new UTF8Encoding( false ),
       UseShellExecute = false, // Do not use the OS shell
       CreateNoWindow = true
     };
@@ -38,28 +38,16 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
     using var process = new Process();
     process.StartInfo = startInfo;
 
-    var output = new StringBuilder();
-    var error = new StringBuilder();
-
-    process.OutputDataReceived += ( _, args ) => {
-      if ( args.Data != null ) {
-        output.AppendLine( args.Data );
-      }
-    };
-    process.OutputDataReceived += OutputDataReceived;
-    process.ErrorDataReceived += ( _, args ) => {
-      if ( args.Data != null ) {
-        error.AppendLine( args.Data );
-      }
-    };
-    process.ErrorDataReceived += ErrorDataReceived;
-
     logger?.LogTrace( "Executing: {Tool} {Arguments}", _toolPath, arguments );
 
     process.Start();
 
-    process.BeginOutputReadLine();
-    process.BeginErrorReadLine();
+    // Read stdout and stderr concurrently using StreamReader directly, which respects
+    // StandardOutputEncoding / StandardErrorEncoding. Using BeginOutputReadLine() is
+    // avoided because it can ignore StandardOutputEncoding on some Windows configurations
+    // and decode bytes using the system default code page instead.
+    var outputTask = ReadStreamAsync( process.StandardOutput, OutputDataReceived );
+    var errorTask = ReadStreamAsync( process.StandardError, ErrorDataReceived );
 
     int exitCode = int.MinValue;
     var cancelled = false;
@@ -72,9 +60,24 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
       cancelled = true;
     }
 
-    process.CancelOutputRead();
-    process.CancelErrorRead();
+    var stdOut = await outputTask;
+    var errOut = await errorTask;
 
-    return ( output.ToString(), error.ToString(), exitCode, cancelled );
+    return ( stdOut, errOut, exitCode, cancelled );
+  }
+
+  private static async Task<string> ReadStreamAsync(
+    StreamReader reader,
+    Action<string?>? lineHandler
+  ) {
+    var sb = new StringBuilder();
+    string? line;
+
+    while ( ( line = await reader.ReadLineAsync() ) != null ) {
+      sb.AppendLine( line );
+      lineHandler?.Invoke( line );
+    }
+
+    return sb.ToString();
   }
 }

@@ -35,12 +35,12 @@ internal sealed class LinuxFpingSubnetScanner : ISubnetScanner {
     var discoveredDevices = new List<DiscoveredDevice>();
 
     var pingTool = new ToolWrapper( "fping" );
-    pingTool.OutputDataReceived += ( _, args ) => {
-      if ( string.IsNullOrEmpty( args.Data ) ) {
+    pingTool.OutputDataReceived += data => {
+      if ( string.IsNullOrEmpty( data ) ) {
         return;
       }
 
-      discoveredDevices.Add( new DiscoveredDevice { Addresses = [new IpV4Address( args.Data )] } );
+      discoveredDevices.Add( new DiscoveredDevice { Addresses = [new IpV4Address( data )] } );
       var elapsed = stopwatch.Elapsed;
       var estimatedScanned = elapsed.TotalSeconds * options.PingsPerSecond;
       var progress = Math.Min( 99, Math.Ceiling( ( estimatedScanned / ipRange.Count ) * 100 ) );

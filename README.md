@@ -38,6 +38,13 @@ drift scan -i
 
 #### Install
 
+> [!NOTE]
+> If scripts are blocked, run the following:
+> ```
+> powershell.exe -ExecutionPolicy Unrestricted
+> ```
+> Then execute the install command in the same window.
+
 ```powershell
 irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex
 ```

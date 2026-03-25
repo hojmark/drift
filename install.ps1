@@ -11,10 +11,16 @@ $ErrorActionPreference = "Stop"
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-function Write-Step   { param([string]$Msg) Write-Output ">> $Msg" }
-function Write-Ok     { param([string]$Msg) Write-Output "[OK] $Msg" }
-function Write-Fail   { param([string]$Msg) Write-Output "[ERROR] $Msg" }
-function Write-Note   { param([string]$Msg) Write-Output "   $Msg" }
+# pwsh (PowerShell Core) supports Unicode/emoji output; Windows PowerShell 5.1 does not.
+$UseEmoji = $PSVersionTable.PSEdition -eq "Core"
+
+function Write-Step {
+  param([string]$Emoji, [string]$Msg)
+  if ($UseEmoji) { Write-Output "$Emoji $Msg" } else { Write-Output ">> $Msg" }
+}
+function Write-Ok   { param([string]$Msg) if ($UseEmoji) { Write-Output "✅ $Msg" } else { Write-Output "[OK] $Msg" } }
+function Write-Fail { param([string]$Msg) if ($UseEmoji) { Write-Output "❌ $Msg" } else { Write-Output "[ERROR] $Msg" } }
+function Write-Note { param([string]$Msg) Write-Output "   $Msg" }
 
 function Exit-WithError {
   param([string]$Msg)
@@ -48,7 +54,7 @@ if ($env:GITHUB_TOKEN) {
 $Platform = "win-x64"
 
 if ($Version -eq "") {
-  Write-Step "Fetching latest version..."
+  Write-Step "🔍" "Fetching latest version..."
 
   try {
     $Releases = Invoke-RestMethod -Uri "$ApiBase/releases" -Headers $Headers -ErrorAction Stop
@@ -72,7 +78,7 @@ if ($Version -eq "") {
   # Normalise: accept both "1.2.3" and "v1.2.3"
   if (-not $Version.StartsWith("v")) { $Version = "v$Version" }
 
-  Write-Step "Fetching version $Version..."
+  Write-Step "🔍" "Fetching version $Version..."
 
   try {
     $Release = Invoke-RestMethod -Uri "$ApiBase/releases/tags/$Version" -Headers $Headers -ErrorAction Stop
@@ -103,7 +109,7 @@ New-Item -ItemType Directory -Path $TmpDir | Out-Null
 try {
   $ZipPath = Join-Path $TmpDir $Asset.name
 
-  Write-Step "Downloading $($Asset.name)..."
+  Write-Step "🔽" "Downloading $($Asset.name)..."
 
   $DownloadHeaders = $Headers.Clone()
   $DownloadHeaders["Accept"] = "application/octet-stream"
@@ -115,7 +121,7 @@ try {
 
   # ── Extract ─────────────────────────────────────────────────────────────────
 
-  Write-Step "Extracting..."
+  Write-Step "📦" "Extracting..."
   Expand-Archive -Path $ZipPath -DestinationPath $TmpDir -Force
 
   $ExtractedExe = Join-Path $TmpDir "drift.exe"
@@ -125,7 +131,7 @@ try {
 
   # ── Install ──────────────────────────────────────────────────────────────────
 
-  Write-Step "Installing..."
+  Write-Step "🚀" "Installing..."
   if (-not (Test-Path $InstallDir)) {
     New-Item -ItemType Directory -Path $InstallDir | Out-Null
   }

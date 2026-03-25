@@ -42,10 +42,6 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
 
     process.Start();
 
-    // Read stdout and stderr concurrently using StreamReader directly, which respects
-    // StandardOutputEncoding / StandardErrorEncoding. Using BeginOutputReadLine() is
-    // avoided because it can ignore StandardOutputEncoding on some Windows configurations
-    // and decode bytes using the system default code page instead.
     var outputTask = ReadStreamAsync( process.StandardOutput, OutputDataReceived );
     var errorTask = ReadStreamAsync( process.StandardError, ErrorDataReceived );
 
@@ -77,9 +73,8 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
     Action<string?>? lineHandler
   ) {
     var sb = new StringBuilder();
-    string? line;
 
-    while ( ( line = await reader.ReadLineAsync() ) != null ) {
+    while ( await reader.ReadLineAsync() is { } line ) {
       sb.AppendLine( line );
       lineHandler?.Invoke( line );
     }

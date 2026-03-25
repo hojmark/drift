@@ -51,7 +51,7 @@ metadata and do not affect how the device is identified or matched.
 
 ### Manual
 
-Download the binary from the [Releases page](https://github.com/hojmark/drift/releases) and move it to your preferred
+Download the binary from the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse) and move it to your preferred
 location.
 
 ### Linux script (`install.sh`)

@@ -18,21 +18,12 @@ state, Drift can detect issues like unknown devices or unexpected subnet access,
 
 #### Install
 
-You can install Drift by either:
+```bash
+curl -sSL https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.sh | bash
+```
 
-- Downloading the latest release from
-  the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse), or
-- Running the installation script:
-
-    ```bash
-    curl -sSL https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.sh | bash
-    ```
-
-  ℹ️ **What does the script do?**  
-  It fetches the latest version, and puts `drift` into `/usr/local/bin`.
-  If Drift is already installed, it will be updated to the latest version.
-  For more info see [Installation Options - Script](./README_dev.md#script-installsh),
-  or [view the source code](./install.sh).
+> [!NOTE]
+> If Drift is already installed, it will be updated to the latest version.
 
 #### Run
 
@@ -48,22 +39,12 @@ drift scan -i
 
 #### Install
 
-You can install Drift by either:
+```powershell
+irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex
+```
 
-- Downloading the latest release from
-  the [Releases page](https://github.com/hojmark/drift/releases?q=prerelease%3Afalse), or
-- Running the installation script in PowerShell:
-
-    ```powershell
-    irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex
-    ```
-
-  ℹ️ **What does the script do?**  
-  It fetches the latest version, extracts `drift.exe` to `%LOCALAPPDATA%\Programs\drift`, and adds that directory to
-  your user `PATH` automatically.
-  If Drift is already installed, it will be updated to the latest version.
-  For more info see [Installation Options - Script](./README_dev.md#script-installps1),
-  or [view the source code](./install.ps1).
+> [!NOTE]
+> If Drift is already installed, it will be updated to the latest version.
 
 #### Run
 
@@ -75,7 +56,7 @@ drift init
 drift scan -i
 ```
 
-### Container
+### Container 🐋
 
 #### Run
 
@@ -122,14 +103,16 @@ A user settings file can be created at `~/.config/drift/settings.json`.
 
 JSON Schemas are available to enable editor auto-completion and validation:
 
-- [**Network spec schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json)  
+- [**Network spec schema
+  **](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json)  
   Add the `yaml-language-server` comment at the top of your spec file:
   ```yaml
   # yaml-language-server: $schema=https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json
   network:
   ...
   ```
-- [**User settings schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Cli.Settings/embedded_resources/schemas/drift-settings-v1-preview.schema.json)  
+- [**User settings schema
+  **](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Cli.Settings/embedded_resources/schemas/drift-settings-v1-preview.schema.json)  
   Add the `$schema` property at the top of your settings file:
   ```json
   {

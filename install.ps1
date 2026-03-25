@@ -14,6 +14,11 @@ $ErrorActionPreference = "Stop"
 # pwsh (PowerShell Core) supports Unicode/emoji output; Windows PowerShell 5.1 does not.
 $UseEmoji = $PSVersionTable.PSEdition -eq "Core"
 
+# Ensure emoji characters survive the stdout pipe/redirect on all Windows terminals.
+if ($UseEmoji) {
+  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+
 function Write-Step {
   param([string]$Emoji, [string]$Msg)
   if ($UseEmoji) { Write-Output "$Emoji $Msg" } else { Write-Output ">> $Msg" }

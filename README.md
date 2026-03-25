@@ -8,8 +8,6 @@ you’ll be alerted if your network drifts from its desired state. By comparing 
 state, Drift can detect issues like unknown devices or unexpected subnet access, helping you maintain network integrity.
 
 
----
-
 ![Scan command console output](screenshot-scan.png)
 
 ## Getting started
@@ -66,7 +64,7 @@ drift scan -i
 #### Run
 
 ```bash
-# Scan host network
+# Scan the host network
 docker run -it --rm --network host docker.io/hojmark/drift scan -i
 ```
 

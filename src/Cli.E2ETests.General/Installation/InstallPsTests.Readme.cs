@@ -3,14 +3,22 @@ using Drift.Common;
 namespace Drift.Cli.E2ETests.General.Installation;
 
 internal sealed partial class InstallPsTests {
-  /// <summary>
-  /// The install command shown in the README must work end-to-end.
-  /// The command pipes install.ps1 directly from GitHub via irm and executes it via iex.
-  /// Runs under both PowerShell 7 (pwsh) and Windows PowerShell 5.1 (powershell).
-  /// </summary>
+  private const string PsReadmeCommand =
+    "irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex";
+
+  [Test]
+  public async Task ReadmeInstallCommandIsPresentInReadme() {
+    var readmePath = Path.Combine( Path.GetDirectoryName( InstallScript )!, "README.md" );
+    var readmeContent = await File.ReadAllTextAsync( readmePath );
+    Assert.That(
+      readmeContent,
+      Contains.Substring( PsReadmeCommand ),
+      $"Expected README.md to contain the install command: {PsReadmeCommand}"
+    );
+  }
+
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
-  [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
   public async Task ReadmeInstallCommand( string shell ) {
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-readme-ps-" + Guid.NewGuid() );
@@ -19,16 +27,12 @@ internal sealed partial class InstallPsTests {
 
     await AssertShellIsAvailable( shell );
 
-    // The exact command from the README:
-    const string readmeCommand =
-      "irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex";
-
     try {
       // Act: run the README command with DRIFT_INSTALL_DIR set so the binary lands in a
       // temporary directory instead of the default user location.
       var installProcess =
         await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
-          .ExecuteAsync( $"-NonInteractive -Command \"{readmeCommand}\"" );
+          .ExecuteAsync( $"-NonInteractive -Command \"{PsReadmeCommand}\"" );
 
       PrintInstallOutput( installProcess, shell );
 

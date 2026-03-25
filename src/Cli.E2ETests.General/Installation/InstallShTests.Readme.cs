@@ -3,10 +3,20 @@ using Drift.Common;
 namespace Drift.Cli.E2ETests.General.Installation;
 
 internal sealed partial class InstallShTests {
-  /// <summary>
-  /// The install command shown in the README must work end-to-end.
-  /// The command pipes install.sh directly from GitHub and runs it via bash.
-  /// </summary>
+  private const string ShReadmeCommand =
+    "curl -sSL https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.sh | bash";
+
+  [Test]
+  public async Task ReadmeInstallCommandIsPresentInReadme() {
+    var readmePath = Path.Combine( Path.GetDirectoryName( InstallScript )!, "README.md" );
+    var readmeContent = await File.ReadAllTextAsync( readmePath );
+    Assert.That(
+      readmeContent,
+      Contains.Substring( ShReadmeCommand ),
+      $"Expected README.md to contain the install command: {ShReadmeCommand}"
+    );
+  }
+
   [Test]
   public async Task ReadmeInstallCommand() {
     var tempDir = Path.GetTempPath();
@@ -14,16 +24,12 @@ internal sealed partial class InstallShTests {
     Directory.CreateDirectory( installDir );
     var driftBinary = Path.Combine( installDir, "drift" );
 
-    // The exact command from the README:
-    const string readmeCommand =
-      "curl -sSL https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.sh | bash";
-
     try {
       // Act: run the README command via bash -c, with DRIFT_INSTALL_DIR set so the binary
       // lands in a temporary directory instead of the system path.
       var installProcess =
         await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
-          .ExecuteAsync( $"-c \"{readmeCommand}\"" );
+          .ExecuteAsync( $"-c \"{ShReadmeCommand}\"" );
 
       PrintInstallOutput( installProcess );
 

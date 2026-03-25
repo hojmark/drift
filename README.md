@@ -22,8 +22,7 @@ state, Drift can detect issues like unknown devices or unexpected subnet access,
 curl -sSL https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.sh | bash
 ```
 
-> [!NOTE]
-> If Drift is already installed, it will be updated to the latest version.
+If Drift is already installed, it will be updated to the latest version.
 
 #### Run
 
@@ -43,8 +42,7 @@ drift scan -i
 irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex
 ```
 
-> [!NOTE]
-> If Drift is already installed, it will be updated to the latest version.
+If Drift is already installed, it will be updated to the latest version.
 
 #### Run
 

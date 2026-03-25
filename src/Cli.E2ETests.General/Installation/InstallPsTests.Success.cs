@@ -91,6 +91,8 @@ internal sealed partial class InstallPsTests {
     Directory.CreateDirectory( installDir );
     var driftBinary = Path.Combine( installDir, "drift.exe" );
 
+    await AssertShellIsAvailable( shell );
+
     try {
       // Act
       var installProcess =
@@ -114,7 +116,7 @@ internal sealed partial class InstallPsTests {
 
       // Assert: install.ps1 output snapshot
       await Verify( installProcess.StdOut )
-        .UseTextForParameters( "INSTALL_OUTPUT" )
+        .UseTextForParameters( $"{shell}_INSTALL_OUTPUT" )
         .ScrubLinesWithReplace( line => {
             // TODO keep escape sequences...
             // Strip ANSI escape sequences

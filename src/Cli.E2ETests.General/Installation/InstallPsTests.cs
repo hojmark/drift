@@ -1,3 +1,5 @@
+using Drift.Common;
+
 namespace Drift.Cli.E2ETests.General.Installation;
 
 [Platform( "Win" )]
@@ -32,6 +34,15 @@ internal sealed partial class InstallPsTests {
         // best-effort cleanup
       }
     }
+  }
+
+  private static async Task AssertShellIsAvailable( string shell ) {
+    var check = await new ToolWrapper( shell ).ExecuteAsync( "-NonInteractive -Command \"exit 0\"" );
+    Assert.That(
+      check.ExitCode,
+      Is.EqualTo( 0 ),
+      $"Pre-condition failed: '{shell}' is not available or not functional on this machine (exit code: {check.ExitCode})"
+    );
   }
 
   private static void PrintInstallOutput( (string StdOut, string ErrOut, int ExitCode, bool Cancelled) result ) {

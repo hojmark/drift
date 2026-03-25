@@ -10,6 +10,8 @@ internal sealed partial class InstallPsTests {
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
   public async Task InstallNonExistingVersion( string shell ) {
+    await AssertShellIsAvailable( shell );
+
     // Arrange / Act
     var installProcess = await new ToolWrapper( shell ).ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" vBOGUS" );
 
@@ -17,6 +19,6 @@ internal sealed partial class InstallPsTests {
 
     // Assert
     Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeFailure ) );
-    await Verify( installProcess.StdOut ).UseTextForParameters( "INSTALL_OUTPUT" );
+    await Verify( installProcess.StdOut ).UseTextForParameters( $"{shell}_INSTALL_OUTPUT" );
   }
 }

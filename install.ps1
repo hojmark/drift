@@ -29,11 +29,21 @@ $EmojiRocket    = [char]::ConvertFromUtf32(0x1F680)  # 🚀
 $EmojiOk        = [char]::ConvertFromUtf32(0x2705)   # ✅
 $EmojiFail      = [char]::ConvertFromUtf32(0x274C)   # ❌
 
+# ANSI formatting — pwsh only; empty strings on PS 5.1 so interpolation is always safe.
+if ($UseEmoji) {
+  $Esc   = [char]27
+  $Bold  = "$Esc[1m"
+  $Green = "$Esc[32m"
+  $Reset = "$Esc[0m"
+} else {
+  $Bold = ""; $Green = ""; $Reset = ""
+}
+
 function Write-Step {
   param([string]$Emoji, [string]$Msg)
   if ($UseEmoji) { Write-Output "$Emoji $Msg" } else { Write-Output ">> $Msg" }
 }
-function Write-Ok   { param([string]$Msg) if ($UseEmoji) { Write-Output "$EmojiOk $Msg" } else { Write-Output "[OK] $Msg" } }
+function Write-Ok   { param([string]$Msg) if ($UseEmoji) { Write-Output "$EmojiOk ${Green}${Bold}$Msg${Reset}" } else { Write-Output "[OK] $Msg" } }
 function Write-Fail { param([string]$Msg) if ($UseEmoji) { Write-Output "$EmojiFail $Msg" } else { Write-Output "[ERROR] $Msg" } }
 function Write-Note { param([string]$Msg) Write-Output "   $Msg" }
 
@@ -124,7 +134,7 @@ New-Item -ItemType Directory -Path $TmpDir | Out-Null
 try {
   $ZipPath = Join-Path $TmpDir $Asset.name
 
-  Write-Step $EmojiDown "Downloading $($Asset.name)..."
+  Write-Step $EmojiDown "Downloading ${Bold}$($Asset.name)${Reset}..."
 
   $DownloadHeaders = $Headers.Clone()
   $DownloadHeaders["Accept"] = "application/octet-stream"

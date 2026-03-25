@@ -21,15 +21,10 @@ public sealed class ReleaseVersioning(
   }
 
   private async Task<SemVersion> GetVersionInternalAsync() {
-    // TODO can now use .Latest(), since main release is no longer a prerelease
-    // .Latest() does not return prereleases
-    var releases = await GitHubClient.Repository.Release.GetAll(
+    var latest = await GitHubClient.Repository.Release.GetLatest(
       Repository.GetGitHubOwner(),
       Repository.GetGitHubName()
     );
-    var latest = releases
-      .OrderByDescending( r => r.PublishedAt )
-      .FirstOrDefault( r => !r.Draft );
 
     if ( latest == null ) {
       throw new InvalidOperationException( "No releases found. Cannot determine next version." );

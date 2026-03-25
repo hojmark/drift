@@ -5,6 +5,9 @@ using HLabs.ImageReferences;
 
 namespace Drift.Build.Utilities.DockerHub;
 
+/// <summary>
+/// Client for interacting with the Docker Hub API.
+/// </summary>
 public sealed class DockerHubClient( string? dockerHubUsername, string? dockerHubPassword ) : IDisposable {
   private const uint PageSize = 100;
 

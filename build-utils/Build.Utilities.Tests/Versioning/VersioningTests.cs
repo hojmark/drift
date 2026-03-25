@@ -157,9 +157,10 @@ internal sealed class VersioningTests {
     var strategy = factory.Create( Configuration.Release, "custom", null, null, null );
     var version = await strategy.GetVersionAsync();
 
-    // Assert: prefix is preserved and a 14-digit timestamp is appended
+    // Assert
     using ( Assert.Multiple() ) {
       await Assert.That( version.ToString() ).StartsWith( "0.0.0-custom." );
+      // 14-digit timestamp is appended
       await Assert.That( version.PrereleaseIdentifiers[version.PrereleaseIdentifiers.Count - 1].ToString() )
         .Matches( new Regex( @"^\d{14}$" ) );
     }
@@ -176,7 +177,8 @@ internal sealed class VersioningTests {
     var factory = new VersioningStrategyFactory( build );
     var strategy = factory.Create( Configuration.Release, "0.0.0-custom", null, null, null );
 
-    // Assert: full semver strings must be rejected — only dot-separated identifiers are accepted
+    // Assert
+    // Full semver strings must be rejected — only dot-separated prerelease identifiers are accepted
     Assert.ThrowsAsync<InvalidOperationException>( async () => await strategy.GetVersionAsync() );
   }
 
@@ -192,10 +194,10 @@ internal sealed class VersioningTests {
     var factory = new VersioningStrategyFactory( build, timeProvider );
     var strategy = factory.Create( Configuration.Release, "custom", null, null, null );
     var versionBefore = await strategy.GetVersionAsync();
-    timeProvider.Advance( TimeSpan.FromSeconds( 2 ) ); // Advance time past the 1-second timestamp resolution
+    timeProvider.Advance( TimeSpan.FromSeconds( 2 ) );
     var versionAfter = await strategy.GetVersionAsync();
 
-    // Assert: _timestamp is cached — both calls return the same version despite the time advancement
+    // Assert
     await Assert.That( versionBefore ).IsEqualTo( versionAfter );
   }
 
@@ -209,7 +211,7 @@ internal sealed class VersioningTests {
     // Act
     var factory = new VersioningStrategyFactory( build );
 
-    // Assert: rejected eagerly in the factory — prereleaseIdentifiers is meaningless for a Release build
+    // Assert
     Assert.Throws<InvalidOperationException>( () =>
       factory.Create( Configuration.Release, "custom", null, null, null )
     );
@@ -278,7 +280,7 @@ internal sealed class VersioningTests {
 
   [Test]
   public void ExactVersioningWithNullThrows() {
-    // Arrange — construct directly since the factory treats whitespace-only as "not set"
+    // Arrange
     var strategy = new ExactVersioning( Configuration.Release, "   ", null!, null! );
 
     // Assert

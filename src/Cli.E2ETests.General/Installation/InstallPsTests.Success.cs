@@ -53,7 +53,7 @@ internal sealed partial class InstallPsTests {
         );
 
       // Act: run drift
-      var driftProcess = await new ToolWrapper( driftBinary ).ExecuteAsync( "--help" );
+      var driftProcess = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
 
       Console.WriteLine( "------------------- drift output ----------------------" );
       await TestContext.Out.WriteLineAsync( driftProcess.StdOut );
@@ -66,8 +66,7 @@ internal sealed partial class InstallPsTests {
       // Assert: drift output
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( driftProcess.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-        Assert.That( driftProcess.StdOut, Is.Not.Null );
-        Assert.That( driftProcess.StdOut, Contains.Substring( "-?, -h, --help  Show help and usage information" ) );
+        Assert.That( driftProcess.StdOut, Is.Not.Empty );
         Assert.That( driftProcess.ErrOut, Is.Empty );
       }
     }
@@ -124,13 +123,17 @@ internal sealed partial class InstallPsTests {
           }
         );
 
-      // Act: confirm the installed binary is executable
-      var driftProcess = await new ToolWrapper( driftBinary ).ExecuteAsync( "--help" );
+      // Act: confirm the installed binary reports the expected version
+      var driftProcess = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
 
-      // Assert: binary runs
+      // Assert: binary runs and reports the requested version
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( driftProcess.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-        Assert.That( driftProcess.StdOut, Contains.Substring( "-?, -h, --help  Show help and usage information" ) );
+        Assert.That(
+          driftProcess.StdOut,
+          Contains.Substring( "0.0.0-windows.11.20260323204120" ),
+          $"Expected --version to report the installed version, got: {driftProcess.StdOut}"
+        );
         Assert.That( driftProcess.ErrOut, Is.Empty );
       }
     }

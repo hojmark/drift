@@ -45,8 +45,11 @@ internal sealed partial class InstallPsTests {
     );
   }
 
-  private static void PrintInstallOutput( (string StdOut, string ErrOut, int ExitCode, bool Cancelled) result ) {
-    Console.WriteLine( "------------------- install.ps1 output ----------------------" );
+  private static void PrintInstallOutput(
+    (string StdOut, string ErrOut, int ExitCode, bool Cancelled) result,
+    string shell
+  ) {
+    Console.WriteLine( "--------------- install.ps1 output ({shell}) -----------------" );
 
     Console.WriteLine( result.StdOut );
 

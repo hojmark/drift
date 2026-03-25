@@ -6,9 +6,10 @@ namespace Drift.Cli.E2ETests.General.Installation;
 
 internal sealed partial class InstallPsTests {
   // TODO split test into at least two parts
-  [Test]
+  [TestCase( "pwsh" )]
+  [TestCase( "powershell" )]
   [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
-  public async Task InstallLatestVersion() {
+  public async Task InstallLatestVersion( string shell ) {
     // Arrange: create a temporary install directory
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-" + Guid.NewGuid() );
@@ -17,10 +18,10 @@ internal sealed partial class InstallPsTests {
 
     try {
       // Act: run the install script
-      var installProcess = await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
+      var installProcess = await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
         .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\"" );
 
-      PrintInstallOutput( installProcess );
+      PrintInstallOutput( installProcess, shell );
 
       // Assert: binary exists
       using ( Assert.EnterMultipleScope() ) {
@@ -99,7 +100,7 @@ internal sealed partial class InstallPsTests {
         await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" {version}" );
 
-      PrintInstallOutput( installProcess );
+      PrintInstallOutput( installProcess, shell );
 
       // Assert: exit code and binary presence
       using ( Assert.EnterMultipleScope() ) {
@@ -149,9 +150,10 @@ internal sealed partial class InstallPsTests {
   /// <summary>
   /// install.ps1 should create the install directory if it does not already exist.
   /// </summary>
-  [Test]
+  [TestCase( "pwsh" )]
+  [TestCase( "powershell" )]
   [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
-  public async Task InstallCreatesDirectoryIfMissing() {
+  public async Task InstallCreatesDirectoryIfMissing( string shell ) {
     var tempDir = Path.GetTempPath();
     // Point to a directory that does not exist yet
     var installDir = Path.Combine( tempDir, "drift-install-ps-newdir-" + Guid.NewGuid(), "nested", "drift" );
@@ -162,10 +164,10 @@ internal sealed partial class InstallPsTests {
 
       // Act
       var installProcess =
-        await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
+        await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\"" );
 
-      PrintInstallOutput( installProcess );
+      PrintInstallOutput( installProcess, shell );
 
       // Assert
       using ( Assert.EnterMultipleScope() ) {
@@ -183,9 +185,10 @@ internal sealed partial class InstallPsTests {
   /// <summary>
   /// install.ps1 should append the install directory to the User PATH when it is not already present.
   /// </summary>
-  [Test]
+  [TestCase( "pwsh" )]
+  [TestCase( "powershell" )]
   [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
-  public async Task InstallAddsToUserPath() {
+  public async Task InstallAddsToUserPath( string shell ) {
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-path-" + Guid.NewGuid() );
     Directory.CreateDirectory( installDir );
@@ -201,10 +204,10 @@ internal sealed partial class InstallPsTests {
     try {
       // Act
       var installProcess =
-        await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
+        await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\"" );
 
-      PrintInstallOutput( installProcess );
+      PrintInstallOutput( installProcess, shell );
 
       Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
 
@@ -230,9 +233,10 @@ internal sealed partial class InstallPsTests {
   /// install.ps1 should not add a duplicate entry to the User PATH when the install directory
   /// is already present.
   /// </summary>
-  [Test]
+  [TestCase( "pwsh" )]
+  [TestCase( "powershell" )]
   [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
-  public async Task InstallDoesNotDuplicateInUserPath() {
+  public async Task InstallDoesNotDuplicateInUserPath( string shell ) {
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-nodup-" + Guid.NewGuid() );
     Directory.CreateDirectory( installDir );
@@ -250,10 +254,10 @@ internal sealed partial class InstallPsTests {
       // Act: run install twice to make sure no duplicates accumulate either
       for ( var i = 0; i < 2; i++ ) {
         var installProcess =
-          await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
+          await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
             .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\"" );
 
-        PrintInstallOutput( installProcess );
+        PrintInstallOutput( installProcess, shell );
         Assert.That( installProcess.ExitCode, Is.EqualTo( ExitCodeSuccess ) );
       }
 

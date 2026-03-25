@@ -58,6 +58,12 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
     }
     catch ( OperationCanceledException ) {
       cancelled = true;
+      try {
+        process.Kill( entireProcessTree: true );
+      }
+      catch {
+        // Process may have already exited
+      }
     }
 
     var stdOut = await outputTask;

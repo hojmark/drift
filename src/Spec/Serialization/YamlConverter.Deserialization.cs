@@ -10,11 +10,13 @@ public static partial class YamlConverter {
   // Consider Reader/Stream/etc
 
   public static Inventory Deserialize( Stream stream ) {
-    return Deserialize( new StreamReader( stream, Encoding.UTF8 ).ReadToEnd() );
+    using var reader = new StreamReader( stream, Encoding.UTF8 );
+    return Deserialize( reader.ReadToEnd() );
   }
 
   public static Inventory Deserialize( FileInfo fileInfo ) {
-    return Deserialize( fileInfo.Open( FileMode.Open, FileAccess.Read, FileShare.Read ) );
+    using var stream = fileInfo.Open( FileMode.Open, FileAccess.Read, FileShare.Read );
+    return Deserialize( stream );
   }
 
   internal static DriftSpec DeserializeToDto( string yaml ) {

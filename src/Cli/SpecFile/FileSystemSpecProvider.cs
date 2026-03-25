@@ -38,8 +38,11 @@ internal class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvid
       output.Normal.WriteLine( "Using network spec " );
       output.Normal.Write( $"  {filePath}  ", ConsoleColor.Cyan );
 
-      var specFileContents = await new StreamReader( filePath.Open( FileMode.Open, FileAccess.Read, FileShare.Read ) )
-        .ReadToEndAsync();
+      string specFileContents;
+      using ( var fs = filePath.Open( FileMode.Open, FileAccess.Read, FileShare.Read ) )
+      using ( var sr = new StreamReader( fs ) ) {
+        specFileContents = await sr.ReadToEndAsync();
+      }
       var valid = SpecValidator.Validate( specFileContents, SpecVersion.V1_preview ).IsValid;
 
       output.Normal.WriteLineValidity( valid );

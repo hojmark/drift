@@ -12,6 +12,7 @@ using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
+using Drift.Scanning.Oui;
 using NaturalSort.Extension;
 
 namespace Drift.Cli.Commands.Scan.ResultProcessors;
@@ -84,11 +85,14 @@ internal static class SubnetScanResultProcessor {
 
     var ip = device.Get( AddressType.IpV4 );
     var mac = device.Get( AddressType.Mac );
+    var macAddress = device.Addresses.OfType<MacAddress>().Cast<MacAddress?>().SingleOrDefault();
 
     var deviceRenderState = DeviceRenderState.From( declaredState, discoveredState, unknownAllowed );
     deviceRenderState = ip == null || scanResult.DiscoveryAttempts.Contains( new IpV4Address( ip ) )
       ? deviceRenderState
       : new DeviceRenderState( deviceRenderState.State, deviceRenderState.Icon, "[grey bold]Unknown[/]" );
+
+    var vendor = macAddress is { } m ? OuiDatabase.LookupVendor( m ) : null;
 
     var id = InteractiveUi.FakeData ? GenerateDeviceId() : declaredDevice?.Id;
     var displayId = id == null ? "[grey][/]" : $"[cyan]{id}[/]";
@@ -106,6 +110,7 @@ internal static class SubnetScanResultProcessor {
         )
       ),
       Id = new DisplayValue( displayId ),
+      Vendor = vendor,
     };
   }
 

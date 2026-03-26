@@ -120,6 +120,7 @@ internal static class TreeRenderer {
   }
 
   private static string RenderDevice( Device device, List<Subnet> subnets ) {
+    var vendor = device.Vendor != null ? $"  [grey]{device.Vendor}[/]" : string.Empty;
     return
       // device.Status + " " +
       $"{device.Ip.PadRight( subnets.GetIpWidth() )}  " +
@@ -127,7 +128,7 @@ internal static class TreeRenderer {
       $"{device.Id.PadRight( subnets.GetIdWidth() )}  " +
       // TODO note not raw version
       // $"{device.StateText.PadRightLocal( device.StateText.Length, subnets.GetStateTextWidth() )}  " +
-      device.State.Text + "  ";
+      device.State.Text + vendor + "  ";
     // "[grey]Few seconds ago[/]";
   }
 }

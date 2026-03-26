@@ -24,6 +24,11 @@ internal class Device {
     init;
   }
 
+  public string? Vendor {
+    get;
+    init;
+  }
+
   // TODO e.g. "Last seen 5 hours ago""
   /*public string Note {
     get;

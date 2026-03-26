@@ -22,11 +22,12 @@ internal class LogScanRenderer( ILogOutput log ) : IRenderer<List<Subnet>> {
         log.LogWarning( "Device" );
         log.Log(
           device.State.State.IsConformant() ? LogLevel.Information : LogLevel.Warning,
-          "IPv4: {Get}, MAC: {Mac}, Conformant: {Conformant}, State: {State}",
+          "IPv4: {Ipv4}, MAC: {Mac}, Conformant: {Conformant}, State: {State}, Vendor: {Vendor}",
           device.Ip.WithoutMarkup,
           device.Mac.WithoutMarkup,
           device.State.State.IsConformant(),
-          device.State.State
+          device.State.State,
+          device.Vendor
         );
       }
     }

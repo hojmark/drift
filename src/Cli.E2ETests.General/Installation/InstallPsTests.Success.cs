@@ -8,7 +8,6 @@ internal sealed partial class InstallPsTests {
   // TODO split test into at least two parts
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
-  [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
   public async Task InstallLatestVersion( string shell ) {
     // Arrange: create a temporary install directory
     var tempDir = Path.GetTempPath();
@@ -31,15 +30,15 @@ internal sealed partial class InstallPsTests {
 
       // Assert: install.ps1 output
       await Verify( installProcess.StdOut )
-        .UseTextForParameters( "INSTALL_OUTPUT" )
+        .UseTextForParameters( $"{shell}_INSTALL_OUTPUT" )
         .ScrubLinesWithReplace( line =>
           Regex.Replace(
             Regex.Replace(
               Regex.Replace(
                 Regex.Replace(
                   line,
-                  @"drift_[\w\.\-]+_win_x64\.zip",
-                  "drift_{VERSION}_win_x64.zip"
+                  @"drift_[\w\.\-]+_win-x64\.zip",
+                  "drift_{VERSION}_win-x64.zip"
                 ),
                 @"Installed Drift CLI [\w\.\-]+ successfully!",
                 "Installed Drift CLI {VERSION} successfully!"
@@ -144,10 +143,9 @@ internal sealed partial class InstallPsTests {
 
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
-  [Ignore( "No latest Windows version available yet" )]
   public async Task UpgradeFromPreviousVersion( string shell ) {
-    // TODO Update when a newer stable release with Windows assets is available.
-    const string previousVersion = "v0.0.0-windows.10.20260319202632";
+    // previousVersion = last prerelease Windows build; latest stable = v1.0.0-alpha.7
+    const string previousVersion = "v0.0.0-windows.11.20260323204120";
 
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-upgrade-" + Guid.NewGuid() );
@@ -174,7 +172,7 @@ internal sealed partial class InstallPsTests {
       var versionAfterFirst = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
       Assert.That(
         versionAfterFirst.StdOut,
-        Contains.Substring( "0.0.0-windows.10" ),
+        Contains.Substring( "0.0.0-windows.11" ),
         $"Expected --version to report previous version after first install, got: {versionAfterFirst.StdOut}"
       );
 
@@ -206,7 +204,6 @@ internal sealed partial class InstallPsTests {
 
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
-  [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
   public async Task InstallCreatesDirectoryIfMissing( string shell ) {
     var tempDir = Path.GetTempPath();
     // Point to a directory that does not exist yet
@@ -238,7 +235,6 @@ internal sealed partial class InstallPsTests {
 
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
-  [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
   public async Task InstallAddsToUserPath( string shell ) {
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-path-" + Guid.NewGuid() );
@@ -282,7 +278,6 @@ internal sealed partial class InstallPsTests {
 
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
-  [Ignore( "No stable release with Windows assets exists yet. Re-enable once one is published." )]
   public async Task InstallDoesNotDuplicateInUserPath( string shell ) {
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-nodup-" + Guid.NewGuid() );

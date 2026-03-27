@@ -6,6 +6,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
     <ProjectReference Include="..\Common.Schemas\Common.Schemas.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>

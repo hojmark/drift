@@ -28,9 +28,12 @@ internal enum OutputFormat {
 }
 
 internal static class OutputFormatSettingExtensions {
+  private const OutputFormat DefaultFormat = OutputFormat.Normal;
+
   internal static OutputFormat ToOutputFormat( this OutputFormatSetting setting ) {
     return setting switch {
-      OutputFormatSetting.Default or OutputFormatSetting.Normal => OutputFormat.Normal,
+      OutputFormatSetting.Default => DefaultFormat,
+      OutputFormatSetting.Normal => OutputFormat.Normal,
       OutputFormatSetting.Log => OutputFormat.Log,
       _ => throw new ArgumentOutOfRangeException( nameof(setting), setting, null )
     };

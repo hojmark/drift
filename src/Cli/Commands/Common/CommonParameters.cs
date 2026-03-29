@@ -41,7 +41,7 @@ internal static class CommonParameters {
     internal static readonly Option<OutputFormat> OutputFormat =
       new("--output", "-o") {
         DefaultValueFactory = _ =>
-          CliSettings.Load( new FixedLevelConsoleLogger( LogLevel.Warning, includeStackTrace: false ) )
+          CliSettings.Read( new FixedLevelConsoleLogger( LogLevel.Warning, includeStackTrace: false ) )
             .Appearance.Output.ToOutputFormat(),
         Description = "Output format",
         Required = false,

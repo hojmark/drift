@@ -7,24 +7,24 @@ namespace Drift.Cli.Settings.V1_preview;
 public partial class CliSettings {
   private ISettingsLocationProvider? _loadLocation;
 
-  public static CliSettings Load( ILogger? logger = null, ISettingsLocationProvider? location = null ) {
+  public static CliSettings Read( ILogger? logger = null, ISettingsLocationProvider? location = null ) {
     try {
       location ??= new DefaultSettingsLocationProvider();
 
-      logger?.LogTrace( "Loading settings from {Path}", location.GetFile() );
+      logger?.LogTrace( "Reading settings from {Path}", location.GetFile() );
 
       if ( !File.Exists( location.GetFile() ) ) {
-        logger?.LogInformation( "Settings file not found. Using default." );
+        logger?.LogInformation( "Settings file not found. Using defaults." );
         return new CliSettings();
       }
 
       var json = File.ReadAllText( location.GetFile() );
       var settings = JsonSerializer.Deserialize<CliSettings>( json, CliSettingsJsonContext.Default.CliSettings );
 
-      logger?.LogTrace( "Loaded settings: {Settings}", settings );
+      logger?.LogTrace( "Settings: {Settings}", settings );
 
       if ( settings == null ) {
-        logger?.LogWarning( "Deserialized settings is null. Using default." );
+        logger?.LogWarning( "Deserialized settings is null. Using defaults." );
         return new CliSettings();
       }
 
@@ -33,15 +33,15 @@ public partial class CliSettings {
       return settings;
     }
     catch ( Exception e ) {
-      logger?.LogError( e, "Error loading settings" );
+      logger?.LogError( e, "Error reading settings. Using defaults." );
       return new CliSettings();
     }
   }
 
-  public void Save( ILogger logger, ISettingsLocationProvider? location = null ) {
+  public void Write( ILogger logger, ISettingsLocationProvider? location = null ) {
     location ??= new DefaultSettingsLocationProvider();
 
-    logger.LogTrace( "Saving settings to {Path}", location.GetFile() );
+    logger.LogTrace( "Writing settings to {Path}", location.GetFile() );
 
     if ( !Directory.Exists( location.GetDirectory() ) ) {
       Directory.CreateDirectory( location.GetDirectory() );

@@ -221,7 +221,7 @@ internal class InitCommandHandler(
 
   private async Task<NetworkScanResult> PerformScanAsync( NetworkScanOptions request ) {
     if ( output.Is( OutputFormat.Normal ) ) {
-      return await AnsiConsole.Status().StartAsync(
+      return await output.Normal.GetAnsiConsole().Status().StartAsync(
         "Scanning network ...",
         async _ => await scanner.ScanAsync( request, output.GetLogger() )
       );

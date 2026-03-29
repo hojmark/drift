@@ -8,7 +8,11 @@ namespace Drift.Cli.Presentation.Console.Logging;
   "RS0030:Do not use banned APIs",
   Justification = "Fallback logger for use before DI is available"
 )]
-internal class ConsoleLogger( bool includeStackTrace = true ) : ILogger {
+internal class ConsoleLogger( bool includeStackTrace = true, TextWriter? stdOut = null, TextWriter? stdErr = null )
+  : ILogger {
+  private TextWriter Out => stdOut ?? System.Console.Out;
+  private TextWriter Err => stdErr ?? System.Console.Error;
+
   public void Log<TState>(
     LogLevel logLevel,
     EventId eventId,
@@ -28,21 +32,21 @@ internal class ConsoleLogger( bool includeStackTrace = true ) : ILogger {
     }
 
     if ( logLevel >= LogLevel.Error ) {
-      System.Console.Error.WriteLine( formattedMessage );
+      Err.WriteLine( formattedMessage );
     }
     else {
-      System.Console.Out.WriteLine( formattedMessage );
+      Out.WriteLine( formattedMessage );
     }
 
     System.Console.ResetColor();
 
     if ( exception != null ) {
       System.Console.ForegroundColor = ConsoleColor.Red;
-      System.Console.Error.WriteLine( exception.Message );
+      Err.WriteLine( exception.Message );
 
       if ( includeStackTrace ) {
         System.Console.ForegroundColor = ConsoleColor.Gray;
-        System.Console.Error.WriteLine( exception.StackTrace );
+        Err.WriteLine( exception.StackTrace );
       }
 
       System.Console.ResetColor();

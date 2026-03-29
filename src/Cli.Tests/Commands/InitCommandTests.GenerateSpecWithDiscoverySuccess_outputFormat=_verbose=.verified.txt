@@ -1,1 +1,2 @@
-﻿✓ Spec created [1m{CurrentDirectory}myNetworkWithDiscovery.spec.yaml[0m
+﻿Scanning network ...
+✓ Spec created [1m{CurrentDirectory}myNetworkWithDiscovery.spec.yaml[0m

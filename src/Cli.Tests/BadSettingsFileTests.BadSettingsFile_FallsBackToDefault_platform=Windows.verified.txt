@@ -1,0 +1,4 @@
+﻿Validating {SolutionDirectory}src\Spec.Tests\resources\network_single_subnet.yaml 
+✓ Valid
+Error loading settings
+'g' is an invalid start of a value. Path: $ | LineNumber: 0 | BytePositionInLine: 0.

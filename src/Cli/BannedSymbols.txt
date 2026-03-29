@@ -41,3 +41,5 @@ M:System.IO.TextWriter.WriteLineAsync(System.String,System.Object); Use NormalOu
 
 P:System.Console.Out; Use NormalOutput instead
 P:System.Console.Error; Use NormalOutput instead
+
+T:Spectre.Console.AnsiConsole; Use NormalOutput.GetAnsiConsole() instead of the global AnsiConsole static.

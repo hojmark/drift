@@ -13,7 +13,7 @@ internal sealed class SerializationTests {
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
 
     // Act
-    new CliSettings().Save( NullLogger.Instance, location );
+    new CliSettings().Write( NullLogger.Instance, location );
 
     // Assert
     var json = await File.ReadAllTextAsync( location.GetFile() );
@@ -24,7 +24,7 @@ internal sealed class SerializationTests {
   }
 
   [Test]
-  public void SaveAndLoadRoundtrip() {
+  public void WriteAndReadRoundtrip() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
     var logger = NullLogger.Instance;
@@ -36,8 +36,8 @@ internal sealed class SerializationTests {
     };
 
     // Act
-    original.Save( logger, location );
-    var reloaded = CliSettings.Load( logger, location );
+    original.Write( logger, location );
+    var reloaded = CliSettings.Read( logger, location );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -58,7 +58,7 @@ internal sealed class SerializationTests {
     var defaultSettings = new CliSettings();
 
     // Act
-    var loadedSettings = CliSettings.Load( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
 
     // Assert
     var defaultSettingsJson = JsonSerializer.Serialize( defaultSettings );
@@ -69,12 +69,12 @@ internal sealed class SerializationTests {
   }
 
   [Test]
-  public void LoadsDefaultsWhenNoFile() {
+  public void ReturnsDefaultsWhenNoFile() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
 
     // Act
-    var loadedSettings = CliSettings.Load( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
 
     // Assert
     var defaultSettingsJson = JsonSerializer.Serialize( new CliSettings() );
@@ -86,10 +86,10 @@ internal sealed class SerializationTests {
   public void CannotOverwriteWhenNotLoaded() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
-    new CliSettings().Save( NullLogger.Instance, location );
+    new CliSettings().Write( NullLogger.Instance, location );
 
     // Act / Assert
-    Assert.Throws<InvalidOperationException>( () => new CliSettings().Save( NullLogger.Instance, location ) );
+    Assert.Throws<InvalidOperationException>( () => new CliSettings().Write( NullLogger.Instance, location ) );
 
     Directory.Delete( location.GetDirectory(), true );
   }
@@ -99,29 +99,29 @@ internal sealed class SerializationTests {
     // Arrange
     ISettingsLocationProvider location1 = new TemporarySettingsLocationProvider();
     ISettingsLocationProvider location2 = new TemporarySettingsLocationProvider();
-    new CliSettings().Save( NullLogger.Instance, location1 );
-    new CliSettings().Save( NullLogger.Instance, location2 );
-    var reloaded1 = CliSettings.Load( NullLogger.Instance, location1 );
+    new CliSettings().Write( NullLogger.Instance, location1 );
+    new CliSettings().Write( NullLogger.Instance, location2 );
+    var reloaded1 = CliSettings.Read( NullLogger.Instance, location1 );
 
     // Act / Assert
-    Assert.Throws<InvalidOperationException>( () => reloaded1.Save( NullLogger.Instance, location2 ) );
+    Assert.Throws<InvalidOperationException>( () => reloaded1.Write( NullLogger.Instance, location2 ) );
 
     Directory.Delete( location1.GetDirectory(), true );
     Directory.Delete( location2.GetDirectory(), true );
   }
 
   [Test]
-  public async Task CannotOverwriteWhenDefaultsWereLoadedDueToBadJson() {
+  public async Task CannotOverwriteWhenDefaultsWereReturnedDueToBadJson() {
     // Arrange
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
     Directory.CreateDirectory( location.GetDirectory() );
     await File.WriteAllTextAsync( location.GetFile(), "garbage" );
 
     // Act
-    var loadedSettings = CliSettings.Load( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
 
     // Assert
-    Assert.Throws<InvalidOperationException>( () => loadedSettings.Save( NullLogger.Instance, location ) );
+    Assert.Throws<InvalidOperationException>( () => loadedSettings.Write( NullLogger.Instance, location ) );
 
     Directory.Delete( location.GetDirectory(), true );
   }

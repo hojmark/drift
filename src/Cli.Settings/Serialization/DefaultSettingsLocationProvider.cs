@@ -1,9 +1,16 @@
 using System.Runtime.InteropServices;
+using Drift.Cli.Abstractions;
 
 namespace Drift.Cli.Settings.Serialization;
 
 internal sealed class DefaultSettingsLocationProvider : ISettingsLocationProvider {
   public string GetDirectory() {
+    var configDirOverride = Environment.GetEnvironmentVariable( nameof(EnvVar.DRIFT_CONFIG_DIR) );
+
+    if ( !string.IsNullOrEmpty( configDirOverride ) ) {
+      return configDirOverride;
+    }
+
     if ( RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ) {
       return Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData ), "Drift" );
     }

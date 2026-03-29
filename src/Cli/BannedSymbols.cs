@@ -49,4 +49,10 @@ internal static class BannedSymbols {
   private static void BannedInAllProjects() {
     // Method exist for test purposes
   }
+
+  // Remove suppression to verify that the Spectre.Console global static produces build warnings
+  [SuppressMessage( "ApiDesign", "RS0030:Do not use banned APIs", Justification = "Exist for test purposes" )]
+  private static void BannedSpectreGlobals() {
+    _ = Spectre.Console.AnsiConsole.Console;
+  }
 }

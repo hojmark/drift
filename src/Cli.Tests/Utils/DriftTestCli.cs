@@ -8,6 +8,9 @@ namespace Drift.Cli.Tests.Utils;
 internal static class DriftTestCli {
   private static readonly TimeSpan DefaultCommandTimeout = TimeSpan.FromSeconds( 7 );
 
+  // Console.SetOut/SetError mutates global state, so only one invocation may redirect it at a time.
+  private static readonly SemaphoreSlim ConsoleRedirectLock = new(1, 1);
+
   internal static async Task<(int ExitCode, TextWriter Output, TextWriter Error )> InvokeFromTestAsync(
     string args,
     Action<IServiceCollection>? configureServices = null,
@@ -30,6 +33,14 @@ internal static class DriftTestCli {
       config.Error = error;
     }
 
+    // Most output is written to the InvocationConfiguration's TextWriters, but a few error some is written to Console.Out/Error
+    await ConsoleRedirectLock.WaitAsync( token );
+
+    var previousOut = Console.Out;
+    var previousErr = Console.Error;
+    Console.SetOut( output );
+    Console.SetError( error );
+
     try {
       return (
         await DriftCli.InvokeAsync(
@@ -46,6 +57,9 @@ internal static class DriftTestCli {
       );
     }
     finally {
+      Console.SetOut( previousOut );
+      Console.SetError( previousErr );
+      ConsoleRedirectLock.Release();
       cancellationTokenSource?.Dispose();
     }
   }

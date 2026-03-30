@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Tests.Utils;
 using Drift.TestUtilities;
@@ -40,7 +41,12 @@ internal sealed class BadSettingsFileTests {
     // Assert
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) ); // Success because CLI should be resilient
-      await Verify( output.ToString() + error ) // ... while surfacing any parse errors
+      var combined = Regex.Replace(
+        output.ToString() + error,
+        "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        "<guid>"
+      );
+      await Verify( combined )
         .UseParameters( platform );
     }
   }

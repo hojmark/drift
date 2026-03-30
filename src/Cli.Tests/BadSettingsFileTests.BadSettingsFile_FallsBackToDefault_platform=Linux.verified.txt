@@ -1,4 +1,4 @@
 ﻿Validating {SolutionDirectory}src/Spec.Tests/resources/network_single_subnet.yaml  
 ✓ Valid
-Error reading settings. Using defaults.
+Error reading settings: {TempPath}<guid>/settings.json. Using defaults.
 'g' is an invalid start of a value. Path: $ | LineNumber: 0 | BytePositionInLine: 0.

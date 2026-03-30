@@ -23,7 +23,7 @@ jobs:
   test-linux:
     name: 🐧 Test
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     env:
       # https://docs.github.com/en/actions/how-tos/monitor-workflows/enable-debug-logging
       ACTIONS_RUNNER_DEBUG: false

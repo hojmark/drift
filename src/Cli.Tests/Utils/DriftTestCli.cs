@@ -33,7 +33,10 @@ internal static class DriftTestCli {
       config.Error = error;
     }
 
-    // Most output is written to the InvocationConfiguration's TextWriters, but a few error some is written to Console.Out/Error
+    /*
+     * Most output is written to the InvocationConfiguration's TextWriters, but a few errors may be written to
+     * Console.Out/Error when DI is not yet available.
+     */
     await ConsoleRedirectLock.WaitAsync( token );
 
     var previousOut = Console.Out;

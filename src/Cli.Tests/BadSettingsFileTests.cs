@@ -15,13 +15,13 @@ internal sealed class BadSettingsFileTests {
     Directory.CreateDirectory( _tempDir );
     await File.WriteAllTextAsync( Path.Combine( _tempDir, Files.SettingsFileName ), "garbage" );
 
-    _previousConfigDir = System.Environment.GetEnvironmentVariable( nameof(EnvVar.DRIFT_CONFIG_DIR) );
-    System.Environment.SetEnvironmentVariable( nameof(EnvVar.DRIFT_CONFIG_DIR), _tempDir );
+    _previousConfigDir = System.Environment.GetEnvironmentVariable( nameof(EnvVar.Drift_ConfigDir) );
+    System.Environment.SetEnvironmentVariable( nameof(EnvVar.Drift_ConfigDir), _tempDir );
   }
 
   [OneTimeTearDown]
   public void TearDown() {
-    System.Environment.SetEnvironmentVariable( nameof(EnvVar.DRIFT_CONFIG_DIR), _previousConfigDir );
+    System.Environment.SetEnvironmentVariable( nameof(EnvVar.Drift_ConfigDir), _previousConfigDir );
     Directory.Delete( _tempDir!, true );
   }
 

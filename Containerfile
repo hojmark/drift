@@ -1,6 +1,6 @@
 ﻿FROM quay.io/fedora/fedora-minimal:43
 
-ENV DRIFT_EXECUTION__ENVIRONMENT="container"
+ENV Drift_ExecutionEnvironment="container"
 
 RUN microdnf --setopt=install_weak_deps=False install -y \
     # iputils (ping), iproute (ip neigh)

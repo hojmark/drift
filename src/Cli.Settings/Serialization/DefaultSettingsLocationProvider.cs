@@ -5,7 +5,7 @@ namespace Drift.Cli.Settings.Serialization;
 
 internal sealed class DefaultSettingsLocationProvider : ISettingsLocationProvider {
   public string GetDirectory() {
-    var configDirOverride = Environment.GetEnvironmentVariable( nameof(EnvVar.DRIFT_CONFIG_DIR) );
+    var configDirOverride = Environment.GetEnvironmentVariable( nameof(EnvVar.Drift_ConfigDir) );
 
     if ( !string.IsNullOrEmpty( configDirOverride ) ) {
       return configDirOverride;

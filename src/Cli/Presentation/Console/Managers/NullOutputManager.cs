@@ -139,7 +139,7 @@ internal class NullOutput : INormalOutput, ILogOutput, IJsonOutput {
   [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "ApiDesign",
     "RS0030:Do not use banned APIs",
-    Justification = "AnsiConsole.Create() is the correct factory method for custom IAnsiConsole instances"
+    Justification = "OutputManagers may use the AnsiConsole.Create() method."
   )]
   public IAnsiConsole GetAnsiConsole() {
     var settings = new AnsiConsoleSettings { Out = new AnsiConsoleOutput( TextWriter.Null ) };

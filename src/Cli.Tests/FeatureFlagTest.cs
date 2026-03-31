@@ -30,7 +30,7 @@ internal sealed class FeatureFlagTest {
       settings.Features = [new FeatureFlagSetting( MyFeature, featureEnabled.Value )];
     }
 
-    settings.Save( logger: NullLogger.Instance, location: SettingsLocationProvider );
+    settings.Write( logger: NullLogger.Instance, location: SettingsLocationProvider );
 
     RootCommandFactory.CommandRegistration[] customCommands = [
       new(typeof(DummyTestCommandHandler), sp => new DummyTestCommand( sp ))
@@ -64,7 +64,7 @@ internal sealed class FeatureFlagTest {
   private sealed class DummyTestCommandHandler( IOutputManager output ) : ICommandHandler<DummyTestParameters> {
     public Task<int> Invoke( DummyTestParameters parameters, CancellationToken cancellationToken ) {
       output.Normal.Write(
-        CliSettings.Load( location: SettingsLocationProvider ).IsFeatureEnabled( MyFeature )
+        CliSettings.Read( location: SettingsLocationProvider ).IsFeatureEnabled( MyFeature )
           ? "Feature is enabled"
           : "Feature is disabled"
       );

@@ -70,7 +70,7 @@ sealed partial class NukeBuild {
   ];
 
   Target TestClab => _ => _
-    .DependsOn( PublishContainer )
+    .DependsOn( BuildContainerImage )
     .After( TestUnit )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(TestClab) );

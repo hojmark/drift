@@ -52,7 +52,9 @@ internal class EnvCommand : Command {
         )
       );*/
 
-      AnsiConsole.Write( table );
+#pragma warning disable RS0030 // TODO: inject IOutputManager and use output.Normal.GetAnsiConsole()
+      AnsiConsole.Write( table ); // TODO: use output.Normal.GetAnsiConsole().Write(table) once IOutputManager is injected
+#pragma warning restore RS0030
       // Ui.WriteLine("config: "+ envConfigPath,ConsoleColor.DarkGray);
     } );
     Subcommands.Add( listEnvs );

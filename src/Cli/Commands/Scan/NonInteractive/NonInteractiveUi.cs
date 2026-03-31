@@ -66,7 +66,7 @@ internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner s
       var dCol = new TaskDescriptionColumn { Alignment = Justify.Right };
       var pCol = new PercentageColumn { Style = new Style( Color.Cyan1 ), CompletedStyle = new Style( Color.Green1 ) };
 
-      return await AnsiConsole.Progress()
+      return await output.Normal.GetAnsiConsole().Progress()
         .AutoClear( true )
         .Columns( dCol, pCol )
         .StartAsync( async ctx => {

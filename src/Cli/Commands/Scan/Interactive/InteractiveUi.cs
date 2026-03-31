@@ -24,6 +24,7 @@ internal class InteractiveUi : IAsyncDisposable {
   private readonly Network? _network;
   private readonly INetworkScanner _scanner;
   private readonly ScanLayout _layout;
+  private readonly IAnsiConsole _ansiConsole;
 
   private readonly CancellationTokenSource _running = new();
 
@@ -54,7 +55,8 @@ internal class InteractiveUi : IAsyncDisposable {
     _scanner = scanner;
     _scanRequest = scanRequest;
     _keyMap = keyMap;
-    _layout = new ScanLayout( network?.Id );
+    _ansiConsole = outputManager.Normal.GetAnsiConsole();
+    _layout = new ScanLayout( network?.Id, _ansiConsole );
     _outputManager = outputManager;
     _network = network;
     _scanner.ResultUpdated += OnScanResultUpdated;
@@ -73,7 +75,7 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   public async Task<int> RunAsync() {
-    await AnsiConsole
+    await _ansiConsole
       .Live( _layout.Renderable )
       .AutoClear( true )
       .StartAsync( async ctx => {

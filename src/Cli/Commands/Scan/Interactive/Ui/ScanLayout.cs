@@ -5,7 +5,7 @@ using Spectre.Console.Rendering;
 
 namespace Drift.Cli.Commands.Scan.Interactive.Ui;
 
-internal class ScanLayout( NetworkId? networkId ) {
+internal class ScanLayout( NetworkId? networkId, IAnsiConsole console ) {
   private readonly Layout _layout = new Layout( "Root" )
     .SplitRows(
       new Layout( "Header", BuildHeader( networkId ) ) { Size = 1 },
@@ -40,7 +40,7 @@ internal class ScanLayout( NetworkId? networkId ) {
 
   public uint AvailableRows {
     get {
-      var rows = AnsiConsole.Console.Profile.Height -
+      var rows = console.Profile.Height -
                  // header + data (optional) + footer + progress + padding
                  1 - ( _layout["Debug"].IsVisible ? 1 : 0 ) - 1 - 1 - 2;
       return (uint) Math.Max( 0, rows );

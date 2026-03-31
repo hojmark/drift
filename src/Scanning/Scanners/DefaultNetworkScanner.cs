@@ -53,7 +53,7 @@ public class DefaultNetworkScanner( ISubnetScannerFactory subnetScannerFactory )
 
     ResultUpdated?.Invoke( this, result );
 
-    logger?.LogDebug(
+    logger.LogDebug(
       "Finished network scan at {StartedAt} in {Elapsed}",
       finishedAt.ToString( CultureInfo.InvariantCulture ),
       elapsed

@@ -16,7 +16,8 @@ internal static class DriftTestCli {
     string args,
     Action<IServiceCollection>? configureServices = null,
     RootCommandFactory.CommandRegistration[]? customCommands = null,
-    CancellationToken cancellationToken = default
+    CancellationToken cancellationToken = default,
+    bool redirectConsole = true
   ) {
     var token = cancellationToken;
     CancellationTokenSource? cancellationTokenSource = null;
@@ -37,13 +38,40 @@ internal static class DriftTestCli {
     /*
      * Most output is written to the InvocationConfiguration's TextWriters, but a few errors may be written to
      * Console.Out/Error when DI is not yet available.
+     *
+     * Long-running background processes (e.g. agents) must NOT hold ConsoleRedirectLock for their
+     * entire lifetime — doing so would prevent any other InvokeAsync call from acquiring the lock
+     * (deadlock when running multiple agents or a scan alongside agents). Pass redirectConsole: false
+     * to skip the lock and Console.SetOut/SetError for those cases.
      */
-    await ConsoleRedirectLock.WaitAsync( token );
+    if ( redirectConsole ) {
+      await ConsoleRedirectLock.WaitAsync( token );
 
-    var previousOut = Console.Out;
-    var previousErr = Console.Error;
-    Console.SetOut( output );
-    Console.SetError( error );
+      var previousOut = Console.Out;
+      var previousErr = Console.Error;
+      Console.SetOut( output );
+      Console.SetError( error );
+
+      try {
+        var exitCode = await DriftCli.InvokeAsync(
+          CommandLineParser.SplitCommandLine( args ).ToArray(),
+          false,
+          true,
+          configureServices,
+          customCommands,
+          ConfigureInvocation,
+          token
+        );
+
+        return new CliCommandResult { ExitCode = exitCode, Output = output, Error = error };
+      }
+      finally {
+        Console.SetOut( previousOut );
+        Console.SetError( previousErr );
+        ConsoleRedirectLock.Release();
+        cancellationTokenSource?.Dispose();
+      }
+    }
 
     try {
       var exitCode = await DriftCli.InvokeAsync(
@@ -59,9 +87,6 @@ internal static class DriftTestCli {
       return new CliCommandResult { ExitCode = exitCode, Output = output, Error = error };
     }
     finally {
-      Console.SetOut( previousOut );
-      Console.SetError( previousErr );
-      ConsoleRedirectLock.Release();
       cancellationTokenSource?.Dispose();
     }
   }
@@ -76,7 +101,8 @@ internal static class DriftTestCli {
     var task = InvokeAsync(
       args,
       configureServices,
-      cancellationToken: cts.Token
+      cancellationToken: cts.Token,
+      redirectConsole: false
     );
 
     return new RunningCliCommand( task, cts );

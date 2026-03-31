@@ -32,6 +32,11 @@ public record DriftSpec {
     get;
     set;
   }*/
+
+  public List<Agent>? Agents {
+    get;
+    set;
+  }
 }
 
 // [Title( "Network declaration" )]
@@ -142,6 +147,21 @@ public record Settings {
   }
 
   public bool? ScanOnlyDeclaredSubnets {
+    get;
+    set;
+  }
+}
+
+[AdditionalProperties( false )]
+public record Agent {
+  [Required]
+  public string Id {
+    get;
+    set;
+  }
+
+  [Required]
+  public string Address {
     get;
     set;
   }

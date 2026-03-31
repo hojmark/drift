@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+      <ProjectReference Include="..\Domain\Domain.csproj" />
+      <ProjectReference Include="..\Networking.PeerStreaming.Core.Abstractions\Networking.PeerStreaming.Core.Abstractions.csproj" />
+      <ProjectReference Include="..\Scanning\Scanning.csproj" />
+      <ProjectReference Include="..\Serialization\Serialization.csproj" />
+    </ItemGroup>
+
+</Project>

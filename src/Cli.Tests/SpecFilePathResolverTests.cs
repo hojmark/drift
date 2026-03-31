@@ -20,7 +20,7 @@ internal sealed class SpecFilePathResolverTests {
 
   [OneTimeSetUp]
   public void SetupHomeDir() {
-    _tempHome = Path.Combine( Path.GetTempPath(), "fake-home-" + Guid.NewGuid().ToString() );
+    _tempHome = Path.Combine( Path.GetTempPath(), "fake-home-" + Guid.NewGuid() );
     Directory.CreateDirectory( _tempHome );
 
     if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {

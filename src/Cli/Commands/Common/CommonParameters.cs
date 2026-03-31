@@ -2,7 +2,6 @@ using System.CommandLine;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Settings.V1_preview;
-using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
 

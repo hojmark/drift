@@ -56,6 +56,7 @@
         "Restore",
         "TagContainerImageForRelease",
         "Test",
+        "TestClab",
         "TestE2E",
         "TestE2E_Binary",
         "TestE2E_Container",
@@ -137,6 +138,10 @@
   "allOf": [
     {
       "properties": {
+        "ClabTopology": {
+          "type": "string",
+          "description": "Run only this topology (e.g. 'simple-test'). Runs all topologies if not specified"
+        },
         "Commit": {
           "type": "string",
           "description": "Commit - e.g. '4c16978aa41a3b435c0b2e34590f1759c1dc0763'"
@@ -166,6 +171,10 @@
           "type": "string",
           "description": "GitHubToken - GitHub token used to create releases",
           "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
+        "KeepClabRunning": {
+          "type": "boolean",
+          "description": "Keep Containerlab topology running after tests"
         },
         "MsBuildVerbosity": {
           "type": "string",
@@ -217,6 +226,10 @@
         "ReleaseType": {
           "description": "ReleaseType - None (default/safe), PreRelease, or Release",
           "$ref": "#/definitions/ReleaseType"
+        },
+        "SkipClabDeploy": {
+          "type": "boolean",
+          "description": "Skip Containerlab deployment (useful for debugging when topology is already running)"
         },
         "Solution": {
           "type": "string",

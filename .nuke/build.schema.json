@@ -62,7 +62,8 @@
         "TestE2E_General",
         "TestLocal",
         "TestSelf",
-        "TestUnit"
+        "TestUnit",
+        "UpdateOui"
       ]
     },
     "Verbosity": {

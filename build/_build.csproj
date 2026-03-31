@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CsvHelper" />
     <PackageReference Include="HLabs.ImageReferences" />
     <PackageReference Include="Octokit" />
     <PackageReference Include="Semver" />

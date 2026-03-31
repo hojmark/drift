@@ -5,6 +5,7 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="CsvHelper" Version="33.1.0" />
     <PackageVersion Include="HLabs.ImageReferences" Version="1.0.0-preview.3" />
     <PackageVersion Include="HLabs.ImageReferences.Extensions.Nuke" Version="1.0.0-preview.3" />
     <PackageVersion Include="Humanizer" Version="3.0.10" />

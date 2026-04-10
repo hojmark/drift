@@ -15,7 +15,7 @@ internal static class DriftCli {
     Action<InvocationConfiguration>? configureInvocation = null,
     CancellationToken cancellationToken = default
   ) {
-    // Justification: intentionally using the most basic output form to make sure the error is surfaced, no matter what code fails
+    // Justification: intentionally using the most basic output form to make sure the error is surfaced, no matter what fails
 #pragma warning disable RS0030
     var error = Console.Error;
 

@@ -12,7 +12,8 @@ internal class ConsoleOutputManager(
   bool normalVeryVerbose,
   OutputFormat outputFormat,
   bool plainConsole,
-  TextReader reader
+  TextReader reader,
+  TextWriter? ansiConsoleOut = null
 ) : IOutputManager {
   public ILogOutput Log {
     get;
@@ -20,7 +21,7 @@ internal class ConsoleOutputManager(
 
   public INormalOutput Normal {
     get;
-  } = new NormalOutput( normalStdOut, normalErrOut, plainConsole, normalVerbose, normalVeryVerbose );
+  } = new NormalOutput( normalStdOut, normalErrOut, plainConsole, normalVerbose, normalVeryVerbose, ansiConsoleOut );
 
   public IJsonOutput Json {
     get;

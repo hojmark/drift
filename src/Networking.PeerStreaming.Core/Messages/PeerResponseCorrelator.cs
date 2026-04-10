@@ -21,13 +21,15 @@ public sealed class PeerResponseCorrelator {
       throw new InvalidOperationException( $"Correlation ID {correlationId} already exists" );
     }
 
-    using var cts = CancellationTokenSource.CreateLinkedTokenSource( ct );
+    var cts = CancellationTokenSource.CreateLinkedTokenSource( ct );
     cts.CancelAfter( timeout );
 
     cts.Token.Register( () => {
       if ( _pendingRequests.TryRemove( correlationId, out var removed ) ) {
         removed.TrySetCanceled();
       }
+
+      cts.Dispose();
     } );
 
     return tcs.Task;
@@ -50,13 +52,15 @@ public sealed class PeerResponseCorrelator {
       throw new InvalidOperationException( $"Correlation ID {correlationId} already exists" );
     }
 
-    using var cts = CancellationTokenSource.CreateLinkedTokenSource( ct );
+    var cts = CancellationTokenSource.CreateLinkedTokenSource( ct );
     cts.CancelAfter( timeout );
 
     cts.Token.Register( () => {
       if ( _streamingRequests.TryRemove( correlationId, out var removed ) ) {
         removed.CompletionSource.TrySetCanceled();
       }
+
+      cts.Dispose();
     } );
 
     return handler.CompletionSource.Task;

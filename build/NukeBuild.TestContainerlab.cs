@@ -8,6 +8,7 @@ using Drift.Build.Utilities;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
+using Nuke.Common.Tools.DotNet;
 using Serilog;
 
 // ReSharper disable VariableHidesOuterVariable
@@ -71,8 +72,8 @@ sealed partial class NukeBuild {
 
   Target TestE2E_Clab => _ => _
     .DependsOn( BuildContainerImage )
-    .After( TestUnit )
-    .After( TestE2E_Container )
+    .After( TestUnit, TestE2E_Container )
+    .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
     .Executes( async () => {
         using var _ = new OperationTimer( nameof(TestE2E_Clab) );
 

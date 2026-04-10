@@ -69,11 +69,12 @@ sealed partial class NukeBuild {
     ),
   ];
 
-  Target TestClab => _ => _
+  Target TestE2E_Clab => _ => _
     .DependsOn( BuildContainerImage )
     .After( TestUnit )
+    .After( TestE2E_Container )
     .Executes( async () => {
-        using var _ = new OperationTimer( nameof(TestClab) );
+        using var _ = new OperationTimer( nameof(TestE2E_Clab) );
 
         var imageRef = _driftImageRef ?? throw new ArgumentNullException( nameof(_driftImageRef) );
         Log.Information( "Using image {ImageRef} for Containerlab tests", imageRef );

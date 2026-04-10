@@ -14,13 +14,14 @@ internal partial class NormalOutput(
   TextWriter errOut,
   bool plainOutput = false,
   bool verbose = false,
-  bool veryVerbose = false
+  bool veryVerbose = false,
+  TextWriter? ansiConsoleOut = null
 ) : INormalOutput {
   // TODO test
   private const bool MarkupOutput = false;
 
   public IAnsiConsole GetAnsiConsole() {
-    var settings = new AnsiConsoleSettings { Out = new AnsiConsoleOutput( stdOut ) };
+    var settings = new AnsiConsoleSettings { Out = new AnsiConsoleOutput( ansiConsoleOut ?? stdOut ) };
 
     if ( plainOutput ) {
       settings.Ansi = AnsiSupport.No;

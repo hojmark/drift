@@ -98,7 +98,10 @@ internal class OutputManagerFactory(
       veryVerbose,
       outputFormat,
       plainConsole,
-      bridge.Reader
+      bridge.Reader,
+      // When in interactive mode, text output is suppressed from the terminal (goes to pipe only),
+      // but the AnsiConsole for the Live display must still write to the real terminal.
+      interactiveOutputOnly ? consoleOut : null
     );
   }
 

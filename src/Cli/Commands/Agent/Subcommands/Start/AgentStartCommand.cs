@@ -9,6 +9,8 @@ using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Domain;
 using Drift.Networking.Cluster;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start;
 

@@ -1,7 +1,9 @@
 using System.CommandLine;
+using System.Diagnostics;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Settings.V1_preview;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
 
@@ -24,14 +26,14 @@ internal static class CommonParameters {
   /// </summary>
   internal static class Options {
     /// <summary>
-    /// Enable detailed output, corresponding to <see cref="LogLevel.Debug"/> log level.
+    /// Enable detailed output, corresponding to <see cref="Debug"/> log level.
     /// </summary>
     internal static readonly Option<bool> Verbose = new("--verbose", "-v") {
       Description = "Verbose output", Arity = ArgumentArity.Zero
     };
 
     /// <summary>
-    /// Enable the most detailed output available, corresponding to <see cref="LogLevel.Trace"/> log level.
+    /// Enable the most detailed output available, corresponding to <see cref="Trace"/> log level.
     /// </summary>
     internal static readonly Option<bool> VeryVerbose = new("--very-verbose", "-vv") {
       Description = "Very verbose output", Arity = ArgumentArity.Zero, Hidden = true

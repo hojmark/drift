@@ -1,6 +1,7 @@
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
 using Drift.Spec.Validation;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Lint.Presentation;
 

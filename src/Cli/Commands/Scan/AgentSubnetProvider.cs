@@ -1,6 +1,7 @@
 using Drift.Domain;
 using Drift.Networking.Cluster;
 using Drift.Scanning.Subnets;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan;
 

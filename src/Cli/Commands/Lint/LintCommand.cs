@@ -8,6 +8,7 @@ using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
 using Drift.Spec.Schema;
 using Drift.Spec.Validation;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Lint;
 

@@ -11,6 +11,7 @@ using Drift.Cli.Presentation.Rendering;
 using Drift.Common.Network;
 using Drift.Domain.Scan;
 using Drift.Scanning.Subnets.Interface;
+using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
 namespace Drift.Cli.Commands.Init;

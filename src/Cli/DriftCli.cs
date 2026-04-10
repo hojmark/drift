@@ -2,6 +2,7 @@ using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli;
 

@@ -23,6 +23,8 @@ using Drift.Networking.PeerStreaming.Core;
 using Drift.Scanning;
 using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Infrastructure;
 

@@ -1,4 +1,5 @@
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Presentation.Console.Logging;
 

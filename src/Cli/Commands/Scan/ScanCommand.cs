@@ -14,6 +14,7 @@ using Drift.Networking.Cluster;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
 using Drift.Scanning.Subnets;
 using Drift.Scanning.Subnets.Interface;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan;
 

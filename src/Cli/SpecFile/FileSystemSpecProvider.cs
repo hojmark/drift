@@ -5,6 +5,7 @@ using Drift.Domain;
 using Drift.Spec.Schema;
 using Drift.Spec.Serialization;
 using Drift.Spec.Validation;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.SpecFile;
 

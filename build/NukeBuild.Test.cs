@@ -22,7 +22,7 @@ sealed partial class NukeBuild {
     throw new PlatformNotSupportedException();
 
   Target Test => _ => _
-    .DependsOn( TestSelf, TestUnit, TestE2E, TestClab );
+    .DependsOn( TestSelf, TestUnit, TestE2E, TestE2E_Clab );
 
   Target TestSelf => _ => _
     .Before( BuildInfo )

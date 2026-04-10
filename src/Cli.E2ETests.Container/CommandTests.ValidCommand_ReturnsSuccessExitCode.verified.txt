@@ -19,6 +19,7 @@
 <time>   init <spec>  Create a network spec
 <time>   scan <spec>  Scan the network and detect drift
 <time>   lint <spec>  Validate a network spec
+<time>   agent        Manage the local Drift agent
 <time> 
 ,
   Item2: 

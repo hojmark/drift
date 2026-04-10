@@ -70,7 +70,12 @@ internal class AgentStartCommandHandler(
 
     output.Log.LogDebug( "Starting agent..." );
 
-    await AgentHost.Run( parameters.Port, logger, ConfigureServices, cancellationToken, agentLifetime?.Ready );
+    try {
+      await AgentHost.Run( parameters.Port, logger, ConfigureServices, cancellationToken, agentLifetime?.Ready );
+    }
+    catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
+      // Graceful shutdown via cancellation
+    }
 
     output.Log.LogDebug( "Completed 'agent start' command" );
 

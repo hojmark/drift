@@ -21,5 +21,6 @@ runs:
       run: dotnet tool restore
 
     - name: Install Containerlab
+      if: runner.os == 'Linux'
       shell: bash
       run: bash -c "$(curl -sL https://get.containerlab.dev)"

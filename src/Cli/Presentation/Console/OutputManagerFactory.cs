@@ -59,16 +59,34 @@ internal class OutputManagerFactory(
     bool plainConsole
   ) {
     var bridge = new WriterReaderBridge();
-    var outWrapper = new CompoundTextWriter();
-    outWrapper.Writers.Add( bridge.Writer );
+
+    // Validate that we don't have duplicate writer instances that would break synchronization
     if ( !interactiveOutputOnly ) {
-      outWrapper.Writers.Add( consoleOut );
+      if ( ReferenceEquals( consoleOut, consoleErr ) ) {
+        throw new InvalidOperationException(
+          $"{nameof(consoleOut)} and {nameof(consoleErr)} cannot be the same instance - this would break thread synchronization"
+        );
+      }
+
+      if ( ReferenceEquals( bridge.Writer, consoleOut ) || ReferenceEquals( bridge.Writer, consoleErr ) ) {
+        throw new InvalidOperationException(
+          $"bridge.Writer cannot be the same instance as {nameof(consoleOut)} or {nameof(consoleErr)} - this would break thread synchronization"
+        );
+      }
+    }
+
+    var syncBridgeWriter = TextWriter.Synchronized( bridge.Writer );
+
+    var outWrapper = new CompoundTextWriter();
+    outWrapper.Writers.Add( syncBridgeWriter );
+    if ( !interactiveOutputOnly ) {
+      outWrapper.Writers.Add( TextWriter.Synchronized( consoleOut ) );
     }
 
     var errWrapper = new CompoundTextWriter();
-    errWrapper.Writers.Add( bridge.Writer );
+    errWrapper.Writers.Add( syncBridgeWriter );
     if ( !interactiveOutputOnly ) {
-      errWrapper.Writers.Add( consoleErr );
+      errWrapper.Writers.Add( TextWriter.Synchronized( consoleErr ) );
     }
 
     var consoleOuts = GetConsoleOuts(
@@ -99,7 +117,10 @@ internal class OutputManagerFactory(
       veryVerbose,
       outputFormat,
       plainConsole,
-      bridge.Reader
+      bridge.Reader,
+      // When in interactive mode, text output is suppressed from the terminal (goes to pipe only),
+      // but the AnsiConsole for the Live display must still write to the real terminal.
+      interactiveOutputOnly ? consoleOut : null
     );
   }
 

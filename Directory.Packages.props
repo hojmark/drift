@@ -4,7 +4,11 @@
     <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-  <ItemGroup>
+  <ItemGroup Label="Transitive pinning">
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.16" />
+    <PackageVersion Include="NuGet.Packaging" Version="6.14.3" />
+  </ItemGroup>
+  <ItemGroup Label="Direct">
     <PackageVersion Include="CsvHelper" Version="33.1.0" />
     <PackageVersion Include="HLabs.ImageReferences" Version="1.0.0-preview.3" />
     <PackageVersion Include="HLabs.ImageReferences.Extensions.Nuke" Version="1.0.0-preview.3" />

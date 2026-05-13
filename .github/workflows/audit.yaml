@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  nuget-audit:
-    name: NuGet packages
+  nuget-audit-release:
+    name: NuGet packages (latest release)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -25,6 +25,31 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ steps.release.outputs.tag }}
+
+      - name: Set up runner
+        uses: ./.github/actions/setup-runner
+
+      # From https://learn.microsoft.com/en-us/nuget/concepts/auditing-packages
+      # NU1900:	Error communicating with package source, while getting vulnerability information.
+      # NU1901:	Package with low severity detected
+      # NU1902:	Package with moderate severity detected
+      # NU1903:	Package with high severity detected
+      # NU1904:	Package with critical severity detected
+      # NU1905:	An audit source does not provide a vulnerability database
+      - name: Audit NuGet packages
+        run: >
+          dotnet restore Drift.sln
+          -p:WarningsAsErrors='"NU1900;NU1901;NU1902;NU1903;NU1904;NU1905"'
+
+  nuget-audit-main:
+    name: NuGet packages (main)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v6
+        with:
+          ref: main
 
       - name: Set up runner
         uses: ./.github/actions/setup-runner

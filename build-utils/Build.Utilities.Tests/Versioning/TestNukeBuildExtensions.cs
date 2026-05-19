@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Drift.Build.Utilities.Tests.NukeBuild;
 using Nuke.Common;
 using Nuke.Common.Execution;

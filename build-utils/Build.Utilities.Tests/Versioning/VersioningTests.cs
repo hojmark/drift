@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Drift.Build.Utilities.Tests.NukeBuild;
 using Drift.Build.Utilities.Versioning;
@@ -7,6 +9,8 @@ using NSubstitute;
 using Nuke.Common;
 using Nuke.Common.Git;
 using Octokit;
+using TUnit.Assertions.Extensions;
+using TUnit.Core;
 using Assert = TUnit.Assertions.Assert;
 
 namespace Drift.Build.Utilities.Tests.Versioning;

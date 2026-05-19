@@ -1,0 +1,18 @@
+﻿Requesting subnets from agent local1
+Received subnet(s) from agent local1: 192.168.10.0/24
+Requesting subnets from agent local2
+Received subnet(s) from agent local2: 192.168.20.0/24
+Scanning 3 subnets
+  192.168.0.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via local
+  192.168.10.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via agentid_local1
+  192.168.20.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via agentid_local2
+
+192.168.0.0/24 (1 devices)
+└── 192.168.0.100   11-11-11-11-11-11    Online (unknown device)  
+
+192.168.10.0/24 (1 devices)
+└── 192.168.10.100  22-22-22-22-22-22    Online (unknown device)  
+└── 192.168.10.101  21-21-21-21-21-21    Online (unknown device)  
+
+192.168.20.0/24 (1 devices)
+└── 192.168.20.100  33-33-33-33-33-33    Online (unknown device)  

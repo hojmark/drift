@@ -2,6 +2,9 @@ using System.CommandLine;
 using System.CommandLine.Help;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using Drift.Agent.PeerProtocol;
+using Drift.Cli.Commands.Agent;
+using Drift.Cli.Commands.Agent.Subcommands.Start;
 using Drift.Cli.Commands.Common;
 using Drift.Cli.Commands.Help;
 using Drift.Cli.Commands.Init;
@@ -15,6 +18,9 @@ using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
 using Drift.Domain.ExecutionEnvironment;
 using Drift.Domain.Scan;
+using Drift.Networking.Cluster;
+using Drift.Networking.PeerStreaming.Client;
+using Drift.Networking.PeerStreaming.Core;
 using Drift.Scanning;
 using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
@@ -51,7 +57,12 @@ internal static class RootCommandFactory {
     ConfigureDefaults( services, toConsole, plainConsole );
     ConfigureBuiltInCommandHandlers( services );
     ConfigureDynamicCommands( services, customCommands ?? [] );
-    configureServices?.Invoke( services );
+
+    if ( configureServices != null ) {
+      configureServices.Invoke( services );
+      // Allow agent host to override it's services with the same configuration
+      services.AddScoped<Action<IServiceCollection>>( _ => configureServices );
+    }
 
     var provider = services.BuildServiceProvider();
     var rootCommand = CreateRootCommand( provider );
@@ -68,9 +79,18 @@ internal static class RootCommandFactory {
     ConfigureSubnetProvider( services );
     ConfigureNetworkScanner( services );
     ConfigureInteractiveServices( services );
+    ConfigureAgentCluster( services );
   }
 
-  private static void ConfigureExecutionEnvironment( IServiceCollection services ) {
+  private static void ConfigureAgentCluster( IServiceCollection services ) {
+    services.AddPeerStreamingCore( new PeerStreamingOptions {
+      MessageAssembly = typeof(PeerProtocolAssemblyMarker).Assembly
+    } );
+    services.AddPeerStreamingClient();
+    services.AddClustering();
+  }
+
+  internal static void ConfigureExecutionEnvironment( IServiceCollection services ) {
     services.AddSingleton<IExecutionEnvironmentProvider, CurrentExecutionEnvironmentProvider>();
   }
 
@@ -78,7 +98,10 @@ internal static class RootCommandFactory {
     // TODO 'from' or 'against'?
     var rootCommand =
       new RootCommand( $"{Chars.SatelliteAntenna} Drift CLI — monitor network drift against your declared state" ) {
-        new InitCommand( provider ), new ScanCommand( provider ), new LintCommand( provider )
+        new InitCommand( provider ),
+        new ScanCommand( provider ),
+        new LintCommand( provider ),
+        new AgentCommand( provider )
       };
 
     rootCommand.TreatUnmatchedTokensAsErrors = true;
@@ -97,6 +120,7 @@ internal static class RootCommandFactory {
       var factory = sp.GetRequiredService<IOutputManagerFactory>();
       return factory.Create( parseResult, plainConsole );
     } );
+    // Note: since ILogger is scoped, singletons cannot access logging via DI
     services.AddScoped<ILogger>( sp => sp.GetRequiredService<IOutputManager>().GetLogger() );
   }
 
@@ -104,7 +128,7 @@ internal static class RootCommandFactory {
     services.AddScoped<ISpecFileProvider, FileSystemSpecProvider>();
   }
 
-  private static void ConfigureSubnetProvider( IServiceCollection services ) {
+  public static void ConfigureSubnetProvider( IServiceCollection services ) {
     services.AddScoped<IInterfaceSubnetProvider, PhysicalInterfaceSubnetProvider>();
   }
 
@@ -112,6 +136,7 @@ internal static class RootCommandFactory {
     services.AddScoped<InitCommandHandler>();
     services.AddScoped<ScanCommandHandler>();
     services.AddScoped<LintCommandHandler>();
+    services.AddScoped<AgentStartCommandHandler>();
   }
 
   private static void ConfigureInteractiveServices( IServiceCollection services ) {
@@ -135,7 +160,7 @@ internal static class RootCommandFactory {
     }
   }
 
-  private static void ConfigureNetworkScanner( IServiceCollection services ) {
+  internal static void ConfigureNetworkScanner( IServiceCollection services ) {
     if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
       services.AddSingleton<IPingTool, LinuxPingTool>();
     }
@@ -148,6 +173,16 @@ internal static class RootCommandFactory {
 
     services.AddScoped<ISubnetScannerFactory, DefaultSubnetScannerFactory>();
     services.AddScoped<INetworkScanner, DefaultNetworkScanner>();
+  }
+
+  /// <summary>
+  /// Configures core services required for agent functionality (scanning, subnet discovery, execution environment).
+  /// This is used both by the CLI when running locally and by agents when handling remote requests.
+  /// </summary>
+  internal static void ConfigureAgentCoreServices( IServiceCollection services ) {
+    ConfigureExecutionEnvironment( services );
+    ConfigureSubnetProvider( services );
+    ConfigureNetworkScanner( services );
   }
 
   private static void AddFigletHeaderToHelpCommand( RootCommand rootCommand ) {

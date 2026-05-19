@@ -1,0 +1,26 @@
+name: drift-simple-test
+
+# Simplified topology for initial testing
+topology:
+  nodes:
+    # Controller/CLI node
+    cli:
+      kind: linux
+      image: localhost:5000/drift:dev
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+
+    # Single agent for basic test
+    agent1:
+      kind: linux
+      image: localhost:5000/drift:dev
+      cmd: agent start --adoptable --port 5000 --id agentid_test1
+      ports:
+        - "5001:5000"
+
+    # Single target device  
+    target1:
+      kind: linux
+      image: alpine:latest
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"

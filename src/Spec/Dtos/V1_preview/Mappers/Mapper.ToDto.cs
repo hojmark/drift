@@ -1,9 +1,13 @@
+using Drift.Domain;
+using Drift.Domain.Device.Addresses;
+using Drift.Domain.Device.Declared;
+
 namespace Drift.Spec.Dtos.V1_preview.Mappers;
 
 public static partial class Mapper {
   internal const string VersionConstant = "v1-preview";
 
-  public static DriftSpec ToDto( Domain.Inventory domain ) {
+  public static DriftSpec ToDto( Inventory domain ) {
     return new DriftSpec { Version = VersionConstant, Network = Map( domain.Network ) };
   }
 
@@ -13,11 +17,11 @@ public static partial class Mapper {
     };
   }
 
-  private static Subnet Map( Domain.DeclaredSubnet domain ) {
+  private static Subnet Map( DeclaredSubnet domain ) {
     return new Subnet { Id = domain.Id, Address = domain.Address, Enabled = domain.Enabled };
   }
 
-  private static Device Map( Domain.Device.Declared.DeclaredDevice domain ) {
+  private static Device Map( DeclaredDevice domain ) {
     return new Device {
       Id = domain.Id,
       Addresses = domain.Addresses.Select( Map ).ToList(),
@@ -26,25 +30,25 @@ public static partial class Mapper {
     };
   }
 
-  private static DeviceAddress Map( Domain.Device.Addresses.IDeviceAddress domain ) {
+  private static DeviceAddress Map( IDeviceAddress domain ) {
     return new DeviceAddress { Value = domain.Value, Type = Map( domain.Type ), IsId = domain.IsId };
   }
 
-  private static string Map( Domain.Device.Addresses.AddressType addressType ) {
+  private static string Map( AddressType addressType ) {
     return addressType switch {
-      Domain.Device.Addresses.AddressType.IpV4 => "ip-v4",
-      Domain.Device.Addresses.AddressType.Mac => "mac",
-      Domain.Device.Addresses.AddressType.Hostname => "hostname",
+      AddressType.IpV4 => "ip-v4",
+      AddressType.Mac => "mac",
+      AddressType.Hostname => "hostname",
       _ => throw new ArgumentOutOfRangeException( nameof(addressType), addressType, null )
     };
   }
 
-  private static DeviceState? Map( Domain.Device.Declared.DeclaredDeviceState? domain ) {
+  private static DeviceState? Map( DeclaredDeviceState? domain ) {
     return domain switch {
       null => null,
-      Domain.Device.Declared.DeclaredDeviceState.Up => DeviceState.Up,
-      Domain.Device.Declared.DeclaredDeviceState.Dynamic => DeviceState.Dynamic,
-      Domain.Device.Declared.DeclaredDeviceState.Down => DeviceState.Down,
+      DeclaredDeviceState.Up => DeviceState.Up,
+      DeclaredDeviceState.Dynamic => DeviceState.Dynamic,
+      DeclaredDeviceState.Down => DeviceState.Down,
       _ => throw new ArgumentOutOfRangeException( nameof(domain), domain, null )
     };
   }

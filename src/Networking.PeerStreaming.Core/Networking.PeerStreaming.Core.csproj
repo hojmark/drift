@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Drift.Networking.PeerStreaming.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Networking.PeerStreaming.Core.Abstractions\Networking.PeerStreaming.Core.Abstractions.csproj" />
+    <ProjectReference Include="..\Networking.PeerStreaming.Grpc\Networking.PeerStreaming.Grpc.csproj" />
+    <ProjectReference Include="..\Serialization\Serialization.csproj" />
+  </ItemGroup>
+
+</Project>

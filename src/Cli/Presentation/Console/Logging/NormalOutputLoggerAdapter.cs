@@ -17,18 +17,38 @@ internal class NormalOutputLoggerAdapter( INormalOutput normalOutput ) : ILogger
       case LogLevel.Critical:
       case LogLevel.Error:
         normalOutput.WriteLineError( message );
+        if ( exception != null ) {
+          normalOutput.WriteLineError( exception.ToString() );
+        }
+
         break;
       case LogLevel.Warning:
         normalOutput.WriteLineWarning( message );
+        if ( exception != null ) {
+          normalOutput.WriteLineWarning( exception.ToString() );
+        }
+
         break;
       case LogLevel.Information:
         normalOutput.WriteLine( message );
+        if ( exception != null ) {
+          normalOutput.WriteLine( exception.ToString() );
+        }
+
         break;
       case LogLevel.Debug:
         normalOutput.WriteLineVerbose( message );
+        if ( exception != null ) {
+          normalOutput.WriteLineVerbose( exception.ToString() );
+        }
+
         break;
       case LogLevel.Trace:
         normalOutput.WriteLineVeryVerbose( message );
+        if ( exception != null ) {
+          normalOutput.WriteLineVeryVerbose( exception.ToString() );
+        }
+
         break;
       case LogLevel.None:
         break;

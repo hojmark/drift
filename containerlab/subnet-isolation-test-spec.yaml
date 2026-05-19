@@ -1,0 +1,18 @@
+version: "v1-preview"
+
+network:
+  subnets:
+    - address: 192.168.10.0/24
+    - address: 192.168.20.0/24
+  devices: []
+
+agents:
+  - id: agentid_subnet_agent1
+    address: http://clab-drift-subnet-isolation-test-agent1:5000
+    authentication:
+      type: none
+
+  - id: agentid_subnet_agent2
+    address: http://clab-drift-subnet-isolation-test-agent2:5000
+    authentication:
+      type: none

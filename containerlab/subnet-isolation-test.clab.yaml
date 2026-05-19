@@ -1,0 +1,112 @@
+name: drift-subnet-isolation-test
+
+# Subnet isolation topology
+#
+# Tests that each agent only scans targets reachable on its own isolated subnet.
+#
+# Networks:
+#   - mgmt (172.20.20.0/24): CLI + Agent1 + Agent2  [management/control plane]
+#   - subnet-a (veth + bridge): Agent1 + Target-A1 + Target-A2  [192.168.10.0/24]
+#   - subnet-b (veth + bridge): Agent2 + Target-B1 + Target-B2  [192.168.20.0/24]
+#
+# Targets use network-mode: none — they have no management interface and are
+# only reachable via the veth link to their respective agent.
+#
+# Inside each agent, a Linux bridge (br0) is created to bridge the two veth
+# links together on a single /24 subnet — allowing the agent to reach both
+# targets with a single IP address.
+#
+# Scan spec explicitly declares the two isolated subnets.
+# Agent1 can reach 192.168.10.0/24; Agent2 can reach 192.168.20.0/24.
+# Neither agent can reach the other's subnet.
+
+topology:
+  nodes:
+    # Controller/CLI node (mgmt only)
+    cli:
+      kind: linux
+      image: localhost:5000/drift:dev
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+
+    # Agent 1 — scans subnet-a (192.168.10.0/24)
+    # Creates br0 bridging eth1+eth2, assigns 192.168.10.1/24 to the bridge
+    agent1:
+      kind: linux
+      image: localhost:5000/drift:dev
+      cmd: agent start --adoptable --port 5000 --id agentid_subnet_agent1
+      exec:
+        - ip link add br0 type bridge
+        - ip link set eth1 master br0
+        - ip link set eth2 master br0
+        - ip link set eth1 up
+        - ip link set eth2 up
+        - ip link set br0 up
+        - ip addr add 192.168.10.1/24 dev br0
+
+    # Agent 2 — scans subnet-b (192.168.20.0/24)
+    # Creates br0 bridging eth1+eth2, assigns 192.168.20.1/24 to the bridge
+    agent2:
+      kind: linux
+      image: localhost:5000/drift:dev
+      cmd: agent start --adoptable --port 5000 --id agentid_subnet_agent2
+      exec:
+        - ip link add br0 type bridge
+        - ip link set eth1 master br0
+        - ip link set eth2 master br0
+        - ip link set eth1 up
+        - ip link set eth2 up
+        - ip link set br0 up
+        - ip addr add 192.168.20.1/24 dev br0
+
+    # Subnet-A targets (only reachable by agent1)
+    # network-mode: none means no management interface; eth0 is the veth link
+    target-a1:
+      kind: linux
+      image: alpine:latest
+      network-mode: none
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+      exec:
+        - ip addr add 192.168.10.101/24 dev eth0
+        - ip link set eth0 up
+
+    target-a2:
+      kind: linux
+      image: alpine:latest
+      network-mode: none
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+      exec:
+        - ip addr add 192.168.10.102/24 dev eth0
+        - ip link set eth0 up
+
+    # Subnet-B targets (only reachable by agent2)
+    target-b1:
+      kind: linux
+      image: alpine:latest
+      network-mode: none
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+      exec:
+        - ip addr add 192.168.20.101/24 dev eth0
+        - ip link set eth0 up
+
+    target-b2:
+      kind: linux
+      image: alpine:latest
+      network-mode: none
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+      exec:
+        - ip addr add 192.168.20.102/24 dev eth0
+        - ip link set eth0 up
+
+  links:
+    # Subnet-A: agent1 <-> target-a1 and agent1 <-> target-a2
+    - endpoints: ["agent1:eth1", "target-a1:eth0"]
+    - endpoints: ["agent1:eth2", "target-a2:eth0"]
+
+    # Subnet-B: agent2 <-> target-b1 and agent2 <-> target-b2
+    - endpoints: ["agent2:eth1", "target-b1:eth0"]
+    - endpoints: ["agent2:eth2", "target-b2:eth0"]

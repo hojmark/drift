@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup Label="Transitive pinning">
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.8" />
-    <PackageVersion Include="NuGet.Packaging" Version="6.14.3" />
+    <PackageVersion Include="NuGet.Packaging" Version="7.6.0" />
   </ItemGroup>
   <ItemGroup Label="Direct">
     <PackageVersion Include="CsvHelper" Version="33.1.0" />

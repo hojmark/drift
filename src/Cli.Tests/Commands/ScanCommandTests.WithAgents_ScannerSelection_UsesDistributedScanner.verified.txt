@@ -8,7 +8,7 @@ Agent communication is unencrypted. Do not use on untrusted networks.
 Agents run without authentication. Any client that can reach the agent port can connect.
 Agent adoption (--adoptable / --join) is not yet implemented and has no effect.
 Merged 1 unique devices from 2 scans of 192.168.0.0/24
-Scan completed: 2 local, 1 via agents, 2 unique subnets
+Scan completed: 1 local, 2 via agents, 2 unique subnets
 
 192.168.0.0/24 (1 devices)
 └── 192.168.0.100   AA-BB-C0-A8-00-64    Online (unknown device)  

@@ -46,13 +46,23 @@ public static class Topologies {
   /// </summary>
   public static NetworkTopology TwoAgentsDisjointSubnetsNoCli() {
     return new NetworkTopologyBuilder()
-      .AddSubnet( "agent1-subnet", "192.168.10.0/24", [
-        ( "192.168.10.100", "Agent1 device 1" ),
-        ( "192.168.10.101", "Agent1 device 2" )
-      ], out var agent1Subnet )
-      .AddSubnet( "agent2-subnet", "192.168.20.0/24", [
-        ( "192.168.20.100", "Agent2 device" )
-      ], out var agent2Subnet )
+      .AddSubnet(
+        "agent1-subnet",
+        "192.168.10.0/24",
+        [
+          ( "192.168.10.100", "Agent1 device 1" ),
+          ( "192.168.10.101", "Agent1 device 2" )
+        ],
+        out var agent1Subnet
+      )
+      .AddSubnet(
+        "agent2-subnet",
+        "192.168.20.0/24",
+        [
+          ( "192.168.20.100", "Agent2 device" )
+        ],
+        out var agent2Subnet
+      )
       .AddAgent( new AgentId( "agentid_agent1" ), agent1Subnet )
       .AddAgent( new AgentId( "agentid_agent2" ), agent2Subnet )
       .Build();
@@ -65,15 +75,25 @@ public static class Topologies {
   /// </summary>
   public static NetworkTopology TwoAgentsOverlappingSubnet() {
     return new NetworkTopologyBuilder()
-      .AddSubnet( "cli-subnet", "192.168.0.0/24", [
-        ( "192.168.0.100", "CLI device" )
-      ], out var cliSubnet )
-      .AddSubnet( "shared-subnet", "192.168.10.0/24", [
-        ( "192.168.10.100", "Shared device 1" ),
-        ( "192.168.10.101", "Shared device 2" ),
-        ( "192.168.10.102", "Shared device 3" ),
-        ( "192.168.10.103", "Shared device 4" )
-      ], out var sharedSubnet )
+      .AddSubnet(
+        "cli-subnet",
+        "192.168.0.0/24",
+        [
+          ( "192.168.0.100", "CLI device" )
+        ],
+        out var cliSubnet
+      )
+      .AddSubnet(
+        "shared-subnet",
+        "192.168.10.0/24",
+        [
+          ( "192.168.10.100", "Shared device 1" ),
+          ( "192.168.10.101", "Shared device 2" ),
+          ( "192.168.10.102", "Shared device 3" ),
+          ( "192.168.10.103", "Shared device 4" )
+        ],
+        out var sharedSubnet
+      )
       .AddAgent( new AgentId( "agentid_agent1" ), sharedSubnet )
       .AddAgent( new AgentId( "agentid_agent2" ), sharedSubnet )
       .WithCli( cliSubnet )
@@ -98,12 +118,22 @@ public static class Topologies {
   /// </summary>
   public static NetworkTopology MixedCliAndAgents() {
     return new NetworkTopologyBuilder()
-      .AddSubnet( "cli-subnet", "192.168.0.0/24", [
-        ( "192.168.0.100", "CLI device" )
-      ], out var cliSubnet )
-      .AddSubnet( "agent-subnet", "192.168.10.0/24", [
-        ( "192.168.10.100", "Agent device" )
-      ], out var agentSubnet )
+      .AddSubnet(
+        "cli-subnet",
+        "192.168.0.0/24",
+        [
+          ( "192.168.0.100", "CLI device" )
+        ],
+        out var cliSubnet
+      )
+      .AddSubnet(
+        "agent-subnet",
+        "192.168.10.0/24",
+        [
+          ( "192.168.10.100", "Agent device" )
+        ],
+        out var agentSubnet
+      )
       .AddAgent( new AgentId( "agentid_agent1" ), agentSubnet )
       .WithCli( cliSubnet )
       .Build();
@@ -118,14 +148,24 @@ public static class Topologies {
   /// </summary>
   public static NetworkTopology DmzWithFirewall() {
     return new NetworkTopologyBuilder()
-      .AddSubnet( "dmz", "192.168.1.0/24", [
-        ( "192.168.1.100", "Web server" ),
-        ( "192.168.1.101", "App server" )
-      ], out var dmzSubnet )
-      .AddSubnet( "internal", "10.0.0.0/24", [
-        ( "10.0.0.100", "Database server" ),
-        ( "10.0.0.101", "File server" )
-      ], out var internalSubnet )
+      .AddSubnet(
+        "dmz",
+        "192.168.1.0/24",
+        [
+          ( "192.168.1.100", "Web server" ),
+          ( "192.168.1.101", "App server" )
+        ],
+        out var dmzSubnet
+      )
+      .AddSubnet(
+        "internal",
+        "10.0.0.0/24",
+        [
+          ( "10.0.0.100", "Database server" ),
+          ( "10.0.0.101", "File server" )
+        ],
+        out var internalSubnet
+      )
       .AddAgent( new AgentId( "agentid_dmz" ), dmzSubnet )
       .AddAgent( new AgentId( "agentid_internal" ), internalSubnet )
       // Firewall rules:
@@ -145,14 +185,23 @@ public static class Topologies {
   /// </summary>
   public static NetworkTopology GuestNetworkIsolation() {
     return new NetworkTopologyBuilder()
-      .AddSubnet( "guest", "192.168.100.0/24", [
-        ( "192.168.100.10", "Guest device 1" ),
-        ( "192.168.100.11", "Guest device 2" ),
-        ( "192.168.100.12", "Guest device 3" )
-      ], out var guestSubnet )
-      .AddSubnet( "external", "203.0.113.0/24", [
-        ( "203.0.113.1", "Internet gateway" )
-      ] )
+      .AddSubnet(
+        "guest",
+        "192.168.100.0/24",
+        [
+          ( "192.168.100.10", "Guest device 1" ),
+          ( "192.168.100.11", "Guest device 2" ),
+          ( "192.168.100.12", "Guest device 3" )
+        ],
+        out var guestSubnet
+      )
+      .AddSubnet(
+        "external",
+        "203.0.113.0/24",
+        [
+          ( "203.0.113.1", "Internet gateway" )
+        ]
+      )
       .AddAgent( new AgentId( "agentid_guest" ), guestSubnet )
       .WithFirewall( fw => {
         fw.Deny( FirewallTarget.Subnet( "guest" ), FirewallTarget.Subnet( "guest" ) ); // Block guest-to-guest
@@ -169,20 +218,31 @@ public static class Topologies {
   /// </summary>
   public static NetworkTopology BastionHostAccess() {
     return new NetworkTopologyBuilder()
-      .AddSubnet( "dmz", "192.168.1.0/24", [
-        ( "192.168.1.10", "Bastion host" ),
-        ( "192.168.1.20", "Web server" ),
-        ( "192.168.1.30", "App server" )
-      ], out var dmzSubnet )
-      .AddSubnet( "internal", "10.0.0.0/24", [
-        ( "10.0.0.100", "Database" ),
-        ( "10.0.0.101", "Admin server" )
-      ], out var internalSubnet )
+      .AddSubnet(
+        "dmz",
+        "192.168.1.0/24",
+        [
+          ( "192.168.1.10", "Bastion host" ),
+          ( "192.168.1.20", "Web server" ),
+          ( "192.168.1.30", "App server" )
+        ],
+        out var dmzSubnet
+      )
+      .AddSubnet(
+        "internal",
+        "10.0.0.0/24",
+        [
+          ( "10.0.0.100", "Database" ),
+          ( "10.0.0.101", "Admin server" )
+        ],
+        out var internalSubnet
+      )
       .AddAgent( new AgentId( "agentid_dmz" ), dmzSubnet )
       .AddAgent( new AgentId( "agentid_internal" ), internalSubnet )
       .WithFirewall( fw => {
         // Order matters - first match wins!
-        fw.Allow( FirewallTarget.FromIp( new IpV4Address( "192.168.1.10" ) ),
+        fw.Allow(
+          FirewallTarget.FromIp( new IpV4Address( "192.168.1.10" ) ),
           FirewallTarget.Subnet( "internal" ) ); // Bastion → internal (FIRST)
         fw.Deny( FirewallTarget.Subnet( "dmz" ), FirewallTarget.Subnet( "internal" ) ); // Other DMZ → internal (SECOND)
         fw.Allow( FirewallTarget.Subnet( "dmz" ), FirewallTarget.Subnet( "dmz" ) ); // DMZ can see itself
@@ -200,15 +260,30 @@ public static class Topologies {
   /// </summary>
   public static NetworkTopology ManagementNetworkWithCidr() {
     return new NetworkTopologyBuilder()
-      .AddSubnet( "management", "10.0.0.0/24", [
-        ( "10.0.0.10", "Admin workstation" )
-      ], out var mgmtSubnet )
-      .AddSubnet( "production1", "192.168.1.0/24", [
-        ( "192.168.1.100", "Prod server 1" )
-      ], out var prod1Subnet )
-      .AddSubnet( "production2", "192.168.2.0/24", [
-        ( "192.168.2.100", "Prod server 2" )
-      ], out var prod2Subnet )
+      .AddSubnet(
+        "management",
+        "10.0.0.0/24",
+        [
+          ( "10.0.0.10", "Admin workstation" )
+        ],
+        out var mgmtSubnet
+      )
+      .AddSubnet(
+        "production1",
+        "192.168.1.0/24",
+        [
+          ( "192.168.1.100", "Prod server 1" )
+        ],
+        out var prod1Subnet
+      )
+      .AddSubnet(
+        "production2",
+        "192.168.2.0/24",
+        [
+          ( "192.168.2.100", "Prod server 2" )
+        ],
+        out var prod2Subnet
+      )
       .AddAgent( new AgentId( "agentid_mgmt" ), mgmtSubnet )
       .AddAgent( new AgentId( "agentid_prod1" ), prod1Subnet )
       .AddAgent( new AgentId( "agentid_prod2" ), prod2Subnet )
@@ -221,7 +296,8 @@ public static class Topologies {
         fw.Allow( FirewallTarget.Subnet( "production2" ), FirewallTarget.Subnet( "production2" ) );
 
         // Block production cross-talk (explicit deny)
-        fw.Deny( FirewallTarget.FromCidr( new CidrBlock( "192.168.0.0/16" ) ),
+        fw.Deny(
+          FirewallTarget.FromCidr( new CidrBlock( "192.168.0.0/16" ) ),
           FirewallTarget.FromCidr( new CidrBlock( "192.168.0.0/16" ) ) ); // Block any 192.168.x.x to 192.168.x.x
       } )
       .Build();

@@ -76,7 +76,7 @@ public sealed class NetworkTopology {
     }
 
     /// <summary>
-    /// When true, devices on this subnet cannot communicate with each other (peer isolation).
+    /// Gets a value indicating whether devices on this subnet cannot communicate with each other (peer isolation).
     /// Mirrors UniFi's "Client Device Isolation" / "Device Isolation (ACL)" feature.
     /// Defaults to false (devices on the same subnet can communicate freely).
     /// </summary>

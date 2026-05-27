@@ -1,9 +1,32 @@
+using Drift.Domain;
+using Drift.Domain.Device.Addresses;
+using Drift.Domain.Device.Declared;
+
 namespace Drift.Spec.Dtos.V1_preview.Mappers;
 
 public static partial class Mapper {
-  public static Domain.Inventory ToDomain( DriftSpec dto ) {
+  public static Inventory ToDomain( DriftSpec dto ) {
     // ArgumentNullException.ThrowIfNull( dto.Address );
-    return new Domain.Inventory { Network = Map( dto.Network ) };
+    var spec = new Inventory { Network = Map( dto.Network ) };
+
+    if ( dto.Agents != null ) {
+      spec.Agents = Map( dto.Agents );
+    }
+
+    return spec;
+  }
+
+  private static List<Domain.Agent> Map( List<Agent> dto ) {
+    return dto.Select( Map ).ToList();
+  }
+
+  private static Domain.Agent Map( Agent dto ) {
+    var agent = new Domain.Agent();
+
+    agent.Id = dto.Id;
+    agent.Address = dto.Address;
+
+    return agent;
   }
 
   private static Domain.Network Map( Network dto ) {
@@ -20,14 +43,14 @@ public static partial class Mapper {
     return network;
   }
 
-  private static List<Domain.DeclaredSubnet> Map( List<Subnet> dto ) {
+  private static List<DeclaredSubnet> Map( List<Subnet> dto ) {
     return dto.Select( Map ).ToList();
   }
 
-  private static Domain.DeclaredSubnet Map( Subnet dto ) {
+  private static DeclaredSubnet Map( Subnet dto ) {
     // ArgumentNullException.ThrowIfNull( dto.Address );
 
-    var subnet = new Domain.DeclaredSubnet { Address = dto.Address };
+    var subnet = new DeclaredSubnet { Address = dto.Address };
 
     if ( dto.Id != null ) {
       subnet.Id = dto.Id;
@@ -40,14 +63,14 @@ public static partial class Mapper {
     return subnet;
   }
 
-  private static List<Domain.Device.Declared.DeclaredDevice> Map( List<Device> dto ) {
+  private static List<DeclaredDevice> Map( List<Device> dto ) {
     return dto.Select( Map ).ToList();
   }
 
-  private static Domain.Device.Declared.DeclaredDevice Map( Device dto ) {
+  private static DeclaredDevice Map( Device dto ) {
     // ArgumentNullException.ThrowIfNull( dto.Addresses );
 
-    var declaredDevice = new Domain.Device.Declared.DeclaredDevice { Addresses = dto.Addresses.Select( Map ).ToList() };
+    var declaredDevice = new DeclaredDevice { Addresses = dto.Addresses.Select( Map ).ToList() };
 
     if ( dto.Id != null ) {
       declaredDevice.Id = dto.Id;
@@ -64,7 +87,7 @@ public static partial class Mapper {
     return declaredDevice;
   }
 
-  private static Domain.Device.Addresses.IDeviceAddress Map( DeviceAddress dto ) {
+  private static IDeviceAddress Map( DeviceAddress dto ) {
     return dto.Type switch {
       "ip-v4" => new Domain.Device.Addresses.IpV4Address( dto.Value, dto.IsId ?? true ),
       "mac" => new Domain.Device.Addresses.MacAddress( dto.Value, dto.IsId ?? true ),
@@ -73,12 +96,12 @@ public static partial class Mapper {
     };
   }
 
-  private static Domain.Device.Declared.DeclaredDeviceState? Map( DeviceState? dto ) {
+  private static DeclaredDeviceState? Map( DeviceState? dto ) {
     return dto switch {
       null => null,
-      DeviceState.Up => Domain.Device.Declared.DeclaredDeviceState.Up,
-      DeviceState.Dynamic => Domain.Device.Declared.DeclaredDeviceState.Dynamic,
-      DeviceState.Down => Domain.Device.Declared.DeclaredDeviceState.Down,
+      DeviceState.Up => DeclaredDeviceState.Up,
+      DeviceState.Dynamic => DeclaredDeviceState.Dynamic,
+      DeviceState.Down => DeclaredDeviceState.Down,
       _ => throw new ArgumentOutOfRangeException( nameof(dto), dto, null )
     };
   }

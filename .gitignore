@@ -6,6 +6,7 @@ obj/
 #*.idea
 .idea/.idea.Drift/.idea/watcherTasks.xml
 .idea/.idea.Drift/.idea/encodings.xml
+.idea/.idea.Drift.Build/.idea/encodings.xml
 *.DotSettings
 *.received.*
 artifacts/
@@ -15,3 +16,4 @@ build.binlog
 build.binlog-warnings-only.log
 publish.binlog
 publish.binlog-warnings-only.log
+containerlab/*/

@@ -216,10 +216,12 @@ internal sealed class DistributedNetworkScanner(
       );
     }
     else {
+      var localCount = allResults.Count( r => resolvedSubnets.Any( rs => rs.Cidr == r.CidrBlock && rs.Source is Local ) );
+      var agentCount = allResults.Count - localCount;
       logger.LogInformation(
-        "Distributed scan completed: {SuccessCount}/{TotalCount} scan operations successful, {UniqueSubnets} unique subnets",
-        successCount,
-        allResults.Count,
+        "Scan completed: {LocalCount} local, {AgentCount} via agents, {UniqueSubnets} unique subnets",
+        localCount,
+        agentCount,
         mergedResults.Count
       );
     }
@@ -227,7 +229,7 @@ internal sealed class DistributedNetworkScanner(
     return finalResult;
   }
 
-  private List<SubnetScanResult> MergeOverlappingSubnetResults( List<SubnetScanResult> allResults, ILogger logger ) {
+  private static List<SubnetScanResult> MergeOverlappingSubnetResults( List<SubnetScanResult> allResults, ILogger logger ) {
     // Group results by CIDR and merge devices from multiple scans
     var resultsByCidr = allResults
       .GroupBy( r => r.CidrBlock )

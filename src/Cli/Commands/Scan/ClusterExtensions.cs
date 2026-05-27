@@ -2,7 +2,6 @@ using Drift.Agent.PeerProtocol.Scan;
 using Drift.Agent.PeerProtocol.Subnets;
 using Drift.Domain;
 using Drift.Networking.Cluster;
-using Drift.Networking.Grpc.Generated;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
 
 namespace Drift.Cli.Commands.Scan;

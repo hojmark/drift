@@ -1,5 +1,3 @@
-using Drift.Networking.Grpc.Generated;
-
 namespace Drift.Networking.PeerStreaming.Core.Abstractions;
 
 public static class PeerMessageHandlerExtensions {

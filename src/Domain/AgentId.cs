@@ -28,11 +28,11 @@ public class AgentId {
   public Guid? AsGuidOrNull =>
     Guid.TryParse( Value[Prefix.Length..], out var guid ) ? guid : null;
 
-  public static implicit operator AgentId( string value ) => new AgentId( value );
+  public static implicit operator AgentId( string value ) => new(value);
 
   public static implicit operator string( AgentId id ) => id.Value;
 
-  public static AgentId New() => new AgentId( Prefix + Guid.NewGuid() );
+  public static AgentId New() => new(Prefix + Guid.NewGuid());
 
   public override string ToString() => Value;
 }

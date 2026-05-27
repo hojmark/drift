@@ -112,11 +112,16 @@ internal sealed partial class ScanCommandTests {
   public async Task WithAgents_DuplicateDevices_Deduplicates() {
     // Arrange - Both agents discover the same device on the same subnet
     var topology = new NetworkTopologyBuilder()
-      .AddSubnet( "shared", "192.168.10.0/24", [
-        ( "192.168.10.100", "Shared device" ), // Both agents will see this
-        ( "192.168.10.101", "Device from agent1" ),
-        ( "192.168.10.102", "Device from agent2" )
-      ], out var sharedSubnet )
+      .AddSubnet(
+        "shared",
+        "192.168.10.0/24",
+        [
+          ( "192.168.10.100", "Shared device" ), // Both agents will see this
+          ( "192.168.10.101", "Device from agent1" ),
+          ( "192.168.10.102", "Device from agent2" )
+        ],
+        out var sharedSubnet
+      )
       .AddAgent( new AgentId( "agentid_agent1" ), sharedSubnet )
       .AddAgent( new AgentId( "agentid_agent2" ), sharedSubnet )
       .Build();
@@ -141,14 +146,24 @@ internal sealed partial class ScanCommandTests {
     // Arrange - DMZ agent can see internal, but internal agent cannot see DMZ
     // This tests that firewall rules properly restrict network visibility
     var topology = new NetworkTopologyBuilder()
-      .AddSubnet( "dmz", "192.168.1.0/24", [
-        ( "192.168.1.100", "Web server" ),
-        ( "192.168.1.101", "App server" )
-      ], out var dmzSubnet )
-      .AddSubnet( "internal", "10.0.0.0/24", [
-        ( "10.0.0.100", "Database" ),
-        ( "10.0.0.101", "File server" )
-      ], out var internalSubnet )
+      .AddSubnet(
+        "dmz",
+        "192.168.1.0/24",
+        [
+          ( "192.168.1.100", "Web server" ),
+          ( "192.168.1.101", "App server" )
+        ],
+        out var dmzSubnet
+      )
+      .AddSubnet(
+        "internal",
+        "10.0.0.0/24",
+        [
+          ( "10.0.0.100", "Database" ),
+          ( "10.0.0.101", "File server" )
+        ],
+        out var internalSubnet
+      )
       .AddAgent( new AgentId( "agentid_dmz" ), dmzSubnet )
       .AddAgent( new AgentId( "agentid_internal" ), internalSubnet )
       .WithFirewall( fw => {

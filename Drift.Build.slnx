@@ -1,6 +1,7 @@
 <!-- https://github.com/microsoft/vs-solutionpersistence/blob/main/src/Microsoft.VisualStudio.SolutionPersistence/Serializer/Xml/Slnx.xsd -->
 <Solution>
   <Folder Name="/Workflows/">
+    <File Path=".github\workflows\audit.yaml" />
     <File Path=".github\workflows\ci.yaml" />
     <File Path=".github\workflows\codeql.yml" />
     <File Path=".github\workflows\prerelease.yaml" />
@@ -11,7 +12,7 @@
   <Folder Name="/Workflows/Actions/runner-setup/">
     <File Path=".github\actions\setup-runner\action.yml" />
   </Folder>
-  <Project Path="build\_build.csproj" Type="C#" />
-  <Project Path="build-utils\Build.Utilities.Tests\Build.Utilities.Tests.csproj" Type="C#" />
-  <Project Path="build-utils\Build.Utilities\Build.Utilities.csproj" Type="C#" />
+  <Project Path="build\_build.csproj" />
+  <Project Path="build-utils\Build.Utilities.Tests\Build.Utilities.Tests.csproj" />
+  <Project Path="build-utils\Build.Utilities\Build.Utilities.csproj" />
 </Solution>

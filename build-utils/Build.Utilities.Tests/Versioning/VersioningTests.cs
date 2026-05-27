@@ -13,7 +13,7 @@ namespace Drift.Build.Utilities.Tests.Versioning;
 
 internal sealed class VersioningTests {
   [Test]
-  public static async Task DefaultVersioningVersionTest() {
+  public async Task DefaultVersioningVersionTest() {
     // Arrange
     var build = new TestNukeBuild();
 
@@ -29,7 +29,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public static async Task DefaultVersioningWhenNoReleaseTargets() {
+  public async Task DefaultVersioningWhenNoReleaseTargets() {
     // Arrange
     var build = new NukeBuildWithArbitraryTarget().WithExecutionPlan( b => NukeBuildWithArbitraryTarget.Arbitrary );
 
@@ -46,7 +46,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public static async Task MultipleReleaseTargetsInPlanThrows() {
+  public async Task MultipleReleaseTargetsInPlanThrows() {
     // Arrange
     var build = new TestNukeBuild().WithExecutionPlan( b => b.CreateRelease, b => b.CreatePreRelease );
 
@@ -102,7 +102,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public static void PreReleaseWithoutVersionThrows() {
+  public void PreReleaseWithoutVersionThrows() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreatePreRelease )
@@ -145,7 +145,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public static async Task PreReleaseValid() {
+  public async Task PreReleaseValid() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreatePreRelease )
@@ -166,7 +166,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public static void PreReleaseRejectsFullSemVerString() {
+  public void PreReleaseRejectsFullSemVerString() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreatePreRelease )
@@ -182,7 +182,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public static async Task PreReleaseVersionIsTemporallyConsistent() {
+  public async Task PreReleaseVersionIsTemporallyConsistent() {
     // Arrange
     var timeProvider = new FakeTimeProvider();
     var build = new TestNukeBuild()
@@ -201,7 +201,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public static void ReleaseWithPrereleaseIdentifiersThrows() {
+  public void ReleaseWithPrereleaseIdentifiersThrows() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreateRelease )
@@ -217,7 +217,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public static async Task ReleaseValid() {
+  public async Task ReleaseValid() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreateRelease )
@@ -262,7 +262,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public static async Task ExactVersioningValid() {
+  public async Task ExactVersioningValid() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreatePreRelease )
@@ -278,7 +278,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public static void ExactVersioningWithNullThrows() {
+  public void ExactVersioningWithNullThrows() {
     // Arrange
     var strategy = new ExactVersioning( Configuration.Release, "   ", null!, null! );
 
@@ -287,7 +287,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public static async Task ExactVersioningValidWithReleaseVersion() {
+  public async Task ExactVersioningValidWithReleaseVersion() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreateRelease )

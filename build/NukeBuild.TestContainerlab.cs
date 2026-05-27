@@ -39,8 +39,9 @@ sealed partial class NukeBuild {
       Assertions: [
         new ScanAssertion( "Management subnet scanned", output => output.Contains( "172.20.20.0/24" ) ),
         new ScanAssertion( "Both scans successful (local + agent)",
-          output => output.Contains( "2/2 scan operations successful" ) ),
-        new ScanAssertion( "Scan completed successfully", output => output.Contains( "Distributed scan completed" ) ),
+          output => output.Contains( "from 2 scans of" ) ),
+        new ScanAssertion( "Scan completed successfully",
+          output => output.Contains( "Scan completed: 1 local, 1 via agents" ) ),
       ]
     ),
     new(
@@ -51,8 +52,9 @@ sealed partial class NukeBuild {
       Assertions: [
         new ScanAssertion( "Management subnet scanned", output => output.Contains( "172.20.20.0/24" ) ),
         new ScanAssertion( "All 4 scans successful (local + 3 agents)",
-          output => output.Contains( "4/4 scan operations successful" ) ),
-        new ScanAssertion( "Scan completed successfully", output => output.Contains( "Distributed scan completed" ) ),
+          output => output.Contains( "from 4 scans of" ) ),
+        new ScanAssertion( "Scan completed successfully",
+          output => output.Contains( "Scan completed: 1 local, 3 via agents" ) ),
       ]
     ),
     new(

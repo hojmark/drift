@@ -1,3 +1,4 @@
+using System.Net;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 
@@ -73,7 +74,7 @@ public sealed class FirewallEvaluator {
   /// </summary>
   private static bool IpInCidr( IpV4Address ip, CidrBlock cidr ) {
     try {
-      var ipBytes = ip.Ip.GetAddressBytes();
+      var ipBytes = IPAddress.Parse( ip.Value ).GetAddressBytes();
       var cidrParts = cidr.ToString().Split( '/' );
       if ( cidrParts.Length != 2 ) {
         return false;

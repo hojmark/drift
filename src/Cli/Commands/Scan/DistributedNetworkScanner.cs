@@ -51,7 +51,10 @@ internal sealed class DistributedNetworkScanner(
       }
     }
 
-    return BuildFinalResult( allSubnetResults, startTime, logger );
+    var localScanCount = subnetsBySource.Where( x => x.Source is Local ).Sum( x => x.Cidrs.Count );
+    var agentScanCount = subnetsBySource.Where( x => x.Source is Scanning.Subnets.Agent ).Sum( x => x.Cidrs.Count );
+
+    return BuildFinalResult( allSubnetResults, startTime, localScanCount, agentScanCount, logger );
   }
 
   private List<(SubnetSource Source, List<CidrBlock> Cidrs)> PartitionSubnetsBySource( NetworkScanOptions options ) {
@@ -185,6 +188,8 @@ internal sealed class DistributedNetworkScanner(
   private NetworkScanResult BuildFinalResult(
     List<SubnetScanResult> allResults,
     DateTime startTime,
+    int localScanCount,
+    int agentScanCount,
     ILogger logger
   ) {
     var endTime = DateTime.UtcNow;
@@ -216,12 +221,10 @@ internal sealed class DistributedNetworkScanner(
       );
     }
     else {
-      var localCount = allResults.Count( r => resolvedSubnets.Any( rs => rs.Cidr == r.CidrBlock && rs.Source is Local ) );
-      var agentCount = allResults.Count - localCount;
       logger.LogInformation(
         "Scan completed: {LocalCount} local, {AgentCount} via agents, {UniqueSubnets} unique subnets",
-        localCount,
-        agentCount,
+        localScanCount,
+        agentScanCount,
         mergedResults.Count
       );
     }

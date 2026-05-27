@@ -132,23 +132,20 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
       new DiscoveredDevice { Addresses = CreateAddresses( pingReply ) }
     ).ToList();
 
-    List<IDeviceAddress> CreateAddresses( ( IPAddress Ip, bool Success, string? Hostname) pingReply ) {
-      var list = new List<IDeviceAddress> { new IpV4Address( pingReply.Ip ) };
+    List<IDeviceAddress> CreateAddresses( (IPAddress Ip, bool Success, string? Hostname) pingReply ) {
+      IpV4Address ip = new IpV4Address( pingReply.Ip );
 
-      if ( !string.IsNullOrWhiteSpace( pingReply.Hostname ) ) {
-        list.Add( new HostnameAddress( pingReply.Hostname ) );
-      }
+      MacAddress? mac = arpTable.TryGetValue( pingReply.Ip, out var arpMac )
+        ? arpMac
+        : localMacs.TryGetValue( pingReply.Ip, out var localMac )
+          ? localMac
+          : null;
 
-      if ( arpTable.TryGetValue( pingReply.Ip, out var mac ) ) {
-        list.Add( mac );
-      }
-      else if ( localMacs.TryGetValue( pingReply.Ip, out var localMac ) ) {
-        // ARP cache never contains the machine's own IPs. Fall back to reading
-        // the MAC directly from the matching local interface.
-        list.Add( localMac );
-      }
+      HostnameAddress? hostname = string.IsNullOrWhiteSpace( pingReply.Hostname )
+        ? null
+        : new HostnameAddress( pingReply.Hostname );
 
-      return list;
+      return new DeviceAddressSet( ip, mac, hostname ).ToAddresses();
     }
   }
 
@@ -180,17 +177,17 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
 
   private static async Task<string?> GetHostNameAsync( IPAddress ip, int timeoutMs = 1000 ) {
     var task = Dns.GetHostEntryAsync( ip );
-    if ( await Task.WhenAny( task, Task.Delay( timeoutMs ) ) == task ) {
-      try {
-        return task.Result.HostName;
-      }
-      catch {
-        // Reverse DNS failed
-        return null;
-      }
+    if ( await Task.WhenAny( task, Task.Delay( timeoutMs ) ) != task ) {
+      // Timed out
+      return null;
     }
 
-    // Timed out
-    return null;
+    try {
+      return task.Result.HostName;
+    }
+    catch {
+      // Reverse DNS failed
+      return null;
+    }
   }
 }

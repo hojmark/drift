@@ -1,6 +1,5 @@
 using Drift.Networking.Grpc.Generated;
 using Drift.Networking.PeerStreaming.Core.Abstractions;
-using Microsoft.Extensions.Logging;
 
 namespace Drift.Agent.PeerProtocol.Adopt;
 

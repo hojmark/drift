@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common.Parameters;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start;
@@ -18,12 +19,12 @@ internal record AgentStartParameters : BaseParameters {
     };
 
     internal static readonly Option<ushort> Port = new("--port", "-p") {
-      DefaultValueFactory = _ => 51515, Description = "Set the port used for both adoption and communication"
+      DefaultValueFactory = _ => Ports.AgentDefault,
+      Description = "Set the port used for both adoption and communication"
     };
 
     internal static readonly Option<string> Id = new("--id") {
-      Description = "Set a specific agent ID (for testing purposes)",
-      Hidden = true
+      Description = "Set a specific agent ID (for testing purposes)", Hidden = true
     };
   }
 

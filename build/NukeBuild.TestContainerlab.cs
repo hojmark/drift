@@ -38,10 +38,8 @@ sealed partial class NukeBuild {
       CliContainer: "clab-drift-simple-test-cli",
       Assertions: [
         new ScanAssertion( "Management subnet scanned", output => output.Contains( "172.20.20.0/24" ) ),
-        new ScanAssertion( "Both scans successful (local + agent)",
-          output => output.Contains( "from 2 scans of" ) ),
         new ScanAssertion( "Scan completed successfully",
-          output => output.Contains( "Scan completed: 1 local, 1 via agents" ) ),
+          output => output.Contains( "Scan completed: 1 local, 1 via agents, 1 unique subnets" ) ),
       ]
     ),
     new(
@@ -51,10 +49,8 @@ sealed partial class NukeBuild {
       CliContainer: "clab-drift-cooperation-test-cli",
       Assertions: [
         new ScanAssertion( "Management subnet scanned", output => output.Contains( "172.20.20.0/24" ) ),
-        new ScanAssertion( "All 4 scans successful (local + 3 agents)",
-          output => output.Contains( "from 4 scans of" ) ),
         new ScanAssertion( "Scan completed successfully",
-          output => output.Contains( "Scan completed: 1 local, 3 via agents" ) ),
+          output => output.Contains( "Scan completed: 1 local, 3 via agents, 1 unique subnets" ) ),
       ]
     ),
     new(
@@ -65,9 +61,8 @@ sealed partial class NukeBuild {
       Assertions: [
         new ScanAssertion( "Subnet-A scanned", output => output.Contains( "192.168.10.0/24" ) ),
         new ScanAssertion( "Subnet-B scanned", output => output.Contains( "192.168.20.0/24" ) ),
-        new ScanAssertion( "All scan operations successful",
-          output => output.Contains( "7/7 scan operations successful" ) ),
-        new ScanAssertion( "Scan completed successfully", output => output.Contains( "Distributed scan completed" ) ),
+        new ScanAssertion( "Scan completed successfully",
+          output => output.Contains( "Scan completed: 3 local, 4 via agents, 3 unique subnets" ) ),
       ]
     ),
   ];

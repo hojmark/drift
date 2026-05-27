@@ -1,9 +1,8 @@
 using System.Net;
 using System.Net.Sockets;
-
 namespace Drift.Domain.Device.Addresses;
 
-public readonly record struct IpV4Address : IDeviceAddress, IIpAddress {
+public readonly record struct IpV4Address : IDeviceAddress {
   public AddressType Type => AddressType.IpV4;
 
   public string Value {
@@ -13,8 +12,6 @@ public readonly record struct IpV4Address : IDeviceAddress, IIpAddress {
   public bool? IsId {
     get;
   }
-
-  public IPAddress Ip => IPAddress.Parse( Value );
 
   public IpV4Address( string ipAddress, bool? isId = null ) {
     if ( !IPAddress.TryParse( ipAddress, out var ip ) || ip.AddressFamily != AddressFamily.InterNetwork ) {

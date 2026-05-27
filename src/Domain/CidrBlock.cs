@@ -60,6 +60,6 @@ public readonly record struct CidrBlock {
 
   public override string ToString() => $"{NetworkAddress}/{PrefixLength}";
 
-  public bool Contains( IIpAddress ip ) =>
-    IPNetwork.Parse( ToString() ).Contains( ip.Ip );
+  public bool Contains( IpV4Address ip ) =>
+    IPNetwork.Parse( ToString() ).Contains( IPAddress.Parse( ip.Value ) );
 }

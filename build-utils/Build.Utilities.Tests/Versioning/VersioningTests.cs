@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Drift.Build.Utilities.Tests.NukeBuild;
 using Drift.Build.Utilities.Versioning;
@@ -9,15 +7,13 @@ using NSubstitute;
 using Nuke.Common;
 using Nuke.Common.Git;
 using Octokit;
-using TUnit.Assertions.Extensions;
-using TUnit.Core;
 using Assert = TUnit.Assertions.Assert;
 
 namespace Drift.Build.Utilities.Tests.Versioning;
 
 internal sealed class VersioningTests {
   [Test]
-  public async Task DefaultVersioningVersionTest() {
+  public static async Task DefaultVersioningVersionTest() {
     // Arrange
     var build = new TestNukeBuild();
 
@@ -33,9 +29,9 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public async Task DefaultVersioningWhenNoReleaseTargets() {
+  public static async Task DefaultVersioningWhenNoReleaseTargets() {
     // Arrange
-    var build = new NukeBuildWithArbitraryTarget().WithExecutionPlan( b => b.Arbitrary );
+    var build = new NukeBuildWithArbitraryTarget().WithExecutionPlan( b => NukeBuildWithArbitraryTarget.Arbitrary );
 
     // Act
     var factory = new VersioningStrategyFactory( build );
@@ -50,7 +46,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public async Task MultipleReleaseTargetsInPlanThrows() {
+  public static async Task MultipleReleaseTargetsInPlanThrows() {
     // Arrange
     var build = new TestNukeBuild().WithExecutionPlan( b => b.CreateRelease, b => b.CreatePreRelease );
 
@@ -106,7 +102,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public void PreReleaseWithoutVersionThrows() {
+  public static void PreReleaseWithoutVersionThrows() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreatePreRelease )
@@ -149,7 +145,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public async Task PreReleaseValid() {
+  public static async Task PreReleaseValid() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreatePreRelease )
@@ -170,7 +166,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public void PreReleaseRejectsFullSemVerString() {
+  public static void PreReleaseRejectsFullSemVerString() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreatePreRelease )
@@ -186,7 +182,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public async Task PreReleaseVersionIsTemporallyConsistent() {
+  public static async Task PreReleaseVersionIsTemporallyConsistent() {
     // Arrange
     var timeProvider = new FakeTimeProvider();
     var build = new TestNukeBuild()
@@ -205,7 +201,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public void ReleaseWithPrereleaseIdentifiersThrows() {
+  public static void ReleaseWithPrereleaseIdentifiersThrows() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreateRelease )
@@ -221,7 +217,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public async Task ReleaseValid() {
+  public static async Task ReleaseValid() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreateRelease )
@@ -266,7 +262,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public async Task ExactVersioningValid() {
+  public static async Task ExactVersioningValid() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreatePreRelease )
@@ -282,7 +278,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public void ExactVersioningWithNullThrows() {
+  public static void ExactVersioningWithNullThrows() {
     // Arrange
     var strategy = new ExactVersioning( Configuration.Release, "   ", null!, null! );
 
@@ -291,7 +287,7 @@ internal sealed class VersioningTests {
   }
 
   [Test]
-  public async Task ExactVersioningValidWithReleaseVersion() {
+  public static async Task ExactVersioningValidWithReleaseVersion() {
     // Arrange
     var build = new TestNukeBuild()
       .WithExecutionPlan( b => b.CreateRelease )
@@ -311,7 +307,7 @@ internal sealed class VersioningTests {
 internal sealed class NukeBuildWithArbitraryTarget : TestNukeBuild {
   // Justification: NUKE Target properties are instance properties by convention; static is not valid here
 #pragma warning disable S2325
-  public Target Arbitrary => _ => _
+  public static Target Arbitrary => _ => _
 #pragma warning restore S2325
     .Executes( () => {
       }

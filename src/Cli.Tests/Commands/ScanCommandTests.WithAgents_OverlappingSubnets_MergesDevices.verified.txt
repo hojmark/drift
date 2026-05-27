@@ -1,0 +1,24 @@
+﻿Requesting subnets from agent agentid_agent1
+Received subnet(s) from agent agentid_agent1: 192.168.0.0/24, 192.168.10.0/24
+Requesting subnets from agent agentid_agent2
+Received subnet(s) from agent agentid_agent2: 192.168.0.0/24, 192.168.10.0/24
+Scanning 2 subnets
+  192.168.0.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via local, agentid_agent1, agentid_agent2
+  192.168.10.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via agentid_agent1, agentid_agent2
+Distributed scanning via agents is a preview feature and should be used with caution.
+Agent communication is unencrypted. Do not use on untrusted networks.
+Agents run without authentication. Any client that can reach the agent port can connect.
+Agent adoption (--adoptable / --join) is not yet implemented and has no effect.
+Merged 1 unique devices from 3 scans of 192.168.0.0/24
+Merged 4 unique devices from 2 scans of 192.168.10.0/24
+Scan completed: 3 local, 2 via agents, 2 unique subnets
+
+192.168.0.0/24 (1 devices)
+└── 192.168.0.100   AA-BB-C0-A8-00-64    Online (unknown device)  
+
+192.168.10.0/24 (4 devices)
+├── 192.168.10.100  AA-BB-C0-A8-0A-64    Online (unknown device)  
+├── 192.168.10.101  AA-BB-C0-A8-0A-65    Online (unknown device)  
+├── 192.168.10.102  AA-BB-C0-A8-0A-66    Online (unknown device)  
+└── 192.168.10.103  AA-BB-C0-A8-0A-67    Online (unknown device)  
+

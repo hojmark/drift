@@ -5,6 +5,7 @@ using Drift.Cli.Commands.Init.Helpers;
 using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
 using Drift.Cli.Tests.Utils;
+using Drift.Cli.Tests.Utils.Testing;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
@@ -227,42 +228,6 @@ internal sealed partial class ScanCommandTests {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
       await Verify( output.ToString() + error );
     }
-  }
-
-  private static Action<IServiceCollection> ConfigureServices(
-    CidrBlock? interfaces,
-    List<List<IDeviceAddress>> discoveredDevices,
-    Inventory? inventory = null
-  ) {
-    var interfaceList = interfaces.HasValue
-      ? [
-        new NetworkInterface {
-          Description = "eth1", OperationalStatus = OperationalStatus.Up, UnicastAddress = interfaces.Value
-        }
-      ]
-      : new List<INetworkInterface>();
-
-    return ConfigureServices(
-      interfaceList,
-      discoveredDevices.Select( deviceAddresses => new DiscoveredDevice { Addresses = deviceAddresses } ).ToList(),
-      inventory
-    );
-  }
-
-  private static Action<IServiceCollection> ConfigureServices(
-    CidrBlock interfaces,
-    List<List<IDeviceAddress>> discoveredDevices,
-    Inventory? inventory = null
-  ) {
-    return ConfigureServices(
-      [
-        new NetworkInterface {
-          Description = "eth1", OperationalStatus = OperationalStatus.Up, UnicastAddress = interfaces
-        }
-      ],
-      discoveredDevices.Select( deviceAddresses => new DiscoveredDevice { Addresses = deviceAddresses } ).ToList(),
-      inventory
-    );
   }
 
   private static Action<IServiceCollection> ConfigureServices(

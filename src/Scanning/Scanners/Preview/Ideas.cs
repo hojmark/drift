@@ -110,7 +110,7 @@ public class DefaultScanOrchestrator : Ideas {
     _logger = logger;
   }
 
-  public async Task RunScanAsync( ScanOptions options ) {
+  public static async Task RunScanAsync( ScanOptions options ) {
     /*_logger.LogInformation("Starting network scan...");
 
     var actualState = await _networkScanner.ScanAsync();

@@ -23,7 +23,7 @@ jobs:
       value: ${{ steps.output-version.outputs.version }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up runner
         uses: ./.github/actions/setup-runner
@@ -50,7 +50,7 @@ jobs:
       container-image-ref: ${{ steps.push-container.outputs.container-image-ref }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up runner
         uses: ./.github/actions/setup-runner
@@ -96,7 +96,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up runner
         uses: ./.github/actions/setup-runner
@@ -141,7 +141,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up runner
         uses: ./.github/actions/setup-runner

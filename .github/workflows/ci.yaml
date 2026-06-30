@@ -29,7 +29,7 @@ jobs:
       ACTIONS_RUNNER_DEBUG: false
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up runner
         uses: ./.github/actions/setup-runner
@@ -60,7 +60,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up runner
         uses: ./.github/actions/setup-runner

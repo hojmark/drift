@@ -48,6 +48,6 @@
     <PackageVersion Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="17.0.0" />
     <!-- Pinning reason: https://github.com/VerifyTests/Verify/issues/1642 -->
     <PackageVersion Include="Verify.NUnit" Version="[31.4.3]" />
-    <PackageVersion Include="YamlDotNet" Version="17.1.0" />
+    <PackageVersion Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 </Project>

@@ -4,8 +4,8 @@ using Drift.Domain.Device;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Scan;
-using Drift.Networking.Cluster;
-using Drift.Networking.PeerStreaming.Core.Abstractions;
+using Drift.Messaging.Client;
+using Drift.Networking.Core.Abstractions;
 using Drift.Scanning.Subnets;
 using Microsoft.Extensions.Logging;
 
@@ -16,8 +16,8 @@ namespace Drift.Cli.Commands.Scan;
 /// </summary>
 internal sealed class DistributedNetworkScanner(
   INetworkScanner localScanner,
-  ICluster cluster,
-  IPeerMessageEnvelopeConverter converter,
+  IAgentClient agentClient,
+  IMessageEnvelopeConverter converter,
   List<ResolvedSubnet> resolvedSubnets,
   Inventory inventory,
   ILogger logger
@@ -117,7 +117,7 @@ internal sealed class DistributedNetworkScanner(
     CancellationToken cancellationToken
   ) {
     try {
-      var response = await cluster.ScanSubnetAsync(
+      var response = await agentClient.ScanSubnetAsync(
         MapAgentIdToDomainAgent( agentSource.AgentId ),
         cidr,
         pingsPerSecond,
@@ -232,7 +232,10 @@ internal sealed class DistributedNetworkScanner(
     return finalResult;
   }
 
-  private static List<SubnetScanResult> MergeOverlappingSubnetResults( List<SubnetScanResult> allResults, ILogger logger ) {
+  private static List<SubnetScanResult> MergeOverlappingSubnetResults(
+    List<SubnetScanResult> allResults,
+    ILogger logger
+  ) {
     // Group results by CIDR and merge devices from multiple scans
     var resultsByCidr = allResults
       .GroupBy( r => r.CidrBlock )

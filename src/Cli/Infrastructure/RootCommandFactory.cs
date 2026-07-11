@@ -2,7 +2,6 @@ using System.CommandLine;
 using System.CommandLine.Help;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using Drift.Agent.PeerProtocol;
 using Drift.Cli.Commands.Agent;
 using Drift.Cli.Commands.Agent.Subcommands.Start;
 using Drift.Cli.Commands.Common;
@@ -18,9 +17,10 @@ using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
 using Drift.Domain.ExecutionEnvironment;
 using Drift.Domain.Scan;
-using Drift.Networking.Cluster;
-using Drift.Networking.PeerStreaming.Client;
-using Drift.Networking.PeerStreaming.Core;
+using Drift.Messaging.Client;
+using Drift.Messaging.Protocol;
+using Drift.Networking.Client;
+using Drift.Networking.Core;
 using Drift.Scanning;
 using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
@@ -80,14 +80,15 @@ internal static class RootCommandFactory {
     ConfigureNetworkScanner( services );
     ConfigureInteractiveServices( services );
     ConfigureAgentCluster( services );
+    ConfigureAgentClient( services );
   }
 
-  private static void ConfigureAgentCluster( IServiceCollection services ) {
-    services.AddPeerStreamingCore( new PeerStreamingOptions {
-      MessageAssembly = typeof(PeerProtocolAssemblyMarker).Assembly
+  private static void ConfigureAgentClient( IServiceCollection services ) {
+    services.AddMessagingCore( new MessagingOptions {
+      MessageAssembly = typeof(ProtocolMessagesAssemblyMarker).Assembly
     } );
-    services.AddPeerStreamingClient();
-    services.AddClustering();
+    services.AddMessagingClient();
+    services.AddAgentClient();
   }
 
   internal static void ConfigureExecutionEnvironment( IServiceCollection services ) {

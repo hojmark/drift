@@ -19,9 +19,10 @@ internal static class OutputManagerExtensions {
   /// </summary>
   public static void WarnAgentPreview( this IOutputManager outputManager ) {
     var logger = outputManager.GetLogger();
+    logger.LogWarning( "---------------------------------------- PREVIEW ---------------------------------------" );
     logger.LogWarning( "Distributed scanning via agents is a preview feature and should be used with caution." );
     logger.LogWarning( "Agent communication is unencrypted. Do not use on untrusted networks." );
     logger.LogWarning( "Agents run without authentication. Any client that can reach the agent port can connect." );
-    logger.LogWarning( "Agent adoption (--adoptable / --join) is not yet implemented and has no effect." );
+    logger.LogWarning( "----------------------------------------------------------------------------------------" );
   }
 }

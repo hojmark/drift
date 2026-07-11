@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Messaging.Protocol\Messaging.Protocol.csproj" />
+    <ProjectReference Include="..\Networking.Core.Abstractions\Networking.Core.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

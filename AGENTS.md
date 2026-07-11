@@ -71,6 +71,7 @@ Agents (remote Drift instances) report discovered state back to the coordinator 
 - **Snapshot testing**: `Verify.NUnit` is used for golden file comparisons. Run tests to regenerate snapshots when output changes; committed `.verified.*` files are the source of truth.
 - **AOT**: `Cli` is published with `PublishAot=true`. Avoid reflection-heavy patterns in the CLI project; use source generators instead.
 - **Embedded resources**: schemas, default specs, and scripts are embedded in project assemblies under `embedded_resources/`.
+- **`Networking.*` are role-agnostic**: No "Agent", "Peer", "Coordinator", or "Server" in type names, property names, parameter names, method names, or log strings inside `Networking.*`. These assemblies implement the transport layer only (streams, messages, connections). Role-specific concerns belong in `Agent.*`, `Coordinator.*`, or `Cli.*`.
 
 ## Testing
 

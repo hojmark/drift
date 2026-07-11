@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Drift.Networking.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Networking.Core.Abstractions\Networking.Core.Abstractions.csproj" />
+    <ProjectReference Include="..\Networking.Grpc\Networking.Grpc.csproj" />
+    <ProjectReference Include="..\Serialization\Serialization.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Messaging.Protocol\Messaging.Protocol.csproj" />
+    <ProjectReference Include="..\Messaging.Client\Messaging.Client.csproj" />
+    <ProjectReference Include="..\Networking.Server\Networking.Server.csproj" />
+    <ProjectReference Include="..\Networking.Client\Networking.Client.csproj" />
+    <ProjectReference Include="..\Scanning\Scanning.csproj" />
+    <ProjectReference Include="..\Serialization\Serialization.csproj" />
+  </ItemGroup>
+
+</Project>

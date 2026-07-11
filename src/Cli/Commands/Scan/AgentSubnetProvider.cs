@@ -1,5 +1,5 @@
 using Drift.Domain;
-using Drift.Networking.Cluster;
+using Drift.Messaging.Client;
 using Drift.Scanning.Subnets;
 using Microsoft.Extensions.Logging;
 
@@ -8,7 +8,7 @@ namespace Drift.Cli.Commands.Scan;
 internal sealed class AgentSubnetProvider(
   ILogger logger,
   List<Domain.Agent> agents,
-  ICluster cluster,
+  IAgentClient agentClient,
   CancellationToken cancellationToken
 ) : ISubnetProvider {
   public async Task<List<ResolvedSubnet>> GetAsync() {
@@ -19,7 +19,7 @@ internal sealed class AgentSubnetProvider(
       logger.LogInformation( "Requesting subnets from agent {Id}", agent.Id );
 
       try {
-        var response = await cluster.GetSubnetsAsync( agent, cancellationToken );
+        var response = await agentClient.GetSubnetsAsync( agent, cancellationToken );
 
         logger.LogInformation(
           "Received subnet(s) from agent {Id}: {Subnets}",

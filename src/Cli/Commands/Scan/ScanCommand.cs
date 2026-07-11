@@ -10,8 +10,8 @@ using Drift.Cli.SpecFile;
 using Drift.Common.Network;
 using Drift.Domain;
 using Drift.Domain.Scan;
-using Drift.Networking.Cluster;
-using Drift.Networking.PeerStreaming.Core.Abstractions;
+using Drift.Messaging.Client;
+using Drift.Networking.Core.Abstractions;
 using Drift.Scanning.Subnets;
 using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.Logging;
@@ -58,8 +58,8 @@ internal class ScanCommandHandler(
   INetworkScanner localScanner,
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ISpecFileProvider specProvider,
-  ICluster cluster,
-  IPeerMessageEnvelopeConverter converter
+  IAgentClient agentClient,
+  IMessageEnvelopeConverter converter
 ) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running scan command" );
@@ -118,7 +118,7 @@ internal class ScanCommandHandler(
       providers.Add( new AgentSubnetProvider(
         output.GetLogger(),
         inventory.Agents,
-        cluster,
+        agentClient,
         cancellationToken
       ) );
     }
@@ -175,7 +175,7 @@ internal class ScanCommandHandler(
 
     return new DistributedNetworkScanner(
       localScanner,
-      cluster,
+      agentClient,
       converter,
       resolvedSubnets,
       inventory,

@@ -1,1 +1,0 @@
-✗ Either --adoptable or --join <token> must be specified.

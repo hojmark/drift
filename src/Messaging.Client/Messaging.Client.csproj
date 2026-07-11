@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Networking.Core\Networking.Core.csproj" />
+  </ItemGroup>
+
+</Project>

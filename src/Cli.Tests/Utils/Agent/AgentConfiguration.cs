@@ -43,5 +43,5 @@ public sealed record AgentConfiguration {
   public string AdditionalArgs {
     get;
     init;
-  } = "--adoptable";
+  } = string.Empty;
 }

@@ -14,6 +14,7 @@ internal record AgentStartParameters : BaseParameters {
       DefaultValueFactory = _ => Ports.AgentDefault, Description = "Set the port used for communication"
     };
 
+    // TODO remove after hub-and-spoke transition?
     internal static readonly Option<string> Id = new("--id") {
       Description = "Set a specific agent ID (for testing purposes)", Hidden = true
     };

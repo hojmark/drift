@@ -83,10 +83,7 @@ sealed partial class NukeBuild {
         }
 
         if ( !await IsContainerlabAvailableAsync() ) {
-          throw new Exception(
-            "Containerlab does not appear to be installed or in PATH. " +
-            "See https://containerlab.dev/install/ for installation instructions."
-          );
+          throw new Exception( "Containerlab does not appear to be installed or in PATH." );
         }
 
         var casesToRun = SelectTestCases();
@@ -103,15 +100,17 @@ sealed partial class NukeBuild {
 
         foreach ( var testCase in casesToRun ) {
           var run = passed + failed + 1;
-          Log.Information( "━━━ Test case: {Name} ({Run}/{Total}) ━━━", testCase.Name, run, total );
+          Log.Information( "---------------------------------------------" );
+          Log.Information( "{Name} ({Run}/{Total})", testCase.Name, run, total );
+          Log.Information( "---------------------------------------------" );
 
           if ( await RunTestCaseAsync( testCase ) ) {
             passed++;
-            Log.Information( "PASS: {Name}", testCase.Name );
+            Log.Information( "🟢 PASS: {Name}", testCase.Name );
           }
           else {
             failed++;
-            Log.Error( "FAIL: {Name}", testCase.Name );
+            Log.Error( "🔴 FAIL: {Name}", testCase.Name );
           }
         }
 
@@ -127,6 +126,8 @@ sealed partial class NukeBuild {
     if ( ClabTopology == null ) {
       return TestCases;
     }
+
+    Log.Warning( "Only selecting test case(s) matching topology '{Topology}'", ClabTopology );
 
     var selected = TestCases.Where( tc => tc.Name == ClabTopology ).ToArray();
     if ( !selected.Any() ) {
@@ -201,8 +202,9 @@ sealed partial class NukeBuild {
       timeout: TimeSpan.FromMinutes( 5 )
     ).AssertZeroExitCode();
 
-    Log.Information( "Waiting for containers to be ready..." );
-    await Task.Delay( TimeSpan.FromSeconds( 10 ) );
+    // TODO try to disable fixed waiting
+    // Log.Information( "Waiting for containers to be ready..." );
+    // await Task.Delay( TimeSpan.FromSeconds( 10 ) );
   }
 
   private static void DestroyTopologyIfExists( string topologyFile ) {
@@ -267,7 +269,8 @@ sealed partial class NukeBuild {
     Log.Information( "Running scan for test case: {Name}", testCase.Name );
 
     // Give agent(s) a moment to finish starting up
-    await Task.Delay( TimeSpan.FromSeconds( 5 ) );
+    // TODO try without fixed delay
+    // await Task.Delay( TimeSpan.FromSeconds( 5 ) );
 
     Log.Debug( "Copying spec to CLI container {Container}...", testCase.CliContainer );
     Docker( $"cp {specFile} {testCase.CliContainer}:/tmp/spec.yaml" ).AssertZeroExitCode();
@@ -310,17 +313,14 @@ sealed partial class NukeBuild {
     Log.Information( "All {Count} assertions passed for '{Name}'", testCase.Assertions.Length, testCase.Name );
   }
 
-  // ── Process helpers ────────────────────────────────────────────────────────
-
-  /// <summary>
-  /// Containerlab writes all its output to stderr by design.
-  /// Use a custom logger that routes both stdout and stderr to Debug
-  /// to avoid GH Actions annotating every Containerlab log line as an error.
-  /// </summary>
   private static void ClabLogger( OutputType type, string text ) => Log.Debug( text );
 
-  private static IProcess Clab( string args, AbsolutePath workDir = null, TimeSpan? timeout = null,
-    bool logOutput = true ) =>
+  private static IProcess Clab(
+    string args,
+    AbsolutePath workDir = null,
+    TimeSpan? timeout = null,
+    bool logOutput = true
+  ) =>
     ProcessTasks.StartProcess(
       "containerlab", args,
       workingDirectory: workDir,
@@ -329,7 +329,11 @@ sealed partial class NukeBuild {
       logger: logOutput ? ClabLogger : null
     );
 
-  private static IProcess Docker( string args, AbsolutePath workDir = null, TimeSpan? timeout = null ) =>
+  private static IProcess Docker(
+    string args,
+    AbsolutePath workDir = null,
+    TimeSpan? timeout = null
+  ) =>
     ProcessTasks.StartProcess(
       "docker", args,
       workingDirectory: workDir,
@@ -337,7 +341,14 @@ sealed partial class NukeBuild {
     );
 }
 
-/// <summary>A Containerlab integration test case.</summary>
+/// <summary>
+/// A Containerlab-based E2E test case.
+/// </summary>
+/// <param name="Name">Test case name</param>
+/// <param name="TopologyFile">A Containerlab topology file</param>
+/// <param name="SpecFile">A Drift spec file</param>
+/// <param name="CliContainer">Name of the container hosting the Drift CLI</param>
+/// <param name="Assertions">A collection of assertions to be run against the scan output</param>
 sealed record ContainerlabTestCase(
   string Name,
   string TopologyFile,

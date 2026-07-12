@@ -31,7 +31,7 @@ internal sealed class VersioningTests {
   [Test]
   public async Task DefaultVersioningWhenNoReleaseTargets() {
     // Arrange
-    var build = new NukeBuildWithArbitraryTarget().WithExecutionPlan( b => NukeBuildWithArbitraryTarget.Arbitrary );
+    var build = new NukeBuildWithArbitraryTarget().WithExecutionPlan( _ => NukeBuildWithArbitraryTarget.Arbitrary );
 
     // Act
     var factory = new VersioningStrategyFactory( build );

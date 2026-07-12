@@ -1,4 +1,4 @@
-# Containerlab Integration Testing
+# Containerlab integration testing
 
 This directory contains [Containerlab](https://containerlab.dev/) topologies for testing Drift's distributed network scanning capabilities.
 

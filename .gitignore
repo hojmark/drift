@@ -7,6 +7,7 @@ obj/
 .idea/.idea.Drift/.idea/watcherTasks.xml
 .idea/.idea.Drift/.idea/encodings.xml
 .idea/.idea.Drift.Build/.idea/encodings.xml
+.air/
 *.DotSettings
 *.received.*
 artifacts/

@@ -45,7 +45,7 @@ partial class NukeBuild {
 
         var version = await Versioning.Value.GetVersionAsync();
 
-        _driftImageRef = LocalDriftImage.Qualify( new Tag( $"staging.{Guid.NewGuid().ToString( "N" )}" ) );
+        _driftImageRef = LocalDriftImage.Qualify( new Tag( $"staging.{Guid.NewGuid():N}" ) );
 
         Log.Information( "Building container image..." );
         // var created = DateTime.UtcNow.ToString( "o", CultureInfo.InvariantCulture ); // o = round-trip format / ISO 8601

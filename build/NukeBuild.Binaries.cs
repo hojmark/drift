@@ -30,7 +30,7 @@ sealed partial class NukeBuild {
         Log.Information( "Publishing {Runtime} build to {PublishDir}", Platform, publishDir );
         Log.Debug( "Supported runtimes are {SupportedRuntimes}", string.Join( ", ", SupportedRuntimes ) );
         DotNetPublish( s => s
-          .SetProject( Solution.Cli )
+          .SetProject( Solution.Cli.Cli )
           .SetConfiguration( Configuration )
           .SetOutput( publishDir )
           .SetSelfContained( true )

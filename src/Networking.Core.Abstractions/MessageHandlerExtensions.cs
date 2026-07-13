@@ -5,7 +5,7 @@ public static class MessageHandlerExtensions {
   /// Helper to send a response with the correct correlation ID set.
   /// </summary>
   /// <typeparam name="TResponse">The type of the response message to send.</typeparam>
-  public static async Task SendResponseAsync<TResponse>(
+  public static async Task SendAsync<TResponse>(
     this IMessageStream stream,
     IMessageEnvelopeConverter converter,
     TResponse response,
@@ -21,7 +21,7 @@ public static class MessageHandlerExtensions {
   /// Useful for progress updates that shouldn't block processing.
   /// </summary>
   /// <typeparam name="TResponse">The type of the response message to send.</typeparam>
-  public static void SendResponseFireAndForget<TResponse>(
+  public static void SendFireAndForget<TResponse>(
     this IMessageStream stream,
     IMessageEnvelopeConverter converter,
     TResponse response,

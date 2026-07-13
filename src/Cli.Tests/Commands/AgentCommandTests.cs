@@ -20,7 +20,7 @@ internal sealed class AgentCommandTests {
   }
 
   [Test]
-  public async Task SuccessfulStartup() {
+  public async Task SuccessfulLifecycle() {
     using var tcs = new CancellationTokenSource();
 
     var runningCommand = await DriftTestCli.StartAgentAsync(

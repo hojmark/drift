@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <!-- TODO needed? -->
-    <!-- Disable trimming for this test project -->
     <PublishTrimmed>false</PublishTrimmed>
     <TrimMode>none</TrimMode>
   </PropertyGroup>

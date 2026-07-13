@@ -32,7 +32,7 @@ public sealed class FirewallRules {
   public FirewallAction DefaultPolicy {
     get;
     set;
-  } = FirewallAction.Allow;
+  } = FirewallAction.Allow; // TODO change to Deny
 
   public IReadOnlyList<FirewallRule> Rules => _rules.AsReadOnly();
 }

@@ -64,6 +64,7 @@
         "TestLocal",
         "TestSelf",
         "TestUnit",
+        "TestUnitLocal",
         "UpdateOui"
       ]
     },

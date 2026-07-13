@@ -2,9 +2,8 @@ namespace Drift.Cli.Tests.Utils.Network.Firewall;
 
 /// <summary>
 /// Represents firewall rules for controlling network visibility in test topologies.
-/// Rules are evaluated in order (first match wins), with a default ALLOW policy.
-/// Inspired by OPNsense firewall behavior.
-/// Use FirewallEvaluator to evaluate rules with subnet awareness.
+/// Rules are evaluated in order (first match wins), with a default DENY policy.
+/// Use <see cref="FirewallEvaluator"/> to evaluate rules with subnet awareness.
 /// </summary>
 public sealed class FirewallRules {
   private readonly List<FirewallRule> _rules = new();
@@ -30,7 +29,10 @@ public sealed class FirewallRules {
   /// <summary>
   /// Gets or sets the policy applied when no rule matches. Defaults to <see cref="FirewallAction.Allow"/>.
   /// </summary>
-  public FirewallAction DefaultPolicy { get; set; } = FirewallAction.Allow;
+  public FirewallAction DefaultPolicy {
+    get;
+    set;
+  } = FirewallAction.Allow;
 
   public IReadOnlyList<FirewallRule> Rules => _rules.AsReadOnly();
 }

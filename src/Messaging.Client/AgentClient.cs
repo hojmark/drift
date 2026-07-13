@@ -157,7 +157,6 @@ internal sealed class AgentClient(
       }
     }
 
-    // All retries exhausted
     throw new AggregateException(
       $"Operation failed for agent {agent.Id} after {attempt} attempts",
       lastException!
@@ -165,7 +164,6 @@ internal sealed class AgentClient(
   }
 
   private int CalculateBackoffDelay( int attempt ) {
-    // Exponential backoff: base * 2^(attempt-1)
     var delay = _options.RetryBaseDelayMs * Math.Pow( 2, attempt - 1 );
     return (int) Math.Min( delay, _options.RetryMaxDelayMs );
   }

@@ -37,7 +37,7 @@ internal sealed class MessageHandlerTests {
   private static List<Type> GetAllConcreteMessageTypes( Type baseType ) {
     return MessagesAssembly
       .GetTypes()
-      //.Concat( [typeof(Empty)] ) // TODO what about Empty?
+      // .Concat( [typeof(Empty)] ) // TODO what about Empty?
       .Where( t => t is { IsAbstract: false, IsInterface: false } )
       .Where( t =>
         // Generic base type

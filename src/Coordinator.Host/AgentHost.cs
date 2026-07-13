@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Coordinator.Host;
 
+#pragma warning disable S2094
 public static class CoordinatorHost {
+#pragma warning restore S2094
   // TODO implement
 }

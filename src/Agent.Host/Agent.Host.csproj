@@ -10,7 +10,6 @@
     <ProjectReference Include="..\Networking.Server\Networking.Server.csproj" />
     <ProjectReference Include="..\Networking.Client\Networking.Client.csproj" />
     <ProjectReference Include="..\Scanning\Scanning.csproj" />
-    <ProjectReference Include="..\Serialization\Serialization.csproj" />
   </ItemGroup>
 
 </Project>

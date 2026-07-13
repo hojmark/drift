@@ -42,7 +42,7 @@ internal sealed class ScanSubnetRequestHandler(
       );
 
       var completeResponse = new ScanSubnetCompleteResponse { Result = result };
-      await stream.SendResponseAsync( converter, completeResponse, envelope.CorrelationId );
+      await stream.SendAsync( converter, completeResponse, envelope.CorrelationId );
     }
     finally {
       scanner.ResultUpdated -= policy.Handle;
@@ -101,7 +101,7 @@ internal sealed class ScanSubnetRequestHandler(
         ProgressPercentage = progressPercentage, DevicesFound = deviceCount, Status = result.Status.ToString()
       };
 
-      _stream.SendResponseFireAndForget( _converter, progressUpdate, _envelope.CorrelationId );
+      _stream.SendFireAndForget( _converter, progressUpdate, _envelope.CorrelationId );
 
       _logger.LogDebug(
         "Sent progress update: {Progress}% for {Cidr}",

@@ -4,6 +4,10 @@
   "addLabels": [
     "dependencies"
   ],
+  "minimumReleaseAge": "14 days",
+  "internalChecksFilter": "strict",
+  "prCreation": "not-pending",
+  "dependencyDashboard": true,
   "prConcurrentLimit": 5,
   "prHourlyLimit": 0,
   "automerge": false,

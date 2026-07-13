@@ -3,6 +3,7 @@ using Drift.Networking.Core.Abstractions;
 
 namespace Drift.Agent.Host.Tests;
 
+// TODO currently not doing anything useful
 // TODO almost duplicate of MessageHandlerTests in Coordinator.Host.Tests
 internal sealed class MessageHandlerTests {
   private static readonly Assembly HandlersAssembly = typeof(AgentHost).Assembly;

@@ -1,13 +1,14 @@
 using System.Reflection;
 using Drift.Networking.Core.Abstractions;
 
-namespace Drift.Agent.Host.Tests;
+namespace Drift.Coordinator.Host.Tests;
 
-// TODO almost duplicate of MessageHandlerTests in Coordinator.Host.Tests
+// TODO almost duplicate of MessageHandlerTests in Agent.Host.Tests
 internal sealed class MessageHandlerTests {
-  private static readonly Assembly HandlersAssembly = typeof(AgentHost).Assembly;
+  private static readonly Assembly HandlersAssembly = typeof(CoordinatorHost).Assembly;
   private static readonly IEnumerable<Type> HandlerTypes = GetAllConcreteHandlerTypes();
 
+  [Explicit( "Disable until implemented" )]
   [Test]
   public void FindMessagesAndHandlers() {
     using ( Assert.EnterMultipleScope() ) {

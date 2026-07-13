@@ -2,6 +2,7 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Drift.Networking.Core.Abstractions;
 
+// TODO necessary?
 public class Empty : IResponse {
   private Empty() {
   }

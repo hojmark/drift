@@ -19,7 +19,6 @@ public sealed class FirewallEvaluator {
 
   /// <summary>
   /// Evaluate if traffic is allowed from source to destination.
-  /// Supports subnet names, IP addresses, CIDR blocks, and wildcards.
   /// Rules are evaluated in order - first match wins.
   /// If no rule matches, the default policy from <see cref="FirewallRules.DefaultPolicy"/> is applied.
   /// </summary>
@@ -74,23 +73,8 @@ public sealed class FirewallEvaluator {
   /// </summary>
   private static bool IpInCidr( IpV4Address ip, CidrBlock cidr ) {
     try {
-      var ipBytes = IPAddress.Parse( ip.Value ).GetAddressBytes();
-      var cidrParts = cidr.ToString().Split( '/' );
-      if ( cidrParts.Length != 2 ) {
-        return false;
-      }
-
-      var networkBytes = System.Net.IPAddress.Parse( cidrParts[0] ).GetAddressBytes();
-      if ( !int.TryParse( cidrParts[1], out var prefixLength ) || prefixLength < 0 || prefixLength > 32 ) {
-        return false;
-      }
-
-      var mask = ~0u << ( 32 - prefixLength );
-      var ipInt = ( (uint) ipBytes[0] << 24 ) | ( (uint) ipBytes[1] << 16 ) | ( (uint) ipBytes[2] << 8 ) | ipBytes[3];
-      var networkInt = ( (uint) networkBytes[0] << 24 ) | ( (uint) networkBytes[1] << 16 ) |
-                       ( (uint) networkBytes[2] << 8 ) | networkBytes[3];
-
-      return ( ipInt & mask ) == ( networkInt & mask );
+      var ipAddress = IPAddress.Parse( ip.Value );
+      return IPNetwork2.Parse( cidr.ToString() ).Contains( ipAddress );
     }
     catch {
       return false;

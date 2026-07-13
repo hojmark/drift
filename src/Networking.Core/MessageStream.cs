@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Networking.Core;
 
 public sealed class MessageStream : IMessageStream {
-  private static int _instanceCounter; // Being static is not ideal for testing with multiple instances
+  private static int _instanceCounter; // Being static is not ideal for testing with multiple Drift instances in the same process
   private readonly IAsyncStreamReader<Message> _reader;
   private readonly IAsyncStreamWriter<Message> _writer;
   private readonly MessageDispatcher _dispatcher;

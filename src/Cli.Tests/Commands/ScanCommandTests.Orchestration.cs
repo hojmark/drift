@@ -12,7 +12,6 @@ internal sealed partial class ScanCommandTests {
     // Arrange
     var builder = Topologies.TwoAgentsDisjointSubnetsWithCli()
       .WithFirewall( fw => {
-        fw.DefaultPolicy = FirewallAction.Deny;
         // CLI must be able to reach agents to collect their results (control plane = same firewall).
         // Allow CLI→agent routing; deny-default blocks all other cross-subnet traffic (agent↔agent).
         fw.Allow( FirewallTarget.Subnet( "cli-subnet" ), FirewallTarget.Subnet( "agent1-subnet" ) );

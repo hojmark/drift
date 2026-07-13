@@ -9,7 +9,7 @@ internal sealed class MessageHandlerTests {
   private static readonly Assembly HandlersAssembly = typeof(CoordinatorHost).Assembly;
   private static readonly IEnumerable<Type> HandlerTypes = GetAllConcreteHandlerTypes();
 
-  [Explicit( "Disable until implemented" )]
+  [Ignore( "Disable until implemented" )]
   [Test]
   public void FindMessagesAndHandlers() {
     using ( Assert.EnterMultipleScope() ) {

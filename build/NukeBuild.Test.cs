@@ -41,10 +41,24 @@ sealed partial class NukeBuild {
 
   Target TestLocal => _ => _
     .DependsOn( Test )
+    .AssuredAfterFailure()
     .Executes( () => {
         var result = ProcessTasks.StartProcess(
           "dotnet",
-          "trx --verbosity verbose",
+          "trx", //"trx --verbosity verbose",
+          workingDirectory: RootDirectory
+        );
+        result.AssertZeroExitCode();
+      }
+    );
+
+  Target TestUnitLocal => _ => _
+    .DependsOn( TestUnit )
+    .AssuredAfterFailure()
+    .Executes( () => {
+        var result = ProcessTasks.StartProcess(
+          "dotnet",
+          "trx", //"trx --verbosity verbose",
           workingDirectory: RootDirectory
         );
         result.AssertZeroExitCode();

@@ -11,21 +11,11 @@ internal sealed class InboundTests {
   public async Task InboundStreamIsClosedWhenCancelledTest() {
     // Arrange
     using var cts = new CancellationTokenSource();
-    var logger = new StringLogger( TestContext.Out );
-    var responseCorrelator = new MessageResponseCorrelator( logger );
-    var envelopeConverter = new MessageEnvelopeConverter();
-    var messageStreamManager = new MessageStreamManager(
-      logger,
-      null,
-      new MessageDispatcher( [], envelopeConverter, responseCorrelator, logger ),
-      new MessagingOptions { StoppingToken = cts.Token }
-    );
+    var inboundMessageService = CreateInboundMessageService( cts );
 
     var callContext = TestServerCallContext.Create();
     callContext.RequestHeaders.Add( "agent-id", "agentid_test123" );
     var duplexStreams = callContext.CreateDuplexStreams();
-
-    var inboundMessageService = new InboundMessageService( messageStreamManager, logger );
 
     // Act / Assert
     var serverStreams = duplexStreams.Server;
@@ -41,20 +31,12 @@ internal sealed class InboundTests {
     Assert.That( connectTask.IsCompleted, Is.True );
   }
 
+
   [Test]
   public async Task InboundStreamRemainsOpenWhenNotCancelledTest() {
     // Arrange
     using var cts = new CancellationTokenSource();
-    var logger = new StringLogger( TestContext.Out );
-    var responseCorrelator = new MessageResponseCorrelator( logger );
-    var envelopeConverter = new MessageEnvelopeConverter();
-    var messageStreamManager = new MessageStreamManager(
-      logger,
-      null,
-      new MessageDispatcher( [], envelopeConverter, responseCorrelator, logger ),
-      new MessagingOptions { StoppingToken = cts.Token }
-    );
-    var inboundMessageService = new InboundMessageService( messageStreamManager, logger );
+    var inboundMessageService = CreateInboundMessageService( cts );
 
     var callContext = TestServerCallContext.Create();
     callContext.RequestHeaders.Add( "agent-id", "agentid_test123" );
@@ -73,5 +55,16 @@ internal sealed class InboundTests {
     await Task.WhenAny( connectTask, Task.Delay( 1000 ) );
 
     Assert.That( connectTask.IsCompleted, Is.False );
+  }
+
+  private static InboundMessageService CreateInboundMessageService( CancellationTokenSource cts ) {
+    var logger = new StringLogger( TestContext.Out );
+    var messageStreamManager = new MessageStreamManager(
+      logger,
+      null,
+      new MessageDispatcher( [], new MessageEnvelopeConverter(), new MessageResponseCorrelator( logger ), logger ),
+      new MessagingOptions { StoppingToken = cts.Token }
+    );
+    return new InboundMessageService( messageStreamManager, logger );
   }
 }

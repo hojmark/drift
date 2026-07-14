@@ -5,7 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.Server;
 
-// Handle incoming connections (AKA server-side).
+/// <summary>
+/// Handles incoming gRPC connections (AKA server-side).
+/// </summary>
 internal sealed class InboundMessageService( IMessageStreamManager messageStreamManager, ILogger logger )
   : MessagingService.MessagingServiceBase {
   public override async Task Connect(

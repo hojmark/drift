@@ -12,9 +12,12 @@ internal sealed class MessageStreamManagerTests {
     var cts = new CancellationTokenSource();
     var logger = new StringLogger( TestContext.Out );
     var testMessageHandler = new TestMessageHandler();
-    var envelopeConverter = new MessageEnvelopeConverter();
-    var responseCorrelator = new MessageResponseCorrelator( logger );
-    var dispatcher = new MessageDispatcher( [testMessageHandler], envelopeConverter, responseCorrelator, logger );
+    var dispatcher = new MessageDispatcher(
+      [testMessageHandler],
+      new MessageEnvelopeConverter(),
+      new MessageResponseCorrelator( logger ),
+      logger
+    );
     var messageStreamManager = new MessageStreamManager(
       logger,
       null,
@@ -31,14 +34,16 @@ internal sealed class MessageStreamManagerTests {
 
     // Act
     var clientStreams = duplexStreams.Client;
-    await clientStreams.RequestStream.WriteAsync( converter.ToEnvelope<TestPeerMessage>( new TestPeerMessage() ) );
+    await clientStreams.RequestStream.WriteAsync( converter.ToEnvelope<TestPeerMessage>( new TestPeerMessage {
+      Payload = "test123"
+    } ) );
 
     await cts.CancelAsync();
     await stream.ReadTask;
 
     // Assert
     Assert.That( testMessageHandler.LastMessage, Is.Not.Null );
-    // Assert.That( testMessageHandler.LastMessage.MessageType, Is.EqualTo( "TestMessageType" ) );
+    Assert.That( testMessageHandler.LastMessage.Payload, Is.EqualTo( "test123" ) );
 
     cts.Dispose();
   }

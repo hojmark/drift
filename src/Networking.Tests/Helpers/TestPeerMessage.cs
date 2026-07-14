@@ -8,6 +8,11 @@ namespace Drift.Networking.Tests.Helpers;
 internal sealed class TestPeerMessage : IRequest<TestPeerMessage>, IResponse {
   public static string MessageType => "test-peer-message";
 
+  public string Payload {
+    get;
+    init;
+  } = string.Empty;
+
   public static JsonTypeInfo JsonInfo => TestPeerMessageJsonContext.Default.TestPeerMessage;
 }
 

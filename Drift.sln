@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli", "src\Cli\Cli.csproj", "{51BC193B-A7CB-4A3D-8852-AC8A0CE74DF5}"
 EndProject
@@ -116,6 +116,17 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coordinator.Host.Tests", "src\Coordinator.Host.Tests\Coordinator.Host.Tests.csproj", "{CAD33BF2-FEC5-4AA9-A9E1-47697D00545C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messaging.Tests", "src\Messaging.Tests\Messaging.Tests.csproj", "{87C0FA35-BC55-4B86-AAAD-C425C9A0E050}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clab", "Clab", "{BA370A6D-DD96-4E5B-82B4-5CE7B6860F26}"
+	ProjectSection(SolutionItems) = preProject
+		containerlab\README.md = containerlab\README.md
+		containerlab\cooperation-test-spec.yaml = containerlab\cooperation-test-spec.yaml
+		containerlab\cooperation-test.clab.yaml = containerlab\cooperation-test.clab.yaml
+		containerlab\simple-test-spec.yaml = containerlab\simple-test-spec.yaml
+		containerlab\simple-test.clab.yaml = containerlab\simple-test.clab.yaml
+		containerlab\subnet-isolation-test-spec.yaml = containerlab\subnet-isolation-test-spec.yaml
+		containerlab\subnet-isolation-test.clab.yaml = containerlab\subnet-isolation-test.clab.yaml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -310,5 +321,6 @@ Global
 		{76093473-3375-4519-9524-68448A19DE4A} = {DD31E4C8-7058-4407-AEC4-43EDA0AB06D1}
 		{CAD33BF2-FEC5-4AA9-A9E1-47697D00545C} = {0EB052A6-5AFD-4DB8-9C64-1E83D0DFD1E3}
 		{87C0FA35-BC55-4B86-AAAD-C425C9A0E050} = {E2F3A4B5-C6D7-8901-BCDE-F12345678901}
+		{BA370A6D-DD96-4E5B-82B4-5CE7B6860F26} = {D1DBBF0F-1A0D-486C-A893-ACEB667F2A63}
 	EndGlobalSection
 EndGlobal

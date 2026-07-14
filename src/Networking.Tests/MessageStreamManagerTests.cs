@@ -1,7 +1,11 @@
+using Drift.Networking.Client;
 using Drift.Networking.Core;
+using Drift.Networking.Core.Abstractions;
 using Drift.Networking.Core.Messages;
 using Drift.Networking.Tests.Helpers;
 using Drift.TestUtilities;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.Tests;
 
@@ -10,19 +14,7 @@ internal sealed class MessageStreamManagerTests {
   public async Task IncomingMessageIsDispatchedToHandler() {
     // Arrange
     var cts = new CancellationTokenSource();
-    var logger = new StringLogger( TestContext.Out );
-    var messageHandler = new TestMessageHandler();
-    var streamManager = new MessageStreamManager(
-      logger,
-      null,
-      new MessageDispatcher(
-        [messageHandler],
-        new MessageEnvelopeConverter(),
-        new MessageResponseCorrelator( logger ),
-        logger
-      ),
-      new MessagingOptions { StoppingToken = cts.Token }
-    );
+    var (streamManager, messageHandler) = CreateStreamManager( cts );
 
     var callContext = TestServerCallContext.Create();
     callContext.RequestHeaders.Add( "agent-id", "agentid_test123" );
@@ -45,5 +37,19 @@ internal sealed class MessageStreamManagerTests {
     Assert.That( messageHandler.LastMessage.Payload, Is.EqualTo( "test123" ) );
 
     cts.Dispose();
+  }
+
+  private static (IMessageStreamManager, TestMessageHandler messageHandler) CreateStreamManager(
+    CancellationTokenSource cts
+  ) {
+    var serviceCollection = new ServiceCollection();
+    var logger = new StringLogger( TestContext.Out );
+    var messageHandler = new TestMessageHandler( logger );
+    serviceCollection.AddSingleton<ILogger>( logger );
+    serviceCollection.AddSingleton<IMessageHandler>( _ => messageHandler );
+    serviceCollection.AddMessagingCore( new MessagingOptions { StoppingToken = cts.Token } );
+    serviceCollection.AddMessagingClient();
+    var serviceProvider = serviceCollection.BuildServiceProvider();
+    return ( serviceProvider.GetRequiredService<IMessageStreamManager>(), messageHandler );
   }
 }

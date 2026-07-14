@@ -43,6 +43,6 @@ public sealed class MessageDispatcher {
       return;
     }
 
-    throw new NotImplementedException( "Unknown message type '" + message.MessageType + "'" );
+    throw new NotImplementedException( "No handler exist for message type '" + message.MessageType + "'" );
   }
 }

@@ -11,17 +11,16 @@ internal sealed class MessageStreamManagerTests {
     // Arrange
     var cts = new CancellationTokenSource();
     var logger = new StringLogger( TestContext.Out );
-    var testMessageHandler = new TestMessageHandler();
-    var dispatcher = new MessageDispatcher(
-      [testMessageHandler],
-      new MessageEnvelopeConverter(),
-      new MessageResponseCorrelator( logger ),
-      logger
-    );
-    var messageStreamManager = new MessageStreamManager(
+    var messageHandler = new TestMessageHandler();
+    var streamManager = new MessageStreamManager(
       logger,
       null,
-      dispatcher,
+      new MessageDispatcher(
+        [messageHandler],
+        new MessageEnvelopeConverter(),
+        new MessageResponseCorrelator( logger ),
+        logger
+      ),
       new MessagingOptions { StoppingToken = cts.Token }
     );
 
@@ -29,7 +28,7 @@ internal sealed class MessageStreamManagerTests {
     callContext.RequestHeaders.Add( "agent-id", "agentid_test123" );
     var duplexStreams = callContext.CreateDuplexStreams();
     var serverStreams = duplexStreams.Server;
-    var stream = messageStreamManager.Create( serverStreams.RequestStream, serverStreams.ResponseStream, callContext );
+    var stream = streamManager.Create( serverStreams.RequestStream, serverStreams.ResponseStream, callContext );
     var converter = new MessageEnvelopeConverter();
 
     // Act
@@ -42,8 +41,8 @@ internal sealed class MessageStreamManagerTests {
     await stream.ReadTask;
 
     // Assert
-    Assert.That( testMessageHandler.LastMessage, Is.Not.Null );
-    Assert.That( testMessageHandler.LastMessage.Payload, Is.EqualTo( "test123" ) );
+    Assert.That( messageHandler.LastMessage, Is.Not.Null );
+    Assert.That( messageHandler.LastMessage.Payload, Is.EqualTo( "test123" ) );
 
     cts.Dispose();
   }

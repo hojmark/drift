@@ -13,6 +13,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Scanning.Scanners;
 
+/// <summary>
+/// Basic subnet scanner that uses the platform provided ping-command.
+/// Inefficient, but "ping" is usually available on all platforms.
+/// </summary>
 internal abstract class PingSubnetScannerBase : ISubnetScanner {
   public event EventHandler<SubnetScanResult>? ResultUpdated;
 
@@ -150,8 +154,8 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
   }
 
   /// <summary>
-  /// Builds a map of local unicast IPv4 addresses to the MAC address of the
-  /// interface that owns them. Used to resolve the MAC for the scanner's own
+  /// Builds a map of local [unicast] IPv4 addresses to the MAC address of the
+  /// interface that owns them. Useful for resolving the MAC for the scanner's own
   /// IP addresses, which never appear in the ARP cache.
   /// </summary>
   private static Dictionary<IPAddress, MacAddress> BuildLocalInterfaceMacTable() {
@@ -159,11 +163,13 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
 
     foreach ( var iface in NetworkInterface.GetAllNetworkInterfaces() ) {
       var physicalAddress = iface.GetPhysicalAddress();
-      if ( physicalAddress.GetAddressBytes().Length == 0 ) {
-        continue; // loopback and tunnel interfaces have no MAC
+      var addressBytes = physicalAddress.GetAddressBytes();
+
+      if ( addressBytes.Length == 0 ) {
+        continue; // loopback, tunnel and other logical interfaces have no MAC
       }
 
-      var macString = string.Join( "-", physicalAddress.GetAddressBytes().Select( b => b.ToString( "X2" ) ) );
+      var macString = string.Join( "-", addressBytes.Select( b => b.ToString( "X2" ) ) );
 
       foreach ( var unicastAddress in iface.GetIPProperties().UnicastAddresses.Select( u => u.Address ) ) {
         if ( unicastAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ) {

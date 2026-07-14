@@ -1,8 +1,11 @@
+using Drift.Networking.Client;
 using Drift.Networking.Core;
-using Drift.Networking.Core.Messages;
+using Drift.Networking.Core.Abstractions;
 using Drift.Networking.Server;
 using Drift.Networking.Tests.Helpers;
 using Drift.TestUtilities;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.Tests;
 
@@ -58,13 +61,14 @@ internal sealed class InboundTests {
   }
 
   private static InboundMessageService CreateInboundMessageService( CancellationTokenSource cts ) {
+    var serviceCollection = new ServiceCollection();
     var logger = new StringLogger( TestContext.Out );
-    var messageStreamManager = new MessageStreamManager(
-      logger,
-      null,
-      new MessageDispatcher( [], new MessageEnvelopeConverter(), new MessageResponseCorrelator( logger ), logger ),
-      new MessagingOptions { StoppingToken = cts.Token }
-    );
-    return new InboundMessageService( messageStreamManager, logger );
+    serviceCollection.AddSingleton<ILogger>( logger );
+    serviceCollection.AddMessagingCore( new MessagingOptions { StoppingToken = cts.Token } );
+    serviceCollection.AddMessagingClient();
+    serviceCollection.AddMessagingServer();
+    var serviceProvider = serviceCollection.BuildServiceProvider();
+    var streamManager = serviceProvider.GetRequiredService<IMessageStreamManager>();
+    return new InboundMessageService( streamManager, logger );
   }
 }

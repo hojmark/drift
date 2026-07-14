@@ -8,7 +8,8 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Networking.Core;
 
 public sealed class MessageStream : IMessageStream {
-  private static int _instanceCounter; // Being static is not ideal for testing with multiple Drift instances in the same process
+  // Being static is not ideal for testing with multiple Drift instances in the same process
+  private static int _instanceCounter;
   private readonly IAsyncStreamReader<Message> _reader;
   private readonly IAsyncStreamWriter<Message> _writer;
   private readonly MessageDispatcher _dispatcher;
@@ -71,7 +72,7 @@ public sealed class MessageStream : IMessageStream {
   }
 
   private async Task ReadLoopAsync() {
-    _logger.LogDebug( "Read loop starting..." );
+    _logger.LogDebug( "Read loop starting (waiting)..." );
 
     try {
       await foreach ( var message in _reader.ReadAllAsync( _cancellationToken ) ) {

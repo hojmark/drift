@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Drift.Networking.Core.Abstractions;
 using Drift.Networking.Grpc.Generated;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.Tests.Helpers;
 
@@ -19,7 +20,7 @@ internal sealed class TestPeerMessage : IRequest<TestPeerMessage>, IResponse {
 [JsonSerializable( typeof(TestPeerMessage) )]
 internal sealed partial class TestPeerMessageJsonContext : JsonSerializerContext;
 
-internal sealed class TestMessageHandler : IMessageHandler {
+internal sealed class TestMessageHandler( ILogger logger ) : IMessageHandler {
   public TestPeerMessage? LastMessage {
     get;
     private set;
@@ -33,8 +34,12 @@ internal sealed class TestMessageHandler : IMessageHandler {
     IMessageStream stream,
     CancellationToken cancellationToken
   ) {
+    logger.LogInformation( "Received message of type '{MessageType}'", MessageType );
+
     var message = converter.FromEnvelope<TestPeerMessage>( envelope );
     LastMessage = message;
+
+    logger.LogInformation( "Handled message with payload '{Payload}'", message.Payload );
 
     // For this test handler, we don't send a response
     return Task.CompletedTask;

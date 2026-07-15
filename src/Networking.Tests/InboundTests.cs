@@ -34,7 +34,6 @@ internal sealed class InboundTests {
     Assert.That( connectTask.IsCompleted, Is.True );
   }
 
-
   [Test]
   public async Task InboundStreamRemainsOpenWhenNotCancelledTest() {
     // Arrange

@@ -41,14 +41,17 @@ internal class WindowsArpTableProvider : ArpTableProviderBase {
   internal static ArpTable ParseArpOutput( TextReader reader ) {
     var map = new Dictionary<IPAddress, MacAddress>();
 
-    reader.ReadLine(); // Skip empty line
-    reader.ReadLine(); // Skip interface
-    reader.ReadLine(); // Skip header
-
     while ( reader.ReadLine() is { } line ) {
+      if ( string.IsNullOrWhiteSpace( line ) ) {
+        continue;
+      }
+
       var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
 
-      if ( parts[0].Count( c => c == '.' ) != 3 ) { // Should look like an IPv4 address
+      if (
+        parts[0].Count( c => c == '.' ) != 3 && // Dots in an IPv4 address
+        parts[1].Count( c => c == '-' ) != 5 // Hyphens in a Windows-reported MAC. E.g., 00-11-22-33-44-55
+      ) {
         Console.Error.WriteLine( $"Skipping invalid ARP entry: {line}" );
         continue;
       }

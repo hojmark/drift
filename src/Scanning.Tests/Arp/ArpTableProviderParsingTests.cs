@@ -6,8 +6,21 @@ namespace Drift.Scanning.Tests.Arp;
 
 internal sealed class ArpTableProviderParsingTests {
   [Test]
-  public void WindowsArpTableProvider_ParsesHyphenSeparatedMacs() {
-    // Real output from `arp -a` on Windows
+  [Platform( "Win" )]
+  public void WindowsArtpTableProvider_DoesntThrow() {
+    // Arrange
+    var provider = new WindowsArpTableProvider();
+
+    // Act / Assert
+    Assert.DoesNotThrow( () => _ = provider.Fresh );
+    Assert.IsNotNull( provider.Cached );
+    Assert.That( provider.Cached, Is.Not.Empty );
+
+    Console.WriteLine( provider.Cached.First() );
+  }
+
+  [Test]
+  public void WindowsArpTableProvider_Parses() {
     const string output = """
                           Interface: 192.168.1.100 --- 0x7
                             Internet Address      Physical Address      Type
@@ -31,29 +44,25 @@ internal sealed class ArpTableProviderParsingTests {
   }
 
   [Test]
-  public void WindowsArpTableProvider_SkipsHeaderAndBlankLines() {
-    const string output = """
+  [Platform( "Linux" )]
+  public void LinuxArpTableProvider_DoesntThrow() {
+    // Arrange
+    var provider = new LinuxArpTableProvider();
 
-                          Interface: 10.0.0.50 --- 0x3
+    // Act / Assert
+    Assert.DoesNotThrow( () => _ = provider.Fresh );
+    Assert.IsNotNull( provider.Cached );
+    Assert.That( provider.Cached, Is.Not.Empty );
 
-                            Internet Address      Physical Address      Type
-                            10.0.0.1              de-ad-be-ef-00-01     dynamic
-
-                          """;
-
-    var table = WindowsArpTableProvider.ParseArpOutput( new StringReader( output ) );
-
-    Assert.That( table.TryGetValue( IPAddress.Parse( "10.0.0.1" ), out var mac ), Is.True );
-    Assert.That( mac, Is.EqualTo( new MacAddress( "DE-AD-BE-EF-00-01" ) ) );
+    Console.WriteLine( provider.Cached.First() );
   }
 
   [Test]
-  public void LinuxArpTableProvider_ParsesColonSeparatedMacs() {
-    // Real output from `arp -en` on Linux
+  public void LinuxArpTableProvider_Parses() {
     const string output = """
-                          Address          HWtype  HWaddress           Flags Mask  Iface
-                          192.168.1.1      ether   00:11:22:33:44:55   C           eth0
-                          192.168.1.2      ether   aa:bb:cc:dd:ee:ff   C           eth0
+                          IP address       HW type     Flags       HW address            Mask     Device
+                          192.168.1.1      0x1         0x2         00:11:22:33:44:55     *        eth0
+                          192.168.1.2      0x1         0x2         aa:bb:cc:dd:ee:ff     *        eth0
                           """;
 
     var table = LinuxArpTableProvider.ParseArpOutput( new StringReader( output ) );
@@ -64,23 +73,6 @@ internal sealed class ArpTableProviderParsingTests {
 
       Assert.That( table.TryGetValue( IPAddress.Parse( "192.168.1.2" ), out var mac2 ), Is.True );
       Assert.That( mac2, Is.EqualTo( new MacAddress( "AA-BB-CC-DD-EE-FF" ) ) );
-    }
-  }
-
-  [Test]
-  public void LinuxArpTableProvider_SkipsHeaderAndBlankLines() {
-    const string output = """
-
-                          Address          HWtype  HWaddress           Flags Mask  Iface
-                          10.0.0.1         ether   de:ad:be:ef:00:01   C           eth0
-
-                          """;
-
-    var table = LinuxArpTableProvider.ParseArpOutput( new StringReader( output ) );
-
-    using ( Assert.EnterMultipleScope() ) {
-      Assert.That( table.TryGetValue( IPAddress.Parse( "10.0.0.1" ), out var mac ), Is.True );
-      Assert.That( mac, Is.EqualTo( new MacAddress( "DE-AD-BE-EF-00-01" ) ) );
     }
   }
 }

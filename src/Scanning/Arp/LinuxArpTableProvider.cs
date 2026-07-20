@@ -9,55 +9,37 @@ internal class LinuxArpTableProvider : ArpTableProviderBase {
   // TODO read from /proc/net/arp instead of spawning processes
   [SupportedOSPlatform( "linux" )]
   protected override ArpTable ReadSystemArpCache() {
-    var startInfo = new ProcessStartInfo {
-      FileName = "arp",
-      Arguments = "-en",
-      RedirectStandardOutput = true,
-      UseShellExecute = false,
-      CreateNoWindow = true
-    };
+    const string procArpPath = "/proc/net/arp";
 
-    using var proc = Process.Start( startInfo );
-    if ( proc == null ) {
-      throw new InvalidOperationException( "Failed to start 'arp' process." );
+    if ( !File.Exists( procArpPath ) ) {
+      throw new FileNotFoundException( $"Path not found: {procArpPath}" );
     }
 
-    return ParseArpOutput( proc.StandardOutput );
+    using var streamReader = new StreamReader( procArpPath );
+
+    return ParseArpOutput( streamReader );
   }
 
   /// <summary>
-  /// Parses the output of <c>arp -en</c> on Linux into an <see cref="ArpTable"/>.
+  /// Parses the output of <c>/proc/net/arp</c> into an <see cref="ArpTable"/>.
   /// </summary>
   /// <remarks>
-  /// Linux <c>arp -en</c> output format (MAC is the third column):
+  /// Format:
   /// <code>
-  /// Address          HWtype  HWaddress           Flags Mask  Iface
-  /// 192.168.1.1      ether   00:11:22:33:44:55   C           eth0
+  /// IP address       HW type     Flags       HW address            Mask     Device
+  /// 192.168.1.1      0x1         0x2         00:11:22:33:44:55     *        eth0
   /// </code>
   /// </remarks>
   internal static ArpTable ParseArpOutput( TextReader reader ) {
     var map = new Dictionary<IPAddress, MacAddress>();
 
-    string? line;
-    while ( ( line = reader.ReadLine() ) != null ) {
-      if ( string.IsNullOrWhiteSpace( line ) ) {
-        continue;
-      }
+    reader.ReadLine(); // Skip header
 
-      if ( line.StartsWith( "Address" ) ) {
-        continue; // skip header
-      }
-
+    while ( reader.ReadLine() is { } line ) {
       var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
-
-      // Expects at least: Address, HWtype, HWaddress
-      if ( parts.Length >= 3 &&
-           parts[0].Count( c => c == '.' ) == 3 && // looks like an IPv4 address
-           parts[2].Contains( ':' ) // Linux MACs use colons: 00:11:22:33:44:55
-         ) {
-        var ipParsed = IPAddress.Parse( parts[0] );
-        map[ipParsed] = new MacAddress( parts[2] );
-      }
+      var ip = IPAddress.Parse( parts[0] );
+      var mac = new MacAddress( parts[3] );
+      map[ip] = mac;
     }
 
     return new ArpTable( map );

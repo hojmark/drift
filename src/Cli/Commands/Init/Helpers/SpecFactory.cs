@@ -26,7 +26,10 @@ internal static class SpecFactory {
     builder.AddSubnet( new CidrBlock( "192.168.100.0/24" ), id: "iot" );
     builder.AddSubnet( new CidrBlock( "192.168.200.0/24" ), id: "guest" );
 
+    // Justification: hardcoded IPs are intentional
+#pragma warning disable S1313
     builder.AddDevice( [new IpV4Address( "192.168.1.10" )], id: "router", enabled: null, state: null );
+
     builder.AddDevice( [new IpV4Address( "192.168.1.20" )], id: "nas", enabled: null, state: null );
     builder.AddDevice( [new IpV4Address( "192.168.1.30" )], id: "server", enabled: null, state: null );
     builder.AddDevice( [new IpV4Address( "192.168.1.40" )], id: "desktop", enabled: null, state: null );
@@ -37,6 +40,7 @@ internal static class SpecFactory {
     builder.AddDevice( [new IpV4Address( "192.168.100.30" )], id: "smart-switch", enabled: null, state: null );
 
     builder.AddDevice( [new IpV4Address( "192.168.200.100" )], id: "guest-device", enabled: null, state: null );
+#pragma warning restore S1313
 
     builder.WriteToFile( specPath );
   }

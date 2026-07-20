@@ -19,7 +19,7 @@ internal class LinuxArpTableProvider : ArpTableProviderBase {
   }
 
   /// <summary>
-  /// Parses the output of <c>/proc/net/arp</c> into an <see cref="ArpTable"/>.
+  /// Parses the contents of <c>/proc/net/arp</c> into an <see cref="ArpTable"/>.
   /// </summary>
   /// <remarks>
   /// Format:

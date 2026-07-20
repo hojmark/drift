@@ -18,7 +18,7 @@ public static class BinaryLogReader {
     return File.ReadAllLines( warningsLogName )
       .Select( line =>
         // Remove the leading "    4>" part
-        Regex.Replace( line, @"^\s*\d+>", string.Empty )
+        Regex.Replace( line, @"^\s*\d+>", string.Empty, RegexOptions.NonBacktracking )
       )
       .ToArray();
   }

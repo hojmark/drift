@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Drift.Cli.Commands.Scan.Interactive;
 using Drift.Cli.Commands.Scan.Models;
@@ -129,15 +130,16 @@ internal static class SubnetScanResultProcessor {
     );
 
     return differences
-      .Where( d => Regex.IsMatch( d.PropertyPath, @"^Device\[[^\]]+?\]$" ) )
+      .Where( d =>
+        Regex.IsMatch( d.PropertyPath, @"^Device\[[^\]]+?\]$", RegexOptions.None, TimeSpan.FromMilliseconds( 200 )
+        )
+      )
       .OrderBy( d => d.PropertyPath, StringComparison.OrdinalIgnoreCase.WithNaturalSort() )
       .ToList();
   }
 
   private static string GenerateMacAddress() {
-    var rand = new Random();
-    byte[] macBytes = new byte[6];
-    rand.NextBytes( macBytes );
+    byte[] macBytes = RandomNumberGenerator.GetBytes( 6 );
     return string.Join( "-", macBytes.Select( b => b.ToString( "X2" ) ) );
   }
 

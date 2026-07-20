@@ -8,8 +8,10 @@ namespace Drift.Scanning.Arp;
 internal class WindowsArpTableProvider : ArpTableProviderBase {
   [SupportedOSPlatform( "windows" )]
   protected override ArpTable ReadSystemArpCache() {
+    var system32Path = Environment.GetFolderPath( Environment.SpecialFolder.System );
+    var arpPath = Path.Combine( system32Path, "arp.exe" );
     var startInfo = new ProcessStartInfo {
-      FileName = "arp",
+      FileName = arpPath,
       Arguments = "-a",
       RedirectStandardOutput = true,
       UseShellExecute = false,
@@ -25,37 +27,35 @@ internal class WindowsArpTableProvider : ArpTableProviderBase {
   }
 
   /// <summary>
-  /// Parses the output of <c>arp -a</c> on Windows into an <see cref="ArpTable"/>.
+  /// Parses the output of <c>arp.exe -a</c> into an <see cref="ArpTable"/>.
   /// </summary>
   /// <remarks>
-  /// Windows <c>arp -a</c> separates MAC octets with hyphens, e.g.:
+  /// Format:
   /// <code>
+  /// [EMPTY LINE]
+  /// Interface: 192.168.1.100 --- 0x7
+  ///   Internet Address      Physical Address      Type
   ///   192.168.1.1           00-11-22-33-44-55     dynamic
   /// </code>
   /// </remarks>
   internal static ArpTable ParseArpOutput( TextReader reader ) {
     var map = new Dictionary<IPAddress, MacAddress>();
 
-    string? line;
-    while ( ( line = reader.ReadLine() ) != null ) {
-      if ( string.IsNullOrWhiteSpace( line ) ) {
+    reader.ReadLine(); // Skip empty line
+    reader.ReadLine(); // Skip interface
+    reader.ReadLine(); // Skip header
+
+    while ( reader.ReadLine() is { } line ) {
+      var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
+
+      if ( parts[0].Count( c => c == '.' ) != 3 ) { // Should look like an IPv4 address
+        Console.Error.WriteLine( $"Skipping invalid ARP entry: {line}" );
         continue;
       }
 
-      if ( line.StartsWith( "Interface" ) ) {
-        continue; // skip section headers
-      }
-
-      var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
-
-      // Expects at least: Internet Address, Physical Address, Type
-      if ( parts.Length >= 3 &&
-           parts[0].Count( c => c == '.' ) == 3 && // looks like an IPv4 address
-           parts[1].Contains( '-' ) // Windows MACs use hyphens: 00-11-22-33-44-55
-         ) {
-        var ipParsed = IPAddress.Parse( parts[0] );
-        map[ipParsed] = new MacAddress( parts[1] );
-      }
+      var ip = IPAddress.Parse( parts[0] );
+      var mac = new MacAddress( parts[1] );
+      map[ip] = mac;
     }
 
     return new ArpTable( map );

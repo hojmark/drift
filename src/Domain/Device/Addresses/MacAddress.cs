@@ -4,7 +4,10 @@ namespace Drift.Domain.Device.Addresses;
 
 public readonly record struct MacAddress : IDeviceAddress {
   // Note: supports either colons or dashes
-  private static readonly Regex MacRegex = new("^([0-9A-Fa-f]{2}([-:]?)){5}[0-9A-Fa-f]{2}$", RegexOptions.Compiled);
+  private static readonly Regex MacRegex = new(
+    "^([0-9A-Fa-f]{2}([-:]?)){5}[0-9A-Fa-f]{2}$",
+    RegexOptions.Compiled | RegexOptions.NonBacktracking
+  );
 
   public string Value {
     get;

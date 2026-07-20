@@ -173,7 +173,7 @@ public static class ObjectDiffEngine {
         .Replace( @"\[", "\\[" )
         .Replace( @"\]", "\\]" ) + "$";
 
-      if ( Regex.IsMatch( path, regexPattern ) ) {
+      if ( Regex.IsMatch( path, regexPattern, RegexOptions.None, TimeSpan.FromMilliseconds( 200 ) ) ) {
         return true;
       }
     }

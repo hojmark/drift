@@ -23,7 +23,7 @@ jobs:
       value: ${{ steps.output-version.outputs.version }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up runner
         uses: ./.github/actions/setup-runner
@@ -50,7 +50,7 @@ jobs:
       container-image-ref: ${{ steps.push-container.outputs.container-image-ref }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up runner
         uses: ./.github/actions/setup-runner
@@ -81,7 +81,7 @@ jobs:
           --target CheckBuildWarnings
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: artifacts-linux
           path: artifacts/
@@ -96,7 +96,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up runner
         uses: ./.github/actions/setup-runner
@@ -126,7 +126,7 @@ jobs:
           --target CheckBuildWarnings
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: artifacts-windows
           path: artifacts/
@@ -141,19 +141,19 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up runner
         uses: ./.github/actions/setup-runner
 
       - name: Download Linux artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: artifacts-linux
           path: artifacts/
 
       - name: Download Windows artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: artifacts-windows
           path: artifacts/

@@ -5,15 +5,15 @@ using Drift.Domain.Device.Addresses;
 namespace Drift.Scanning.Arp;
 
 internal class LinuxArpTableProvider : ArpTableProviderBase {
+  private const string ProcArpPath = "/proc/net/arp";
+
   [SupportedOSPlatform( "linux" )]
   protected override ArpTable ReadSystemArpCache() {
-    const string procArpPath = "/proc/net/arp";
-
-    if ( !File.Exists( procArpPath ) ) {
-      throw new FileNotFoundException( $"Path not found: {procArpPath}" );
+    if ( !File.Exists( ProcArpPath ) ) {
+      throw new FileNotFoundException( $"Path not found: {ProcArpPath}" );
     }
 
-    using var streamReader = new StreamReader( procArpPath );
+    using var streamReader = new StreamReader( ProcArpPath );
 
     return ParseArpOutput( streamReader );
   }

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Net;
 using System.Runtime.Versioning;
 using Drift.Domain.Device.Addresses;
@@ -6,7 +5,6 @@ using Drift.Domain.Device.Addresses;
 namespace Drift.Scanning.Arp;
 
 internal class LinuxArpTableProvider : ArpTableProviderBase {
-  // TODO read from /proc/net/arp instead of spawning processes
   [SupportedOSPlatform( "linux" )]
   protected override ArpTable ReadSystemArpCache() {
     const string procArpPath = "/proc/net/arp";

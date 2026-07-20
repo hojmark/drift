@@ -32,12 +32,16 @@ internal class WindowsArpTableProvider : ArpTableProviderBase {
   /// <remarks>
   /// Format:
   /// <code>
+  /// [EMPTY LINE]
+  /// Interface: 192.168.1.100 --- 0x7
+  ///   Internet Address      Physical Address      Type
   ///   192.168.1.1           00-11-22-33-44-55     dynamic
   /// </code>
   /// </remarks>
   internal static ArpTable ParseArpOutput( TextReader reader ) {
     var map = new Dictionary<IPAddress, MacAddress>();
 
+    reader.ReadLine(); // Skip empty line
     reader.ReadLine(); // Skip interface
     reader.ReadLine(); // Skip header
 

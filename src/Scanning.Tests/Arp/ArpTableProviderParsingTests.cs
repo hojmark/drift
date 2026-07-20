@@ -22,6 +22,7 @@ internal sealed class ArpTableProviderParsingTests {
   [Test]
   public void WindowsArpTableProvider_Parses() {
     const string output = """
+
                           Interface: 192.168.1.100 --- 0x7
                             Internet Address      Physical Address      Type
                             192.168.1.1           00-11-22-33-44-55     dynamic

@@ -31,8 +31,6 @@ internal class LinuxArpTableProvider : ArpTableProviderBase {
   internal static ArpTable ParseArpOutput( TextReader reader ) {
     var map = new Dictionary<IPAddress, MacAddress>();
 
-    reader.ReadLine(); // Skip header
-
     while ( reader.ReadLine() is { } line ) {
       var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
 

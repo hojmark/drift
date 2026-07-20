@@ -48,7 +48,7 @@ internal class WindowsArpTableProvider : ArpTableProviderBase {
     while ( reader.ReadLine() is { } line ) {
       var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
 
-      if ( parts.Length < 3 ) {
+      if ( parts[0].Count( c => c == '.' ) != 3 ) { // Should look like an IPv4 address
         Console.Error.WriteLine( $"Skipping invalid ARP entry: {line}" );
         continue;
       }

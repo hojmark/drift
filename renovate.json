@@ -1,15 +1,19 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:best-practices"],
   "timezone": "Europe/Berlin",
   "addLabels": [
     "dependencies"
   ],
-  "minimumReleaseAge": "14 days",
+  "minimumReleaseAge": "7 days",
   "internalChecksFilter": "strict",
-  "prCreation": "not-pending",
   "dependencyDashboard": true,
   "prConcurrentLimit": 5,
   "prHourlyLimit": 0,
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "minimumReleaseAge": "1 day"
+  },
   "automerge": false,
   "dockerfile": {
     //"pinDigests": true

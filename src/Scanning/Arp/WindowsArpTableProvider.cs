@@ -47,6 +47,12 @@ internal class WindowsArpTableProvider : ArpTableProviderBase {
 
     while ( reader.ReadLine() is { } line ) {
       var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
+
+      if ( parts.Length < 3 ) {
+        Console.WriteLine( $"Skipping invalid ARP entry: {line}" );
+        continue;
+      }
+
       var ip = IPAddress.Parse( parts[0] );
       var mac = new MacAddress( parts[1] );
       map[ip] = mac;

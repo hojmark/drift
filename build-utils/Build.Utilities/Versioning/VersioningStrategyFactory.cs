@@ -27,7 +27,7 @@ public sealed class VersioningStrategyFactory( INukeRelease build, TimeProvider?
         );
       }
 
-      var strategy = new ExactVersioning( configuration, exactVersion, repository, gitHubClient );
+      var strategy = new ExactVersioning( configuration, exactVersion, releaseType, repository, gitHubClient );
       Log.Information( "Versioning strategy is {Strategy}", strategy.GetType().Name );
       return strategy;
     }

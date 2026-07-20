@@ -280,7 +280,7 @@ internal sealed class VersioningTests {
   [Test]
   public void ExactVersioningWithNullThrows() {
     // Arrange
-    var strategy = new ExactVersioning( Configuration.Release, "   ", null!, null! );
+    var strategy = new ExactVersioning( Configuration.Release, "   ", ReleaseType.None, null!, null! );
 
     // Assert
     Assert.ThrowsAsync<InvalidOperationException>( async () => await strategy.GetVersionAsync() );
@@ -301,6 +301,48 @@ internal sealed class VersioningTests {
     // Assert
     await Assert.That( strategy.GetType() ).IsEqualTo( typeof(ExactVersioning) );
     await Assert.That( version.ToString() ).IsEqualTo( "1.5.0" );
+  }
+
+  [Test]
+  public async Task ExactVersioningReleaseImageReferencesIncludesLatest() {
+    // Arrange
+    var build = new TestNukeBuild()
+      .WithExecutionPlan( b => b.CreateRelease )
+      .WithReleaseType( ReleaseType.Release );
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Release, null, "1.0.0-alpha.5", null!, null! );
+    var refs = await strategy.Release!.GetImageReferences();
+    var tags = refs.Select( r => r.Tag.ToString() ).ToList();
+
+    // Assert
+    using ( Assert.Multiple() ) {
+      await Assert.That( tags ).Contains( "latest" );
+      await Assert.That( tags ).Contains( "1.0.0-alpha.5" );
+      await Assert.That( tags ).Count().IsEqualTo( 2 );
+    }
+  }
+
+  [Test]
+  public async Task ExactVersioningPreReleaseImageReferencesDoesNotIncludeLatest() {
+    // Arrange
+    var build = new TestNukeBuild()
+      .WithExecutionPlan( b => b.CreatePreRelease )
+      .WithReleaseType( ReleaseType.PreRelease );
+
+    // Act
+    var factory = new VersioningStrategyFactory( build );
+    var strategy = factory.Create( Configuration.Release, null, "0.0.0-windows.10.20260319202632", null, null );
+    var refs = await strategy.Release!.GetImageReferences();
+    var tags = refs.Select( r => r.Tag.ToString() ).ToList();
+
+    // Assert
+    using ( Assert.Multiple() ) {
+      await Assert.That( tags ).DoesNotContain( "latest" );
+      await Assert.That( tags ).Contains( "0.0.0-windows.10.20260319202632" );
+      await Assert.That( tags ).Count().IsEqualTo( 1 );
+    }
   }
 }
 

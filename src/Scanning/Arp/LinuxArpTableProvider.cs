@@ -37,6 +37,15 @@ internal class LinuxArpTableProvider : ArpTableProviderBase {
 
     while ( reader.ReadLine() is { } line ) {
       var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
+
+      if (
+        parts[0].Count( c => c == '.' ) != 3 && // Dots in an IPv4 address
+        parts[1].Count( c => c == ':' ) != 5 // Hyphens in a Linux-reported MAC. E.g., 00:11:22:33:44:55
+      ) {
+        Console.Error.WriteLine( $"Skipping invalid ARP entry: {line}" );
+        continue;
+      }
+
       var ip = IPAddress.Parse( parts[0] );
       var mac = new MacAddress( parts[3] );
       map[ip] = mac;

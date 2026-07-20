@@ -42,6 +42,10 @@ internal class WindowsArpTableProvider : ArpTableProviderBase {
     var map = new Dictionary<IPAddress, MacAddress>();
 
     while ( reader.ReadLine() is { } line ) {
+      if ( string.IsNullOrWhiteSpace( line ) ) {
+        continue;
+      }
+
       var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
 
       if (

@@ -49,7 +49,7 @@ internal class WindowsArpTableProvider : ArpTableProviderBase {
       var parts = line.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries );
 
       if ( parts.Length < 3 ) {
-        Console.WriteLine( $"Skipping invalid ARP entry: {line}" );
+        Console.Error.WriteLine( $"Skipping invalid ARP entry: {line}" );
         continue;
       }
 

@@ -1,0 +1,23 @@
+﻿Requesting subnets from agent agentid_dmz
+Received subnet(s) from agent agentid_dmz: 192.168.1.0/24, 10.0.0.0/24
+Requesting subnets from agent agentid_internal
+Received subnet(s) from agent agentid_internal: 10.0.0.0/24
+Scanning 2 subnets
+  192.168.1.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via agentid_dmz
+  10.0.0.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via agentid_dmz, agentid_internal
+---------------------------------------- PREVIEW ---------------------------------------
+Distributed scanning via agents is a preview feature and should be used with caution.
+Agent communication is unencrypted. Do not use on untrusted networks.
+Agents run without authentication. Any client that can reach the agent port can connect.
+----------------------------------------------------------------------------------------
+Merged 2 unique devices from 2 scans of 10.0.0.0/24
+Scan completed: 0 local, 3 via agents, 2 unique subnets
+
+192.168.1.0/24 (2 devices)
+├── 192.168.1.100  AA-BB-C0-A8-01-64    Online (unknown device)  
+└── 192.168.1.101  AA-BB-C0-A8-01-65    Online (unknown device)  
+
+10.0.0.0/24 (2 devices)
+├── 10.0.0.100     AA-BB-0A-00-00-64    Online (unknown device)  
+└── 10.0.0.101     AA-BB-0A-00-00-65    Online (unknown device)  
+

@@ -1,0 +1,65 @@
+name: drift-cooperation-test
+
+# Multi-agent cooperation topology
+#
+# All nodes share a single flat network (172.20.20.0/24).
+# Three agents cooperate to scan the same subnet, testing:
+#   - Multi-agent coordination (3 agents)
+#   - Result merging from multiple agents
+#   - Correct handling of overlapping scan results
+#
+# Targets:
+#   - 5 Alpine containers as scan targets
+
+topology:
+  nodes:
+    cli:
+      kind: linux
+      image: localhost:5000/drift:dev
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+
+    agent1:
+      kind: linux
+      image: localhost:5000/drift:dev
+      cmd: agent start --adoptable --port 5000 --id agentid_coop_agent1
+
+    agent2:
+      kind: linux
+      image: localhost:5000/drift:dev
+      cmd: agent start --adoptable --port 5000 --id agentid_coop_agent2
+
+    agent3:
+      kind: linux
+      image: localhost:5000/drift:dev
+      cmd: agent start --adoptable --port 5000 --id agentid_coop_agent3
+
+    target1:
+      kind: linux
+      image: alpine:latest
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+
+    target2:
+      kind: linux
+      image: alpine:latest
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+
+    target3:
+      kind: linux
+      image: alpine:latest
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+
+    target4:
+      kind: linux
+      image: alpine:latest
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"
+
+    target5:
+      kind: linux
+      image: alpine:latest
+      entrypoint: /bin/sh
+      cmd: -c "sleep infinity"

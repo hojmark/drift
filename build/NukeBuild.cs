@@ -129,6 +129,8 @@ sealed partial class NukeBuild : Nuke.Common.NukeBuild, INukeRelease {
 
     internal static AbsolutePath PublishDirectoryForRuntime( DotNetRuntimeIdentifier id ) =>
       PublishDirectory / id.ToString();
+
+    internal static AbsolutePath ContainerlabsDirectory => RootDirectory / "containerlab";
   }
 
   Target OutputVersion => _ => _

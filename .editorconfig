@@ -9,7 +9,7 @@ root = true
 indent_style = space
 
 # Code files
-[*.{cs,csproj,slnx,props,json}]
+[*.{cs,csproj,slnx,props,targets,json}]
 indent_size = 2
 insert_final_newline = false
 charset = utf-8
@@ -225,6 +225,8 @@ dotnet_diagnostic.SA1502.severity = none
 dotnet_diagnostic.SA1508.severity = none
 # SA1516 Elements should be separated by blank line (but reports false positives)
 dotnet_diagnostic.SA1516.severity = none
+# SA1201 An element within a C# code file is out of order in relation to the other elements in the code.
+dotnet_diagnostic.SA1201.severity = none
 
 
 # TODO TBD

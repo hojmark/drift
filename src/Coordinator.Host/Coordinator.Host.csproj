@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Messaging.Protocol\Messaging.Protocol.csproj" />
+    <ProjectReference Include="..\Networking.Core.Abstractions\Networking.Core.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

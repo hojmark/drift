@@ -2,17 +2,32 @@ using System.Text.Json;
 using Drift.Spec.Schema;
 using Drift.Spec.Serialization;
 using Json.Schema;
+using YamlDotNet.Core;
 
 namespace Drift.Spec.Validation;
 
 public static class SpecValidator {
   public static ValidationResult Validate( string yaml, SpecVersion version ) {
-    var schema = SpecSchemaProvider.Get( version );
-    return Validate( yaml, schema );
+    try {
+      var schema = SpecSchemaProvider.Get( version );
+      return Validate( yaml, schema );
+    }
+    // TODO add failed parsing tests
+    // An (unexpected) parsing error
+    catch ( YamlException ex ) {
+      var errors = new List<ValidationError>();
+
+      Exception? exp = ex;
+      do {
+        errors.Add( new ValidationError { Message = exp.Message } );
+        exp = exp.InnerException;
+      } while ( exp != null );
+
+      return new ValidationResult { IsValid = false, Errors = errors };
+    }
   }
 
   private static ValidationResult Validate( string yaml, JsonSchema schema ) {
-    // try {
     // Read YAML and convert to JSON
     var yamlObject = YamlConverter.DeserializeToDto( yaml );
     // var yamlLineNumbers = GetYamlLineNumbers( yamlContent );
@@ -28,17 +43,6 @@ public static class SpecValidator {
     return new ValidationResult {
       IsValid = validationResults.IsValid, Errors = ExtractErrors( validationResults ).ToList()
     };
-
-    // Throw exceptions
-    /*}
-    catch ( Exception ex ) {
-      return new ValidationResult {
-        IsValid = false,
-        Errors = [
-          new ValidationError { Message = $"Validation failed: {ex.Message}", Path = "/" }
-        ]
-      };
-    }*/
   }
 
   private static IEnumerable<ValidationError> ExtractErrors( EvaluationResults results ) {
@@ -50,7 +54,7 @@ public static class SpecValidator {
       foreach ( var error in results.Errors ) {
         yield return new ValidationError {
           Path = results.InstanceLocation.SegmentCount == 0 ? "/" : results.InstanceLocation.ToString(),
-          Message = error.Value ?? "Validation error",
+          Message = error.Value,
           SchemaPath = results.SchemaLocation.ToString()
         };
       }

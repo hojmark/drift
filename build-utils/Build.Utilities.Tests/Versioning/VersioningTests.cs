@@ -31,7 +31,7 @@ internal sealed class VersioningTests {
   [Test]
   public async Task DefaultVersioningWhenNoReleaseTargets() {
     // Arrange
-    var build = new NukeBuildWithArbitraryTarget().WithExecutionPlan( b => b.Arbitrary );
+    var build = new NukeBuildWithArbitraryTarget().WithExecutionPlan( _ => NukeBuildWithArbitraryTarget.Arbitrary );
 
     // Act
     var factory = new VersioningStrategyFactory( build );
@@ -349,7 +349,7 @@ internal sealed class VersioningTests {
 internal sealed class NukeBuildWithArbitraryTarget : TestNukeBuild {
   // Justification: NUKE Target properties are instance properties by convention; static is not valid here
 #pragma warning disable S2325
-  public Target Arbitrary => _ => _
+  public static Target Arbitrary => _ => _
 #pragma warning restore S2325
     .Executes( () => {
       }

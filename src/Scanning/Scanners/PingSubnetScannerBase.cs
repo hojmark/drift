@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading.RateLimiting;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -12,6 +13,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Scanning.Scanners;
 
+/// <summary>
+/// Basic subnet scanner that uses the platform provided ping-command.
+/// Inefficient, but "ping" is usually available on all platforms.
+/// </summary>
 internal abstract class PingSubnetScannerBase : ISubnetScanner {
   public event EventHandler<SubnetScanResult>? ResultUpdated;
 
@@ -75,7 +80,8 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
           Status = ScanResultStatus.InProgress,
           DiscoveredDevices = ToDiscoveredDevices( pingReplies, ArpTables().Cached ),
           DiscoveryAttempts = ToDiscoveryAttempts( ipRange, completed ),
-          Progress = new((byte) Math.Ceiling( ( (double) completed / total ) * 100 )),
+          // Intermediate result should never report 100%, so cap at 99%
+          Progress = new((byte) Math.Min( 99, Math.Ceiling( ( (double) completed / total ) * 100 ) )),
           CidrBlock = cidr
         };
 
@@ -124,38 +130,70 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
     ConcurrentBag<( IPAddress Ip, bool Success, string? Hostname)> pingReplies,
     ArpTable arpTable
   ) {
+    var localMacs = BuildLocalInterfaceMacTable();
+
     return pingReplies.Where( r => r.Success ).Select( pingReply =>
       new DiscoveredDevice { Addresses = CreateAddresses( pingReply ) }
     ).ToList();
 
-    List<IDeviceAddress> CreateAddresses( ( IPAddress Ip, bool Success, string? Hostname) pingReply ) {
-      var list = new List<IDeviceAddress> { new IpV4Address( pingReply.Ip ) };
+    List<IDeviceAddress> CreateAddresses( (IPAddress Ip, bool Success, string? Hostname) pingReply ) {
+      IpV4Address ip = new IpV4Address( pingReply.Ip );
 
-      if ( !string.IsNullOrWhiteSpace( pingReply.Hostname ) ) {
-        list.Add( new HostnameAddress( pingReply.Hostname ) );
-      }
+      MacAddress? mac = arpTable.TryGetValue( pingReply.Ip, out var arpMac )
+        ? arpMac
+        : localMacs.TryGetValue( pingReply.Ip, out var localMac )
+          ? localMac
+          : null;
 
-      if ( arpTable.TryGetValue( pingReply.Ip, out var mac ) ) {
-        list.Add( mac );
-      }
+      HostnameAddress? hostname = string.IsNullOrWhiteSpace( pingReply.Hostname )
+        ? null
+        : new HostnameAddress( pingReply.Hostname );
 
-      return list;
+      return new DeviceAddressSet( ip, mac, hostname ).ToAddresses();
     }
+  }
+
+  /// <summary>
+  /// Builds a map of local [unicast] IPv4 addresses to the MAC address of the
+  /// interface that owns them. Useful for resolving the MAC for the scanner's own
+  /// IP addresses, which never appear in the ARP cache.
+  /// </summary>
+  private static Dictionary<IPAddress, MacAddress> BuildLocalInterfaceMacTable() {
+    var map = new Dictionary<IPAddress, MacAddress>();
+
+    foreach ( var iface in NetworkInterface.GetAllNetworkInterfaces() ) {
+      var physicalAddress = iface.GetPhysicalAddress();
+      var addressBytes = physicalAddress.GetAddressBytes();
+
+      if ( addressBytes.Length == 0 ) {
+        continue; // loopback, tunnel and other logical interfaces have no MAC
+      }
+
+      var macString = string.Join( "-", addressBytes.Select( b => b.ToString( "X2" ) ) );
+
+      foreach ( var unicastAddress in iface.GetIPProperties().UnicastAddresses.Select( u => u.Address ) ) {
+        if ( unicastAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ) {
+          map[unicastAddress] = new MacAddress( macString );
+        }
+      }
+    }
+
+    return map;
   }
 
   private static async Task<string?> GetHostNameAsync( IPAddress ip, int timeoutMs = 1000 ) {
     var task = Dns.GetHostEntryAsync( ip );
-    if ( await Task.WhenAny( task, Task.Delay( timeoutMs ) ) == task ) {
-      try {
-        return task.Result.HostName;
-      }
-      catch {
-        // Reverse DNS failed
-        return null;
-      }
+    if ( await Task.WhenAny( task, Task.Delay( timeoutMs ) ) != task ) {
+      // Timed out
+      return null;
     }
 
-    // Timed out
-    return null;
+    try {
+      return task.Result.HostName;
+    }
+    catch {
+      // Reverse DNS failed
+      return null;
+    }
   }
 }

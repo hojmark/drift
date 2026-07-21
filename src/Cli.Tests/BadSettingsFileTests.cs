@@ -34,7 +34,7 @@ internal sealed class BadSettingsFileTests {
     Environment.SkipIfNot( platform );
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync(
       "lint ../../../../Spec.Tests/resources/network_single_subnet.yaml"
     );
 

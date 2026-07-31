@@ -77,7 +77,6 @@ internal sealed partial class InstallPsTests {
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
   public async Task InstallSpecificVersion( string shell ) {
-    // TODO Update when a newer stable release with Windows assets is available.
     const string version = "v1.0.0-alpha.7";
 
     var tempDir = Path.GetTempPath();
@@ -144,7 +143,6 @@ internal sealed partial class InstallPsTests {
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
   public async Task UpgradeFromPreviousVersion( string shell ) {
-    // previousVersion = last prerelease Windows build; latest stable = v1.0.0-alpha.7
     const string previousVersion = "v1.0.0-alpha.7";
 
     var tempDir = Path.GetTempPath();

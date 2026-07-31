@@ -9,7 +9,7 @@ internal sealed class KeyWatcher : IAsyncDisposable {
   private TaskCompletionSource? _waiter;
 
   public KeyWatcher() {
-    _listenerTask = Task.Run( ListenLoopAsync );
+    _listenerTask = Task.Run( ListenLoopAsync, _cts.Token );
   }
 
   public Task WaitForKeyAsync() {

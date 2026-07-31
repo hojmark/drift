@@ -77,8 +77,7 @@ internal sealed partial class InstallPsTests {
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
   public async Task InstallSpecificVersion( string shell ) {
-    // TODO Update when a newer stable release with Windows assets is available.
-    const string version = "v0.0.0-windows.11.20260323204120";
+    const string version = "v1.0.0-alpha.7";
 
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-specific-" + Guid.NewGuid() );
@@ -130,7 +129,7 @@ internal sealed partial class InstallPsTests {
         Assert.That( driftProcess.ExitCode, Is.EqualTo( ExitCodes.Success ) );
         Assert.That(
           driftProcess.StdOut,
-          Contains.Substring( "0.0.0-windows.11.20260323204120" ),
+          Contains.Substring( "1.0.0-alpha.7" ),
           $"Expected --version to report the installed version, got: {driftProcess.StdOut}"
         );
         Assert.That( driftProcess.ErrOut, Is.Empty );
@@ -144,8 +143,7 @@ internal sealed partial class InstallPsTests {
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
   public async Task UpgradeFromPreviousVersion( string shell ) {
-    // previousVersion = last prerelease Windows build; latest stable = v1.0.0-alpha.7
-    const string previousVersion = "v0.0.0-windows.11.20260323204120";
+    const string previousVersion = "v1.0.0-alpha.7";
 
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-upgrade-" + Guid.NewGuid() );
@@ -172,7 +170,7 @@ internal sealed partial class InstallPsTests {
       var versionAfterFirst = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
       Assert.That(
         versionAfterFirst.StdOut,
-        Contains.Substring( "0.0.0-windows.11" ),
+        Contains.Substring( "1.0.0-alpha.7" ),
         $"Expected --version to report previous version after first install, got: {versionAfterFirst.StdOut}"
       );
 

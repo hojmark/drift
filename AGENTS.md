@@ -33,23 +33,33 @@ dotnet test src/Domain.Tests --filter "FullyQualifiedName~MyTest"
 
 The solution is split into focused projects. The main ones:
 
-| Project | Role                                                                                     |
-|---|------------------------------------------------------------------------------------------|
-| `Cli` | Entry point; commands: `init`, `scan`, `agent start`; AOT-compiled                       |
-| `Cli.Abstractions` | Shared CLI constants: exit codes, env var names, port numbers, file names                |
-| `Cli.Settings` | User settings file (`~/.config/drift/settings.json`)                                     |
-| `Domain` | Core value types: `Network`, `Device`, `Inventory`, `CidrBlock`, `Port`, `Scan`, `AgentId` |
-| `Spec` | YAML spec parsing and validation (YamlDotNet + JsonSchema.Net)                           |
-| `Scanning` | Network discovery: ARP, ping, port scanning with rate limiting                           |
-| `Diff` | Compares declared spec state vs. discovered scan state to produce drift report           |
-| `Networking.PeerStreaming.*` | Abstract P2P streaming protocol + gRPC implementation (`peer.proto`)                     |
-| `Networking.Cluster` | Multi-agent coordination                                                                 |
-| `Agent.Hosting` | Agent runtime (`AgentHost`, `Identity`)                                                  |
-| `Agent.PeerProtocol` | Agent-specific peer messaging                                                            |
-| `Serialization` | Cross-module serialization helpers                                                       |
-| `ArchTests` | ArchUnitNET tests enforcing dependency rules and naming conventions                      |
+| Project | Role |
+|---|---|
+| `Cli` | Entry point; commands: `init`, `scan`, `agent start`; AOT-compiled |
+| `Cli.Abstractions` | Shared CLI constants: exit codes, env var names, port numbers, file names |
+| `Cli.Settings` | User settings file (`~/.config/drift/settings.json`) |
+| `Domain` | Core value types: `Network`, `Device`, `Inventory`, `CidrBlock`, `Port`, `AgentId` |
+| `Spec` | YAML spec parsing and validation into declared-state domain types |
+| `Scanning` | Network discovery: ARP, ping, port scanning |
+| `Diff` | Compares declared spec state vs. discovered scan state to produce a drift report |
+| `Networking.Grpc` | Generated gRPC/protobuf contracts for the messaging transport |
+| `Networking.Core.Abstractions` | Interfaces for message streams, handlers, and client factories |
+| `Networking.Core` | Message stream/manager implementation built on gRPC |
+| `Networking.Client` | Default client factory for opening outbound messaging connections |
+| `Networking.Server` | Hosts the inbound gRPC service for messaging endpoints |
+| `Messaging.Protocol` | Concrete request/response message contracts (e.g. scan, subnets) |
+| `Messaging.Client` | Typed agent client built on top of `Networking.Client`/`Networking.Core` |
+| `Agent.Host` | Hosts an agent's messaging/gRPC endpoint (Kestrel/ASP.NET Core) |
+| `Coordinator.Host` | Coordinator-side host counterpart to `Agent.Host` (work in progress) |
+| `Common` | Shared cross-cutting helpers: IO, logging, network utilities, embedded resources |
+| `Common.Schemas` | Shared JSON Schema generation helpers (e.g. lowercase enum naming) |
+| `Serialization` | Cross-module serialization helpers |
+| `TestUtilities` | Shared test helpers (loggers, Verify/snapshot settings) used by `*.Tests` projects |
+| `ArchTests` | ArchUnitNET tests enforcing dependency rules and naming conventions |
 
 Schema generators live in `Spec.SchemaGenerator.Cli` and `Cli.Settings.SchemaGenerator.Cli` — they produce JSON Schema from C# types.
+
+`Networking.*` and `Messaging.*` implement the role-agnostic transport layer (see naming rule below); `Agent.Host` and `Coordinator.Host` build role-specific hosting on top of it.
 
 ### Data flow
 

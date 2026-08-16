@@ -8,7 +8,38 @@ public static partial class Mapper {
   internal const string VersionConstant = "v1-preview";
 
   public static DriftSpec ToDto( Inventory domain ) {
-    return new DriftSpec { Version = VersionConstant, Network = Map( domain.Network ) };
+    return new DriftSpec {
+      Version = VersionConstant,
+      Network = Map( domain.Network ),
+      Settings = domain.Settings == null ? null : Map( domain.Settings )
+    };
+  }
+
+  private static Settings Map( Domain.Settings domain ) {
+    return new Settings {
+      UnknownDevices = Map( domain.UnknownDevices ),
+      UndeclaredConnections = Map( domain.UndeclaredConnections ),
+      PingThrottling = domain.PingThrottling,
+      ScanOnlyDeclaredSubnets = domain.ScanOnlyDeclaredSubnets
+    };
+  }
+
+  private static UnknownDevicePolicy? Map( Domain.UnknownDevicePolicy? domain ) {
+    return domain switch {
+      null => null,
+      Domain.UnknownDevicePolicy.Disallowed => UnknownDevicePolicy.Disallowed,
+      Domain.UnknownDevicePolicy.Allowed => UnknownDevicePolicy.Allowed,
+      _ => throw new ArgumentOutOfRangeException( nameof(domain), domain, null )
+    };
+  }
+
+  private static UndeclaredConnectionsPolicy? Map( Domain.UndeclaredConnectionsPolicy? domain ) {
+    return domain switch {
+      null => null,
+      Domain.UndeclaredConnectionsPolicy.Blocked => UndeclaredConnectionsPolicy.Blocked,
+      Domain.UndeclaredConnectionsPolicy.Reachable => UndeclaredConnectionsPolicy.Reachable,
+      _ => throw new ArgumentOutOfRangeException( nameof(domain), domain, null )
+    };
   }
 
   private static Network Map( Domain.Network domain ) {

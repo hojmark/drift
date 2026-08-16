@@ -87,6 +87,21 @@ internal sealed class ValidationTests {
     """,
     "/version: Expected \"\\u0022v1-preview\\u0022\""
   )]
+  [TestCase(
+    8,
+    """
+    version: v1-preview
+    network:
+      id: my-network
+      subnets:
+        - id: my-subnet
+          address: 100.100.100.100/16
+    settings:
+      unknown_devices: not-a-valid-value
+    """,
+    ": Exception during deserialization",
+    ": Requested value 'NotAValidValue' was not found."
+  )]
   public void YamlIsInvalidTest( int caseNo, string yaml, params string[] errors ) {
     // Arrange / Act
     var result = SpecValidator.Validate( yaml, SpecVersion.V1_preview );
@@ -129,6 +144,21 @@ internal sealed class ValidationTests {
       subnets:
         - id: my-subnet
           address: 100.100.100.100/16
+    """ )]
+  [TestCase(
+    4,
+    """
+    version: v1-preview
+    network:
+      id: my-network
+      subnets:
+        - id: my-subnet
+          address: 100.100.100.100/16
+    settings:
+      unknown_devices: disallowed
+      undeclared_connections: blocked
+      ping_throttling: 100
+      scan_only_declared_subnets: true
     """ )]
   public void YamlIsValidTest( int caseNo, string yaml ) {
     // Arrange / Act

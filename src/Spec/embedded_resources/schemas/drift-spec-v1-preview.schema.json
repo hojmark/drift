@@ -103,6 +103,41 @@
       },
       "additionalProperties": false
     },
+    "settings": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "unknown_devices": {
+          "enum": [
+            "disallowed",
+            "allowed",
+            null
+          ]
+        },
+        "undeclared_connections": {
+          "enum": [
+            "blocked",
+            "reachable",
+            null
+          ]
+        },
+        "ping_throttling": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "scan_only_declared_subnets": {
+          "type": [
+            "null",
+            "boolean"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
     "agents": {
       "type": [
         "null",

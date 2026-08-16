@@ -9,11 +9,42 @@ public static partial class Mapper {
     // ArgumentNullException.ThrowIfNull( dto.Address );
     var spec = new Inventory { Network = Map( dto.Network ) };
 
+    if ( dto.Settings != null ) {
+      spec.Settings = Map( dto.Settings );
+    }
+
     if ( dto.Agents != null ) {
       spec.Agents = Map( dto.Agents );
     }
 
     return spec;
+  }
+
+  private static Domain.Settings Map( Settings dto ) {
+    return new Domain.Settings {
+      UnknownDevices = Map( dto.UnknownDevices ),
+      UndeclaredConnections = Map( dto.UndeclaredConnections ),
+      PingThrottling = dto.PingThrottling,
+      ScanOnlyDeclaredSubnets = dto.ScanOnlyDeclaredSubnets
+    };
+  }
+
+  private static Domain.UnknownDevicePolicy? Map( UnknownDevicePolicy? dto ) {
+    return dto switch {
+      null => null,
+      UnknownDevicePolicy.Disallowed => Domain.UnknownDevicePolicy.Disallowed,
+      UnknownDevicePolicy.Allowed => Domain.UnknownDevicePolicy.Allowed,
+      _ => throw new ArgumentOutOfRangeException( nameof(dto), dto, null )
+    };
+  }
+
+  private static Domain.UndeclaredConnectionsPolicy? Map( UndeclaredConnectionsPolicy? dto ) {
+    return dto switch {
+      null => null,
+      UndeclaredConnectionsPolicy.Blocked => Domain.UndeclaredConnectionsPolicy.Blocked,
+      UndeclaredConnectionsPolicy.Reachable => Domain.UndeclaredConnectionsPolicy.Reachable,
+      _ => throw new ArgumentOutOfRangeException( nameof(dto), dto, null )
+    };
   }
 
   private static List<Domain.Agent> Map( List<Agent> dto ) {

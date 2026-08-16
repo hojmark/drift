@@ -5,7 +5,7 @@ namespace Drift.Spec.Dtos.V1_preview;
 
 [Title( "Drift spec schema" )]
 [Description( "JSON schema for validating Drift specs" )]
-[AdditionalProperties( false )] // TODO set to false
+[AdditionalProperties( false )]
 // TODO rename to DriftSpecV1Preview?
 public record DriftSpec {
   [property: Const(
@@ -27,11 +27,10 @@ public record DriftSpec {
     set;
   }
 
-  // TODO support settings
-  /*public Settings? Settings {
+  public Settings? Settings {
     get;
     set;
-  }*/
+  }
 
   public List<Agent>? Agents {
     get;
@@ -40,7 +39,7 @@ public record DriftSpec {
 }
 
 // [Title( "Network declaration" )]
-[AdditionalProperties( false )] // TODO set to false
+[AdditionalProperties( false )]
 public record Network {
   public List<Subnet>? Subnets {
     get;
@@ -136,7 +135,21 @@ public record DeviceAddress {
 
 [AdditionalProperties( false )]
 public record Settings {
+  /// <summary>
+  /// Gets or sets whether a device discovered on the network but not declared in the spec is
+  /// considered a spec violation (adherence to spec), or tolerated.
+  /// </summary>
   public UnknownDevicePolicy? UnknownDevices {
+    get;
+    set;
+  }
+
+  /// <summary>
+  /// Gets or sets the default policy for connections not explicitly declared by any agent's
+  /// <c>policy:</c> block: whether such connections are expected to be reachable or blocked by
+  /// default.
+  /// </summary>
+  public UndeclaredConnectionsPolicy? UndeclaredConnections {
     get;
     set;
   }
@@ -170,4 +183,9 @@ public record Agent {
 public enum UnknownDevicePolicy {
   Disallowed = 1,
   Allowed = 2
+}
+
+public enum UndeclaredConnectionsPolicy {
+  Blocked = 1,
+  Reachable = 2
 }

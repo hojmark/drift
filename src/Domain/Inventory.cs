@@ -6,6 +6,11 @@ public record Inventory {
     init;
   }
 
+  public Settings? Settings {
+    get;
+    set;
+  }
+
   public List<Agent> Agents {
     get;
     set;

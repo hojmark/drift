@@ -21,7 +21,7 @@ public sealed class MessageResponseCorrelator( ILogger logger ) {
 
     cts.Token.Register( () => {
       if ( _pendingRequests.TryRemove( correlationId, out var removed ) ) {
-        removed.TrySetCanceled();
+        removed.TrySetCanceled( cts.Token );
       }
 
       cts.Dispose();
@@ -52,7 +52,7 @@ public sealed class MessageResponseCorrelator( ILogger logger ) {
 
     cts.Token.Register( () => {
       if ( _streamingRequests.TryRemove( correlationId, out var removed ) ) {
-        removed.CompletionSource.TrySetCanceled();
+        removed.CompletionSource.TrySetCanceled( cts.Token );
       }
 
       cts.Dispose();

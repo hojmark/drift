@@ -44,9 +44,7 @@ public static class AgentHost {
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
-      options.ListenAnyIP( port, o => {
-        o.Protocols = HttpProtocols.Http2; // Allow HTTP/2 over plain HTTP i.e., non-HTTPS
-      } );
+      options.ListenAnyIP( port );
     } );
 
     var app = builder.Build();
@@ -55,6 +53,17 @@ public static class AgentHost {
     // will get CancellationToken.None.
     messagingOptions.StoppingToken = app.Lifetime.ApplicationStopping;
 
+    app.MapGet( "/", () =>
+      // TODO Render figlet using same flf as in the help command
+      """ 
+        ___          _    __   _   
+       |   \   _ _  (_)  / _| | |_ 
+       | |) | | '_| | | |  _| |  _|
+       |___/  |_|   |_| |_|    \__|
+      """
+      +
+      "\n\nAgent"
+    );
     app.MapMessagingServerEndpoints();
 
     app.Lifetime.ApplicationStarted.Register( () => {

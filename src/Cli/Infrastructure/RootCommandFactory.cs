@@ -10,6 +10,8 @@ using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Scan;
 using Drift.Cli.Commands.Scan.Interactive.Input;
+using Drift.Cli.Commands.Server;
+using Drift.Cli.Commands.Server.Subcommands.Start;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
@@ -79,7 +81,6 @@ internal static class RootCommandFactory {
     ConfigureSubnetProvider( services );
     ConfigureNetworkScanner( services );
     ConfigureInteractiveServices( services );
-    ConfigureAgentCluster( services );
     ConfigureAgentClient( services );
   }
 
@@ -102,7 +103,8 @@ internal static class RootCommandFactory {
         new InitCommand( provider ),
         new ScanCommand( provider ),
         new LintCommand( provider ),
-        new AgentCommand( provider )
+        new AgentCommand( provider ),
+        new ServerCommand( provider )
       };
 
     rootCommand.TreatUnmatchedTokensAsErrors = true;
@@ -138,6 +140,7 @@ internal static class RootCommandFactory {
     services.AddScoped<ScanCommandHandler>();
     services.AddScoped<LintCommandHandler>();
     services.AddScoped<AgentStartCommandHandler>();
+    services.AddScoped<ServerStartCommandHandler>();
   }
 
   private static void ConfigureInteractiveServices( IServiceCollection services ) {

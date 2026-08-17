@@ -3,7 +3,7 @@ using Drift.Cli.Tests.Utils;
 
 namespace Drift.Cli.Tests.Commands;
 
-internal sealed class AgentCommandTests {
+internal sealed class ServerCommandTests {
   [CancelAfter( 3000 )]
   [Test]
   public async Task RespectsCancellationToken() {

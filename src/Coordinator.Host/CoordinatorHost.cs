@@ -8,9 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Agent.Host;
+namespace Drift.Coordinator.Host;
 
-public static class AgentHost {
+// TODO mostly a duplicate of AgentHost
+public static class CoordinatorHost {
   public static Task Run(
     ushort port,
     ILogger logger,
@@ -22,7 +23,7 @@ public static class AgentHost {
     return app.RunAsync( cancellationToken );
   }
 
-  private static WebApplication Build(
+  public static WebApplication Build(
     ushort port,
     ILogger logger,
     Action<IServiceCollection>? configureServices = null,
@@ -46,6 +47,8 @@ public static class AgentHost {
       options.ListenAnyIP( port );
     } );
 
+    AddServerStuff( builder );
+
     var app = builder.Build();
 
     // Note: a service reading StoppingToken during initialization (really, any code run before this point)
@@ -61,22 +64,25 @@ public static class AgentHost {
        |___/  |_|   |_| |_|    \__|
       """
       +
-      "\n\nAgent"
+      "\n\nServer"
     );
     app.MapMessagingServerEndpoints();
 
     app.Lifetime.ApplicationStarted.Register( () => {
       logger.LogInformation( "Listening for incoming connections on port {Port}", port );
-      logger.LogInformation( "Agent started" );
+      logger.LogInformation( "Server started" );
       ready?.TrySetResult();
     } );
     app.Lifetime.ApplicationStopping.Register( () => {
-      logger.LogInformation( "Agent stopping..." );
+      logger.LogInformation( "Server stopping..." );
     } );
     app.Lifetime.ApplicationStopped.Register( () => {
-      logger.LogInformation( "Agent stopped" );
+      logger.LogInformation( "Server stopped" );
     } );
 
     return app;
+  }
+
+  private static void AddServerStuff( WebApplicationBuilder app ) {
   }
 }

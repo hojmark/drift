@@ -102,6 +102,51 @@ internal sealed class ValidationTests {
     ": Exception during deserialization",
     ": Requested value 'NotAValidValue' was not found."
   )]
+  [TestCase(
+    9,
+    """
+    version: v1-preview
+    network:
+      id: my-network
+      subnets:
+        - id: my-subnet
+          address: 100.100.100.100/16
+    server:
+      foo: bar
+    """,
+    "/server: Required properties [\"address\"] are not present"
+  )]
+  [TestCase(
+    10,
+    """
+    version: v1-preview
+    network:
+      id: my-network
+      subnets:
+        - id: my-subnet
+          address: 100.100.100.100/16
+    agents:
+      - id: agentid_test1
+        address: http://agent1:5000
+        policy:
+          - expect: reachable
+    """,
+    "/agents/0/policy/0: Required properties [\"to\"] are not present"
+  )]
+  [TestCase(
+    11,
+    """
+    version: v1-preview
+    network:
+      id: my-network
+      subnets:
+        - id: my-subnet
+          address: 100.100.100.100/16
+      devices:
+        - id: my-device
+    """,
+    "/network/devices/0: Required properties [\"addresses\"] are not present"
+  )]
   public void YamlIsInvalidTest( int caseNo, string yaml, params string[] errors ) {
     // Arrange / Act
     var result = SpecValidator.Validate( yaml, SpecVersion.V1_preview );
@@ -159,6 +204,57 @@ internal sealed class ValidationTests {
       undeclared_connections: blocked
       ping_throttling: 100
       scan_only_declared_subnets: true
+    """ )]
+  [TestCase(
+    5,
+    """
+    version: v1-preview
+    network:
+      id: my-network
+      subnets:
+        - id: my-subnet
+          address: 100.100.100.100/16
+    server:
+      address: http://192.168.1.10:5000
+    """ )]
+  [TestCase(
+    6,
+    """
+    version: v1-preview
+    network:
+      id: my-network
+      subnets:
+        - id: my-subnet
+          address: 100.100.100.100/16
+    agents:
+      - id: agentid_test1
+        address: http://agent1:5000
+        policy:
+          - to: [internet, servers]
+            expect: reachable
+          - to: [router]
+            port: [443]
+            protocol: tcp
+            probe: [tls]
+            expect: reachable
+            fallback: gateway
+    """ )]
+  [TestCase(
+    7,
+    """
+    version: v1-preview
+    network:
+      id: my-network
+      subnets:
+        - id: my-subnet
+          address: 100.100.100.100/16
+      devices:
+        - id: nas
+          addresses:
+            ipv4: 192.168.10.5
+            mac: b8:27:eb:12:34:56
+          info:
+            hostname: nas.local
     """ )]
   public void YamlIsValidTest( int caseNo, string yaml ) {
     // Arrange / Act

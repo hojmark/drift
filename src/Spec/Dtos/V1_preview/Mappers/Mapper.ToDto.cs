@@ -11,7 +11,28 @@ public static partial class Mapper {
     return new DriftSpec {
       Version = VersionConstant,
       Network = Map( domain.Network ),
-      Settings = domain.Settings == null ? null : Map( domain.Settings )
+      Server = domain.Server == null ? null : Map( domain.Server ),
+      Settings = domain.Settings == null ? null : Map( domain.Settings ),
+      Agents = domain.Agents.Count == 0 ? null : domain.Agents.Select( Map ).ToList()
+    };
+  }
+
+  private static Server Map( Domain.Server domain ) {
+    return new Server { Address = domain.Address };
+  }
+
+  private static Agent Map( Domain.Agent domain ) {
+    return new Agent { Id = domain.Id, Address = domain.Address, Policy = domain.Policy?.Select( Map ).ToList() };
+  }
+
+  private static Policy Map( Domain.Policy domain ) {
+    return new Policy {
+      To = domain.To,
+      Expect = domain.Expect,
+      Port = domain.Port,
+      Protocol = domain.Protocol,
+      Probe = domain.Probe,
+      Fallback = domain.Fallback
     };
   }
 
@@ -53,24 +74,15 @@ public static partial class Mapper {
   }
 
   private static Device Map( DeclaredDevice domain ) {
+    var identity = domain.Addresses.Where( a => a.IsId != false ).ToList();
+    var info = domain.Addresses.Where( a => a.IsId == false ).ToList();
+
     return new Device {
       Id = domain.Id,
-      Addresses = domain.Addresses.Select( Map ).ToList(),
+      Addresses = MapAddresses( identity ),
+      Info = info.Count == 0 ? null : MapAddresses( info ),
       State = Map( domain.State ),
       Enabled = domain.Enabled
-    };
-  }
-
-  private static DeviceAddress Map( IDeviceAddress domain ) {
-    return new DeviceAddress { Value = domain.Value, Type = Map( domain.Type ), IsId = domain.IsId };
-  }
-
-  private static string Map( AddressType addressType ) {
-    return addressType switch {
-      AddressType.IpV4 => "ip-v4",
-      AddressType.Mac => "mac",
-      AddressType.Hostname => "hostname",
-      _ => throw new ArgumentOutOfRangeException( nameof(addressType), addressType, null )
     };
   }
 
@@ -81,6 +93,14 @@ public static partial class Mapper {
       DeclaredDeviceState.Dynamic => DeviceState.Dynamic,
       DeclaredDeviceState.Down => DeviceState.Down,
       _ => throw new ArgumentOutOfRangeException( nameof(domain), domain, null )
+    };
+  }
+
+  private static Addresses MapAddresses( List<IDeviceAddress> domain ) {
+    return new Addresses {
+      Ipv4 = domain.OfType<IpV4Address>().Cast<IpV4Address?>().FirstOrDefault()?.Value,
+      Mac = domain.OfType<MacAddress>().Cast<MacAddress?>().FirstOrDefault()?.Value,
+      Hostname = domain.OfType<HostnameAddress>().Cast<HostnameAddress?>().FirstOrDefault()?.Value
     };
   }
 }

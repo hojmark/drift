@@ -6,6 +6,11 @@ public record Inventory {
     init;
   }
 
+  public Server? Server {
+    get;
+    set;
+  }
+
   public Settings? Settings {
     get;
     set;
@@ -15,4 +20,12 @@ public record Inventory {
     get;
     set;
   } = [];
+}
+
+public record Server {
+  // TODO Use Uri type
+  public required string Address {
+    get;
+    init;
+  }
 }

@@ -27,6 +27,11 @@ public record DriftSpec {
     set;
   }
 
+  public Server? Server {
+    get;
+    set;
+  }
+
   public Settings? Settings {
     get;
     set;
@@ -47,6 +52,19 @@ public record Network {
   }
 
   public List<Device>? Devices {
+    get;
+    set;
+  }
+}
+
+/// <summary>
+/// Declares where the coordinating server for this network is meant to run.
+/// </summary>
+[AdditionalProperties( false )]
+public record Server {
+  [Required]
+  // TODO Use Uri type
+  public string Address {
     get;
     set;
   }
@@ -78,8 +96,20 @@ public record Device {
     set;
   }
 
+  /// <summary>
+  /// Gets or sets the addresses used to identify this device when matching declared vs.
+  /// discovered state.
+  /// </summary>
   [Required]
-  public List<DeviceAddress> Addresses {
+  public Addresses Addresses {
+    get;
+    set;
+  }
+
+  /// <summary>
+  /// Gets or sets additional descriptive addresses that are not used for device identity.
+  /// </summary>
+  public Addresses? Info {
     get;
     set;
   }
@@ -112,22 +142,23 @@ public enum DeviceState {
   Down = 3
 }
 
-// TODO add patterns
+/// <summary>
+/// A set of addresses for a device.
+/// </summary>
+// TODO enforce "at least one property set"
 [AdditionalProperties( false )]
-public record DeviceAddress {
-  [Required]
-  public string Type {
+public record Addresses {
+  public string? Ipv4 {
     get;
     set;
   }
 
-  [Required]
-  public string Value {
+  public string? Mac {
     get;
     set;
   }
 
-  public bool? IsId {
+  public string? Hostname {
     get;
     set;
   }
@@ -175,6 +206,59 @@ public record Agent {
 
   [Required]
   public string Address {
+    get;
+    set;
+  }
+
+  public List<Policy>? Policy {
+    get;
+    set;
+  }
+}
+
+/// <summary>
+/// A single policy assertion executed by an agent against a target.
+/// </summary>
+// TODO extend `To`/`Port`/`Probe` to accept either a single value or an array
+[AdditionalProperties( false )]
+public record Policy {
+  /// <summary>
+  /// Gets or sets the target(s) of this policy assertion: a subnet id, device id, a
+  /// well-known target (<c>internet</c>, <c>peers</c>, <c>rfc1918</c>), or a list thereof.
+  /// </summary>
+  [Required]
+  public List<string> To {
+    get;
+    set;
+  }
+
+  // TODO lock down to an enum once the full set of probe types and their possible outcomes is
+  // pinned down (e.g. "reachable"/"unreachable" for ICMP/TCP, "valid"/"invalid" for TLS).
+  [Required]
+  public string Expect {
+    get;
+    set;
+  }
+
+  public List<int>? Port {
+    get;
+    set;
+  }
+
+  // TODO lock down to an enum (e.g. tcp/udp/icmp) once probe execution is built.
+  public string? Protocol {
+    get;
+    set;
+  }
+
+  // TODO lock down to an enum once extended probe types are defined.
+  public List<string>? Probe {
+    get;
+    set;
+  }
+
+  // TODO lock down to an enum (currently only "gateway" is a known value).
+  public string? Fallback {
     get;
     set;
   }

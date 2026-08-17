@@ -17,7 +17,7 @@ dotnet nuke Build              # Restore + compile
 dotnet nuke TestUnit           # Unit tests only (fast)
 dotnet nuke Test               # All tests (unit + E2E)
 dotnet nuke TestE2E            # E2E tests (General, Binary, Container image, Container network topologies using Containerlab)
-dotnet nuke PublishBinaries    # Self-contained binary (
+dotnet nuke PublishBinaries    # Self-contained binary for the current platform
 dotnet nuke BuildContainerImage
 ```
 
@@ -86,10 +86,9 @@ Agents (remote Drift instances) report discovered state back to the coordinator 
 ## Testing
 
 - **Unit tests**: `*.Tests` projects using NUnit 4 and NSubstitute for mocking.
-- **E2E tests**: `Cli.E2ETests.*` projects — General (Testcontainers), Binary (published binary), Container (Docker image), Containerlab (real multi-node topologies).
+- **E2E tests**: `Cli.E2ETests.*` projects (`General` install scripts and schemas, `Binary` against the published binary, `Container` against the container image).
+- **Containerlab tests**: driven directly by the NUKE build (`build/NukeBuild.TestContainerlab.cs`, target `TestE2E_Clab`) against multi-node topologies — not a `Cli.E2ETests.*` project. Requires Containerlab installed and uses topology files in `containerlab/`.
 - **Architecture tests**: `ArchTests` project validates project dependency graph and naming rules.
-
-Containerlab tests require Containerlab installed and use topology files in `containerlab/`.
 
 ## Terminology (from domain model)
 

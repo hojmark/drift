@@ -55,29 +55,55 @@
                 ]
               },
               "addresses": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    },
-                    "is_id": {
-                      "type": [
-                        "null",
-                        "boolean"
-                      ]
-                    }
+                "type": "object",
+                "properties": {
+                  "ipv4": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
                   },
-                  "required": [
-                    "type",
-                    "value"
-                  ],
-                  "additionalProperties": false
-                }
+                  "mac": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "hostname": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "info": {
+                "type": [
+                  "null",
+                  "object"
+                ],
+                "properties": {
+                  "ipv4": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "mac": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "hostname": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                },
+                "additionalProperties": false
               },
               "state": {
                 "enum": [
@@ -101,6 +127,21 @@
           }
         }
       },
+      "additionalProperties": false
+    },
+    "server": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "address": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "address"
+      ],
       "additionalProperties": false
     },
     "settings": {
@@ -151,6 +192,61 @@
           },
           "address": {
             "type": "string"
+          },
+          "policy": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "to": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "expect": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "protocol": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "probe": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "fallback": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              },
+              "required": [
+                "to",
+                "expect"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [

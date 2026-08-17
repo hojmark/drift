@@ -48,6 +48,46 @@ public record Agent {
     get;
     set;
   }
+
+  public List<Policy>? Policy {
+    get;
+    set;
+  }
+}
+
+/// <summary>
+/// A single policy assertion executed by an agent against a target. Not yet executed.
+/// </summary>
+public record Policy {
+  public required List<string> To {
+    get;
+    init;
+  }
+
+  public required string Expect {
+    get;
+    init;
+  }
+
+  public List<int>? Port {
+    get;
+    init;
+  }
+
+  public string? Protocol {
+    get;
+    init;
+  }
+
+  public List<string>? Probe {
+    get;
+    init;
+  }
+
+  public string? Fallback {
+    get;
+    init;
+  }
 }
 
 public record AgentAuthentication {

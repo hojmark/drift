@@ -19,6 +19,8 @@ Commands:
   scan <spec>  Scan the network and detect drift
   lint <spec>  Validate a network spec
   agent        Manage the local Drift agent
+  server       Manage the local Drift server
+  env          Manage Drift environments
 
 Required command was not provided.
 Unrecognized command or argument 'nonexisting'.

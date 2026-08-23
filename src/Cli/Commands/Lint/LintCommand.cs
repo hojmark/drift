@@ -44,8 +44,7 @@ internal class LintCommandHandler( IOutputManager output ) : ICommandHandler<Lin
     }
 
     output.Log.LogInformation( "Validating network spec: {Spec}", filePath );
-    output.Normal.Write( "Validating " );
-    output.Normal.WriteLine( $"{filePath}  ", ConsoleColor.Cyan );
+    output.Normal.WriteLineVerbose( "Validating..." );
 
     var yamlContent = await File.ReadAllTextAsync( filePath!.FullName, cancellationToken );
 

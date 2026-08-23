@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
+using Drift.Cli.Settings.V1_preview.Environments;
 using Drift.Cli.Settings.V1_preview.FeatureFlags;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -44,6 +45,35 @@ internal sealed class SerializationTests {
       Assert.That( reloaded.Features, Has.Count.EqualTo( 2 ) );
       Assert.That( reloaded.Features[0].Name.Name, Is.EqualTo( "agent" ) );
       Assert.That( reloaded.Features[0].Enabled, Is.True );
+    }
+
+    Directory.Delete( location.GetDirectory(), true );
+  }
+
+  [Test]
+  public void EnvironmentsWriteAndReadRoundtrip() {
+    // Arrange
+    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
+    var logger = NullLogger.Instance;
+    var original = new CliSettings {
+      Environments = {
+        new EnvironmentSetting( "main-site", "192.168.1.10:51515" ),
+        new EnvironmentSetting( "backup-site", "192.168.2.10:51515" )
+      },
+      ActiveEnvironment = "main-site"
+    };
+
+    // Act
+    original.Write( logger, location );
+    var reloaded = CliSettings.Read( logger, location );
+
+    // Assert
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( reloaded.Environments, Has.Count.EqualTo( 2 ) );
+      Assert.That( reloaded.Environments[0].Name, Is.EqualTo( "main-site" ) );
+      Assert.That( reloaded.Environments[0].Address, Is.EqualTo( "192.168.1.10:51515" ) );
+      Assert.That( reloaded.ActiveEnvironment, Is.EqualTo( "main-site" ) );
+      Assert.That( reloaded.GetActiveEnvironment(), Is.EqualTo( original.Environments[0] ) );
     }
 
     Directory.Delete( location.GetDirectory(), true );

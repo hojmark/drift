@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 using Drift.Cli.Commands.Agent;
 using Drift.Cli.Commands.Agent.Subcommands.Start;
 using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Env;
+using Drift.Cli.Commands.Env.Subcommands;
 using Drift.Cli.Commands.Help;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
@@ -16,6 +18,7 @@ using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
+using Drift.Cli.Settings.Serialization;
 using Drift.Cli.SpecFile;
 using Drift.Domain.ExecutionEnvironment;
 using Drift.Domain.Scan;
@@ -74,6 +77,7 @@ internal static class RootCommandFactory {
   }
 
   private static void ConfigureDefaults( IServiceCollection services, bool toConsole, bool plainConsole ) {
+    services.AddSingleton<ISettingsLocationProvider, DefaultSettingsLocationProvider>();
     services.AddScoped<ParseResultHolder>();
     ConfigureExecutionEnvironment( services );
     ConfigureOutput( services, toConsole, plainConsole );
@@ -104,7 +108,8 @@ internal static class RootCommandFactory {
         new ScanCommand( provider ),
         new LintCommand( provider ),
         new AgentCommand( provider ),
-        new ServerCommand( provider )
+        new ServerCommand( provider ),
+        new EnvCommand( provider )
       };
 
     rootCommand.TreatUnmatchedTokensAsErrors = true;
@@ -141,6 +146,10 @@ internal static class RootCommandFactory {
     services.AddScoped<LintCommandHandler>();
     services.AddScoped<AgentStartCommandHandler>();
     services.AddScoped<ServerStartCommandHandler>();
+    services.AddScoped<EnvAddCommandHandler>();
+    services.AddScoped<EnvListCommandHandler>();
+    services.AddScoped<EnvUseCommandHandler>();
+    services.AddScoped<EnvRemoveCommandHandler>();
   }
 
   private static void ConfigureInteractiveServices( IServiceCollection services ) {

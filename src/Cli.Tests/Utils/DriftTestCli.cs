@@ -2,6 +2,8 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using Drift.Cli.Commands.Agent.Subcommands;
 using Drift.Cli.Infrastructure;
+using Drift.Cli.Settings.Serialization;
+using Drift.Cli.Settings.Tests;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli.Tests.Utils;
@@ -17,8 +19,10 @@ internal static class DriftTestCli {
     Action<IServiceCollection>? configureServices = null,
     RootCommandFactory.CommandRegistration[]? customCommands = null,
     CancellationToken cancellationToken = default,
-    bool redirectConsole = true
+    bool redirectConsole = true,
+    ISettingsLocationProvider? settingsLocation = null
   ) {
+    settingsLocation ??= new TemporarySettingsLocationProvider();
     var token = cancellationToken;
     CancellationTokenSource? cancellationTokenSource = null;
 
@@ -34,6 +38,12 @@ internal static class DriftTestCli {
       config.Output = output;
       config.Error = error;
     }
+
+    // Register test settings
+    Action<IServiceCollection> wrappedConfigure = services => {
+      services.AddSingleton( settingsLocation );
+      configureServices?.Invoke( services );
+    };
 
     /*
      * Most output is written to the InvocationConfiguration's TextWriters, but a few errors may be written to
@@ -57,7 +67,7 @@ internal static class DriftTestCli {
           CommandLineParser.SplitCommandLine( args ).ToArray(),
           false,
           true,
-          configureServices,
+          wrappedConfigure,
           customCommands,
           ConfigureInvocation,
           token
@@ -78,7 +88,7 @@ internal static class DriftTestCli {
         CommandLineParser.SplitCommandLine( args ).ToArray(),
         false,
         true,
-        configureServices,
+        wrappedConfigure,
         customCommands,
         ConfigureInvocation,
         token

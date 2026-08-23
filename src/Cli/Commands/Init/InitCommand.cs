@@ -95,7 +95,7 @@ internal class InitCommandHandler(
 
     if ( isInteractive ) {
       output.Normal.WriteLine();
-      output.Normal.WriteLineCTA( $"{Chars.Bulb} Next step: Run", $"drift scan {initOptions.Name}" );
+      output.Normal.WriteLineCTA( "Next step: Run", $"drift scan {initOptions.Name}" );
     }
 
     output.Log.LogDebug( "init command completed" );

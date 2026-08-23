@@ -14,7 +14,7 @@ public partial class CliSettings {
       logger?.LogTrace( "Reading settings from file: {Path}", location.GetFile() );
 
       if ( !File.Exists( location.GetFile() ) ) {
-        logger?.LogInformation( "Settings file not found. Using defaults." );
+        logger?.LogDebug( "Settings file not found. Using defaults." );
         return new CliSettings();
       }
 

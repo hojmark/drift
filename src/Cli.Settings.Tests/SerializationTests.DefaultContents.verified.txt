@@ -2,5 +2,7 @@
   "features": [],
   "appearance": {
     "output": "default"
-  }
+  },
+  "environments": [],
+  "activeEnvironment": null
 }

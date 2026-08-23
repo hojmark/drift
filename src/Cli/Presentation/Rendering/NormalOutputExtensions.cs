@@ -4,20 +4,25 @@ using Spectre.Console;
 namespace Drift.Cli.Presentation.Rendering;
 
 internal static class NormalOutputExtensions {
-  internal static void WriteLineValidity( this INormalOutput output, bool isValid ) {
-    if ( isValid ) {
-      output.WriteLine( $"{Chars.Checkmark} Valid", ConsoleColor.Green );
-    }
-    else {
-      output.WriteLineError( $"{Chars.Cross} Validation failed" );
-    }
-  }
+  private const bool Emoji = true;
 
   /// <summary>
   /// Action here meaning a command.
   /// </summary>
   internal static void WriteLineCTA( this INormalOutput output, string description, string command ) {
-    output.GetAnsiConsole().MarkupLine( $"{description} [bold][green]{command}[/][/]" );
+    output.GetAnsiConsole().MarkupLine( $"{Chars.Bulb} {description} [bold][green]{command}[/][/]" );
+  }
+
+  internal static void WriteLineSuccess( this INormalOutput output, string message ) {
+    output.GetAnsiConsole().MarkupLine( Emoji ? $"[green]{Chars.Checkmark}[/] {message}" : $"[green]{message}[/]" );
+  }
+
+  internal static void WriteLineFailure( this INormalOutput output, string message ) {
+    output.GetAnsiConsole().MarkupLine( Emoji ? $"[red]{Chars.Cross}[/] {message}" : $"[red]{message}[/]" );
+  }
+
+  internal static void WriteAnsiMarkup( this INormalOutput output, string message ) {
+    output.GetAnsiConsole().MarkupLine( message );
   }
 /*
   /// <summary>

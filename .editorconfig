@@ -159,6 +159,7 @@ dotnet_diagnostic.CA1848.severity = suggestion
 dotnet_diagnostic.CA2007.severity = suggestion
 dotnet_diagnostic.CA1303.severity = none
 dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1068.severity = warning
 # Elements should be documented
 dotnet_diagnostic.SA1600.severity = none
 # Braces for multi-line statements should not share line

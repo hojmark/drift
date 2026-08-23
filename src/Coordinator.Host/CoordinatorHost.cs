@@ -4,6 +4,7 @@ using Drift.Networking.Core;
 using Drift.Networking.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -44,7 +45,9 @@ public static class CoordinatorHost {
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
-      options.ListenAnyIP( port );
+      options.ListenAnyIP( port, o => {
+        o.Protocols = HttpProtocols.Http2; // gRPC requires HTTP/2
+      } );
     } );
 
     AddServerStuff( builder );
@@ -55,17 +58,23 @@ public static class CoordinatorHost {
     // will get CancellationToken.None.
     messagingOptions.StoppingToken = app.Lifetime.ApplicationStopping;
 
-    app.MapGet( "/", () =>
-      // TODO Render figlet using same flf as in the help command
-      """ 
-        ___          _    __   _   
-       |   \   _ _  (_)  / _| | |_ 
-       | |) | | '_| | | |  _| |  _|
-       |___/  |_|   |_| |_|    \__|
-      """
-      +
-      "\n\nServer"
-    );
+    // Unreachable while Kestrel ListenOptions.Protocols is HTTP/2-only (browsers can't speak HTTP/2 without TLS),
+    // but kept here for when this is moved to its own HTTP/1.1 port.
+    // Setting it to Http1AndHttp2 is not an option since that degrades ALL connections, including gRPC
+    // calls, to HTTP/1.1, which then fail against gRPC's HTTP/2-only endpoints with HTTP_1_1_REQUIRED.
+    // See https://github.com/grpc/grpc-dotnet/issues/979. So this must stay HTTP/2-only until either
+    // TLS is added or the friendly "/" page below is moved to its own HTTP/1.1-only port.
+    // app.MapGet( "/", () =>
+    //   // TODO Render figlet using same flf as in the help command
+    //   """
+    //     ___          _    __   _
+    //    |   \   _ _  (_)  / _| | |_
+    //    | |) | | '_| | | |  _| |  _|
+    //    |___/  |_|   |_| |_|    \__|
+    //   """
+    //   +
+    //   "\n\Server"
+    // );
     app.MapMessagingServerEndpoints();
 
     app.Lifetime.ApplicationStarted.Register( () => {

@@ -25,4 +25,13 @@ internal static class OutputManagerExtensions {
     logger.LogWarning( "Agents run without authentication. Any client that can reach the agent port can connect." );
     logger.LogWarning( "----------------------------------------------------------------------------------------" );
   }
+
+  /// <summary>
+  /// Writes a one-line header showing the active Drift environment (see 'drift env'), if any is set.
+  /// </summary>
+  public static void WriteEnvironmentHeader( this IOutputManager outputManager, string? activeEnvironmentName ) {
+    if ( outputManager.Is( OutputFormat.Normal ) && !string.IsNullOrWhiteSpace( activeEnvironmentName ) ) {
+      outputManager.Normal.WriteLineVerbose( $"Environment: {activeEnvironmentName}" );
+    }
+  }
 }

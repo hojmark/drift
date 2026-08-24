@@ -43,8 +43,8 @@ internal class LintCommandHandler( IOutputManager output ) : ICommandHandler<Lin
       return ExitCodes.GeneralError;
     }
 
-    output.Log.LogInformation( "Validating network spec: {Spec}", filePath );
-    output.Normal.WriteLineVerbose( "Validating..." );
+    output.Log.LogInformation( "Validating {Spec}", filePath );
+    output.Normal.WriteLineVerbose( $"Validating {filePath}" );
 
     var yamlContent = await File.ReadAllTextAsync( filePath!.FullName, cancellationToken );
 

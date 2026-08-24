@@ -48,7 +48,7 @@ internal class EnvRemoveCommandHandler(
   public Task<int> Invoke( EnvRemoveParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running 'env remove' command" );
 
-    var settings = CliSettings.Read( output.GetLogger(), settingsLocation );
+    var settings = CliSettings.Read( settingsLocation, output.GetLogger() );
 
     if ( !settings.TryGetEnvironment( parameters.Name, out _ ) ) {
       output.Normal.WriteLineFailure( $"'{parameters.Name}' does not exist" );

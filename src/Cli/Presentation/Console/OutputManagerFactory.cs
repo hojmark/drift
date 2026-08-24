@@ -29,7 +29,7 @@ internal class OutputManagerFactory(
   bool toConsole = true
 ) : IOutputManagerFactory {
   public IOutputManager Create( ParseResult result, bool plainConsole ) {
-    var outputFormat = result.GetValue( CommonParameters.Options.OutputFormat );
+    var outputFormat = result.GetValue<OutputFormat>( CommonParameters.Options.OutputFormatName );
     var verbose = result.GetValue( CommonParameters.Options.Verbose );
     var veryVerbose = result.GetValue( CommonParameters.Options.VeryVerbose );
 

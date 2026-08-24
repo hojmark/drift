@@ -38,7 +38,7 @@ internal sealed class SerializationTests {
 
     // Act
     original.Write( logger, location );
-    var reloaded = CliSettings.Read( logger, location );
+    var reloaded = CliSettings.Read( location, logger );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -65,7 +65,7 @@ internal sealed class SerializationTests {
 
     // Act
     original.Write( logger, location );
-    var reloaded = CliSettings.Read( logger, location );
+    var reloaded = CliSettings.Read( location, logger );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -88,7 +88,7 @@ internal sealed class SerializationTests {
     var defaultSettings = new CliSettings();
 
     // Act
-    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( location, NullLogger.Instance );
 
     // Assert
     var defaultSettingsJson = JsonSerializer.Serialize( defaultSettings );
@@ -104,7 +104,7 @@ internal sealed class SerializationTests {
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
 
     // Act
-    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( location, NullLogger.Instance );
 
     // Assert
     var defaultSettingsJson = JsonSerializer.Serialize( new CliSettings() );
@@ -131,7 +131,7 @@ internal sealed class SerializationTests {
     ISettingsLocationProvider location2 = new TemporarySettingsLocationProvider();
     new CliSettings().Write( NullLogger.Instance, location1 );
     new CliSettings().Write( NullLogger.Instance, location2 );
-    var reloaded1 = CliSettings.Read( NullLogger.Instance, location1 );
+    var reloaded1 = CliSettings.Read( location1, NullLogger.Instance );
 
     // Act / Assert
     Assert.Throws<InvalidOperationException>( () => reloaded1.Write( NullLogger.Instance, location2 ) );
@@ -148,7 +148,7 @@ internal sealed class SerializationTests {
     await File.WriteAllTextAsync( location.GetFile(), "garbage" );
 
     // Act
-    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( location, NullLogger.Instance );
 
     // Assert
     Assert.Throws<InvalidOperationException>( () => loadedSettings.Write( NullLogger.Instance, location ) );

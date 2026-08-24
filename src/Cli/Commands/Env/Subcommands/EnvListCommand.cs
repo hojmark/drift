@@ -40,7 +40,7 @@ internal class EnvListCommandHandler(
   public Task<int> Invoke( EnvListParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running 'env list' command" );
 
-    var settings = CliSettings.Read( output.GetLogger(), settingsLocation );
+    var settings = CliSettings.Read( settingsLocation, output.GetLogger() );
 
     if ( settings.Environments.Count == 0 ) {
       output.Normal.WriteLineWarning( "No environments configured." );

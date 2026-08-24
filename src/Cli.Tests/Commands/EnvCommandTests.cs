@@ -17,7 +17,7 @@ internal sealed partial class EnvCommandTests {
   }
 
   private CliSettings ReadSettings() {
-    return CliSettings.Read( location: SettingsLocation );
+    return CliSettings.Read( SettingsLocation );
   }
 
   private void WriteSettings( CliSettings settings ) {

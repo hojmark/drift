@@ -56,7 +56,7 @@ internal class EnvAddCommandHandler(
   public Task<int> Invoke( EnvAddParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running 'env add' command" );
 
-    var settings = CliSettings.Read( output.GetLogger(), settingsLocation );
+    var settings = CliSettings.Read( settingsLocation, output.GetLogger() );
 
     if ( settings.TryGetEnvironment( parameters.Name, out _ ) ) {
       output.Normal.WriteLineFailure( $"'{parameters.Name}' already exist" );

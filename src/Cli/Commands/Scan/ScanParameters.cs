@@ -14,7 +14,7 @@ internal record ScanParameters : SpecParameters {
   internal ScanParameters( ParseResult parseResult ) : base( parseResult ) {
     Interactive = parseResult.GetValue( Options.Interactive );
     ShowLogPanel = parseResult.GetValue( CommonParameters.Options.Verbose ) ||
-                      parseResult.GetValue( CommonParameters.Options.VeryVerbose );
+                   parseResult.GetValue( CommonParameters.Options.VeryVerbose );
   }
 
   internal bool Interactive {

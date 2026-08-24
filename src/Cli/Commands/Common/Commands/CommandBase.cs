@@ -22,7 +22,7 @@ internal abstract class CommandBase<TParameters, THandler> : Command
     Add( CommonParameters.Options.Verbose );
     // TODO re-intro when fixed
     // AddOption( GlobalParameters.Options.VeryVerbose );
-    Add( CommonParameters.Options.OutputFormat );
+    Add( CommonParameters.Options.CreateOutputFormat( provider.GetRequiredService<ISettingsLocationProvider>() ) );
 
     // TODO hack
     if ( includeSpecArgument ) {
@@ -40,7 +40,7 @@ internal abstract class CommandBase<TParameters, THandler> : Command
       // the settings file once per invocation; avoid surfacing the same error a second time here.
       // TODO read cached settings instead?
       var settingsLocation = serviceProvider.GetRequiredService<ISettingsLocationProvider>();
-      var activeEnvironment = CliSettings.Read( NullLogger.Instance, settingsLocation ).ActiveEnvironment;
+      var activeEnvironment = CliSettings.Read( settingsLocation, NullLogger.Instance ).ActiveEnvironment;
       output.WriteEnvironmentHeader( activeEnvironment );
 
       var handler = serviceProvider.GetRequiredService<THandler>();

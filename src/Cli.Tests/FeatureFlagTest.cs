@@ -64,7 +64,7 @@ internal sealed class FeatureFlagTest {
   private sealed class DummyTestCommandHandler( IOutputManager output ) : ICommandHandler<DummyTestParameters> {
     public Task<int> Invoke( DummyTestParameters parameters, CancellationToken cancellationToken ) {
       output.Normal.Write(
-        CliSettings.Read( location: SettingsLocationProvider ).IsFeatureEnabled( MyFeature )
+        CliSettings.Read( SettingsLocationProvider ).IsFeatureEnabled( MyFeature )
           ? "Feature is enabled"
           : "Feature is disabled"
       );

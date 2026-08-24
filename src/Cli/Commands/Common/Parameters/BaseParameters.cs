@@ -5,7 +5,7 @@ namespace Drift.Cli.Commands.Common.Parameters;
 
 internal abstract record BaseParameters {
   protected BaseParameters( ParseResult parseResult ) {
-    OutputFormat = parseResult.GetValue( CommonParameters.Options.OutputFormat );
+    OutputFormat = parseResult.GetValue<OutputFormat>( CommonParameters.Options.OutputFormatName );
   }
 
   internal OutputFormat OutputFormat {

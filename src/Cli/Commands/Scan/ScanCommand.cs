@@ -88,15 +88,18 @@ internal class ScanCommandHandler(
       var loadedInventory = await specProvider.GetDeserializedAsync( specFile );
       // If no spec file provided, use empty inventory
       var inventory = loadedInventory ?? new Inventory { Network = new Network(), Agents = [] };
-      return (inventory, false);
+      return ( inventory, false );
     }
     catch ( FileNotFoundException ) {
       // Spec file was explicitly provided but not found - this is an error
-      return (new Inventory { Network = new Network(), Agents = [] }, true);
+      return ( new Inventory { Network = new Network(), Agents = [] }, true );
     }
   }
 
-  private async Task<List<ResolvedSubnet>> ResolveSubnetsAsync( Inventory inventory, CancellationToken cancellationToken ) {
+  private async Task<List<ResolvedSubnet>> ResolveSubnetsAsync(
+    Inventory inventory,
+    CancellationToken cancellationToken
+  ) {
     var subnetProviders = BuildSubnetProviders( inventory, cancellationToken );
     var subnetProvider = new CompositeSubnetProvider( subnetProviders );
 
@@ -134,7 +137,11 @@ internal class ScanCommandHandler(
     return new NetworkScanOptions { Cidrs = uniqueCidrs };
   }
 
-  private void PrintScanSummary( List<ResolvedSubnet> resolvedSubnets, NetworkScanOptions scanRequest, bool hasAgents ) {
+  private void PrintScanSummary(
+    List<ResolvedSubnet> resolvedSubnets,
+    NetworkScanOptions scanRequest,
+    bool hasAgents
+  ) {
     var groupedSubnets = resolvedSubnets
       .GroupBy( subnet => subnet.Cidr )
       .Select( group => new { Cidr = group.Key, Sources = group.Select( r => r.Source ).Distinct().ToList() } )
@@ -182,7 +189,12 @@ internal class ScanCommandHandler(
     );
   }
 
-  private Task<int> StartUi( ScanParameters parameters, Inventory inventory, INetworkScanner scanner, NetworkScanOptions scanRequest ) {
+  private Task<int> StartUi(
+    ScanParameters parameters,
+    Inventory inventory,
+    INetworkScanner scanner,
+    NetworkScanOptions scanRequest
+  ) {
     if ( parameters.Interactive ) {
       var ui = new InteractiveUi(
         output,

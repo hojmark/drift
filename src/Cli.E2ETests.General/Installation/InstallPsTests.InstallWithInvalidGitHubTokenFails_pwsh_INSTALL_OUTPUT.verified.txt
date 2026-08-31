@@ -1,1 +1,2 @@
-dummy output
+🔍 Fetching version v1.0.0-alpha.7...
+❌ Failed to fetch version v1.0.0-alpha.7 from GitHub: Bad credentials

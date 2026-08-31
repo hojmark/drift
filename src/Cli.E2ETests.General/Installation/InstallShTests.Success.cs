@@ -159,7 +159,7 @@ internal sealed partial class InstallShTests {
       var githubToken = Environment.GetEnvironmentVariable( "GITHUB_TOKEN" );
       var expectedTokenMessage = string.IsNullOrEmpty( githubToken )
         ? "No GitHub token provided. Using anonymous API access; provide GITHUB_TOKEN to avoid rate limits."
-        : $"Using GitHub token: {githubToken[..Math.Min( 6, githubToken.Length )]}...";
+        : $"Using GitHub token: {githubToken[..Math.Min( 10, githubToken.Length )]}...";
       Assert.That(
         installProcess.StdOut,
         Contains.Substring( expectedTokenMessage )

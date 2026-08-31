@@ -5,6 +5,8 @@ using Drift.Common;
 namespace Drift.Cli.E2ETests.General.Installation;
 
 internal sealed partial class InstallShTests {
+  private const int ExposedTokenPrefixLength = 10;
+
   // TODO split test into at least two parts
   [Test]
   public async Task InstallLatestVersion() {
@@ -126,7 +128,7 @@ internal sealed partial class InstallShTests {
   }
 
   /// <summary>
-  /// install.sh should succeed with --verbose and emit the verbose-mode banner plus set -x trace output.
+  /// install.sh should succeed with --verbose and emit set -x trace output.
   /// </summary>
   [Test]
   public async Task InstallWithVerbose() {
@@ -157,13 +159,22 @@ internal sealed partial class InstallShTests {
 
       // Assert: GitHub token status
       var githubToken = Environment.GetEnvironmentVariable( "GITHUB_TOKEN" );
-      var expectedTokenMessage = string.IsNullOrEmpty( githubToken )
-        ? "No GitHub token provided. Using anonymous API access; provide GITHUB_TOKEN to avoid rate limits."
-        : $"Using GitHub token: {githubToken[..Math.Min( 10, githubToken.Length )]}...";
-      Assert.That(
-        installProcess.StdOut,
-        Contains.Substring( expectedTokenMessage )
-      );
+      if ( string.IsNullOrEmpty( githubToken ) ) {
+        Assert.That(
+          installProcess.StdOut,
+          Contains.Substring(
+            "No GitHub token provided. Using anonymous API access; provide GITHUB_TOKEN to avoid rate limits."
+          )
+        );
+      }
+      else {
+        var tokenPrefix = githubToken[..Math.Min( ExposedTokenPrefixLength, githubToken.Length )];
+        Assert.That( installProcess.StdOut, Contains.Substring( $"Using GitHub token: {tokenPrefix}..." ) );
+        if ( githubToken.Length > ExposedTokenPrefixLength ) {
+          Assert.That( installProcess.StdOut, Does.Not.Contain( githubToken[..( ExposedTokenPrefixLength + 1 )] ) );
+          Assert.That( installProcess.StdOut, Does.Not.Contain( githubToken ) );
+        }
+      }
 
       // Assert: set -x trace output is present in stderr (bash writes xtrace to stderr)
       Assert.That(

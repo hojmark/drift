@@ -23,6 +23,20 @@ run_utility() {
   return $exit_code
 }
 
+# Keep authenticated curl commands out of verbose xtrace output so the token is not exposed.
+github_curl() {
+  local was_xtrace=false
+  case "$-" in
+    *x*) was_xtrace=true; set +x ;;
+  esac
+  curl "$@"
+  local exit_code=$?
+  if [ "$was_xtrace" = true ]; then
+    set -x
+  fi
+  return $exit_code
+}
+
 # Check installer prerequisites
 REQUIRED_DEPS=("curl" "jq" "tar")
 SUDO_CMD=""
@@ -43,7 +57,7 @@ done
 if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
   echo "🔍 Installing prerequisites..."
   echo -e "${INDENT}${YELLOW}Missing dependencies: ${MISSING_DEPS[*]}${NC}"
-  read -p "${INDENT}Do you want to install them now? [Y/n]: " INSTALL_DEPS
+  read -rp "${INDENT}Do you want to install them now? [Y/n]: " INSTALL_DEPS
   INSTALL_DEPS=${INSTALL_DEPS:-Y}
 
   if [[ "$INSTALL_DEPS" =~ ^[Yy]$ ]]; then
@@ -86,8 +100,10 @@ VERSION="" # I.e. latest
 PLATFORM="linux-x64"
 # Set GITHUB_TOKEN to authenticate GitHub API requests and avoid rate limits.
 GITHUB_AUTH_ARGS=()
+GITHUB_TOKEN_PREFIX=""
 if [ -n "${GITHUB_TOKEN:-}" ]; then
   GITHUB_AUTH_ARGS+=( -H "Authorization: Bearer ${GITHUB_TOKEN}" )
+  GITHUB_TOKEN_PREFIX="${GITHUB_TOKEN:0:6}"
 fi
 if [ -n "${DRIFT_INSTALL_DIR:-}" ]; then
   TARGET="${DRIFT_INSTALL_DIR%/}/drift"
@@ -118,6 +134,11 @@ done
 if [ "$VERBOSE" = true ]; then
   set -euo pipefail -x
   echo -e "${YELLOW}🐞 Verbose mode is ON${NC}"
+  if [ -n "$GITHUB_TOKEN_PREFIX" ]; then
+    echo -e "${YELLOW}🔐 Using GitHub token: ${GITHUB_TOKEN_PREFIX}...${NC}"
+  else
+    echo -e "${YELLOW}🔓 No GitHub token provided. Using anonymous API access; provide GITHUB_TOKEN to avoid rate limits.${NC}"
+  fi
 else
   set -euo pipefail
 fi
@@ -126,7 +147,7 @@ fi
 if [ -z "$VERSION" ]; then
   echo "🔍 Fetching latest version..."
 
-  RESP=$(curl -sSL \
+  RESP=$(github_curl -sSL \
     -H "Accept: application/vnd.github+json" \
     -H "X-GitHub-Api-Version: 2022-11-28" \
     "${GITHUB_AUTH_ARGS[@]}" \
@@ -139,7 +160,7 @@ if [ -z "$VERSION" ]; then
 else
   echo "🔍 Fetching version ${VERSION}..."
 
-  RESP=$(curl -sSL \
+  RESP=$(github_curl -sSL \
     -H "Accept: application/vnd.github+json" \
     -H "X-GitHub-Api-Version: 2022-11-28" \
     "${GITHUB_AUTH_ARGS[@]}" \
@@ -162,7 +183,7 @@ FILENAME="drift_${VERSION#v}_${PLATFORM}.tar.gz"
 cd "$TMP_DIR" || exit_with_error "Failed to enter temp directory ${TMP_DIR}"
 
 echo -e "🔽 Downloading ${BOLD}${FILENAME}${NC}..."
-curl -sSL \
+github_curl -sSL \
   -H "Accept: application/octet-stream" \
   "${GITHUB_AUTH_ARGS[@]}" \
   -o "${FILENAME}" \

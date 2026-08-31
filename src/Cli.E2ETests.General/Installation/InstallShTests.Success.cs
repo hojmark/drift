@@ -155,6 +155,16 @@ internal sealed partial class InstallShTests {
       // Assert: verbose mode was activated (banner line emitted by install.sh)
       Assert.That( installProcess.StdOut, Contains.Substring( "Verbose mode is ON" ) );
 
+      // Assert: GitHub token status
+      var githubToken = Environment.GetEnvironmentVariable( "GITHUB_TOKEN" );
+      var expectedTokenMessage = string.IsNullOrEmpty( githubToken )
+        ? "No GitHub token provided. Using anonymous API access; provide GITHUB_TOKEN to avoid rate limits."
+        : $"Using GitHub token: {githubToken[..Math.Min( 6, githubToken.Length )]}...";
+      Assert.That(
+        installProcess.StdOut,
+        Contains.Substring( expectedTokenMessage )
+      );
+
       // Assert: set -x trace output is present in stderr (bash writes xtrace to stderr)
       Assert.That(
         installProcess.ErrOut,

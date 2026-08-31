@@ -78,6 +78,13 @@ if ($env:GITHUB_TOKEN) {
 
 $Platform = "win-x64"
 
+if ($env:GITHUB_TOKEN) {
+  $TokenPrefix = $env:GITHUB_TOKEN.Substring(0, [Math]::Min(6, $env:GITHUB_TOKEN.Length))
+  Write-Verbose "Using GitHub token: $TokenPrefix..."
+} else {
+  Write-Verbose "No GitHub token provided. Using anonymous API access; provide GITHUB_TOKEN to avoid rate limits."
+}
+
 if ($Version -eq "") {
   Write-Step $EmojiSearch "Fetching latest version..."
 

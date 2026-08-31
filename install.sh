@@ -134,7 +134,7 @@ done
 
 # Enable verbose mode if requested
 if [ "$VERBOSE" = true ]; then
-  set -euo pipefail -x
+  set -euo pipefail -x # -x = Print executed commands
   echo -e "${YELLOW}🐞 Verbose mode is ON${NC}"
   if [ -n "$GITHUB_TOKEN_PREFIX" ]; then
     echo -e "${YELLOW}🔐 Using GitHub token: ${GITHUB_TOKEN_PREFIX}...${NC}"

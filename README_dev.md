@@ -76,6 +76,9 @@ Arguments, options and environment variables for `install.sh`:
   By default, the script puts the `drift` binary into `/usr/local/bin`. Set this variable to change the installation
   directory.
 
+- **`GITHUB_TOKEN`** (environment variable)  
+  Optional. Pass a GitHub personal access token to avoid GitHub API rate limits.
+
 ### Windows script (`install.ps1`)
 
 Use the PowerShell installation script to download and install Drift on Windows.

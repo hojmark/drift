@@ -84,7 +84,11 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 VERBOSE=false
 VERSION="" # I.e. latest
 PLATFORM="linux-x64"
-#GITHUB_TOKEN=""
+# Set GITHUB_TOKEN to authenticate GitHub API requests and avoid rate limits.
+GITHUB_AUTH_ARGS=()
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+  GITHUB_AUTH_ARGS+=( -H "Authorization: Bearer ${GITHUB_TOKEN}" )
+fi
 if [ -n "${DRIFT_INSTALL_DIR:-}" ]; then
   TARGET="${DRIFT_INSTALL_DIR%/}/drift"
   TARGET_ROOT=""
@@ -124,8 +128,8 @@ if [ -z "$VERSION" ]; then
 
   RESP=$(curl -sSL \
     -H "Accept: application/vnd.github+json" \
-    ${GITHUB_TOKEN:+-H "Authorization: Bearer $GITHUB_TOKEN"} \
     -H "X-GitHub-Api-Version: 2022-11-28" \
+    "${GITHUB_AUTH_ARGS[@]}" \
     "https://api.github.com/repos/hojmark/drift/releases")
 
   RELEASE=$(echo "$RESP" | jq '[.[] | select(.prerelease == false)] | sort_by(.published_at) | reverse | .[0]')
@@ -137,8 +141,8 @@ else
 
   RESP=$(curl -sSL \
     -H "Accept: application/vnd.github+json" \
-    ${GITHUB_TOKEN:+-H "Authorization: Bearer $GITHUB_TOKEN"} \
     -H "X-GitHub-Api-Version: 2022-11-28" \
+    "${GITHUB_AUTH_ARGS[@]}" \
     "https://api.github.com/repos/hojmark/drift/releases/tags/${VERSION}")
 
   STATUS=$(echo "$RESP" | jq -r '.status // empty')
@@ -160,7 +164,7 @@ cd "$TMP_DIR" || exit_with_error "Failed to enter temp directory ${TMP_DIR}"
 echo -e "🔽 Downloading ${BOLD}${FILENAME}${NC}..."
 curl -sSL \
   -H "Accept: application/octet-stream" \
-  ${GITHUB_TOKEN:+-H "Authorization: Bearer $GITHUB_TOKEN"} \
+  "${GITHUB_AUTH_ARGS[@]}" \
   -o "${FILENAME}" \
   "https://api.github.com/repos/hojmark/drift/releases/assets/${ASSET_ID}"
 

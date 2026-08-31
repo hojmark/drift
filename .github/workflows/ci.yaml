@@ -29,6 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
+      GITHUB_TOKEN: ${{ github.token }} # Used by installation scripts to prevent API rate limits
       # https://docs.github.com/en/actions/how-tos/monitor-workflows/enable-debug-logging
       ACTIONS_RUNNER_DEBUG: false
     steps:
@@ -62,6 +63,8 @@ jobs:
     name: 🪟 Test
     runs-on: windows-latest
     timeout-minutes: 10
+    env:
+      GITHUB_TOKEN: ${{ github.token }} # Used by installation scripts to prevent API rate limits
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

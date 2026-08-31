@@ -80,8 +80,13 @@ internal sealed partial class InstallShTests {
 
     try {
       // Act
-      var installProcess = await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
-        .ExecuteAsync( $"{InstallScript} {version}" );
+      var installProcess = await new ToolWrapper(
+        "bash",
+        new() {
+          { "DRIFT_INSTALL_DIR", installDir },
+          { "GITHUB_TOKEN", null } // Note: the only test accessing APIs anonymously
+        }
+      ).ExecuteAsync( $"{InstallScript} {version}" );
 
       PrintInstallOutput( installProcess );
 

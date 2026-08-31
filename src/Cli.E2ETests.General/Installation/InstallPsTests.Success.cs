@@ -88,9 +88,13 @@ internal sealed partial class InstallPsTests {
 
     try {
       // Act
-      var installProcess =
-        await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
-          .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" {version}" );
+      var installProcess = await new ToolWrapper(
+        shell,
+        new() {
+          { "DRIFT_INSTALL_DIR", installDir },
+          { "GITHUB_TOKEN", null } // Note: the only test accessing APIs anonymously
+        }
+      ).ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" {version}" );
 
       PrintInstallOutput( installProcess, shell );
 

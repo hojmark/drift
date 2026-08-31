@@ -35,9 +35,10 @@ internal sealed partial class InstallPsTests {
 
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeFailure ) );
-      Assert.That( installProcess.StdOut, Contains.Substring( "(401) Unauthorized" ) );
       Assert.That( installProcess.StdOut, Does.Not.Contain( invalidToken ) );
       Assert.That( installProcess.ErrOut, Does.Not.Contain( invalidToken ) );
     }
+
+    await Verify( installProcess.StdOut ).UseTextForParameters( $"{shell}_INSTALL_OUTPUT" );
   }
 }

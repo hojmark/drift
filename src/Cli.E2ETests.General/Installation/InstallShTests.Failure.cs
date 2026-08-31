@@ -30,6 +30,26 @@ internal sealed partial class InstallShTests {
   }
 
   [Test]
+  public async Task InstallWithInvalidGitHubTokenFails() {
+    const string invalidToken = "invalid-token-for-testing";
+
+    var installProcess = await new ToolWrapper(
+      "bash",
+      new() { { "GITHUB_TOKEN", invalidToken } }
+    ).ExecuteAsync( $"{InstallScript} v1.0.0-alpha.5" );
+
+    PrintInstallOutput( installProcess );
+
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeFailure ) );
+      Assert.That( installProcess.StdOut, Does.Not.Contain( invalidToken ) );
+      Assert.That( installProcess.ErrOut, Does.Not.Contain( invalidToken ) );
+    }
+
+    await Verify( installProcess.StdOut ).UseTextForParameters( "INSTALL_OUTPUT" );
+  }
+
+  [Test]
   public async Task UnknownArgument() {
     // Arrange / Act
     var installProcess = await new ToolWrapper( "bash" ).ExecuteAsync( InstallScript + " --unknown-flag" );

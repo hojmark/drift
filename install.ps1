@@ -78,6 +78,13 @@ if ($env:GITHUB_TOKEN) {
 
 $Platform = "win-x64"
 
+if ($env:GITHUB_TOKEN) {
+  $TokenPrefix = $env:GITHUB_TOKEN.Substring(0, [Math]::Min(10, $env:GITHUB_TOKEN.Length))
+  Write-Verbose "Using GitHub token: $TokenPrefix..."
+} else {
+  Write-Verbose "No GitHub token provided. Using anonymous API access; provide GITHUB_TOKEN to avoid rate limits."
+}
+
 if ($Version -eq "") {
   Write-Step $EmojiSearch "Fetching latest version..."
 
@@ -108,7 +115,10 @@ if ($Version -eq "") {
   try {
     $Release = Invoke-RestMethod -Uri "$ApiBase/releases/tags/$Version" -Headers $Headers -ErrorAction Stop
   } catch {
-    Exit-WithError "Tag '$Version' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
+    if ($_.Exception.Response.StatusCode -eq 404) {
+      Exit-WithError "Tag '$Version' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
+    }
+    Exit-WithError "Failed to fetch version $Version from GitHub: $($_.Exception.Message)"
   }
 
   if ($null -eq $Release -or [string]::IsNullOrEmpty($Release.tag_name)) {

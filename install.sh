@@ -23,6 +23,24 @@ run_utility() {
   return $exit_code
 }
 
+# Keep authenticated curl commands out of verbose xtrace output so the token is not exposed.
+github_curl() {
+  local was_xtrace=false
+  case "$-" in
+    *x*) was_xtrace=true; set +x ;;
+  esac
+  if [ -n "${GITHUB_TOKEN:-}" ]; then
+    curl "$@" --fail-with-body -H "Authorization: Bearer ${GITHUB_TOKEN}" 2>/dev/null
+  else
+    curl "$@" --fail-with-body 2>/dev/null
+  fi
+  local exit_code=$?
+  if [ "$was_xtrace" = true ]; then
+    set -x
+  fi
+  return $exit_code
+}
+
 # Check installer prerequisites
 REQUIRED_DEPS=("curl" "jq" "tar")
 SUDO_CMD=""
@@ -43,7 +61,7 @@ done
 if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
   echo "🔍 Installing prerequisites..."
   echo -e "${INDENT}${YELLOW}Missing dependencies: ${MISSING_DEPS[*]}${NC}"
-  read -p "${INDENT}Do you want to install them now? [Y/n]: " INSTALL_DEPS
+  read -rp "${INDENT}Do you want to install them now? [Y/n]: " INSTALL_DEPS
   INSTALL_DEPS=${INSTALL_DEPS:-Y}
 
   if [[ "$INSTALL_DEPS" =~ ^[Yy]$ ]]; then
@@ -84,7 +102,11 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 VERBOSE=false
 VERSION="" # I.e. latest
 PLATFORM="linux-x64"
-#GITHUB_TOKEN=""
+# Set GITHUB_TOKEN to authenticate GitHub API requests and avoid rate limits.
+GITHUB_TOKEN_PREFIX=""
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+  GITHUB_TOKEN_PREFIX="${GITHUB_TOKEN:0:10}"
+fi
 if [ -n "${DRIFT_INSTALL_DIR:-}" ]; then
   TARGET="${DRIFT_INSTALL_DIR%/}/drift"
   TARGET_ROOT=""
@@ -112,8 +134,13 @@ done
 
 # Enable verbose mode if requested
 if [ "$VERBOSE" = true ]; then
-  set -euo pipefail -x
+  set -euo pipefail -x # -x = Print executed commands
   echo -e "${YELLOW}🐞 Verbose mode is ON${NC}"
+  if [ -n "$GITHUB_TOKEN_PREFIX" ]; then
+    echo -e "${YELLOW}🔐 Using GitHub token: ${GITHUB_TOKEN_PREFIX}...${NC}"
+  else
+    echo -e "${YELLOW}🔓 No GitHub token provided. Using anonymous API access; provide GITHUB_TOKEN to avoid rate limits.${NC}"
+  fi
 else
   set -euo pipefail
 fi
@@ -122,11 +149,13 @@ fi
 if [ -z "$VERSION" ]; then
   echo "🔍 Fetching latest version..."
 
-  RESP=$(curl -sSL \
+  if ! RESP=$(github_curl -sSL \
     -H "Accept: application/vnd.github+json" \
-    ${GITHUB_TOKEN:+-H "Authorization: Bearer $GITHUB_TOKEN"} \
     -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/hojmark/drift/releases")
+    "https://api.github.com/repos/hojmark/drift/releases"); then
+    API_MESSAGE=$(echo "$RESP" | jq -r '.message // empty')
+    exit_with_error "Failed to fetch releases from GitHub${API_MESSAGE:+: $API_MESSAGE}"
+  fi
 
   RELEASE=$(echo "$RESP" | jq '[.[] | select(.prerelease == false)] | sort_by(.published_at) | reverse | .[0]')
   VERSION=$(echo "$RELEASE" | jq -r '.tag_name')
@@ -135,11 +164,16 @@ if [ -z "$VERSION" ]; then
 else
   echo "🔍 Fetching version ${VERSION}..."
 
-  RESP=$(curl -sSL \
+  if ! RESP=$(github_curl -sSL \
     -H "Accept: application/vnd.github+json" \
-    ${GITHUB_TOKEN:+-H "Authorization: Bearer $GITHUB_TOKEN"} \
     -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/hojmark/drift/releases/tags/${VERSION}")
+    "https://api.github.com/repos/hojmark/drift/releases/tags/${VERSION}"); then
+    API_MESSAGE=$(echo "$RESP" | jq -r '.message // empty')
+    if [ "$API_MESSAGE" = "Not Found" ]; then
+      exit_with_error "Tag '${VERSION}' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
+    fi
+    exit_with_error "Failed to fetch version ${VERSION} from GitHub${API_MESSAGE:+: $API_MESSAGE}"
+  fi
 
   STATUS=$(echo "$RESP" | jq -r '.status // empty')
   if [ "$STATUS" = "404" ]; then
@@ -158,9 +192,8 @@ FILENAME="drift_${VERSION#v}_${PLATFORM}.tar.gz"
 cd "$TMP_DIR" || exit_with_error "Failed to enter temp directory ${TMP_DIR}"
 
 echo -e "🔽 Downloading ${BOLD}${FILENAME}${NC}..."
-curl -sSL \
+github_curl -sSL \
   -H "Accept: application/octet-stream" \
-  ${GITHUB_TOKEN:+-H "Authorization: Bearer $GITHUB_TOKEN"} \
   -o "${FILENAME}" \
   "https://api.github.com/repos/hojmark/drift/releases/assets/${ASSET_ID}"
 

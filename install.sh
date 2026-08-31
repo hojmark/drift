@@ -29,7 +29,11 @@ github_curl() {
   case "$-" in
     *x*) was_xtrace=true; set +x ;;
   esac
-  curl "$@"
+  if [ -n "${GITHUB_TOKEN:-}" ]; then
+    curl "$@" --fail-with-body -H "Authorization: Bearer ${GITHUB_TOKEN}" 2>/dev/null
+  else
+    curl "$@" --fail-with-body 2>/dev/null
+  fi
   local exit_code=$?
   if [ "$was_xtrace" = true ]; then
     set -x
@@ -99,10 +103,8 @@ VERBOSE=false
 VERSION="" # I.e. latest
 PLATFORM="linux-x64"
 # Set GITHUB_TOKEN to authenticate GitHub API requests and avoid rate limits.
-GITHUB_AUTH_ARGS=()
 GITHUB_TOKEN_PREFIX=""
 if [ -n "${GITHUB_TOKEN:-}" ]; then
-  GITHUB_AUTH_ARGS+=( -H "Authorization: Bearer ${GITHUB_TOKEN}" )
   GITHUB_TOKEN_PREFIX="${GITHUB_TOKEN:0:10}"
 fi
 if [ -n "${DRIFT_INSTALL_DIR:-}" ]; then
@@ -147,11 +149,13 @@ fi
 if [ -z "$VERSION" ]; then
   echo "🔍 Fetching latest version..."
 
-  RESP=$(github_curl -sSL \
+  if ! RESP=$(github_curl -sSL \
     -H "Accept: application/vnd.github+json" \
     -H "X-GitHub-Api-Version: 2022-11-28" \
-    "${GITHUB_AUTH_ARGS[@]}" \
-    "https://api.github.com/repos/hojmark/drift/releases")
+    "https://api.github.com/repos/hojmark/drift/releases"); then
+    API_MESSAGE=$(echo "$RESP" | jq -r '.message // empty')
+    exit_with_error "Failed to fetch releases from GitHub${API_MESSAGE:+: $API_MESSAGE}"
+  fi
 
   RELEASE=$(echo "$RESP" | jq '[.[] | select(.prerelease == false)] | sort_by(.published_at) | reverse | .[0]')
   VERSION=$(echo "$RELEASE" | jq -r '.tag_name')
@@ -160,11 +164,16 @@ if [ -z "$VERSION" ]; then
 else
   echo "🔍 Fetching version ${VERSION}..."
 
-  RESP=$(github_curl -sSL \
+  if ! RESP=$(github_curl -sSL \
     -H "Accept: application/vnd.github+json" \
     -H "X-GitHub-Api-Version: 2022-11-28" \
-    "${GITHUB_AUTH_ARGS[@]}" \
-    "https://api.github.com/repos/hojmark/drift/releases/tags/${VERSION}")
+    "https://api.github.com/repos/hojmark/drift/releases/tags/${VERSION}"); then
+    API_MESSAGE=$(echo "$RESP" | jq -r '.message // empty')
+    if [ "$API_MESSAGE" = "Not Found" ]; then
+      exit_with_error "Tag '${VERSION}' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
+    fi
+    exit_with_error "Failed to fetch version ${VERSION} from GitHub${API_MESSAGE:+: $API_MESSAGE}"
+  fi
 
   STATUS=$(echo "$RESP" | jq -r '.status // empty')
   if [ "$STATUS" = "404" ]; then
@@ -185,7 +194,6 @@ cd "$TMP_DIR" || exit_with_error "Failed to enter temp directory ${TMP_DIR}"
 echo -e "🔽 Downloading ${BOLD}${FILENAME}${NC}..."
 github_curl -sSL \
   -H "Accept: application/octet-stream" \
-  "${GITHUB_AUTH_ARGS[@]}" \
   -o "${FILENAME}" \
   "https://api.github.com/repos/hojmark/drift/releases/assets/${ASSET_ID}"
 

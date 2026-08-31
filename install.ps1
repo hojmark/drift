@@ -115,7 +115,15 @@ if ($Version -eq "") {
   try {
     $Release = Invoke-RestMethod -Uri "$ApiBase/releases/tags/$Version" -Headers $Headers -ErrorAction Stop
   } catch {
-    Exit-WithError "Tag '$Version' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
+    $ApiMessage = $_.ErrorDetails.Message
+    if ($ApiMessage) {
+      try { $ApiMessage = ($ApiMessage | ConvertFrom-Json).message } catch { }
+    }
+    if (-not $ApiMessage) { $ApiMessage = $_.Exception.Message }
+    if ($ApiMessage -eq "Not Found") {
+      Exit-WithError "Tag '$Version' not found on GitHub. Check https://github.com/hojmark/drift/releases for available versions."
+    }
+    Exit-WithError "Failed to fetch version $Version from GitHub: $ApiMessage"
   }
 
   if ($null -eq $Release -or [string]::IsNullOrEmpty($Release.tag_name)) {

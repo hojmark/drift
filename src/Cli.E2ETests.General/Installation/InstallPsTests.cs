@@ -45,6 +45,26 @@ internal sealed partial class InstallPsTests {
     );
   }
 
+  [TestCase( "pwsh" )]
+  [TestCase( "powershell" )]
+  public async Task InstallScriptHasValidSyntax( string shell ) {
+    await AssertShellIsAvailable( shell );
+
+    var escapedScriptPath = InstallScript.Replace( "'", "''" );
+    var command =
+      "& { $tokens = $null; $errors = $null; " +
+      "[System.Management.Automation.Language.Parser]::ParseFile(" +
+      $"'{escapedScriptPath}', [ref]$tokens, [ref]$errors); " +
+      "if ($errors.Count -gt 0) { $errors | Format-List; exit 1 } }";
+    var result = await new ToolWrapper( shell ).ExecuteAsync( $"-NoProfile -NonInteractive -Command \"{command}\"" );
+
+    Assert.That(
+      result.ExitCode,
+      Is.EqualTo( ScriptExitCodeSuccess ),
+      $"PowerShell syntax check failed for {shell}. Output: {result.StdOut}{Environment.NewLine}{result.ErrOut}"
+    );
+  }
+
   private static void PrintInstallOutput(
     (string StdOut, string ErrOut, int ExitCode, bool Cancelled) result,
     string shell

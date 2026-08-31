@@ -1,3 +1,5 @@
+using Drift.Common;
+
 namespace Drift.Cli.E2ETests.General.Installation;
 
 [Platform( "Linux" )]
@@ -44,5 +46,16 @@ internal sealed partial class InstallShTests {
     }
 
     Console.WriteLine( "------------------------------------------------------------" );
+  }
+
+  [Test]
+  public async Task InstallScriptHasValidSyntax() {
+    var result = await new ToolWrapper( "bash" ).ExecuteAsync( $"-n \"{InstallScript}\"" );
+
+    Assert.That(
+      result.ExitCode,
+      Is.EqualTo( ScriptExitCodeSuccess ),
+      $"bash syntax check failed. Output: {result.StdOut}{Environment.NewLine}{result.ErrOut}"
+    );
   }
 }

@@ -79,31 +79,17 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   public async Task<int> RunAsync() {
-    await _ansiConsole
-      .Live( _layout.Renderable )
-      .AutoClear( true )
-      .StartAsync( async ctx => {
-          await RenderAsync();
-          ctx.Refresh();
-
-          // TODO Async scan and log reading started using different patterns
-          _ = StartScanAsync();
-          await _logWatcher.StartAsync( _running.Token );
-
-          while ( !_running.IsCancellationRequested ) {
-            var keyTask = _consoleKeyWatcher.WaitForKeyAsync();
-            var resizeTask = _consoleResizeWatcher.WaitForResizeAsync();
-            var logTask = _logUpdateSignal.Task;
-            var scanTask = _scanUpdateSignal.Task;
-
-            await Task.WhenAny( keyTask, logTask, scanTask, resizeTask );
-
-            ProcessInput();
-            await RenderAsync();
-            ctx.Refresh();
-          }
-        }
-      );
+    if ( _ansiConsole.Profile.Capabilities.Interactive ) {
+      await _ansiConsole
+        .Live( _layout.Renderable )
+        .AutoClear( true )
+        .StartAsync( ctx => RunLoopAsync( ctx.Refresh ) );
+    }
+    else {
+      // Appends all renderings!
+      // Not sure if this is useful outside unit testing. Redirected use would likely not use -i flag.
+      await RunLoopAsync( () => _ansiConsole.Write( _layout.Renderable ) );
+    }
 
     return ExitCodes.Success;
   }
@@ -128,13 +114,35 @@ internal class InteractiveUi : IAsyncDisposable {
     return _scanner.ScanAsync( _scanRequest, _outputManager.GetLogger(), _running.Token );
   }
 
+  private async Task RunLoopAsync( Action render ) {
+    await UpdateLayoutAsync();
+    render();
+
+    // TODO Async scan and log reading started using different patterns
+    _ = StartScanAsync();
+    await _logWatcher.StartAsync( _running.Token );
+
+    while ( !_running.IsCancellationRequested ) {
+      var keyTask = _consoleKeyWatcher.WaitForKeyAsync();
+      var resizeTask = _consoleResizeWatcher.WaitForResizeAsync();
+      var logTask = _logUpdateSignal.Task;
+      var scanTask = _scanUpdateSignal.Task;
+
+      await Task.WhenAny( keyTask, logTask, scanTask, resizeTask );
+
+      ProcessInput();
+      await UpdateLayoutAsync();
+      render();
+    }
+  }
+
   private void OnLogUpdated( object? sender, string line ) {
     _logView.AddLine( line );
     _logUpdateSignal.TrySetResult();
     _logUpdateSignal = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
   }
 
-  private Task RenderAsync() {
+  private Task UpdateLayoutAsync() {
     SubnetView.Subnets = _subnets;
     _layout.SetDebug( SubnetView.DebugData );
     _layout.SetLog( _logView );

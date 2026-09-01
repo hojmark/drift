@@ -88,7 +88,16 @@ internal class InteractiveUi : IAsyncDisposable {
     else {
       // Appends all renderings!
       // Not sure if this is useful outside unit testing. Redirected use would likely not use -i flag.
-      await RunLoopAsync( () => _ansiConsole.Write( _layout.Renderable ) );
+      var first = true;
+      await RunLoopAsync( () => {
+        if ( !first ) {
+          _ansiConsole.WriteLine( string.Concat( Enumerable.Repeat( "-", _ansiConsole.Profile.Width ) ) );
+        }
+
+        _ansiConsole.Write( _layout.Renderable );
+        _ansiConsole.WriteLine();
+        first = false;
+      } );
     }
 
     return ExitCodes.Success;

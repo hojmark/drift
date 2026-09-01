@@ -99,16 +99,14 @@ A user settings file can be created at `~/.config/drift/settings.json`.
 
 JSON Schemas are available to enable editor auto-completion and validation:
 
-- [**Network spec schema
-  **](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json)  
+- [**Network spec schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json)  
   Add the `yaml-language-server` comment at the top of your spec file:
   ```yaml
   # yaml-language-server: $schema=https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Spec/embedded_resources/schemas/drift-spec-v1-preview.schema.json
   network:
   ...
   ```
-- [**User settings schema
-  **](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Cli.Settings/embedded_resources/schemas/drift-settings-v1-preview.schema.json)  
+- [**User settings schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Cli.Settings/embedded_resources/schemas/drift-settings-v1-preview.schema.json)  
   Add the `$schema` property at the top of your settings file:
   ```json
   {

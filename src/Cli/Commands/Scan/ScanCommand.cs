@@ -109,10 +109,8 @@ internal class ScanCommandHandler(
       string.Join( ", ", subnets )
     );
 
-    Task<int> uiTask;
-
     if ( parameters.Interactive ) {
-      var ui = new InteractiveUi(
+      await using var ui = new InteractiveUi(
         output,
         network,
         scanner,
@@ -122,14 +120,12 @@ internal class ScanCommandHandler(
         serviceProvider.GetRequiredService<IConsoleKeyWatcher>(),
         serviceProvider.GetRequiredService<IConsoleResizeWatcher>()
       );
-      uiTask = ui.RunAsync();
+      await ui.RunAsync();
     }
     else {
       var ui = new NonInteractiveUi( output, scanner );
-      uiTask = ui.RunAsync( scanRequest, network, parameters.OutputFormat );
+      await ui.RunAsync( scanRequest, network, parameters.OutputFormat );
     }
-
-    Task.WaitAll( uiTask );
 
     output.Log.LogDebug( "scan command completed" );
 

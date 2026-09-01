@@ -17,4 +17,4 @@ test-network ✓
 │                                                                                        │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 Idle        ██████████████████████████████████████████████████████████████████████████  0%
-q quit   r restart   ↑/↓ navigate   space toggle   w/s scroll   l log
+q quit   r restart   ↑/↓ navigate   space toggle   w/s scroll   l log                     

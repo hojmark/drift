@@ -17,4 +17,4 @@ test-network ✓
 │                                                                                        │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 Completed   ████████████████████████████████████████████████████████████████████████  100%
-q quit   r restart   ↑/↓ navigate   space toggle   w/s scroll   l log
+q quit   r restart   ↑/↓ navigate   space toggle   w/s scroll   l log                     

@@ -12,16 +12,8 @@ namespace Drift.Cli.Tests.Commands;
 internal sealed partial class ScanInteractiveTests {
   [Test]
   public async Task Layout_RendersExpectedScreen() {
-    var output = new StringWriter();
-    var console = AnsiConsole.Create( new AnsiConsoleSettings {
-      Out = new AnsiConsoleOutput( output ),
-      Ansi = AnsiSupport.No,
-      ColorSystem = ColorSystemSupport.NoColors,
-      Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false }
-    } );
-    console.Profile.Width = 90;
-    console.Profile.Height = 20;
-
+    // Arrange
+    var (output, console) = CreateConsole();
     var layout = new ScanLayout( new NetworkId( "test-network" ), console );
     var cidr = new CidrBlock( "192.168.0.0/24" );
     layout.SetScanTree(
@@ -34,22 +26,17 @@ internal sealed partial class ScanInteractiveTests {
     );
     layout.SetProgress( Percentage.Hundred );
 
+    // Act
     console.Write( layout.Renderable );
 
-    await Verify( output.ToString().TrimStart( '\uFEFF' ).TrimEnd() );
+    // Assert
+    await Verify( output.ToString() );
   }
 
   [Test]
   public async Task Layout_RendersDiscoveredDevices() {
-    var output = new StringWriter();
-    var console = AnsiConsole.Create( new AnsiConsoleSettings {
-      Out = new AnsiConsoleOutput( output ),
-      Ansi = AnsiSupport.No,
-      ColorSystem = ColorSystemSupport.NoColors,
-      Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false }
-    } );
-    console.Profile.Width = 90;
-    console.Profile.Height = 20;
+    // Arrange
+    var (output, console) = CreateConsole();
 
     var cidr = new CidrBlock( "192.168.0.0/24" );
     var scanResult = new NetworkScanResult {
@@ -79,34 +66,44 @@ internal sealed partial class ScanInteractiveTests {
     );
     layout.SetProgress( scanResult.Progress );
 
+    // Act
     console.Write( layout.Renderable );
 
-    await Verify( output.ToString().TrimStart( '\uFEFF' ).TrimEnd() );
+    // Assert
+    await Verify( output.ToString() );
   }
 
   [Test]
   public async Task Layout_RendersEmptyStateWithoutCidrs() {
-    var output = new StringWriter();
-    var console = AnsiConsole.Create( new AnsiConsoleSettings {
-      Out = new AnsiConsoleOutput( output ),
-      Ansi = AnsiSupport.No,
-      ColorSystem = ColorSystemSupport.NoColors,
-      Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false }
-    } );
-    console.Profile.Width = 90;
-    console.Profile.Height = 20;
-
+    // Arrange
+    var (output, console) = CreateConsole();
     var layout = new ScanLayout( new NetworkId( "test-network" ), console );
     layout.SetScanTree( [] );
     layout.SetProgress( Percentage.Zero );
 
+    // Act
     console.Write( layout.Renderable );
 
-    await Verify( output.ToString().TrimStart( '\uFEFF' ).TrimEnd() );
+    // Assert
+    await Verify( output.ToString() );
   }
 
   [Test]
   public async Task Layout_RendersCompletedEmptyStateWithoutCidrs() {
+    // Arrange
+    var (output, console) = CreateConsole();
+    var layout = new ScanLayout( new NetworkId( "test-network" ), console );
+    layout.SetScanTree( [] );
+    layout.SetProgress( Percentage.Hundred );
+
+    // Act
+    console.Write( layout.Renderable );
+
+    // Assert
+    await Verify( output.ToString() );
+  }
+
+  private static (StringWriter Output, IAnsiConsole Console) CreateConsole() {
     var output = new StringWriter();
     var console = AnsiConsole.Create( new AnsiConsoleSettings {
       Out = new AnsiConsoleOutput( output ),
@@ -117,12 +114,6 @@ internal sealed partial class ScanInteractiveTests {
     console.Profile.Width = 90;
     console.Profile.Height = 20;
 
-    var layout = new ScanLayout( new NetworkId( "test-network" ), console );
-    layout.SetScanTree( [] );
-    layout.SetProgress( Percentage.Hundred );
-
-    console.Write( layout.Renderable );
-
-    await Verify( output.ToString().TrimStart( '\uFEFF' ).TrimEnd() );
+    return ( output, console );
   }
 }

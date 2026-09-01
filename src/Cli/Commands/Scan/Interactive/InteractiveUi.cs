@@ -29,8 +29,8 @@ internal class InteractiveUi : IAsyncDisposable {
   private readonly CancellationTokenSource _running = new();
 
   // TODO should get IDisposable warning?
-  private readonly KeyWatcher _keyWatcher = new();
-  private readonly ConsoleResizeWatcher _resizeWatcher = new();
+  private readonly IConsoleKeyWatcher _consoleKeyWatcher;
+  private readonly IConsoleResizeWatcher _consoleResizeWatcher;
 
   private readonly List<Subnet> _subnets = [];
   private readonly NetworkScanOptions _scanRequest;
@@ -50,7 +50,9 @@ internal class InteractiveUi : IAsyncDisposable {
     INetworkScanner scanner,
     NetworkScanOptions scanRequest,
     IKeyMap keyMap,
-    bool initialLogExpansion
+    bool initialLogExpansion,
+    IConsoleKeyWatcher consoleKeyWatcher,
+    IConsoleResizeWatcher consoleResizeWatcher
   ) {
     _scanner = scanner;
     _scanRequest = scanRequest;
@@ -59,6 +61,8 @@ internal class InteractiveUi : IAsyncDisposable {
     _layout = new ScanLayout( network?.Id, _ansiConsole );
     _outputManager = outputManager;
     _network = network;
+    _consoleKeyWatcher = consoleKeyWatcher;
+    _consoleResizeWatcher = consoleResizeWatcher;
     _scanner.ResultUpdated += OnScanResultUpdated;
 
     _logWatcher = new LogWatcher( _outputManager );
@@ -87,8 +91,8 @@ internal class InteractiveUi : IAsyncDisposable {
           await _logWatcher.StartAsync( _running.Token );
 
           while ( !_running.IsCancellationRequested ) {
-            var keyTask = _keyWatcher.WaitForKeyAsync();
-            var resizeTask = _resizeWatcher.WaitForResizeAsync();
+            var keyTask = _consoleKeyWatcher.WaitForKeyAsync();
+            var resizeTask = _consoleResizeWatcher.WaitForResizeAsync();
             var logTask = _logUpdateSignal.Task;
             var scanTask = _scanUpdateSignal.Task;
 
@@ -107,12 +111,13 @@ internal class InteractiveUi : IAsyncDisposable {
   public async ValueTask DisposeAsync() {
     _scanner.ResultUpdated -= OnScanResultUpdated;
     _running.Dispose();
-    await _keyWatcher.DisposeAsync();
+    await _consoleKeyWatcher.DisposeAsync();
     _logWatcher.LogUpdated -= OnLogUpdated;
+    _consoleResizeWatcher.Dispose();
   }
 
   private void ProcessInput() {
-    var key = _keyWatcher.Consume();
+    var key = _consoleKeyWatcher.Consume();
     if ( key != null ) {
       var action = _keyMap.Map( key.Value );
       Handle( action );

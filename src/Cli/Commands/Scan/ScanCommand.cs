@@ -11,6 +11,7 @@ using Drift.Domain;
 using Drift.Domain.Scan;
 using Drift.Scanning.Subnets;
 using Drift.Scanning.Subnets.Interface;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Scan;
@@ -60,7 +61,8 @@ internal class ScanCommandHandler(
   IOutputManager output,
   INetworkScanner scanner,
   IInterfaceSubnetProvider interfaceSubnetProvider,
-  ISpecFileProvider specProvider
+  ISpecFileProvider specProvider,
+  IServiceProvider serviceProvider
 ) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running scan command" );
@@ -110,7 +112,16 @@ internal class ScanCommandHandler(
     Task<int> uiTask;
 
     if ( parameters.Interactive ) {
-      var ui = new InteractiveUi( output, network, scanner, scanRequest, new DefaultKeyMap(), parameters.ShowLogPanel );
+      var ui = new InteractiveUi(
+        output,
+        network,
+        scanner,
+        scanRequest,
+        new DefaultKeyMap(),
+        parameters.ShowLogPanel,
+        serviceProvider.GetRequiredService<IConsoleKeyWatcher>(),
+        serviceProvider.GetRequiredService<IConsoleResizeWatcher>()
+      );
       uiTask = ui.RunAsync();
     }
     else {

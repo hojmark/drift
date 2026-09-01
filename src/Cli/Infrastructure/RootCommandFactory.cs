@@ -7,6 +7,7 @@ using Drift.Cli.Commands.Help;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Scan;
+using Drift.Cli.Commands.Scan.Interactive.Input;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
@@ -66,6 +67,7 @@ internal static class RootCommandFactory {
     ConfigureSpecProvider( services );
     ConfigureSubnetProvider( services );
     ConfigureNetworkScanner( services );
+    ConfigureInteractiveServices( services );
   }
 
   private static void ConfigureExecutionEnvironment( IServiceCollection services ) {
@@ -112,6 +114,11 @@ internal static class RootCommandFactory {
     services.AddScoped<LintCommandHandler>();
   }
 
+  private static void ConfigureInteractiveServices( IServiceCollection services ) {
+    services.AddScoped<IConsoleKeyWatcher, ConsoleKeyWatcher>();
+    services.AddScoped<IConsoleResizeWatcher, ConsoleResizeWatcher>();
+  }
+
   private static void ConfigureDynamicCommands( IServiceCollection services, CommandRegistration[] commands ) {
     foreach ( var (handlerType, _) in commands ) {
       services.AddScoped( handlerType );
@@ -131,7 +138,8 @@ internal static class RootCommandFactory {
   private static void ConfigureNetworkScanner( IServiceCollection services ) {
     if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
       services.AddSingleton<IPingTool, LinuxPingTool>();
-    } else if ( RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ) {
+    }
+    else if ( RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ) {
       services.AddSingleton<IPingTool, WindowsPingTool>();
     }
     else {

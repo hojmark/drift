@@ -1,12 +1,11 @@
-﻿FROM quay.io/fedora/fedora-minimal:43
+﻿FROM debian:trixie-slim
 
 ENV Drift_ExecutionEnvironment="container"
 
-RUN microdnf --setopt=install_weak_deps=False install -y \
-    # iputils (ping), iproute (ip neigh)
-    iputils iproute fping arp && \
-    dnf clean all && \
-    rm -rf /var/cache /var/log /tmp/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      iputils-ping iproute2 fping net-tools && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/log/* /tmp/*
 
 LABEL "org.opencontainers.image.authors"="hojmark"
 LABEL "org.opencontainers.image.description"="Monitor network drift against your declared state"
@@ -15,14 +14,6 @@ LABEL "org.opencontainers.image.source"="https://github.com/hojmark/drift"
 LABEL "org.opencontainers.image.title"="Drift"
 LABEL "org.opencontainers.image.url"="https://docker.io/hojmark/drift"
 LABEL "org.opencontainers.image.vendor"="hojmark"
-
-# Override fedora-minimal labels (all OCI non-standard)
-LABEL "license"=""
-LABEL "name"=""
-LABEL "org.opencontainers.image.license"=""
-LABEL "org.opencontainers.image.name"=""
-LABEL "vendor"=""
-LABEL "version"=""
 
 WORKDIR /app
 COPY ./publish/linux-x64/drift .

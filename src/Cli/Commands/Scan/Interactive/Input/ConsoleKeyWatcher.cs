@@ -2,13 +2,14 @@ using System.Collections.Concurrent;
 
 namespace Drift.Cli.Commands.Scan.Interactive.Input;
 
-internal sealed class KeyWatcher : IAsyncDisposable {
+/// <inheritdoc/>
+internal sealed class ConsoleKeyWatcher : IConsoleKeyWatcher {
   private readonly ConcurrentQueue<ConsoleKey> _keyBuffer = new();
   private readonly CancellationTokenSource _cts = new();
   private readonly Task _listenerTask;
   private TaskCompletionSource? _waiter;
 
-  public KeyWatcher() {
+  public ConsoleKeyWatcher() {
     _listenerTask = Task.Run( ListenLoopAsync, _cts.Token );
   }
 

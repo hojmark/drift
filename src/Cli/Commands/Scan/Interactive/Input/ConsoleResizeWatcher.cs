@@ -1,6 +1,7 @@
 namespace Drift.Cli.Commands.Scan.Interactive.Input;
 
-internal sealed class ConsoleResizeWatcher : IDisposable {
+/// <inheritdoc/>
+internal sealed class ConsoleResizeWatcher : IConsoleResizeWatcher {
   private readonly TimeSpan _pollInterval = TimeSpan.FromMilliseconds( 200 );
   private readonly CancellationTokenSource _cts = new();
   private int _lastWidth;

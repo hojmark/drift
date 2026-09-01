@@ -18,6 +18,8 @@ internal class ScanLayout( NetworkId? networkId, IAnsiConsole console ) {
       new Layout( "Footer", BuildFooter() ) { Size = 1 }
     );
 
+  private List<Tree> _scanTrees = [];
+
   public IRenderable Renderable => _layout;
 
   public bool ShowLogs {
@@ -48,13 +50,13 @@ internal class ScanLayout( NetworkId? networkId, IAnsiConsole console ) {
   }
 
   public void SetScanTree( IEnumerable<Tree> content ) {
-    _layout["ScanTree"].Update(
-      new Panel( new Rows( content ) ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 )
-    );
+    _scanTrees = content.ToList();
+    UpdateScanTree();
   }
 
   public void SetProgress( Percentage progress ) {
     _layout["Progress"].Update( BuildProgressBar( progress ) );
+    UpdateScanTree( progress );
   }
 
   public void SetDebug( string text ) {
@@ -101,10 +103,7 @@ internal class ScanLayout( NetworkId? networkId, IAnsiConsole console ) {
     );
   }
 
-  private static Markup BuildFooter( /*int scroll, int maxScroll, int selectedIndex, List<UiSubnet> subnets */ ) {
-    const string keyColor = "bold";
-    const string actionColor = "";
-
+  private static Markup BuildFooter() {
     var keyActions = new Dictionary<string, string> {
       { "q", "quit" },
       { "r", "restart" },
@@ -119,12 +118,24 @@ internal class ScanLayout( NetworkId? networkId, IAnsiConsole console ) {
     var footerParts = new List<string>();
 
     foreach ( var kvp in keyActions ) {
-      footerParts.Add( $"[{keyColor}]{kvp.Key}[/][{actionColor}] {kvp.Value}[/]" );
+      footerParts.Add( $"[bold]{kvp.Key}[/] {kvp.Value}" );
     }
 
     // footerParts.Add( $"[grey]Scroll: {scroll}/{maxScroll}[/]" );
     // footerParts.Add( $"[grey]Selected: {selectedIndex + 1}/{subnets.Count}[/]" );
 
-    return new Markup( string.Join( $"[{actionColor}]   [/]", footerParts ) );
+    return new Markup( string.Join( "   ", footerParts ) );
+  }
+
+  private void UpdateScanTree( Percentage? progress = null ) {
+    IRenderable renderable = _scanTrees.Count > 0
+      ? new Rows( _scanTrees )
+      : progress?.Value == Percentage.Hundred.Value
+        ? new Markup( "[yellow]No networks found[/]" )
+        : new Rows( Enumerable.Empty<IRenderable>() );
+
+    _layout["ScanTree"].Update(
+      new Panel( renderable ).Expand().Border( BoxBorder.Square ).Padding( 0, 0 )
+    );
   }
 }

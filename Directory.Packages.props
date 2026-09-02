@@ -29,22 +29,22 @@
     <PackageVersion Include="Nuke.Tooling" Version="10.1.0" />
     <PackageVersion Include="NUnit" Version="4.6.1" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.14.0" />
-    <PackageVersion Include="NUnit3TestAdapter" Version="6.2.0" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="6.3.0" />
     <PackageVersion Include="Octokit" Version="14.0.0" />
     <PackageVersion Include="Semver" Version="3.0.0" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="Serilog.Sinks.TextWriter" Version="3.0.0" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.32.0.713" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.33.0.1635" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
     <PackageVersion Include="System.CommandLine" Version="2.0.11" />
     <PackageVersion Include="System.Text.Json" Version="10.0.11" />
     <PackageVersion Include="System.Threading.RateLimiting" Version="10.0.11" />
     <PackageVersion Include="Testcontainers" Version="4.14.0" />
-    <PackageVersion Include="TngTech.ArchUnitNET.NUnit" Version="0.13.3" />
-    <PackageVersion Include="TUnit" Version="1.65.31" />
+    <PackageVersion Include="TngTech.ArchUnitNET.NUnit" Version="0.13.4" />
+    <PackageVersion Include="TUnit" Version="1.65.63" />
     <PackageVersion Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="18.1.0" />
     <!-- Pinning reason: https://github.com/VerifyTests/Verify/issues/1642 -->
     <PackageVersion Include="Verify.NUnit" Version="[31.4.3]" />

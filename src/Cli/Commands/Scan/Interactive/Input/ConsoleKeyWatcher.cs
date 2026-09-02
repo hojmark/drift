@@ -4,6 +4,8 @@ namespace Drift.Cli.Commands.Scan.Interactive.Input;
 
 /// <inheritdoc/>
 internal sealed class ConsoleKeyWatcher : IConsoleKeyWatcher {
+  private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds( 50 );
+
   private readonly ConcurrentQueue<ConsoleKey> _keyBuffer = new();
   private readonly CancellationTokenSource _cts = new();
   private readonly Task _listenerTask;
@@ -39,11 +41,21 @@ internal sealed class ConsoleKeyWatcher : IConsoleKeyWatcher {
     _cts.Dispose();
   }
 
-  private void ListenLoopAsync() {
+  private async Task ListenLoopAsync() {
     while ( !_cts.Token.IsCancellationRequested ) {
-      var key = Console.ReadKey( intercept: true ).Key;
-      _keyBuffer.Enqueue( key );
-      _waiter?.TrySetResult();
+      if ( Console.KeyAvailable ) {
+        var key = Console.ReadKey( intercept: true ).Key;
+        _keyBuffer.Enqueue( key );
+        _waiter?.TrySetResult();
+      }
+      else {
+        try {
+          await Task.Delay( PollInterval, _cts.Token );
+        }
+        catch ( OperationCanceledException ) when ( _cts.IsCancellationRequested ) {
+          // Expected when the watcher is disposed.
+        }
+      }
     }
   }
 }

@@ -78,7 +78,9 @@ internal class InteractiveUi : IAsyncDisposable {
     set;
   }
 
-  public async Task<int> RunAsync() {
+  public async Task<int> RunAsync( CancellationToken cancellationToken ) {
+    await using var cancellationRegistration = cancellationToken.Register( Cancel );
+
     if ( _ansiConsole.Profile.Capabilities.Interactive ) {
       await _ansiConsole
         .Live( _layout.Renderable )
@@ -97,9 +99,7 @@ internal class InteractiveUi : IAsyncDisposable {
   public async ValueTask DisposeAsync() {
     _scanner.ResultUpdated -= OnScanResultUpdated;
     _running.Dispose();
-    await _consoleKeyWatcher.DisposeAsync();
     _logWatcher.LogUpdated -= OnLogUpdated;
-    _consoleResizeWatcher.Dispose();
   }
 
   private void ProcessInput() {
@@ -112,6 +112,12 @@ internal class InteractiveUi : IAsyncDisposable {
 
   private Task<NetworkScanResult> StartScanAsync() {
     return _scanner.ScanAsync( _scanRequest, _outputManager.GetLogger(), _running.Token );
+  }
+
+  private void Cancel() {
+    _running.Cancel();
+    _logUpdateSignal.TrySetResult();
+    _scanUpdateSignal.TrySetResult();
   }
 
   private async Task RunLoopAsync( Action render ) {

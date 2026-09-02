@@ -75,7 +75,8 @@ internal class OutputManagerFactory(
       outputFormat,
       verbose,
       veryVerbose,
-      outWrapper,
+      // Interactive rendering must reach the terminal; the bridge still captures logs for the log panel.
+      interactiveOutputOnly ? consoleOut : outWrapper,
       errWrapper,
       plainConsole,
       bridge.Reader

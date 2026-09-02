@@ -120,7 +120,7 @@ internal class ScanCommandHandler(
         serviceProvider.GetRequiredService<IConsoleKeyWatcher>(),
         serviceProvider.GetRequiredService<IConsoleResizeWatcher>()
       );
-      await ui.RunAsync();
+      await ui.RunAsync( cancellationToken );
     }
     else {
       var ui = new NonInteractiveUi( output, scanner );

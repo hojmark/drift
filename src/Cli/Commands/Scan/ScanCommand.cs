@@ -60,7 +60,8 @@ internal class ScanCommandHandler(
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ISpecFileProvider specProvider,
   IAgentClient agentClient,
-  IMessageEnvelopeConverter converter
+  IMessageEnvelopeConverter converter,
+  IServiceProvider serviceProvider
 ) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running scan command" );
@@ -76,11 +77,11 @@ internal class ScanCommandHandler(
     PrintScanSummary( resolvedSubnets, scanRequest, inventory.Agents.Any() );
 
     var scanner = CreateScanner( inventory, resolvedSubnets );
-    var uiTask = StartUi( parameters, inventory, scanner, scanRequest );
+    var exitCode = await StartUi( parameters, inventory, scanner, scanRequest, cancellationToken );
 
     output.Log.LogDebug( "scan command completed" );
 
-    return ExitCodes.Success;
+    return exitCode;
   }
 
   private async Task<(Inventory inventory, bool loadFailed)> LoadInventoryAsync( FileInfo? specFile ) {
@@ -193,7 +194,8 @@ internal class ScanCommandHandler(
     ScanParameters parameters,
     Inventory inventory,
     INetworkScanner scanner,
-    NetworkScanOptions scanRequest
+    NetworkScanOptions scanRequest,
+    CancellationToken cancellationToken
   ) {
     if ( parameters.Interactive ) {
       var ui = new InteractiveUi(
@@ -202,13 +204,15 @@ internal class ScanCommandHandler(
         scanner,
         scanRequest,
         new DefaultKeyMap(),
-        parameters.ShowLogPanel
+        parameters.ShowLogPanel,
+        serviceProvider.GetRequiredService<IConsoleKeyWatcher>(),
+        serviceProvider.GetRequiredService<IConsoleResizeWatcher>()
       );
-      return ui.RunAsync();
+      return ui.RunAsync( cancellationToken );
     }
     else {
       var ui = new NonInteractiveUi( output, scanner );
-      return ui.RunAsync( scanRequest, inventory.Network, parameters.OutputFormat );
+      return ui.RunAsync( scanRequest, inventory.Network, parameters.OutputFormat, cancellationToken );
     }
   }
 }

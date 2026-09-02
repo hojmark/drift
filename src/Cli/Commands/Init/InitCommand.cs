@@ -87,7 +87,7 @@ internal class InitCommandHandler(
       return ExitCodes.GeneralError;
     }
 
-    var success = await Initialize( initOptions );
+    var success = await Initialize( initOptions, cancellationToken );
 
     if ( !success ) {
       return ExitCodes.GeneralError;
@@ -170,7 +170,7 @@ internal class InitCommandHandler(
 
   private static string GetEnvPath( string name ) => Path.GetFullPath( $"{name}.env.yaml" );
 
-  private async Task<bool> Initialize( InitOptions options ) {
+  private async Task<bool> Initialize( InitOptions options, CancellationToken cancellationToken ) {
     try {
       var specPath = GetSpecPath( options.Name );
       // var envPath = GetEnvPath( options.Name );
@@ -186,7 +186,7 @@ internal class InitCommandHandler(
       LogSubnetDetails( scanOptions );
 
       if ( options.Discover ) {
-        var result = await PerformScanAsync( scanOptions );
+        var result = await PerformScanAsync( scanOptions, cancellationToken );
 
         output.Log.LogInformation( "Scan completed" );
         output.Log.LogDebug(
@@ -221,11 +221,14 @@ internal class InitCommandHandler(
 #pragma warning restore S2139
   }
 
-  private async Task<NetworkScanResult> PerformScanAsync( NetworkScanOptions request ) {
+  private async Task<NetworkScanResult> PerformScanAsync(
+    NetworkScanOptions request,
+    CancellationToken cancellationToken
+  ) {
     if ( output.Is( OutputFormat.Normal ) ) {
       return await output.Normal.GetAnsiConsole().Status().StartAsync(
         "Scanning network ...",
-        async _ => await scanner.ScanAsync( request, output.GetLogger() )
+        async _ => await scanner.ScanAsync( request, output.GetLogger(), cancellationToken )
       );
     }
 
@@ -244,7 +247,7 @@ internal class InitCommandHandler(
 
       try {
         scanner.ResultUpdated += LogProgress;
-        return await scanner.ScanAsync( request, output.GetLogger() );
+        return await scanner.ScanAsync( request, output.GetLogger(), cancellationToken );
       }
       finally {
         scanner.ResultUpdated -= LogProgress;

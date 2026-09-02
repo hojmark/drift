@@ -27,7 +27,7 @@ internal sealed partial class ScanInteractiveTests {
     );
 
     // Act
-    var (exitCode, _, error) = await DriftTestCli.InvokeFromTestAsync( "scan -i", services );
+    var (exitCode, _, error) = await DriftTestCli.InvokeAsync( "scan -i", services );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {

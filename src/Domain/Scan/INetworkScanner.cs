@@ -9,6 +9,6 @@ public interface INetworkScanner {
   Task<NetworkScanResult> ScanAsync(
     NetworkScanOptions options,
     ILogger logger,
-    CancellationToken cancellationToken = default
+    CancellationToken cancellationToken
   );
 }

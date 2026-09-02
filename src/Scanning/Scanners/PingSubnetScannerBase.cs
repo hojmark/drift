@@ -92,6 +92,9 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
 
         ResultUpdated?.Invoke( this, intermediateResult );
       }
+      catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
+        // Graceful shutdown via cancellation
+      }
       catch ( Exception e ) {
         logger.LogError( e, "Error while pinging {Ip}", ip );
       }
@@ -111,7 +114,7 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
 
     var result = new SubnetScanResult {
       Metadata = new Metadata { StartedAt = startedAt, EndedAt = endedAt },
-      Status = ScanResultStatus.Success,
+      Status = cancellationToken.IsCancellationRequested ? ScanResultStatus.Canceled : ScanResultStatus.Success,
       DiscoveredDevices = ToDiscoveredDevices( pingReplies, arpTable ),
       DiscoveryAttempts = ToDiscoveryAttempts( ipRange, (uint) ipRange.Count ),
       Progress = Percentage.Hundred,

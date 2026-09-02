@@ -1,8 +1,13 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.RateLimiting;
+using System.Threading.Tasks;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
@@ -94,7 +99,9 @@ internal abstract class PingSubnetScannerBase : ISubnetScanner {
 
     var endedAt = DateTime.Now;
 
-    Debug.Assert( completed == ipRange.Count, "Not all IPs were pinged" );
+    if ( !cancellationToken.IsCancellationRequested ) {
+      Debug.Assert( completed == ipRange.Count, "Not all IPs were pinged" );
+    }
 
     var result = new SubnetScanResult {
       Metadata = new Metadata { StartedAt = startedAt, EndedAt = endedAt },

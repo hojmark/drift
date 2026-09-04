@@ -40,7 +40,9 @@ internal sealed class ScanOrchestratorTests {
 
     // Act
     var result = await scanOrchestrator.ScanAsync(
-      new NetworkScanOptions { Cidrs = subnets, PingsPerSecond = int.MaxValue } /*, networkProvider*/, logger
+      new NetworkScanOptions { Cidrs = subnets, PingsPerSecond = int.MaxValue },
+      logger,
+      CancellationToken.None
     );
 
     // Assert

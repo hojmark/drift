@@ -4,7 +4,7 @@ using Drift.Domain.Scan;
 using Drift.Networking.Core.Abstractions;
 using Drift.Serialization.Converters;
 
-namespace Drift.Messaging.Protocol.Scan;
+namespace Drift.Messaging.Protocol.Agent.Scan;
 
 public sealed class ScanSubnetCompleteResponse : IResponse {
   public static string MessageType => "scan-complete";
@@ -18,7 +18,10 @@ public sealed class ScanSubnetCompleteResponse : IResponse {
 }
 
 [JsonSourceGenerationOptions(
-  Converters = [typeof(CidrBlockConverter), typeof(IpAddressConverter), typeof(DeviceAddressConverter), typeof(IpV4AddressSetConverter)],
+  Converters = [
+    typeof(CidrBlockConverter), typeof(IpAddressConverter), typeof(DeviceAddressConverter),
+    typeof(IpV4AddressSetConverter)
+  ],
   PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase
 )]
 [JsonSerializable( typeof(ScanSubnetCompleteResponse) )]

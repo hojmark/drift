@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Drift.Networking.Core.Abstractions;
 
-namespace Drift.Messaging.Protocol.Scan;
+namespace Drift.Messaging.Protocol.Agent.Scan;
 
 public sealed class ScanSubnetProgressUpdate : IMessage {
   public static string MessageType => "scan-progress-update";

@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Messaging.Protocol\Messaging.Protocol.csproj" />
+    <ProjectReference Include="..\Messaging.Protocol.Agent\Messaging.Protocol.Agent.csproj" />
   </ItemGroup>
 
   <ItemGroup>

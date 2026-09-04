@@ -4,7 +4,7 @@ using Drift.Domain;
 using Drift.Networking.Core.Abstractions;
 using Drift.Serialization.Converters;
 
-namespace Drift.Messaging.Protocol.Subnets;
+namespace Drift.Messaging.Protocol.Agent.Subnets;
 
 public sealed class SubnetsResponse : IResponse {
   public static string MessageType => "subnets-response";

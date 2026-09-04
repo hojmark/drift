@@ -12,7 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Networking.Core.Abstractions\Networking.Core.Abstractions.csproj" />
-    <ProjectReference Include="..\Messaging.Protocol\Messaging.Protocol.csproj" />
+    <ProjectReference Include="..\Messaging.Protocol.Agent\Messaging.Protocol.Agent.csproj" />
     <ProjectReference Include="..\Messaging.Client\Messaging.Client.csproj" />
     <ProjectReference Include="..\Networking.Server\Networking.Server.csproj" />
     <ProjectReference Include="..\Networking.Client\Networking.Client.csproj" />

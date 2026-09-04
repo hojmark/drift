@@ -4,7 +4,7 @@ using Drift.Domain;
 using Drift.Networking.Core.Abstractions;
 using Drift.Serialization.Converters;
 
-namespace Drift.Messaging.Protocol.Scan;
+namespace Drift.Messaging.Protocol.Agent.Scan;
 
 public sealed class ScanSubnetRequest : IRequest<ScanSubnetCompleteResponse> {
   public static string MessageType => "scan-subnet-request";

@@ -23,7 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Agent.Host\Agent.Host.csproj" />
     <ProjectReference Include="..\Coordinator.Host\Coordinator.Host.csproj" />
-    <ProjectReference Include="..\Messaging.Protocol\Messaging.Protocol.csproj" />
+    <ProjectReference Include="..\Messaging.Protocol.Agent\Messaging.Protocol.Agent.csproj" />
     <ProjectReference Include="..\Cli.Abstractions\Cli.Abstractions.csproj" />
     <ProjectReference Include="..\Cli.Settings\Cli.Settings.csproj" />
     <ProjectReference Include="..\Messaging.Client\Messaging.Client.csproj" />

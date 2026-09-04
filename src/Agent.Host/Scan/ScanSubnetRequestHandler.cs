@@ -1,6 +1,6 @@
 using Drift.Domain;
 using Drift.Domain.Scan;
-using Drift.Messaging.Protocol.Scan;
+using Drift.Messaging.Protocol.Agent.Scan;
 using Drift.Networking.Core.Abstractions;
 using Drift.Networking.Grpc.Generated;
 using Drift.Scanning.Scanners.Factories;

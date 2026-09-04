@@ -96,7 +96,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networking.Core.Abstraction
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Networking.Tests", "src\Networking.Tests\Networking.Tests.csproj", "{9DFDD692-22F8-4F9A-8808-94E318863D23}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messaging.Protocol", "src\Messaging.Protocol\Messaging.Protocol.csproj", "{7C72C2AE-2888-47A0-AAA4-61CC66B9F941}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messaging.Protocol.Agent", "src\Messaging.Protocol.Agent\Messaging.Protocol.Agent.csproj", "{7C72C2AE-2888-47A0-AAA4-61CC66B9F941}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messaging.Client", "src\Messaging.Client\Messaging.Client.csproj", "{091D3DCE-F062-4D40-A8F6-5B6F123ED713}"
 EndProject

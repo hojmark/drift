@@ -1,7 +1,7 @@
 using Drift.Domain;
 using Drift.Messaging.Client;
-using Drift.Messaging.Protocol.Scan;
-using Drift.Messaging.Protocol.Subnets;
+using Drift.Messaging.Protocol.Agent.Scan;
+using Drift.Messaging.Protocol.Agent.Subnets;
 using Drift.Networking.Core.Abstractions;
 
 namespace Drift.Cli.Commands.Scan;

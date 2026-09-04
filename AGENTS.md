@@ -47,7 +47,7 @@ The solution is split into focused projects. The main ones:
 | `Networking.Core` | Message stream/manager implementation built on gRPC |
 | `Networking.Client` | Default client factory for opening outbound messaging connections |
 | `Networking.Server` | Hosts the inbound gRPC service for messaging endpoints |
-| `Messaging.Protocol` | Concrete request/response message contracts (e.g. scan, subnets) |
+| `Messaging.Protocol.Agent` | Agent request/response message contracts (e.g. scan, subnets) |
 | `Messaging.Client` | Typed agent client built on top of `Networking.Client`/`Networking.Core` |
 | `Agent.Host` | Hosts an agent's messaging/gRPC endpoint (Kestrel/ASP.NET Core) |
 | `Coordinator.Host` | Coordinator-side host counterpart to `Agent.Host` (work in progress) |

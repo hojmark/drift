@@ -22,7 +22,7 @@ using Drift.Cli.SpecFile;
 using Drift.Common;
 using Drift.Domain.ExecutionEnvironment;
 using Drift.Messaging.Client;
-using Drift.Messaging.Protocol;
+using Drift.Messaging.Protocol.Agent;
 using Drift.Networking.Client;
 using Drift.Networking.Core;
 using Drift.Scanning;
@@ -89,7 +89,7 @@ internal static class RootCommandFactory {
   // TODO should go once CLI migrates to the Control API
   private static void ConfigureAgentClient( IServiceCollection services ) {
     services.AddMessagingCore( new MessagingOptions {
-      MessageAssembly = typeof(ProtocolMessagesAssemblyMarker).Assembly
+      MessageAssembly = typeof(AgentProtocolMessagesAssemblyMarker).Assembly
     } );
     services.AddMessagingClient();
     services.AddAgentClient();

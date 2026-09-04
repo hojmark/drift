@@ -3,7 +3,7 @@ using Drift.Coordinator.Host.Apis.Control;
 using Drift.Coordinator.Host.Logging;
 using Drift.Coordinator.Host.Ui;
 using Drift.Domain.ExecutionEnvironment;
-using Drift.Messaging.Protocol;
+using Drift.Messaging.Protocol.Agent;
 using Drift.Networking.Client;
 using Drift.Networking.Core;
 using Drift.Networking.Server;
@@ -53,7 +53,8 @@ public static class CoordinatorHost {
       options.EnableDetailedErrors = true;
     } );
     builder.Services.AddMessagingClient();
-    var messagingOptions = new MessagingOptions { MessageAssembly = typeof(ProtocolMessagesAssemblyMarker).Assembly };
+    var messagingOptions =
+      new MessagingOptions { MessageAssembly = typeof(AgentProtocolMessagesAssemblyMarker).Assembly };
     builder.Services.AddMessagingCore( messagingOptions );
     builder.Services.AddScanning();
     builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();

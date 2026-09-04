@@ -1,11 +1,11 @@
 using System.Reflection;
-using Drift.Messaging.Protocol;
+using Drift.Messaging.Protocol.Agent;
 using Drift.Networking.Core.Abstractions;
 
 namespace Drift.Messaging.Tests;
 
 internal sealed class MessageHandlerTests {
-  private static readonly Assembly MessagesAssembly = typeof(ProtocolMessagesAssemblyMarker).Assembly;
+  private static readonly Assembly MessagesAssembly = typeof(AgentProtocolMessagesAssemblyMarker).Assembly;
   private static readonly IEnumerable<Type> RequestTypes = GetAllConcreteMessageTypes( typeof(IRequest<>) );
   private static readonly IEnumerable<Type> ResponseTypes = GetAllConcreteMessageTypes( typeof(IResponse) );
 

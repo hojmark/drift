@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Drift.Networking.Core.Abstractions;
 
-namespace Drift.Messaging.Protocol.Subnets;
+namespace Drift.Messaging.Protocol.Agent.Subnets;
 
 public sealed class SubnetsRequest : IRequest<SubnetsResponse> {
   public static string MessageType => "subnets-request";

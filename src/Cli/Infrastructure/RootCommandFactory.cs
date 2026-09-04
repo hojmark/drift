@@ -1,7 +1,6 @@
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using Drift.Cli.Commands.Agent;
 using Drift.Cli.Commands.Agent.Subcommands.Start;
 using Drift.Cli.Commands.Common;
@@ -20,14 +19,13 @@ using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.Settings.Serialization;
 using Drift.Cli.SpecFile;
+using Drift.Common;
 using Drift.Domain.ExecutionEnvironment;
-using Drift.Domain.Scan;
 using Drift.Messaging.Client;
 using Drift.Messaging.Protocol;
 using Drift.Networking.Client;
 using Drift.Networking.Core;
 using Drift.Scanning;
-using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -78,26 +76,23 @@ internal static class RootCommandFactory {
 
   private static void ConfigureDefaults( IServiceCollection services, bool toConsole, bool plainConsole ) {
     services.AddSingleton<ISettingsLocationProvider, DefaultSettingsLocationProvider>();
+    services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
     services.AddScoped<ParseResultHolder>();
-    ConfigureExecutionEnvironment( services );
     ConfigureOutput( services, toConsole, plainConsole );
     ConfigureSpecProvider( services );
     ConfigureSubnetProvider( services );
-    ConfigureNetworkScanner( services );
+    ConfigureScanServices( services );
     ConfigureInteractiveServices( services );
     ConfigureAgentClient( services );
   }
 
+  // TODO should go once CLI migrates to the Control API
   private static void ConfigureAgentClient( IServiceCollection services ) {
     services.AddMessagingCore( new MessagingOptions {
       MessageAssembly = typeof(ProtocolMessagesAssemblyMarker).Assembly
     } );
     services.AddMessagingClient();
     services.AddAgentClient();
-  }
-
-  internal static void ConfigureExecutionEnvironment( IServiceCollection services ) {
-    services.AddSingleton<IExecutionEnvironmentProvider, CurrentExecutionEnvironmentProvider>();
   }
 
   private static RootCommand CreateRootCommand( IServiceProvider provider ) {
@@ -140,6 +135,10 @@ internal static class RootCommandFactory {
     services.AddScoped<IInterfaceSubnetProvider, PhysicalInterfaceSubnetProvider>();
   }
 
+  private static void ConfigureScanServices( IServiceCollection services ) {
+    services.AddScanning();
+  }
+
   private static void ConfigureBuiltInCommandHandlers( IServiceCollection services ) {
     services.AddScoped<InitCommandHandler>();
     services.AddScoped<ScanCommandHandler>();
@@ -171,31 +170,6 @@ internal static class RootCommandFactory {
     foreach ( var registration in commands ?? [] ) {
       rootCommand.Add( registration.Factory( provider ) );
     }
-  }
-
-  internal static void ConfigureNetworkScanner( IServiceCollection services ) {
-    if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
-      services.AddSingleton<IPingTool, LinuxPingTool>();
-    }
-    else if ( RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ) {
-      services.AddSingleton<IPingTool, WindowsPingTool>();
-    }
-    else {
-      throw new PlatformNotSupportedException();
-    }
-
-    services.AddScoped<ISubnetScannerFactory, DefaultSubnetScannerFactory>();
-    services.AddScoped<INetworkScanner, DefaultNetworkScanner>();
-  }
-
-  /// <summary>
-  /// Configures core services required for agent functionality (scanning, subnet discovery, execution environment).
-  /// This is used both by the CLI when running locally and by agents when handling remote requests.
-  /// </summary>
-  internal static void ConfigureAgentCoreServices( IServiceCollection services ) {
-    ConfigureExecutionEnvironment( services );
-    ConfigureSubnetProvider( services );
-    ConfigureNetworkScanner( services );
   }
 
   private static void AddFigletHeaderToHelpCommand( RootCommand rootCommand ) {

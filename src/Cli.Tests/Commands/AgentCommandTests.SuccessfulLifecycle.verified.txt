@@ -4,7 +4,7 @@ Agent communication is unencrypted. Do not use on untrusted networks.
 Agents run without authentication. Any client that can reach the agent port can connect.
 ----------------------------------------------------------------------------------------
 Agent starting...
-Listening for incoming connections on port 51515
+Listening for inbound server connections on port 51515 (gRPC)
 Agent started
 Agent stopping...
 Agent stopped

@@ -147,4 +147,34 @@ internal static class DriftTestCli {
 
     return command;
   }
+
+  /// <summary>
+  /// Starts a new server asynchronously and returns tasks that complete when it has started.
+  /// </summary>
+  internal static async Task<RunningCliCommand> StartServerAsync(
+    string args,
+    CancellationToken cancellationToken,
+    Action<IServiceCollection>? configureServices = null
+  ) {
+    var readyTcs = new AgentLifetime();
+
+    var command = StartAsync(
+      "server start " + args,
+      services => {
+        services.AddSingleton( readyTcs );
+        configureServices?.Invoke( services );
+      },
+      cancellationToken
+    );
+
+    // Wait for either readiness or command exit
+    var completed = await Task.WhenAny( readyTcs.Ready.Task, command.Completion );
+
+    if ( completed == command.Completion ) {
+      var com = await command.Completion;
+      throw new InvalidOperationException( "Command exited before server was started. Details:\n" + com.Error );
+    }
+
+    return command;
+  }
 }

@@ -3,7 +3,7 @@ using Drift.Domain.Scan;
 using Drift.Messaging.Protocol.Scan;
 using Drift.Networking.Core.Abstractions;
 using Drift.Networking.Grpc.Generated;
-using Drift.Scanning.Scanners;
+using Drift.Scanning.Scanners.Factories;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Agent.Host.Scan;
@@ -27,13 +27,13 @@ internal sealed class ScanSubnetRequestHandler(
 
     logger.LogInformation( "Starting scan of {Cidr}", request.Cidr );
 
-    var scanner = subnetScannerFactory.Get( request.Cidr );
+    var subnetScanner = subnetScannerFactory.Get( request.Cidr );
     var policy = new ProgressUpdatePolicy( stream, converter, envelope, request.Cidr, logger );
 
-    scanner.ResultUpdated += policy.Handle;
+    subnetScanner.ResultUpdated += policy.Handle;
 
     try {
-      var result = await scanner.ScanAsync( options, logger, cancellationToken );
+      var result = await subnetScanner.ScanAsync( options, logger, cancellationToken );
 
       logger.LogInformation(
         "Scan complete for {Cidr}: {DeviceCount} devices found",
@@ -45,7 +45,7 @@ internal sealed class ScanSubnetRequestHandler(
       await stream.SendAsync( converter, completeResponse, envelope.CorrelationId );
     }
     finally {
-      scanner.ResultUpdated -= policy.Handle;
+      subnetScanner.ResultUpdated -= policy.Handle;
     }
   }
 

@@ -12,22 +12,22 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Cli.Commands.Scan;
 
 /// <summary>
-/// Network scanner that delegates scanning to agents based on subnet source.
+/// Coordinates local and agent scans based on subnet source.
 /// </summary>
-internal sealed class DistributedNetworkScanner(
-  INetworkScanner localScanner,
+internal sealed class DistributedScanOrchestrator(
+  IScanOrchestrator localScanOrchestrator,
   IAgentClient agentClient,
   IMessageEnvelopeConverter converter,
   List<ResolvedSubnet> resolvedSubnets,
   Inventory inventory,
   ILogger logger
-) : INetworkScanner {
+) : IScanOrchestrator {
   public event EventHandler<NetworkScanResult>? ResultUpdated;
 
   public async Task<NetworkScanResult> ScanAsync(
     NetworkScanOptions options,
     ILogger logger,
-    CancellationToken cancellationToken = default
+    CancellationToken cancellationToken
   ) {
     logger.LogDebug( "Starting distributed network scan" );
 
@@ -85,12 +85,12 @@ internal sealed class DistributedNetworkScanner(
     };
 
     try {
-      localScanner.ResultUpdated += progressHandler;
-      var localResult = await localScanner.ScanAsync( localOptions, logger, cancellationToken );
+      localScanOrchestrator.ResultUpdated += progressHandler;
+      var localResult = await localScanOrchestrator.ScanAsync( localOptions, logger, cancellationToken );
       allResults.AddRange( localResult.Subnets );
     }
     finally {
-      localScanner.ResultUpdated -= progressHandler;
+      localScanOrchestrator.ResultUpdated -= progressHandler;
     }
   }
 

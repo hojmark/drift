@@ -4,9 +4,9 @@ using Drift.Domain.ExecutionEnvironment;
 using Drift.Domain.Scan;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Scanning.Scanners;
+namespace Drift.Scanning.Scanners.Factories;
 
-public class DefaultSubnetScannerFactory(
+public class LocalSubnetScannerFactory(
   IPingTool pingTool,
   ILogger logger,
   IExecutionEnvironmentProvider executionEnvironmentProvider

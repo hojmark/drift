@@ -89,7 +89,7 @@ public class DeviceDrift {
   Justification = "Draft code"
 )]
 public class DefaultScanOrchestrator : Ideas {
-  private readonly INetworkScanner _networkScanner;
+  private readonly IScanOrchestrator _scanOrchestrator;
 
   // private readonly INetworkSpecLoader _specLoader;
   private readonly IDriftComparer _driftComparer;
@@ -98,12 +98,12 @@ public class DefaultScanOrchestrator : Ideas {
   private readonly ILogger<DefaultScanOrchestrator> _logger;
 
   public DefaultScanOrchestrator(
-    INetworkScanner networkScanner,
+    IScanOrchestrator scanOrchestrator,
     // INetworkSpecLoader specLoader,
     IDriftComparer driftComparer,
     // IEnumerable<IScanResultFormatter> formatters,
     ILogger<DefaultScanOrchestrator> logger ) {
-    _networkScanner = networkScanner;
+    _scanOrchestrator = scanOrchestrator;
     // _specLoader = specLoader;
     _driftComparer = driftComparer;
     // _formatters = formatters;
@@ -113,7 +113,7 @@ public class DefaultScanOrchestrator : Ideas {
   public static async Task RunScanAsync( ScanOptions options ) {
     /*_logger.LogInformation("Starting network scan...");
 
-    var actualState = await _networkScanner.ScanAsync();
+    var actualState = await _scanOrchestrator.ScanAsync();
 
     DriftResult? drift = null;
 

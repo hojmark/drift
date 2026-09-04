@@ -12,7 +12,7 @@ using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
-using Drift.Scanning.Scanners;
+using Drift.Scanning.Scanners.Factories;
 using Drift.Scanning.Subnets.Interface;
 using Drift.Scanning.Tests.Utils;
 using Microsoft.Extensions.DependencyInjection;
@@ -247,7 +247,7 @@ internal sealed partial class ScanCommandTests {
         );
       }
 
-      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
+      services.AddScoped<IScanOrchestrator>( _ => new PredefinedScanOrchestrator(
           new NetworkScanResult {
             Metadata = new Metadata { StartedAt = default, EndedAt = default },
             Status = ScanResultStatus.Success,

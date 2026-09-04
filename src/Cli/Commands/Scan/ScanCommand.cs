@@ -56,7 +56,7 @@ internal class ScanCommand : CommandBase<ScanParameters, ScanCommandHandler> {
 
 internal class ScanCommandHandler(
   IOutputManager output,
-  INetworkScanner localScanner,
+  IScanOrchestrator localScanOrchestrator,
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ISpecFileProvider specProvider,
   IAgentClient agentClient,
@@ -76,8 +76,8 @@ internal class ScanCommandHandler(
 
     PrintScanSummary( resolvedSubnets, scanRequest, inventory.Agents.Any() );
 
-    var scanner = CreateScanner( inventory, resolvedSubnets );
-    var exitCode = await StartUi( parameters, inventory, scanner, scanRequest, cancellationToken );
+    var scanOrchestrator = CreateScanOrchestrator( inventory, resolvedSubnets );
+    var exitCode = await StartUi( parameters, inventory, scanOrchestrator, scanRequest, cancellationToken );
 
     output.Log.LogDebug( "scan command completed" );
 
@@ -173,15 +173,15 @@ internal class ScanCommandHandler(
     );
   }
 
-  private INetworkScanner CreateScanner( Inventory inventory, List<ResolvedSubnet> resolvedSubnets ) {
+  private IScanOrchestrator CreateScanOrchestrator( Inventory inventory, List<ResolvedSubnet> resolvedSubnets ) {
     if ( !inventory.Agents.Any() ) {
-      return localScanner;
+      return localScanOrchestrator;
     }
 
     output.WarnAgentPreview();
 
-    return new DistributedNetworkScanner(
-      localScanner,
+    return new DistributedScanOrchestrator(
+      localScanOrchestrator,
       agentClient,
       converter,
       resolvedSubnets,
@@ -193,7 +193,7 @@ internal class ScanCommandHandler(
   private Task<int> StartUi(
     ScanParameters parameters,
     Inventory inventory,
-    INetworkScanner scanner,
+    IScanOrchestrator scanOrchestrator,
     NetworkScanOptions scanRequest,
     CancellationToken cancellationToken
   ) {
@@ -201,7 +201,7 @@ internal class ScanCommandHandler(
       var ui = new InteractiveUi(
         output,
         inventory.Network,
-        scanner,
+        scanOrchestrator,
         scanRequest,
         new DefaultKeyMap(),
         parameters.ShowLogPanel,
@@ -211,7 +211,7 @@ internal class ScanCommandHandler(
       return ui.RunAsync( cancellationToken );
     }
     else {
-      var ui = new NonInteractiveUi( output, scanner );
+      var ui = new NonInteractiveUi( output, scanOrchestrator );
       return ui.RunAsync( scanRequest, inventory.Network, parameters.OutputFormat, cancellationToken );
     }
   }

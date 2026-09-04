@@ -1,7 +1,10 @@
+using Drift.Common;
+using Drift.Domain.ExecutionEnvironment;
 using Drift.Messaging.Protocol;
 using Drift.Networking.Client;
 using Drift.Networking.Core;
 using Drift.Networking.Server;
+using Drift.Scanning;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -41,6 +44,8 @@ public static class AgentHost {
     builder.Services.AddMessagingClient();
     var messagingOptions = new MessagingOptions { MessageAssembly = typeof(ProtocolMessagesAssemblyMarker).Assembly };
     builder.Services.AddMessagingCore( messagingOptions );
+    builder.Services.AddScanning();
+    builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
@@ -75,7 +80,7 @@ public static class AgentHost {
     app.MapMessagingServerEndpoints();
 
     app.Lifetime.ApplicationStarted.Register( () => {
-      logger.LogInformation( "Listening for incoming connections on port {Port}", port );
+      logger.LogInformation( "Listening for inbound server connections on port {Port} (gRPC)", port );
       logger.LogInformation( "Agent started" );
       ready?.TrySetResult();
     } );

@@ -1,5 +1,4 @@
 using Drift.Cli.Abstractions;
-using Drift.Cli.Settings.V1_preview;
 
 namespace Drift.Cli.Tests.Commands;
 

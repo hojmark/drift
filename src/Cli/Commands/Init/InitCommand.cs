@@ -61,7 +61,7 @@ internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
 
 internal class InitCommandHandler(
   IOutputManager output,
-  INetworkScanner scanner,
+  IScanOrchestrator scanOrchestrator,
   IInterfaceSubnetProvider interfaceSubnetProvider
 ) : ICommandHandler<InitParameters> {
   // TODO skip emojis in output if redirected?
@@ -228,7 +228,7 @@ internal class InitCommandHandler(
     if ( output.Is( OutputFormat.Normal ) ) {
       return await output.Normal.GetAnsiConsole().Status().StartAsync(
         "Scanning network ...",
-        async _ => await scanner.ScanAsync( request, output.GetLogger(), cancellationToken )
+        async _ => await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken )
       );
     }
 
@@ -246,11 +246,11 @@ internal class InitCommandHandler(
       }
 
       try {
-        scanner.ResultUpdated += LogProgress;
-        return await scanner.ScanAsync( request, output.GetLogger(), cancellationToken );
+        scanOrchestrator.ResultUpdated += LogProgress;
+        return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
       }
       finally {
-        scanner.ResultUpdated -= LogProgress;
+        scanOrchestrator.ResultUpdated -= LogProgress;
       }
     }
 

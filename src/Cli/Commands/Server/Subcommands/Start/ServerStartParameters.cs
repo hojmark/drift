@@ -10,18 +10,26 @@ internal record ServerStartParameters : BaseParameters {
       Description = "Run the server as a background daemon"
     };
 
-    internal static readonly Option<ushort> PortS = new("--port", "-p") {
-      DefaultValueFactory = _ => Ports.AgentDefault - 5, Description = "Set the port used for communication"
+    internal static readonly Option<bool> NoAgent = new("--no-agent") {
+      Description = "Do not listen for incoming agent connections. Outbound connections are still possible."
+    };
+
+    internal static readonly Option<ushort> PortClient = new("--port", "-p") {
+      DefaultValueFactory = _ => Ports.AgentDefault - 5,
+      Description =
+        "Set the client port (client-to-server communication). Must match the port used by the client / CLI."
     };
 
     internal static readonly Option<ushort> PortAgent = new("--port-agent", "-pa") {
-      DefaultValueFactory = _ => Ports.AgentDefault, Description = "Set the port used for agent communication"
+      DefaultValueFactory = _ => Ports.AgentDefault,
+      Description = "Set the agent port (agent-to-server communication). Must match the port used by the agent."
     };
   }
 
   internal ServerStartParameters( ParseResult parseResult ) : base( parseResult ) {
-    PortS = parseResult.GetValue( Options.PortS );
+    PortS = parseResult.GetValue( Options.PortClient );
     PortAgent = parseResult.GetValue( Options.PortAgent );
+    NoAgent = parseResult.GetValue( Options.NoAgent );
   }
 
   public ushort PortS {
@@ -30,6 +38,11 @@ internal record ServerStartParameters : BaseParameters {
   }
 
   public ushort PortAgent {
+    get;
+    set;
+  }
+
+  public bool NoAgent {
     get;
     set;
   }

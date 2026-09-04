@@ -22,7 +22,7 @@ internal class InteractiveUi : IAsyncDisposable {
 
   private readonly IOutputManager _outputManager;
   private readonly Network? _network;
-  private readonly INetworkScanner _scanner;
+  private readonly IScanOrchestrator _scanOrchestrator;
   private readonly ScanLayout _layout;
   private readonly IAnsiConsole _ansiConsole;
 
@@ -47,14 +47,14 @@ internal class InteractiveUi : IAsyncDisposable {
   public InteractiveUi(
     IOutputManager outputManager,
     Network? network,
-    INetworkScanner scanner,
+    IScanOrchestrator scanOrchestrator,
     NetworkScanOptions scanRequest,
     IKeyMap keyMap,
     bool initialLogExpansion,
     IConsoleKeyWatcher consoleKeyWatcher,
     IConsoleResizeWatcher consoleResizeWatcher
   ) {
-    _scanner = scanner;
+    _scanOrchestrator = scanOrchestrator;
     _scanRequest = scanRequest;
     _keyMap = keyMap;
     _ansiConsole = outputManager.Normal.GetAnsiConsole();
@@ -63,7 +63,7 @@ internal class InteractiveUi : IAsyncDisposable {
     _network = network;
     _consoleKeyWatcher = consoleKeyWatcher;
     _consoleResizeWatcher = consoleResizeWatcher;
-    _scanner.ResultUpdated += OnScanResultUpdated;
+    _scanOrchestrator.ResultUpdated += OnScanResultUpdated;
 
     _logWatcher = new LogWatcher( _outputManager );
     _logWatcher.LogUpdated += OnLogUpdated;
@@ -97,7 +97,7 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   public async ValueTask DisposeAsync() {
-    _scanner.ResultUpdated -= OnScanResultUpdated;
+    _scanOrchestrator.ResultUpdated -= OnScanResultUpdated;
     _running.Dispose();
     _logWatcher.LogUpdated -= OnLogUpdated;
   }
@@ -111,7 +111,7 @@ internal class InteractiveUi : IAsyncDisposable {
   }
 
   private Task<NetworkScanResult> StartScanAsync() {
-    return _scanner.ScanAsync( _scanRequest, _outputManager.GetLogger(), _running.Token );
+    return _scanOrchestrator.ScanAsync( _scanRequest, _outputManager.GetLogger(), _running.Token );
   }
 
   private void Cancel() {

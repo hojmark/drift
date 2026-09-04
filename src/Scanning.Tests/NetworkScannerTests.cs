@@ -9,7 +9,7 @@ using Drift.TestUtilities;
 
 namespace Drift.Scanning.Tests;
 
-internal sealed class NetworkScannerTests {
+internal sealed class ScanOrchestratorTests {
   [Test]
   [TestCase( "192.168.0.0/24" )]
   [TestCase( "192.168.0.1/24" )] // TODO should fail
@@ -36,10 +36,10 @@ internal sealed class NetworkScannerTests {
 
     var logger = new StringLogger();
 
-    var networkScanner = new DefaultNetworkScanner( new PredefinedSubnetScannerFactory( subnetScanner ) );
+    var scanOrchestrator = new ScanOrchestrator( new PredefinedSubnetScannerFactory( subnetScanner ) );
 
     // Act
-    var result = await networkScanner.ScanAsync(
+    var result = await scanOrchestrator.ScanAsync(
       new NetworkScanOptions { Cidrs = subnets, PingsPerSecond = int.MaxValue } /*, networkProvider*/, logger
     );
 

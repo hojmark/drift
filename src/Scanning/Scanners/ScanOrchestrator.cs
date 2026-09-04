@@ -2,30 +2,31 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using Drift.Domain;
 using Drift.Domain.Scan;
+using Drift.Scanning.Scanners.Factories;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Scanning.Scanners;
 
-public class DefaultNetworkScanner( ISubnetScannerFactory subnetScannerFactory ) : INetworkScanner {
+internal sealed class ScanOrchestrator( ISubnetScannerFactory subnetScannerFactory ) : IScanOrchestrator {
   public event EventHandler<NetworkScanResult>? ResultUpdated;
 
   public async Task<NetworkScanResult> ScanAsync(
     NetworkScanOptions options,
     ILogger logger,
-    CancellationToken cancellationToken = default
+    CancellationToken cancellationToken
   ) {
     var startedAt = DateTime.Now;
 
     logger.LogDebug( "Starting network scan at {StartedAt}", startedAt.ToString( CultureInfo.InvariantCulture ) );
 
-    var subnetScanners = CreateScanners( options ); // TODO create scanner tasks that encapsulates logic better
+    var subnetScanners = CreateScanners( options ); // TODO create scan tasks that encapsulate this logic better
     var subnetIntermediateResults = new ConcurrentDictionary<CidrBlock, SubnetScanResult>();
     var subnetScanTasks = new List<Task<SubnetScanResult>>();
 
-    foreach ( var (cidr, scanner) in subnetScanners ) {
+    foreach ( var (cidr, subnetScanner) in subnetScanners ) {
       var task = RunScanAsync(
         cidr,
-        scanner,
+        subnetScanner,
         options.PingsPerSecond,
         result => {
           subnetIntermediateResults[cidr] = result;
@@ -64,17 +65,17 @@ public class DefaultNetworkScanner( ISubnetScannerFactory subnetScannerFactory )
 
   private static async Task<SubnetScanResult> RunScanAsync(
     CidrBlock cidr,
-    ISubnetScanner scanner,
+    ISubnetScanner subnetScanner,
     uint pingsPerSecond,
     Action<SubnetScanResult> onProgress,
     ILogger logger,
     CancellationToken cancellationToken
   ) {
     void Handler( object? sender, SubnetScanResult result ) => onProgress( result );
-    scanner.ResultUpdated += Handler;
+    subnetScanner.ResultUpdated += Handler;
 
     try {
-      return await scanner.ScanAsync(
+      return await subnetScanner.ScanAsync(
         new SubnetScanOptions {
           Cidr = cidr,
           // TODO not the right value
@@ -85,7 +86,7 @@ public class DefaultNetworkScanner( ISubnetScannerFactory subnetScannerFactory )
       );
     }
     finally {
-      scanner.ResultUpdated -= Handler;
+      subnetScanner.ResultUpdated -= Handler;
     }
   }
 

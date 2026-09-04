@@ -1,37 +1,50 @@
+using Drift.Common;
+using Drift.Coordinator.Host.Apis.Control;
+using Drift.Coordinator.Host.Logging;
+using Drift.Coordinator.Host.Ui;
+using Drift.Domain.ExecutionEnvironment;
 using Drift.Messaging.Protocol;
 using Drift.Networking.Client;
 using Drift.Networking.Core;
 using Drift.Networking.Server;
+using Drift.Scanning;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ControlJsonSerializerContext = Drift.Coordinator.Host.Apis.Control.ControlJsonSerializerContext;
 
 namespace Drift.Coordinator.Host;
 
 // TODO mostly a duplicate of AgentHost
 public static class CoordinatorHost {
   public static Task Run(
-    ushort port,
+    ushort controlPort,
+    ushort? agentPort,
     ILogger logger,
     Action<IServiceCollection>? configureServices,
     CancellationToken cancellationToken,
     TaskCompletionSource? ready = null
   ) {
-    var app = Build( port, logger, configureServices, ready );
+    var app = Build( controlPort, agentPort, logger, configureServices, ready );
     return app.RunAsync( cancellationToken );
   }
 
   public static WebApplication Build(
-    ushort port,
+    ushort controlPort,
+    ushort? agentPort,
     ILogger logger,
     Action<IServiceCollection>? configureServices = null,
     TaskCompletionSource? ready = null
   ) {
     var builder = WebApplication.CreateSlimBuilder();
 
+    builder.Services.AddOpenApi( "v1" );
+    builder.Services.ConfigureHttpJsonOptions( options =>
+      options.SerializerOptions.TypeInfoResolverChain.Insert( 0, ControlJsonSerializerContext.Default )
+    );
     builder.Logging.ClearProviders();
     builder.Services.AddSingleton( logger );
     // TODO consolidate all the addmessaging* into single configurable extension that can be used for all roles
@@ -42,43 +55,55 @@ public static class CoordinatorHost {
     builder.Services.AddMessagingClient();
     var messagingOptions = new MessagingOptions { MessageAssembly = typeof(ProtocolMessagesAssemblyMarker).Assembly };
     builder.Services.AddMessagingCore( messagingOptions );
+    builder.Services.AddScanning();
+    builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
+    builder.Services.AddControlServices();
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
-      options.ListenAnyIP( port, o => {
-        o.Protocols = HttpProtocols.Http2; // gRPC requires HTTP/2
-      } );
+      if ( agentPort is { } port ) {
+        options.ListenAnyIP(
+          port,
+          o => o.Protocols = HttpProtocols.Http2 // gRPC requires HTTP/2
+        );
+      }
+
+      options.ListenAnyIP(
+        controlPort,
+        o => o.Protocols = HttpProtocols.Http1
+      );
     } );
 
-    AddServerStuff( builder );
-
     var app = builder.Build();
+
+    app.AddGlobalExceptionHandling( logger );
+    app.AddRequestLogging( logger );
 
     // Note: a service reading StoppingToken during initialization (really, any code run before this point)
     // will get CancellationToken.None.
     messagingOptions.StoppingToken = app.Lifetime.ApplicationStopping;
 
-    // Unreachable while Kestrel ListenOptions.Protocols is HTTP/2-only (browsers can't speak HTTP/2 without TLS),
-    // but kept here for when this is moved to its own HTTP/1.1 port.
-    // Setting it to Http1AndHttp2 is not an option since that degrades ALL connections, including gRPC
-    // calls, to HTTP/1.1, which then fail against gRPC's HTTP/2-only endpoints with HTTP_1_1_REQUIRED.
-    // See https://github.com/grpc/grpc-dotnet/issues/979. So this must stay HTTP/2-only until either
-    // TLS is added or the friendly "/" page below is moved to its own HTTP/1.1-only port.
-    // app.MapGet( "/", () =>
-    //   // TODO Render figlet using same flf as in the help command
-    //   """
-    //     ___          _    __   _
-    //    |   \   _ _  (_)  / _| | |_
-    //    | |) | | '_| | | |  _| |  _|
-    //    |___/  |_|   |_| |_|    \__|
-    //   """
-    //   +
-    //   "\n\Server"
-    // );
+    app.MapUi();
+    app.MapControlApi();
     app.MapMessagingServerEndpoints();
+    app.MapOpenApi( "/api/v1/openapi.json" );
+    app.MapSwaggerUI( "api", options => {
+        options.SwaggerEndpoint( "/api/v1/openapi.json", "Control API v1" );
+        options.DocumentTitle = "Drift API";
+      }
+    );
 
     app.Lifetime.ApplicationStarted.Register( () => {
-      logger.LogInformation( "Listening for incoming connections on port {Port}", port );
+      logger.LogInformation( "Control API listening on port {Port} (HTTP)", controlPort );
+      if ( agentPort is { } port ) {
+        logger.LogInformation( "Listening for inbound agent connections on port {Port} (gRPC)", port );
+      }
+      else {
+        logger.LogInformation(
+          "The server is not listening for inbound agent connections. Outbound connections are still possible."
+        );
+      }
+
       logger.LogInformation( "Server started" );
       ready?.TrySetResult();
     } );
@@ -90,8 +115,5 @@ public static class CoordinatorHost {
     } );
 
     return app;
-  }
-
-  private static void AddServerStuff( WebApplicationBuilder app ) {
   }
 }

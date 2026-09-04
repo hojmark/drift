@@ -43,7 +43,7 @@ internal sealed partial class ScanInteractiveTests {
       services.AddScoped<IInterfaceSubnetProvider>( _ =>
         new PredefinedInterfaceSubnetProvider( [DefaultInterface] )
       );
-      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
+      services.AddScoped<IScanOrchestrator>( _ => new PredefinedScanOrchestrator(
           new NetworkScanResult {
             Metadata = new Metadata { StartedAt = default, EndedAt = default },
             Status = ScanResultStatus.Success,

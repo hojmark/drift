@@ -7,6 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Drift.Networking.Server;
 
 public static class ServiceCollectionExtensions {
+  /// <summary>
+  /// Registers the services required to accept <i>inbound</i> gRPC messaging connections.
+  /// </summary>
   public static void AddMessagingServer(
     this IServiceCollection services,
     Action<GrpcServiceOptions>? configureOptions = null

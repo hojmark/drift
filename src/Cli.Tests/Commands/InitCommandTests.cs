@@ -119,7 +119,7 @@ internal sealed class InitCommandTests {
   ) {
     // Arrange
     var serviceConfig = ( IServiceCollection services ) => {
-      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
+      services.AddScoped<IScanOrchestrator>( _ => new PredefinedScanOrchestrator( ScanResult ) );
       services.AddScoped<IInterfaceSubnetProvider>( sp =>
         new PredefinedInterfaceSubnetProvider( Interfaces, sp.GetRequiredService<IOutputManager>().GetLogger() )
       );
@@ -151,7 +151,7 @@ internal sealed class InitCommandTests {
   public async Task GenerateSpecWithoutDiscoverySuccess() {
     // Arrange
     var serviceConfig = ( IServiceCollection services ) => {
-      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
+      services.AddScoped<IScanOrchestrator>( _ => new PredefinedScanOrchestrator( ScanResult ) );
     };
 
     // Act

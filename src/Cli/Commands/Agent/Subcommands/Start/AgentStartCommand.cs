@@ -2,7 +2,6 @@ using System.CommandLine;
 using Drift.Agent.Host;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common.Commands;
-using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,9 +59,6 @@ internal class AgentStartCommandHandler(
     return ExitCodes.Success;
 
     void ConfigureServices( IServiceCollection services ) {
-      // Configure core agent services (scanning, subnet discovery, execution environment)
-      RootCommandFactory.ConfigureAgentCoreServices( services );
-
       // Add peer protocol message handlers
       services.AddAgentHandlers();
 

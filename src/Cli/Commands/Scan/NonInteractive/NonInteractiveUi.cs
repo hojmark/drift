@@ -13,7 +13,7 @@ using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.NonInteractive;
 
-internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner scanner ) {
+internal sealed class NonInteractiveUi( IOutputManager output, IScanOrchestrator scanOrchestrator ) {
   // TODO make private
   internal static void UpdateProgressDebounced(
     Percentage progress,
@@ -87,11 +87,11 @@ internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner s
           };
 
           try {
-            scanner.ResultUpdated += updater;
-            return await scanner.ScanAsync( request, output.GetLogger(), cancellationToken );
+            scanOrchestrator.ResultUpdated += updater;
+            return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
           }
           finally {
-            scanner.ResultUpdated -= updater;
+            scanOrchestrator.ResultUpdated -= updater;
           }
         } );
     }
@@ -110,11 +110,11 @@ internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner s
       };
 
       try {
-        scanner.ResultUpdated += updater;
-        return await scanner.ScanAsync( request, output.GetLogger(), cancellationToken );
+        scanOrchestrator.ResultUpdated += updater;
+        return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
       }
       finally {
-        scanner.ResultUpdated -= updater;
+        scanOrchestrator.ResultUpdated -= updater;
       }
     }
 

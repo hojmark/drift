@@ -1,7 +1,7 @@
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Scan;
-using Drift.Scanning.Scanners;
+using Drift.Scanning.Scanners.Factories;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Tests.Utils.Testing;

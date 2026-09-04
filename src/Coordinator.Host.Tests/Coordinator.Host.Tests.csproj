@@ -2,10 +2,12 @@
 
   <ItemGroup>
     <Using Include="NUnit.Framework" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Coordinator.Host\Coordinator.Host.csproj" />
+    <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

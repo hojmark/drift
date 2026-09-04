@@ -11,7 +11,8 @@ internal record AgentStartParameters : BaseParameters {
     };
 
     internal static readonly Option<ushort> Port = new("--port", "-p") {
-      DefaultValueFactory = _ => Ports.AgentDefault, Description = "Set the port used for communication"
+      DefaultValueFactory = _ => Ports.AgentDefault,
+      Description = "Set the server port (server-to-agent communication). Must match the port exposed by the server."
     };
 
     // TODO remove after hub-and-spoke transition?

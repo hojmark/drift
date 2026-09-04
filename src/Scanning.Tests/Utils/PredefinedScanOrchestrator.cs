@@ -5,14 +5,14 @@ using Microsoft.Extensions.Logging;
 namespace Drift.Scanning.Tests.Utils;
 
 #pragma warning disable CA1515 //TODO try to remove
-public sealed class PredefinedResultNetworkScanner( NetworkScanResult scanResult ) : INetworkScanner {
+public sealed class PredefinedScanOrchestrator( NetworkScanResult scanResult ) : IScanOrchestrator {
   public event EventHandler<NetworkScanResult>? ResultUpdated;
 
 #pragma warning restore CA1515
   public Task<NetworkScanResult> ScanAsync(
     NetworkScanOptions options,
     ILogger logger,
-    CancellationToken cancellationToken = default
+    CancellationToken cancellationToken
   ) {
     ResultUpdated?.Invoke(
       this,

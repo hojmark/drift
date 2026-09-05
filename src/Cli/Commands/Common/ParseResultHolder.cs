@@ -8,7 +8,7 @@ internal class ParseResultHolder {
   public ParseResult ParseResult {
     get => _parseResult ??
            throw new InvalidOperationException(
-             $"{nameof(ParseResult)} is null. This should have been set via dependency injection."
+             $"{nameof(ParseResult)} is null. This should have been set during dependency injection."
            );
     set => _parseResult = value;
   }

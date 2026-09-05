@@ -17,4 +17,5 @@ Commands:
   init <spec>  Create a network spec
   scan <spec>  Scan the network and detect drift
   lint <spec>  Validate a network spec
+  agent        Manage the local Drift agent
 

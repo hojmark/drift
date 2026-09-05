@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
+using Drift.Cli.Settings.V1_preview.Environments;
 using Drift.Cli.Settings.V1_preview.FeatureFlags;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -37,13 +38,42 @@ internal sealed class SerializationTests {
 
     // Act
     original.Write( logger, location );
-    var reloaded = CliSettings.Read( logger, location );
+    var reloaded = CliSettings.Read( location, logger );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( reloaded.Features, Has.Count.EqualTo( 2 ) );
       Assert.That( reloaded.Features[0].Name.Name, Is.EqualTo( "agent" ) );
       Assert.That( reloaded.Features[0].Enabled, Is.True );
+    }
+
+    Directory.Delete( location.GetDirectory(), true );
+  }
+
+  [Test]
+  public void EnvironmentsWriteAndReadRoundtrip() {
+    // Arrange
+    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
+    var logger = NullLogger.Instance;
+    var original = new CliSettings {
+      Environments = {
+        new EnvironmentSetting( "main-site", "192.168.1.10:51515" ),
+        new EnvironmentSetting( "backup-site", "192.168.2.10:51515" )
+      },
+      ActiveEnvironment = "main-site"
+    };
+
+    // Act
+    original.Write( logger, location );
+    var reloaded = CliSettings.Read( location, logger );
+
+    // Assert
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( reloaded.Environments, Has.Count.EqualTo( 2 ) );
+      Assert.That( reloaded.Environments[0].Name, Is.EqualTo( "main-site" ) );
+      Assert.That( reloaded.Environments[0].Address, Is.EqualTo( "192.168.1.10:51515" ) );
+      Assert.That( reloaded.ActiveEnvironment, Is.EqualTo( "main-site" ) );
+      Assert.That( reloaded.GetActiveEnvironment(), Is.EqualTo( original.Environments[0] ) );
     }
 
     Directory.Delete( location.GetDirectory(), true );
@@ -58,7 +88,7 @@ internal sealed class SerializationTests {
     var defaultSettings = new CliSettings();
 
     // Act
-    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( location, NullLogger.Instance );
 
     // Assert
     var defaultSettingsJson = JsonSerializer.Serialize( defaultSettings );
@@ -74,7 +104,7 @@ internal sealed class SerializationTests {
     ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
 
     // Act
-    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( location, NullLogger.Instance );
 
     // Assert
     var defaultSettingsJson = JsonSerializer.Serialize( new CliSettings() );
@@ -101,7 +131,7 @@ internal sealed class SerializationTests {
     ISettingsLocationProvider location2 = new TemporarySettingsLocationProvider();
     new CliSettings().Write( NullLogger.Instance, location1 );
     new CliSettings().Write( NullLogger.Instance, location2 );
-    var reloaded1 = CliSettings.Read( NullLogger.Instance, location1 );
+    var reloaded1 = CliSettings.Read( location1, NullLogger.Instance );
 
     // Act / Assert
     Assert.Throws<InvalidOperationException>( () => reloaded1.Write( NullLogger.Instance, location2 ) );
@@ -118,7 +148,7 @@ internal sealed class SerializationTests {
     await File.WriteAllTextAsync( location.GetFile(), "garbage" );
 
     // Act
-    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( location, NullLogger.Instance );
 
     // Assert
     Assert.Throws<InvalidOperationException>( () => loadedSettings.Write( NullLogger.Instance, location ) );

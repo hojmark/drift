@@ -1,0 +1,3 @@
+﻿  env1 @ host1:5000
+* env2 @ host2:5000
+  env3 @ host3:5000

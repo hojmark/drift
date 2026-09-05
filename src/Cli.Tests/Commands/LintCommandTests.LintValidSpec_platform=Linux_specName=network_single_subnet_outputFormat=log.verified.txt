@@ -1,2 +1,2 @@
-﻿[<time> INF] Validating network spec: {SolutionDirectory}src/Spec.Tests/resources/network_single_subnet.yaml
+﻿[<time> INF] Validating {SolutionDirectory}src/Spec.Tests/resources/network_single_subnet.yaml
 [<time> INF] Spec is valid

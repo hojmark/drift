@@ -1,0 +1,2 @@
+No environments configured.
+💡️ Add one with drift env add <name> <address>

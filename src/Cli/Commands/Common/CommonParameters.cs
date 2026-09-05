@@ -1,6 +1,8 @@
 using System.CommandLine;
+using System.Diagnostics;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
+using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
 using Microsoft.Extensions.Logging;
 
@@ -24,25 +26,29 @@ internal static class CommonParameters {
   /// Options shared across commands.
   /// </summary>
   internal static class Options {
+    internal const string OutputFormatName = "--output";
+
     /// <summary>
-    /// Enable detailed output, corresponding to <see cref="LogLevel.Debug"/> log level.
+    /// Enable detailed output, corresponding to <see cref="Debug"/> log level.
     /// </summary>
     internal static readonly Option<bool> Verbose = new("--verbose", "-v") {
       Description = "Verbose output", Arity = ArgumentArity.Zero
     };
 
     /// <summary>
-    /// Enable the most detailed output available, corresponding to <see cref="LogLevel.Trace"/> log level.
+    /// Enable the most detailed output available, corresponding to <see cref="Trace"/> log level.
     /// </summary>
     internal static readonly Option<bool> VeryVerbose = new("--very-verbose", "-vv") {
       Description = "Very verbose output", Arity = ArgumentArity.Zero, Hidden = true
     };
 
-    internal static readonly Option<OutputFormat> OutputFormat =
-      new("--output", "-o") {
+    internal static Option<OutputFormat> CreateOutputFormat( ISettingsLocationProvider settingsLocation ) =>
+      new(OutputFormatName, "-o") {
         DefaultValueFactory = _ =>
-          CliSettings.Read( new FixedLevelConsoleLogger( LogLevel.Warning, includeStackTrace: false ) )
-            .Appearance.Output.ToOutputFormat(),
+          CliSettings.Read(
+            settingsLocation,
+            new FixedLevelConsoleLogger( LogLevel.Warning, includeStackTrace: false )
+          ).Appearance.Output.ToOutputFormat(),
         Description = "Output format",
         Required = false,
         Arity = ArgumentArity.ExactlyOne

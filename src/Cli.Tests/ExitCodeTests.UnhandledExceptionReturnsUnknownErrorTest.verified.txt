@@ -1,2 +1,2 @@
 ﻿✕ This exception was thrown from ExceptionCommandHandler
-   at Drift.Cli.Tests.ExitCodeTests.ExceptionCommandHandler.Invoke(DefaultParameters parameters, CancellationToken cancellationToken) in {ProjectDirectory}ExitCodeTests.cs:line 111
+   at Drift.Cli.Tests.ExitCodeTests.ExceptionCommandHandler.Invoke(DummyParameters parameters, CancellationToken cancellationToken) in {ProjectDirectory}ExitCodeTests.cs:line 112

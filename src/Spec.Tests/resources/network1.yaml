@@ -24,8 +24,7 @@ network:
     - id: switch1
       type: switch
       addresses:
-        - type: "ip-v4"
-          value: 192.168.1.1
+        ipv4: 192.168.1.1
       interfaces:
         - id: eth0
           vlan: 10
@@ -37,8 +36,7 @@ network:
     - id: switch2
       type: switch
       addresses:
-        - type: "ip-v4"
-          value: 192.168.1.2
+        ipv4: 192.168.1.2
       interfaces:
         - id: eth0
           vlan: 10
@@ -50,8 +48,7 @@ network:
     - id: client1
       type: host
       addresses:
-        - type: "ip-v4"
-          value: 192.168.1.101
+        ipv4: 192.168.1.101
       vlan: 20
       connected_to: switch1-eth1
       tests:
@@ -62,8 +59,7 @@ network:
     - id: client2
       type: host
       addresses:
-        - type: "ip-v4"
-          value: 192.168.3.1
+        ipv4: 192.168.3.1
       vlan: 20
       connected_to: switch2-eth1
       tests:

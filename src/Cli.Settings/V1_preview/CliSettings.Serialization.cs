@@ -7,14 +7,12 @@ namespace Drift.Cli.Settings.V1_preview;
 public partial class CliSettings {
   private ISettingsLocationProvider? _loadLocation;
 
-  public static CliSettings Read( ILogger? logger = null, ISettingsLocationProvider? location = null ) {
+  public static CliSettings Read( ISettingsLocationProvider location, ILogger? logger = null ) {
     try {
-      location ??= new DefaultSettingsLocationProvider();
-
       logger?.LogTrace( "Reading settings from file: {Path}", location.GetFile() );
 
       if ( !File.Exists( location.GetFile() ) ) {
-        logger?.LogInformation( "Settings file not found. Using defaults." );
+        logger?.LogDebug( "Settings file not found. Using defaults." );
         return new CliSettings();
       }
 
@@ -38,9 +36,7 @@ public partial class CliSettings {
     }
   }
 
-  public void Write( ILogger logger, ISettingsLocationProvider? location = null ) {
-    location ??= new DefaultSettingsLocationProvider();
-
+  public void Write( ILogger logger, ISettingsLocationProvider location ) {
     logger.LogTrace( "Writing settings to file: {Path}", location.GetFile() );
 
     if ( !Directory.Exists( location.GetDirectory() ) ) {

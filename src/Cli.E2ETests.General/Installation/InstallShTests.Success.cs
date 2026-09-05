@@ -214,12 +214,14 @@ internal sealed partial class InstallShTests {
 
       // Assert: binary reports the previous version
       var firstRun = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
-      Assert.That( firstRun.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-      Assert.That(
-        firstRun.StdOut,
-        Contains.Substring( "1.0.0-alpha.5" ),
-        $"Expected --version to report previous version after first install, got: {firstRun.StdOut}"
-      );
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( firstRun.ExitCode, Is.EqualTo( ExitCodes.Success ) );
+        Assert.That(
+          firstRun.StdOut,
+          Contains.Substring( "1.0.0-alpha.5" ),
+          $"Expected --version to report previous version after first install, got: {firstRun.StdOut}"
+        );
+      }
 
       // Act: upgrade by installing the latest (no version arg), reusing the same install directory
       var secondInstall = await new ToolWrapper( "bash", new() { { "DRIFT_INSTALL_DIR", installDir } } )
@@ -235,12 +237,14 @@ internal sealed partial class InstallShTests {
 
       // Assert: binary now reports a version newer than the one we started with
       var secondRun = await new ToolWrapper( driftBinary ).ExecuteAsync( "--version" );
-      Assert.That( firstRun.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-      Assert.That(
-        secondRun.StdOut,
-        Is.Not.EqualTo( firstRun.StdOut ),
-        $"Expected --version to change after upgrading to latest, but it stayed: {secondRun.StdOut}"
-      );
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( firstRun.ExitCode, Is.EqualTo( ExitCodes.Success ) );
+        Assert.That(
+          secondRun.StdOut,
+          Is.Not.EqualTo( firstRun.StdOut ),
+          $"Expected --version to change after upgrading to latest, but it stayed: {secondRun.StdOut}"
+        );
+      }
     }
     finally {
       DeleteBestEffort( installDir );

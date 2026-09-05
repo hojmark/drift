@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option csharp_namespace = "Drift.Networking.Grpc.Generated";
+
+package drift;
+
+service MessagingService {
+  rpc Connect (stream Message) returns (stream Message);
+}
+
+message Message {
+  string message_type = 1;
+  // Serialized message body
+  string payload = 2;
+  // (Required on a request) The originating request's ID.
+  string request_id = 3;
+  // (Required on a response) The originating request's request_id.
+  string reply_to = 4;
+}

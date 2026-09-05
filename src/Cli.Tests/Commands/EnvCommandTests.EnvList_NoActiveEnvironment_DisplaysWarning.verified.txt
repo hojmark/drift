@@ -1,0 +1,5 @@
+  env1 @ host1:5000
+  env2 @ host2:5000
+
+No environment is active.
+💡️ Set one with drift env use <name>

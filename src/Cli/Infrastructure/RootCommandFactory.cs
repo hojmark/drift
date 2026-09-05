@@ -1,22 +1,31 @@
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
+using Drift.Cli.Commands.Agent;
+using Drift.Cli.Commands.Agent.Subcommands.Start;
 using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Env;
+using Drift.Cli.Commands.Env.Subcommands;
 using Drift.Cli.Commands.Help;
 using Drift.Cli.Commands.Init;
 using Drift.Cli.Commands.Lint;
 using Drift.Cli.Commands.Scan;
 using Drift.Cli.Commands.Scan.Interactive.Input;
+using Drift.Cli.Commands.Server;
+using Drift.Cli.Commands.Server.Subcommands.Start;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
+using Drift.Cli.Settings.Serialization;
 using Drift.Cli.SpecFile;
+using Drift.Common;
 using Drift.Domain.ExecutionEnvironment;
-using Drift.Domain.Scan;
+using Drift.Messaging.Client;
+using Drift.Messaging.Protocol.Agent;
+using Drift.Networking.Client;
+using Drift.Networking.Core;
 using Drift.Scanning;
-using Drift.Scanning.Scanners;
 using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -51,7 +60,12 @@ internal static class RootCommandFactory {
     ConfigureDefaults( services, toConsole, plainConsole );
     ConfigureBuiltInCommandHandlers( services );
     ConfigureDynamicCommands( services, customCommands ?? [] );
-    configureServices?.Invoke( services );
+
+    if ( configureServices != null ) {
+      configureServices.Invoke( services );
+      // Allow agent host to override it's services with the same configuration
+      services.AddScoped<Action<IServiceCollection>>( _ => configureServices );
+    }
 
     var provider = services.BuildServiceProvider();
     var rootCommand = CreateRootCommand( provider );
@@ -61,24 +75,36 @@ internal static class RootCommandFactory {
   }
 
   private static void ConfigureDefaults( IServiceCollection services, bool toConsole, bool plainConsole ) {
+    services.AddSingleton<ISettingsLocationProvider, DefaultSettingsLocationProvider>();
+    services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
     services.AddScoped<ParseResultHolder>();
-    ConfigureExecutionEnvironment( services );
     ConfigureOutput( services, toConsole, plainConsole );
     ConfigureSpecProvider( services );
     ConfigureSubnetProvider( services );
-    ConfigureNetworkScanner( services );
+    ConfigureScanServices( services );
     ConfigureInteractiveServices( services );
+    ConfigureAgentClient( services );
   }
 
-  private static void ConfigureExecutionEnvironment( IServiceCollection services ) {
-    services.AddSingleton<IExecutionEnvironmentProvider, CurrentExecutionEnvironmentProvider>();
+  // TODO should go once CLI migrates to the Control API
+  private static void ConfigureAgentClient( IServiceCollection services ) {
+    services.AddMessagingCore( new MessagingOptions {
+      MessageAssembly = typeof(AgentProtocolMessagesAssemblyMarker).Assembly
+    } );
+    services.AddMessagingClient();
+    services.AddAgentClient();
   }
 
   private static RootCommand CreateRootCommand( IServiceProvider provider ) {
     // TODO 'from' or 'against'?
     var rootCommand =
       new RootCommand( $"{Chars.SatelliteAntenna} Drift CLI — monitor network drift against your declared state" ) {
-        new InitCommand( provider ), new ScanCommand( provider ), new LintCommand( provider )
+        new InitCommand( provider ),
+        new ScanCommand( provider ),
+        new LintCommand( provider ),
+        new AgentCommand( provider ),
+        new ServerCommand( provider ),
+        new EnvCommand( provider )
       };
 
     rootCommand.TreatUnmatchedTokensAsErrors = true;
@@ -97,6 +123,7 @@ internal static class RootCommandFactory {
       var factory = sp.GetRequiredService<IOutputManagerFactory>();
       return factory.Create( parseResult, plainConsole );
     } );
+    // Note: since ILogger is scoped, singletons cannot access logging via DI
     services.AddScoped<ILogger>( sp => sp.GetRequiredService<IOutputManager>().GetLogger() );
   }
 
@@ -104,14 +131,24 @@ internal static class RootCommandFactory {
     services.AddScoped<ISpecFileProvider, FileSystemSpecProvider>();
   }
 
-  private static void ConfigureSubnetProvider( IServiceCollection services ) {
+  public static void ConfigureSubnetProvider( IServiceCollection services ) {
     services.AddScoped<IInterfaceSubnetProvider, PhysicalInterfaceSubnetProvider>();
+  }
+
+  private static void ConfigureScanServices( IServiceCollection services ) {
+    services.AddScanning();
   }
 
   private static void ConfigureBuiltInCommandHandlers( IServiceCollection services ) {
     services.AddScoped<InitCommandHandler>();
     services.AddScoped<ScanCommandHandler>();
     services.AddScoped<LintCommandHandler>();
+    services.AddScoped<AgentStartCommandHandler>();
+    services.AddScoped<ServerStartCommandHandler>();
+    services.AddScoped<EnvAddCommandHandler>();
+    services.AddScoped<EnvListCommandHandler>();
+    services.AddScoped<EnvUseCommandHandler>();
+    services.AddScoped<EnvRemoveCommandHandler>();
   }
 
   private static void ConfigureInteractiveServices( IServiceCollection services ) {
@@ -133,21 +170,6 @@ internal static class RootCommandFactory {
     foreach ( var registration in commands ?? [] ) {
       rootCommand.Add( registration.Factory( provider ) );
     }
-  }
-
-  private static void ConfigureNetworkScanner( IServiceCollection services ) {
-    if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) ) {
-      services.AddSingleton<IPingTool, LinuxPingTool>();
-    }
-    else if ( RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ) {
-      services.AddSingleton<IPingTool, WindowsPingTool>();
-    }
-    else {
-      throw new PlatformNotSupportedException();
-    }
-
-    services.AddScoped<ISubnetScannerFactory, DefaultSubnetScannerFactory>();
-    services.AddScoped<INetworkScanner, DefaultNetworkScanner>();
   }
 
   private static void AddFigletHeaderToHelpCommand( RootCommand rootCommand ) {

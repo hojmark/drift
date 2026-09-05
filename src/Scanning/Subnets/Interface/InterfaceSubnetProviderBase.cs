@@ -1,6 +1,5 @@
 using System.Net.NetworkInformation;
 using Drift.Common.Network;
-using Drift.Domain;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Scanning.Subnets.Interface;
@@ -8,7 +7,7 @@ namespace Drift.Scanning.Subnets.Interface;
 public abstract class InterfaceSubnetProviderBase( ILogger? logger ) : IInterfaceSubnetProvider {
   public abstract List<INetworkInterface> GetInterfaces();
 
-  public List<CidrBlock> Get() {
+  public Task<List<ResolvedSubnet>> GetAsync() {
     var interfaces = GetInterfaces();
     var interfaceDescriptions =
       string.Join(
@@ -41,7 +40,7 @@ public abstract class InterfaceSubnetProviderBase( ILogger? logger ) : IInterfac
       string.Join( ", ", cidrs )
     );
 
-    return cidrs;
+    return Task.FromResult( cidrs.Select( cidr => new ResolvedSubnet( cidr, SubnetSource.Local ) ).ToList() );
   }
 
   private static bool IsUp( INetworkInterface i ) {

@@ -37,9 +37,7 @@ internal class NullOutputManager : IOutputManager {
 
 internal class NullOutput : INormalOutput, ILogOutput, IJsonOutput {
   public void WriteVeryVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
+    string text
   ) {
     // No-op
   }
@@ -49,17 +47,13 @@ internal class NullOutput : INormalOutput, ILogOutput, IJsonOutput {
   }
 
   public void WriteLineVeryVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
+    string text
   ) {
     // No-op
   }
 
   public void WriteVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
+    string text
   ) {
     // No-op
   }
@@ -69,9 +63,7 @@ internal class NullOutput : INormalOutput, ILogOutput, IJsonOutput {
   }
 
   public void WriteLineVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
+    string text
   ) {
     // No-op
   }

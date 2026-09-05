@@ -1,0 +1,13 @@
+﻿Requesting subnets from agent agentid_agent1
+Received subnet(s) from agent agentid_agent1: 192.168.10.0/24
+Scanning 1 subnet
+  192.168.10.0/24 (254 addresses, estimated scan time is 00:00:05.0800000) via agentid_agent1
+---------------------------------------- PREVIEW ---------------------------------------
+Distributed scanning via agents is a preview feature and should be used with caution.
+Agent communication is unencrypted. Do not use on untrusted networks.
+Agents run without authentication. Any client that can reach the agent port can connect.
+----------------------------------------------------------------------------------------
+Scan completed: 0 local, 1 via agents, 1 unique subnets
+
+192.168.10.0/24 (0 devices)
+

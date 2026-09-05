@@ -20,7 +20,7 @@
     },
     "scan ~": {
       "commandName": "Project",
-      "commandLineArgs": "scan ~",
+      "commandLineArgs": "scan ~ -v",
       "dotnetRunMessages": true,
       "environmentVariables": {}
     },
@@ -45,6 +45,18 @@
     "lint (home)": {
       "commandName": "Project",
       "commandLineArgs": "lint ~",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    },
+    "agent start (home)": {
+      "commandName": "Project",
+      "commandLineArgs": "agent start ~ -vv -o log --adoptable",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
+    },
+    "agent start --port 51516 (home)": {
+      "commandName": "Project",
+      "commandLineArgs": "agent start ~ --port 51516",
       "dotnetRunMessages": true,
       "environmentVariables": {}
     }

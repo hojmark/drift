@@ -60,7 +60,7 @@ public static class IpNetworkUtils {
   /// 172.16.0.0 to 172.31.255.255 (172.16.0.0/12)
   /// 192.168.0.0 to 192.168.255.255 (192.168.0.0/16)
   /// </code>
-  /// See alsohttps://www.rfc-editor.org/rfc/rfc1918.html#section-3.
+  /// See also https://www.rfc-editor.org/rfc/rfc1918.html#section-3.
   /// </remarks>
   public static bool IsPrivateIpV4( IPAddress ip ) {
     if ( ip.AddressFamily != AddressFamily.InterNetwork ) {

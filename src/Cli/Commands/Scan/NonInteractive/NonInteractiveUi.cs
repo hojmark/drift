@@ -13,7 +13,7 @@ using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.NonInteractive;
 
-internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner scanner ) {
+internal sealed class NonInteractiveUi( IOutputManager output, IScanOrchestrator scanOrchestrator ) {
   // TODO make private
   internal static void UpdateProgressDebounced(
     Percentage progress,
@@ -37,9 +37,16 @@ internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner s
   internal async Task<int> RunAsync(
     NetworkScanOptions scanRequest,
     Network? network,
-    OutputFormat outputFormat
+    OutputFormat outputFormat,
+    CancellationToken cancellationToken
   ) {
-    var result = await PerformScanAsync( scanRequest );
+    var result = await PerformScanAsync( scanRequest, cancellationToken );
+
+    if ( cancellationToken.IsCancellationRequested ) {
+      output.Normal.WriteLineWarning( "Scan canceled" );
+      output.Log.LogWarning( "Scan canceled" );
+      return ExitCodes.Canceled;
+    }
 
     output.Log.LogInformation( "Scan completed" );
 
@@ -61,7 +68,10 @@ internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner s
     return ExitCodes.Success;
   }
 
-  private async Task<NetworkScanResult> PerformScanAsync( NetworkScanOptions request ) {
+  private async Task<NetworkScanResult> PerformScanAsync(
+    NetworkScanOptions request,
+    CancellationToken cancellationToken
+  ) {
     if ( output.Is( OutputFormat.Normal ) ) {
       var dCol = new TaskDescriptionColumn { Alignment = Justify.Right };
       var pCol = new PercentageColumn { Style = new Style( Color.Cyan1 ), CompletedStyle = new Style( Color.Green1 ) };
@@ -77,11 +87,11 @@ internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner s
           };
 
           try {
-            scanner.ResultUpdated += updater;
-            return await scanner.ScanAsync( request, output.GetLogger() );
+            scanOrchestrator.ResultUpdated += updater;
+            return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
           }
           finally {
-            scanner.ResultUpdated -= updater;
+            scanOrchestrator.ResultUpdated -= updater;
           }
         } );
     }
@@ -100,11 +110,11 @@ internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner s
       };
 
       try {
-        scanner.ResultUpdated += updater;
-        return await scanner.ScanAsync( request, output.GetLogger() );
+        scanOrchestrator.ResultUpdated += updater;
+        return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
       }
       finally {
-        scanner.ResultUpdated -= updater;
+        scanOrchestrator.ResultUpdated -= updater;
       }
     }
 

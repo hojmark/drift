@@ -12,7 +12,7 @@ Layer   Name    Purpose / Function  Examples
  */
 public enum AddressType {
   IpV4 = 1,
-  IpV6 = 2,
+  // IpV6 = 2,
   Mac = 3,
   Hostname = 4
 }

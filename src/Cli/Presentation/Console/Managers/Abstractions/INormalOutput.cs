@@ -4,31 +4,23 @@ namespace Drift.Cli.Presentation.Console.Managers.Abstractions;
 
 internal interface INormalOutput {
   public void WriteVeryVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
+    string text
   );
 
   public void WriteLineVeryVerbose();
 
   public void WriteLineVeryVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
+    string text
   );
 
   public void WriteVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
+    string text
   );
 
   public void WriteLineVerbose();
 
   public void WriteLineVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
+    string text
   );
 
   public void Write(

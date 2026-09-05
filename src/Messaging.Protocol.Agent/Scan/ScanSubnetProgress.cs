@@ -4,7 +4,7 @@ using Drift.Networking.Core.Abstractions;
 
 namespace Drift.Messaging.Protocol.Agent.Scan;
 
-public sealed class ScanSubnetProgressUpdate : IMessage {
+public sealed class ScanSubnetProgress : IResponse {
   public static string MessageType => "scan-progress-update";
 
   public required byte ProgressPercentage {
@@ -22,9 +22,9 @@ public sealed class ScanSubnetProgressUpdate : IMessage {
     init;
   } = string.Empty;
 
-  public static JsonTypeInfo JsonInfo => ScanSubnetProgressUpdateJsonContext.Default.ScanSubnetProgressUpdate;
+  public static JsonTypeInfo JsonInfo => ScanSubnetProgressJsonContext.Default.ScanSubnetProgress;
 }
 
 [JsonSourceGenerationOptions( PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase )]
-[JsonSerializable( typeof(ScanSubnetProgressUpdate) )]
-internal sealed partial class ScanSubnetProgressUpdateJsonContext : JsonSerializerContext;
+[JsonSerializable( typeof(ScanSubnetProgress) )]
+internal sealed partial class ScanSubnetProgressJsonContext : JsonSerializerContext;

@@ -1,3 +1,4 @@
+using Drift.Domain;
 using Drift.Networking.Core.Abstractions;
 using Drift.Networking.Core.Messages;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,7 @@ internal sealed class AgentClient(
 ) : IAgentClient {
   private readonly AgentClientOptions _options = options ?? new AgentClientOptions();
 
-  public async Task<TResponse> SendAndWaitAsync<TRequest, TResponse>(
+  public async Task<TResponse> RequestAsync<TRequest, TResponse>(
     Domain.Agent agent,
     TRequest message,
     TimeSpan? timeout = null,
@@ -21,24 +22,23 @@ internal sealed class AgentClient(
   ) where TResponse : IResponse where TRequest : IRequest<TResponse> {
     return await ExecuteWithRetryAsync(
       agent,
-      async () => await SendAndWaitInternalAsync<TRequest, TResponse>( agent, message, timeout, cancellationToken ),
+      async () => await RequestInternalAsync<TRequest, TResponse>( agent, message, timeout, cancellationToken ),
       cancellationToken
     );
   }
 
-  private async Task<TResponse> SendAndWaitInternalAsync<TRequest, TResponse>(
+  private async Task<TResponse> RequestInternalAsync<TRequest, TResponse>(
     Domain.Agent agent,
     TRequest message,
     TimeSpan? timeout,
     CancellationToken cancellationToken
   ) where TResponse : IResponse where TRequest : IRequest<TResponse> {
-    var correlationId = Guid.NewGuid().ToString();
-    var envelope = envelopeConverter.ToEnvelope<TRequest>( message );
-    envelope.CorrelationId = correlationId;
+    var requestId = RequestId.New();
+    var envelope = envelopeConverter.ToEnvelope<TRequest, TResponse>( message, requestId );
 
     // Register correlator BEFORE sending
     var responseTask = responseCorrelator.WaitForResponseAsync(
-      correlationId,
+      requestId,
       timeout ?? _options.DefaultTimeout,
       cancellationToken
     );
@@ -49,24 +49,24 @@ internal sealed class AgentClient(
 
     // Response
     var response = await responseTask;
-    return envelopeConverter.FromEnvelope<TResponse>( response );
+    return envelopeConverter.FromResponseEnvelope<TResponse>( response );
   }
 
-  public async Task<TFinalResponse> SendAndWaitStreamingAsync<TRequest, TFinalResponse>(
+  public async Task<TResponse> RequestStreamingAsync<TRequest, TProgress, TResponse>(
     Domain.Agent agent,
     TRequest message,
-    string finalMessageType,
-    Action<Drift.Networking.Grpc.Generated.Message> onProgressUpdate,
+    Action<TProgress> onProgress,
     TimeSpan? timeout = null,
     CancellationToken cancellationToken = default
-  ) where TFinalResponse : IResponse where TRequest : IMessage {
+  ) where TRequest : IStreamingRequest<TProgress, TResponse>
+    where TProgress : IResponse
+    where TResponse : IResponse {
     return await ExecuteWithRetryAsync(
       agent,
-      async () => await SendAndWaitStreamingInternalAsync<TRequest, TFinalResponse>(
+      async () => await RequestStreamingInternalAsync<TRequest, TProgress, TResponse>(
         agent,
         message,
-        finalMessageType,
-        onProgressUpdate,
+        onProgress,
         timeout,
         cancellationToken
       ),
@@ -74,23 +74,24 @@ internal sealed class AgentClient(
     );
   }
 
-  private async Task<TFinalResponse> SendAndWaitStreamingInternalAsync<TRequest, TFinalResponse>(
+  private async Task<TResponse> RequestStreamingInternalAsync<TRequest, TProgress, TResponse>(
     Domain.Agent agent,
     TRequest message,
-    string finalMessageType,
-    Action<Drift.Networking.Grpc.Generated.Message> onProgressUpdate,
+    Action<TProgress> onProgress,
     TimeSpan? timeout,
     CancellationToken cancellationToken
-  ) where TFinalResponse : IResponse where TRequest : IMessage {
-    var correlationId = Guid.NewGuid().ToString();
-    var envelope = envelopeConverter.ToEnvelope<TRequest>( message );
-    envelope.CorrelationId = correlationId;
+  ) where TRequest : IStreamingRequest<TProgress, TResponse>
+    where TProgress : IResponse
+    where TResponse : IResponse {
+    var requestId = RequestId.New();
+    var envelope = envelopeConverter.ToEnvelope<TRequest, TResponse>( message, requestId );
 
     // Register streaming correlator BEFORE sending
     var responseTask = responseCorrelator.WaitForStreamingResponseAsync(
-      correlationId,
-      finalMessageType,
-      onProgressUpdate,
+      requestId,
+      TResponse.MessageType,
+      progressEnvelope =>
+        onProgress( envelopeConverter.FromResponseEnvelope<TProgress>( progressEnvelope ) ),
       timeout ?? _options.StreamingTimeout,
       cancellationToken
     );
@@ -101,7 +102,7 @@ internal sealed class AgentClient(
 
     // Final Response
     var response = await responseTask;
-    return envelopeConverter.FromEnvelope<TFinalResponse>( response );
+    return envelopeConverter.FromResponseEnvelope<TResponse>( response );
   }
 
   private async Task<TResult> ExecuteWithRetryAsync<TResult>(

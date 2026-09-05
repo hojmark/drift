@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Drift.Domain;
 using Drift.Networking.Grpc.Generated;
 using Microsoft.Extensions.Logging;
 
@@ -6,21 +7,21 @@ namespace Drift.Networking.Core.Messages;
 
 // TODO private?
 public sealed class MessageResponseCorrelator( ILogger logger ) {
-  private readonly ConcurrentDictionary<string, TaskCompletionSource<Message>> _pendingRequests = new();
-  private readonly ConcurrentDictionary<string, StreamingResponseHandler> _streamingRequests = new();
+  private readonly ConcurrentDictionary<RequestId, TaskCompletionSource<Message>> _pendingRequests = new();
+  private readonly ConcurrentDictionary<RequestId, StreamingResponseHandler> _streamingRequests = new();
 
-  public Task<Message> WaitForResponseAsync( string correlationId, TimeSpan timeout, CancellationToken ct ) {
+  public Task<Message> WaitForResponseAsync( RequestId requestId, TimeSpan timeout, CancellationToken ct ) {
     var tcs = new TaskCompletionSource<Message>();
 
-    if ( !_pendingRequests.TryAdd( correlationId, tcs ) ) {
-      throw new InvalidOperationException( $"Correlation ID {correlationId} already exists" );
+    if ( !_pendingRequests.TryAdd( requestId, tcs ) ) {
+      throw new InvalidOperationException( $"Request ID {requestId} already exists" );
     }
 
     var cts = CancellationTokenSource.CreateLinkedTokenSource( ct );
     cts.CancelAfter( timeout );
 
     cts.Token.Register( () => {
-      if ( _pendingRequests.TryRemove( correlationId, out var removed ) ) {
+      if ( _pendingRequests.TryRemove( requestId, out var removed ) ) {
         removed.TrySetCanceled( cts.Token );
       }
 
@@ -31,7 +32,7 @@ public sealed class MessageResponseCorrelator( ILogger logger ) {
   }
 
   public Task<Message> WaitForStreamingResponseAsync(
-    string correlationId,
+    RequestId requestId,
     string finalMessageType,
     Action<Message> onProgressUpdate,
     TimeSpan timeout,
@@ -43,15 +44,15 @@ public sealed class MessageResponseCorrelator( ILogger logger ) {
       OnProgressUpdate = onProgressUpdate
     };
 
-    if ( !_streamingRequests.TryAdd( correlationId, handler ) ) {
-      throw new InvalidOperationException( $"Correlation ID {correlationId} already exists" );
+    if ( !_streamingRequests.TryAdd( requestId, handler ) ) {
+      throw new InvalidOperationException( $"Request ID {requestId} already exists" );
     }
 
     var cts = CancellationTokenSource.CreateLinkedTokenSource( ct );
     cts.CancelAfter( timeout );
 
     cts.Token.Register( () => {
-      if ( _streamingRequests.TryRemove( correlationId, out var removed ) ) {
+      if ( _streamingRequests.TryRemove( requestId, out var removed ) ) {
         removed.CompletionSource.TrySetCanceled( cts.Token );
       }
 
@@ -61,12 +62,12 @@ public sealed class MessageResponseCorrelator( ILogger logger ) {
     return handler.CompletionSource.Task;
   }
 
-  public bool TryCompleteResponse( string correlationId, Message response ) {
+  public bool TryCompleteResponse( RequestId requestId, Message response ) {
     // Check for streaming response first
-    if ( _streamingRequests.TryGetValue( correlationId, out var streamingHandler ) ) {
+    if ( _streamingRequests.TryGetValue( requestId, out var streamingHandler ) ) {
       // If this is the final message, complete the task
       if ( response.MessageType == streamingHandler.FinalMessageType ) {
-        _streamingRequests.TryRemove( correlationId, out _ );
+        _streamingRequests.TryRemove( requestId, out _ );
         return streamingHandler.CompletionSource.TrySetResult( response );
       }
 
@@ -76,11 +77,11 @@ public sealed class MessageResponseCorrelator( ILogger logger ) {
     }
 
     // Check for regular single response
-    if ( _pendingRequests.TryRemove( correlationId, out var tcs ) ) {
+    if ( _pendingRequests.TryRemove( requestId, out var tcs ) ) {
       return tcs.TrySetResult( response );
     }
 
-    logger.LogWarning( "Received response for unknown correlation ID: {CorrelationId}", correlationId );
+    logger.LogWarning( "Received response for unknown request ID: {RequestId}", requestId );
     return false;
   }
 

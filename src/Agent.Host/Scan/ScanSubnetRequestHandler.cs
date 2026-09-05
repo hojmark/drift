@@ -22,7 +22,7 @@ internal sealed class ScanSubnetRequestHandler(
   ) {
     logger.LogInformation( "Handling scan subnet request" );
 
-    var request = converter.FromEnvelope<ScanSubnetRequest>( envelope );
+    var request = converter.FromRequestEnvelope<ScanSubnetRequest, ScanSubnetCompleteResponse>( envelope );
     var options = new SubnetScanOptions { Cidr = request.Cidr, PingsPerSecond = request.PingsPerSecond };
 
     logger.LogInformation( "Starting scan of {Cidr}", request.Cidr );
@@ -42,7 +42,7 @@ internal sealed class ScanSubnetRequestHandler(
       );
 
       var completeResponse = new ScanSubnetCompleteResponse { Result = result };
-      await stream.SendAsync( converter, completeResponse, envelope.CorrelationId );
+      await stream.SendAsync( converter, completeResponse, RequestId.Parse( envelope.RequestId ) );
     }
     finally {
       subnetScanner.ResultUpdated -= policy.Handle;
@@ -97,11 +97,11 @@ internal sealed class ScanSubnetRequestHandler(
       _lastDeviceCount = (uint) deviceCount;
       _lastSentAt = now;
 
-      var progressUpdate = new ScanSubnetProgressUpdate {
+      var progressUpdate = new ScanSubnetProgress {
         ProgressPercentage = progressPercentage, DevicesFound = deviceCount, Status = result.Status.ToString()
       };
 
-      _stream.SendFireAndForget( _converter, progressUpdate, _envelope.CorrelationId );
+      _stream.SendFireAndForget( _converter, progressUpdate, RequestId.Parse( _envelope.RequestId ) );
 
       _logger.LogDebug(
         "Sent progress update: {Progress}% for {Cidr}",

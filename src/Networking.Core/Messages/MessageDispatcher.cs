@@ -1,3 +1,4 @@
+using Drift.Domain;
 using Drift.Networking.Core.Abstractions;
 using Drift.Networking.Grpc.Generated;
 using Microsoft.Extensions.Logging;
@@ -27,11 +28,12 @@ public sealed class MessageDispatcher {
 
     // If this is a response to a pending request, complete it
     if ( !string.IsNullOrEmpty( message.ReplyTo ) ) {
-      if ( _responseCorrelator.TryCompleteResponse( message.ReplyTo, message ) ) {
-        _logger.LogDebug( "Completed pending request: {CorrelationId}", message.ReplyTo );
+      var requestId = RequestId.Parse( message.ReplyTo );
+      if ( _responseCorrelator.TryCompleteResponse( requestId, message ) ) {
+        _logger.LogDebug( "Completed pending request: {RequestId}", message.ReplyTo );
       }
       else {
-        _logger.LogWarning( "Ignoring response for unknown correlation ID: {CorrelationId}", message.ReplyTo );
+        _logger.LogWarning( "Ignoring response for unknown request ID: {RequestId}", message.ReplyTo );
       }
 
       return;

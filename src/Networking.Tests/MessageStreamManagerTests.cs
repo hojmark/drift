@@ -1,3 +1,4 @@
+using Drift.Domain;
 using Drift.Networking.Client;
 using Drift.Networking.Core;
 using Drift.Networking.Core.Abstractions;
@@ -25,9 +26,12 @@ internal sealed class MessageStreamManagerTests {
 
     // Act
     var clientStreams = duplexStreams.Client;
-    await clientStreams.RequestStream.WriteAsync( converter.ToEnvelope<TestPeerMessage>( new TestPeerMessage {
-      Payload = "test123"
-    } ) );
+    await clientStreams.RequestStream.WriteAsync(
+      converter.ToEnvelope<TestPeerMessage, TestPeerMessage>(
+        new TestPeerMessage { Payload = "test123" },
+        RequestId.New()
+      )
+    );
 
     await cts.CancelAsync();
     await stream.ReadTask;

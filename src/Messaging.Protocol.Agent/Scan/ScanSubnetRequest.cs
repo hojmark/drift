@@ -6,7 +6,7 @@ using Drift.Serialization.Converters;
 
 namespace Drift.Messaging.Protocol.Agent.Scan;
 
-public sealed class ScanSubnetRequest : IRequest<ScanSubnetCompleteResponse> {
+public sealed class ScanSubnetRequest : IStreamingRequest<ScanSubnetProgress, ScanSubnetCompleteResponse> {
   public static string MessageType => "scan-subnet-request";
 
   public required CidrBlock Cidr {

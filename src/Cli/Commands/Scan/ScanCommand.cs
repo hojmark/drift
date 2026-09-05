@@ -60,7 +60,6 @@ internal class ScanCommandHandler(
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ISpecFileProvider specProvider,
   IAgentClient agentClient,
-  IMessageEnvelopeConverter converter,
   IServiceProvider serviceProvider
 ) : ICommandHandler<ScanParameters> {
   public async Task<int> Invoke( ScanParameters parameters, CancellationToken cancellationToken ) {
@@ -183,7 +182,6 @@ internal class ScanCommandHandler(
     return new DistributedScanOrchestrator(
       localScanOrchestrator,
       agentClient,
-      converter,
       resolvedSubnets,
       inventory,
       output.GetLogger()

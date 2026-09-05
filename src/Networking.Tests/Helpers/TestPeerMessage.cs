@@ -36,7 +36,7 @@ internal sealed class TestMessageHandler( ILogger logger ) : IMessageHandler {
   ) {
     logger.LogInformation( "Received message of type '{MessageType}'", MessageType );
 
-    var message = converter.FromEnvelope<TestPeerMessage>( envelope );
+    var message = converter.FromRequestEnvelope<TestPeerMessage, TestPeerMessage>( envelope );
     LastMessage = message;
 
     logger.LogInformation( "Handled message with payload '{Payload}'", message.Payload );

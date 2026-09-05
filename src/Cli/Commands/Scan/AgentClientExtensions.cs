@@ -12,7 +12,7 @@ internal static class AgentClientExtensions {
       Domain.Agent agent,
       CancellationToken cancellationToken
     ) {
-      return agentClient.SendAndWaitAsync<SubnetsRequest, SubnetsResponse>(
+      return agentClient.RequestAsync<SubnetsRequest, SubnetsResponse>(
         agent,
         new SubnetsRequest(),
         timeout: TimeSpan.FromSeconds( 10 ),
@@ -24,23 +24,19 @@ internal static class AgentClientExtensions {
       Domain.Agent agent,
       CidrBlock cidr,
       uint pingsPerSecond,
-      IMessageEnvelopeConverter converter,
-      Action<ScanSubnetProgressUpdate> onProgressUpdate,
+      Action<ScanSubnetProgress> onProgress,
       CancellationToken cancellationToken
     ) {
       var request = new ScanSubnetRequest { Cidr = cidr, PingsPerSecond = pingsPerSecond };
 
-      return agentClient.SendAndWaitStreamingAsync<ScanSubnetRequest, ScanSubnetCompleteResponse>(
+      return agentClient.RequestStreamingAsync<
+        ScanSubnetRequest,
+        ScanSubnetProgress,
+        ScanSubnetCompleteResponse
+      >(
         agent,
         request,
-        finalMessageType: ScanSubnetCompleteResponse.MessageType,
-        progressEnvelope => {
-          // Deserialize progress update and call handler
-          if ( progressEnvelope.MessageType == ScanSubnetProgressUpdate.MessageType ) {
-            var progressUpdate = converter.FromEnvelope<ScanSubnetProgressUpdate>( progressEnvelope );
-            onProgressUpdate( progressUpdate );
-          }
-        },
+        onProgress,
         timeout: TimeSpan.FromMinutes( 10 ),
         cancellationToken
       );

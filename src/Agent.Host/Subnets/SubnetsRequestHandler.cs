@@ -1,3 +1,4 @@
+using Drift.Domain;
 using Drift.Messaging.Protocol.Agent.Subnets;
 using Drift.Networking.Core.Abstractions;
 using Drift.Networking.Grpc.Generated;
@@ -25,6 +26,6 @@ internal sealed class SubnetsRequestHandler(
     logger.LogInformation( "Sending subnets: {Subnets}", string.Join( ", ", subnets ) );
 
     var response = new SubnetsResponse { Subnets = subnets };
-    await stream.SendAsync( converter, response, envelope.CorrelationId );
+    await stream.SendAsync( converter, response, RequestId.Parse( envelope.RequestId ) );
   }
 }

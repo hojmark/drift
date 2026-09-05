@@ -85,7 +85,11 @@ public sealed class MessageStream : IMessageStream {
         try {
           // TODO ensure this is printed in the output
           using var scope = _logger.BeginScope(
-            new Dictionary<string, object?> { ["RequestId"] = message.CorrelationId ?? "no-id" }
+            new Dictionary<string, object?> {
+              [nameof(Message.MessageType)] = message.MessageType,
+              [nameof(Message.RequestId)] = message.RequestId,
+              [nameof(Message.ReplyTo)] = message.ReplyTo
+            }
           );
           _logger.LogDebug( "Received message. Dispatching to handler..." );
           await _dispatcher.DispatchAsync( message, this, _connectionCancellation.Token );

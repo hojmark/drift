@@ -10,7 +10,10 @@ service MessagingService {
 
 message Message {
   string message_type = 1;
+  // Serialized message body
   string payload = 2;
-  string correlation_id = 3;  // For request-response matching
-  string reply_to = 4;        // If this is a response, which request it replies to
+  // (Required on a request) The originating request's ID.
+  string request_id = 3;
+  // (Required on a response) The originating request's request_id.
+  string reply_to = 4;
 }

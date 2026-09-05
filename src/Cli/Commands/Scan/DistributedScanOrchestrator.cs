@@ -5,7 +5,6 @@ using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Scan;
 using Drift.Messaging.Client;
-using Drift.Networking.Core.Abstractions;
 using Drift.Scanning.Subnets;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +16,6 @@ namespace Drift.Cli.Commands.Scan;
 internal sealed class DistributedScanOrchestrator(
   IScanOrchestrator localScanOrchestrator,
   IAgentClient agentClient,
-  IMessageEnvelopeConverter converter,
   List<ResolvedSubnet> resolvedSubnets,
   Inventory inventory,
   ILogger logger
@@ -121,7 +119,6 @@ internal sealed class DistributedScanOrchestrator(
         MapAgentIdToDomainAgent( agentSource.AgentId ),
         cidr,
         pingsPerSecond,
-        converter,
         progressUpdate => LogAgentProgress( agentSource.AgentId, cidr, progressUpdate.ProgressPercentage ),
         cancellationToken
       );

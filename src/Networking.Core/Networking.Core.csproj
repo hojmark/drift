@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Drift.Networking.Tests" />
+    <InternalsVisibleTo Include="Drift.Agent.Host.Tests" />
   </ItemGroup>
 
   <ItemGroup>

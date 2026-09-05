@@ -25,7 +25,18 @@ internal sealed class MessageStreamManager(
       peerAddress
     );
 
-    return _streams.GetOrAdd( id, agentId => Create( peerAddress, agentId ) );
+    lock ( _streams ) {
+      if ( _streams.TryGetValue( id, out var existing ) ) {
+        if ( !existing.ReadTask.IsCompleted ) {
+          return existing;
+        }
+
+        _streams.TryRemove( new KeyValuePair<AgentId, IMessageStream>( id, existing ) );
+        _ = existing.DisposeAsync().AsTask();
+      }
+
+      return Create( peerAddress, id );
+    }
   }
 
   private IMessageStream Create( Uri peerAddress, AgentId id ) {
@@ -60,17 +71,57 @@ internal sealed class MessageStreamManager(
 
     logger.LogInformation( "Creating {ConnectionSide} stream from agent {Id}", ConnectionSide.Inbound, agentId );
 
-    var stream =
-      new MessageStream( requestStream, responseStream, dispatcher, logger, options.StoppingToken ) {
-        RemoteId = agentId
-      };
+    var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+      options.StoppingToken, // Drift shutdown
+      context.CancellationToken // Client connection close
+    );
+
+    var stream = new MessageStream(
+      requestStream,
+      responseStream,
+      dispatcher,
+      logger,
+      connectionCancellation.Token
+    ) { RemoteId = agentId };
+
     Add( stream );
+
+    // Dispose the linked token source after the stream's read loop has finished.
+    _ = stream.ReadTask.ContinueWith(
+      _ => connectionCancellation.Dispose(),
+      CancellationToken.None
+    );
+
     return stream;
   }
 
   private void Add( IMessageStream stream ) {
     logger.LogTrace( "Created {Stream}", stream );
-    _streams[stream.RemoteId] = stream;
+    lock ( _streams ) {
+      if ( _streams.TryGetValue( stream.RemoteId, out var previous ) && !ReferenceEquals( previous, stream ) ) {
+        logger.LogWarning(
+          "Replacing duplicate {ConnectionSide} stream for remote {Id} (stream #{StreamNo})",
+          ConnectionSide.Inbound,
+          stream.RemoteId,
+          previous.InstanceNo
+        );
+        _ = previous.DisposeAsync().AsTask();
+      }
+
+      _streams[stream.RemoteId] = stream;
+    }
+
+    // Remove completed streams
+    _ = stream.ReadTask.ContinueWith(
+      _ => RemoveCompletedStream( stream ),
+      CancellationToken.None
+    );
+  }
+
+  private void RemoveCompletedStream( IMessageStream stream ) {
+    if ( _streams.TryRemove( new KeyValuePair<AgentId, IMessageStream>( stream.RemoteId, stream ) ) ) {
+      logger.LogDebug( "Removed completed stream #{StreamNo}", stream.InstanceNo );
+    }
   }
 
   public async ValueTask DisposeAsync() {

@@ -12,7 +12,7 @@ public interface IAgentClient {
     CancellationToken cancellationToken = default
   ) where TResponse : IResponse where TRequest : IRequest<TResponse>;
 
-  Task<TFinalResponse> RequestStreamingAsync<TRequest, TProgress, TFinalResponse>(
+  Task<TResponse> RequestStreamingAsync<TRequest, TProgress, TResponse>(
     Domain.Agent agent,
     TRequest message,
     Action<TProgress> onProgress,
@@ -20,7 +20,7 @@ public interface IAgentClient {
     TimeSpan? timeout = null,
     // TODO eliminate default CancellationToken
     CancellationToken cancellationToken = default
-  ) where TRequest : IStreamingRequest<TProgress, TFinalResponse>
+  ) where TRequest : IStreamingRequest<TProgress, TResponse>
     where TProgress : IResponse
-    where TFinalResponse : IResponse;
+    where TResponse : IResponse;
 }

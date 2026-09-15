@@ -19,7 +19,7 @@ internal sealed class TestMessage : IRequest<TestMessage>, IResponse {
 [JsonSerializable( typeof(TestMessage) )]
 internal sealed partial class TestPeerMessageJsonContext : JsonSerializerContext;
 
-internal sealed class TestMessageHandler( ILogger logger ) : MessageHandler<TestMessage, TestMessage> {
+internal sealed class TestMessageHandler( ILogger logger ) : RequestHandler<TestMessage, TestMessage> {
   public TestMessage? LastMessage {
     get;
     private set;

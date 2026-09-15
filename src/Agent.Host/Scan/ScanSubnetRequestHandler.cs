@@ -11,7 +11,7 @@ namespace Drift.Agent.Host.Scan;
 internal sealed class ScanSubnetRequestHandler(
   ISubnetScannerFactory subnetScannerFactory,
   ILogger logger
-) : StreamingMessageHandler<ScanSubnetRequest, ScanSubnetProgress, ScanSubnetResponse> {
+) : StreamingRequestHandler<ScanSubnetRequest, ScanSubnetProgress, ScanSubnetResponse> {
   public override async Task HandleAsync(
     ScanSubnetRequest request,
     IStreamingMessageResponder<ScanSubnetProgress, ScanSubnetResponse> responder,

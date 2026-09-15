@@ -10,7 +10,7 @@ namespace Drift.Agent.Host.Subnets;
 internal sealed class InterfaceSubnetsRequestHandler(
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ILogger logger
-) : MessageHandler<SubnetsRequest, SubnetsResponse> {
+) : RequestHandler<SubnetsRequest, SubnetsResponse> {
   public override async Task HandleAsync(
     SubnetsRequest request,
     IMessageResponder<SubnetsResponse> responder,

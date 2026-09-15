@@ -13,7 +13,7 @@ public interface IStreamingMessageResponder<in TProgress, in TResponse>
   void SendProgress( TProgress progress );
 }
 
-internal sealed class MessageResponder<TResponse>(
+internal class MessageResponder<TResponse>(
   IMessageStream stream,
   IMessageEnvelopeConverter converter,
   RequestId requestId
@@ -21,20 +21,20 @@ internal sealed class MessageResponder<TResponse>(
   public Task SendAsync( TResponse response ) {
     return stream.SendAsync( converter, response, requestId );
   }
+
+  protected void SendFireAndForget<TMessage>( TMessage message ) where TMessage : IResponse {
+    stream.SendFireAndForget( converter, message, requestId );
+  }
 }
 
-internal sealed class StreamingMessageResponder<TProgress, TFinalResponse>(
+internal sealed class StreamingMessageResponder<TProgress, TResponse>(
   IMessageStream stream,
   IMessageEnvelopeConverter converter,
   RequestId requestId
-) : IStreamingMessageResponder<TProgress, TFinalResponse>
+) : MessageResponder<TResponse>( stream, converter, requestId ), IStreamingMessageResponder<TProgress, TResponse>
   where TProgress : IResponse
-  where TFinalResponse : IResponse {
-  public Task SendAsync( TFinalResponse response ) {
-    return stream.SendAsync( converter, response, requestId );
-  }
-
+  where TResponse : IResponse {
   public void SendProgress( TProgress progress ) {
-    stream.SendFireAndForget( converter, progress, requestId );
+    SendFireAndForget( progress );
   }
 }

@@ -24,7 +24,7 @@ public interface IMessageHandler {
   );
 }
 
-public abstract class MessageHandler<TRequest, TResponse> : IMessageHandler
+public abstract class RequestHandler<TRequest, TResponse> : IMessageHandler
   where TRequest : IRequest<TResponse>
   where TResponse : IResponse {
   public string MessageType => TRequest.MessageType;
@@ -51,10 +51,10 @@ public abstract class MessageHandler<TRequest, TResponse> : IMessageHandler
   );
 }
 
-public abstract class StreamingMessageHandler<TRequest, TProgress, TFinalResponse> : IMessageHandler
-  where TRequest : IStreamingRequest<TProgress, TFinalResponse>
+public abstract class StreamingRequestHandler<TRequest, TProgress, TResponse> : IMessageHandler
+  where TRequest : IStreamingRequest<TProgress, TResponse>
   where TProgress : IResponse
-  where TFinalResponse : IResponse {
+  where TResponse : IResponse {
   public string MessageType => TRequest.MessageType;
 
   public async Task DispatchAsync(
@@ -63,18 +63,18 @@ public abstract class StreamingMessageHandler<TRequest, TProgress, TFinalRespons
     IMessageStream stream,
     CancellationToken cancellationToken
   ) {
-    var request = converter.FromRequestEnvelope<TRequest, TFinalResponse>( envelope );
+    var request = converter.FromRequestEnvelope<TRequest, TResponse>( envelope );
     var requestId = RequestId.Parse( envelope.RequestId );
     await HandleAsync(
       request,
-      new StreamingMessageResponder<TProgress, TFinalResponse>( stream, converter, requestId ),
+      new StreamingMessageResponder<TProgress, TResponse>( stream, converter, requestId ),
       cancellationToken
     );
   }
 
   public abstract Task HandleAsync(
     TRequest request,
-    IStreamingMessageResponder<TProgress, TFinalResponse> responder,
+    IStreamingMessageResponder<TProgress, TResponse> responder,
     CancellationToken cancellationToken
   );
 }

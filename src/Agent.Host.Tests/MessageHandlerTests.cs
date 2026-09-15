@@ -114,19 +114,19 @@ internal sealed class MessageHandlerTests {
     }
   }
 
-  private sealed class RecordingStreamingMessageResponder<TProgress, TFinalResponse>
-    : IStreamingMessageResponder<TProgress, TFinalResponse>
+  private sealed class RecordingStreamingMessageResponder<TProgress, TResponse>
+    : IStreamingMessageResponder<TProgress, TResponse>
     where TProgress : IResponse
-    where TFinalResponse : IResponse {
+    where TResponse : IResponse {
     public List<TProgress> Progress {
       get;
     } = [];
 
-    public List<TFinalResponse> Completions {
+    public List<TResponse> Completions {
       get;
     } = [];
 
-    public Task SendAsync( TFinalResponse response ) {
+    public Task SendAsync( TResponse response ) {
       Completions.Add( response );
       return Task.CompletedTask;
     }

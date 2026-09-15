@@ -1,7 +1,5 @@
-using Drift.Domain;
 using Drift.Messaging.Protocol.Agent.Subnets;
 using Drift.Networking.Core.Abstractions;
-using Drift.Networking.Grpc.Generated;
 using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.Logging;
 

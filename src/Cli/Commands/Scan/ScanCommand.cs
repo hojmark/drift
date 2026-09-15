@@ -11,7 +11,6 @@ using Drift.Common.Network;
 using Drift.Domain;
 using Drift.Domain.Scan;
 using Drift.Messaging.Client;
-using Drift.Networking.Core.Abstractions;
 using Drift.Scanning.Subnets;
 using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.DependencyInjection;

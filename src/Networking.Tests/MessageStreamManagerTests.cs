@@ -27,8 +27,8 @@ internal sealed class MessageStreamManagerTests {
     // Act
     var clientStreams = duplexStreams.Client;
     await clientStreams.RequestStream.WriteAsync(
-      converter.ToEnvelope<TestPeerMessage, TestPeerMessage>(
-        new TestPeerMessage { Payload = "test123" },
+      converter.ToEnvelope<TestMessage, TestMessage>(
+        new TestMessage { Payload = "test123" },
         RequestId.New()
       )
     );

@@ -1,42 +1,37 @@
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Drift.Networking.Core.Abstractions;
-using Drift.Networking.Grpc.Generated;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.Tests.Helpers;
 
-internal sealed class TestPeerMessage : IRequest<TestPeerMessage>, IResponse {
-  public static string MessageType => "test-peer-message";
+internal sealed class TestMessage : IRequest<TestMessage>, IResponse {
+  public static string MessageType => "test-message";
 
   public string Payload {
     get;
     init;
   } = string.Empty;
 
-  public static JsonTypeInfo JsonInfo => TestPeerMessageJsonContext.Default.TestPeerMessage;
+  public static JsonTypeInfo JsonInfo => TestPeerMessageJsonContext.Default.TestMessage;
 }
 
-[JsonSerializable( typeof(TestPeerMessage) )]
+[JsonSerializable( typeof(TestMessage) )]
 internal sealed partial class TestPeerMessageJsonContext : JsonSerializerContext;
 
-internal sealed class TestMessageHandler( ILogger logger ) : IMessageHandler {
-  public TestPeerMessage? LastMessage {
+internal sealed class TestMessageHandler( ILogger logger ) : MessageHandler<TestMessage, TestMessage> {
+  public TestMessage? LastMessage {
     get;
     private set;
   }
 
-  public string MessageType => TestPeerMessage.MessageType;
-
-  public Task HandleAsync(
-    Message envelope,
-    IMessageEnvelopeConverter converter,
-    IMessageStream stream,
+  public override Task HandleAsync(
+    TestMessage message,
+    IMessageResponder<TestMessage> responder,
     CancellationToken cancellationToken
   ) {
     logger.LogInformation( "Received message of type '{MessageType}'", MessageType );
 
-    var message = converter.FromRequestEnvelope<TestPeerMessage, TestPeerMessage>( envelope );
     LastMessage = message;
 
     logger.LogInformation( "Handled message with payload '{Payload}'", message.Payload );

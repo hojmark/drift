@@ -20,7 +20,7 @@ internal static class AgentClientExtensions {
       );
     }
 
-    internal Task<ScanSubnetCompleteResponse> ScanSubnetAsync(
+    internal Task<ScanSubnetResponse> ScanSubnetAsync(
       Domain.Agent agent,
       CidrBlock cidr,
       uint pingsPerSecond,
@@ -32,7 +32,7 @@ internal static class AgentClientExtensions {
       return agentClient.RequestStreamingAsync<
         ScanSubnetRequest,
         ScanSubnetProgress,
-        ScanSubnetCompleteResponse
+        ScanSubnetResponse
       >(
         agent,
         request,

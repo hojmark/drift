@@ -41,7 +41,7 @@ public sealed class MessageDispatcher {
 
     // Dispatch to handler - handler is responsible for sending response(s)
     if ( _handlers.TryGetValue( message.MessageType, out var handler ) ) {
-      await handler.HandleAsync( message, _envelopeConverter, stream, ct );
+      await handler.DispatchAsync( message, _envelopeConverter, stream, ct );
       return;
     }
 

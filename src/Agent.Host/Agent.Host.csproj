@@ -5,6 +5,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Drift.Agent.Host.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Messaging.Protocol.Agent\Messaging.Protocol.Agent.csproj" />
     <ProjectReference Include="..\Messaging.Client\Messaging.Client.csproj" />

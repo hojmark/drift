@@ -11,8 +11,8 @@ internal sealed class MessageEnvelopeConverterTests {
   [Test]
   public void RequestEnvelope_ContainsRequestIdOnly() {
     var requestId = RequestId.New();
-    var envelope = _converter.ToEnvelope<TestPeerMessage, TestPeerMessage>(
-      new TestPeerMessage { Payload = "request" },
+    var envelope = _converter.ToEnvelope<TestMessage, TestMessage>(
+      new TestMessage { Payload = "request" },
       requestId
     );
 
@@ -25,7 +25,7 @@ internal sealed class MessageEnvelopeConverterTests {
   [Test]
   public void ResponseEnvelope_ContainsReplyToOnly() {
     var requestId = RequestId.New();
-    var envelope = _converter.ToEnvelope( new TestPeerMessage { Payload = "response" }, requestId );
+    var envelope = _converter.ToEnvelope( new TestMessage { Payload = "response" }, requestId );
 
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( envelope.RequestId, Is.Empty );
@@ -37,20 +37,20 @@ internal sealed class MessageEnvelopeConverterTests {
   public void FromEnvelope_RejectsBothLinkageFields() {
     var requestId = RequestId.New().ToString();
     var envelope = new Message {
-      MessageType = TestPeerMessage.MessageType, Payload = "payload", RequestId = requestId, ReplyTo = requestId
+      MessageType = TestMessage.MessageType, Payload = "payload", RequestId = requestId, ReplyTo = requestId
     };
 
     Assert.Throws<InvalidOperationException>( () =>
-      _converter.FromResponseEnvelope<TestPeerMessage>( envelope )
+      _converter.FromResponseEnvelope<TestMessage>( envelope )
     );
   }
 
   [Test]
   public void FromEnvelope_RejectsMissingLinkageFields() {
-    var envelope = new Message { MessageType = TestPeerMessage.MessageType, Payload = "{}" };
+    var envelope = new Message { MessageType = TestMessage.MessageType, Payload = "{}" };
 
     Assert.Throws<InvalidOperationException>( () =>
-      _converter.FromRequestEnvelope<TestPeerMessage, TestPeerMessage>( envelope )
+      _converter.FromRequestEnvelope<TestMessage, TestMessage>( envelope )
     );
   }
 }

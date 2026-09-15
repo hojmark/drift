@@ -7,16 +7,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Agent.Host.Subnets;
 
-internal sealed class SubnetsRequestHandler(
+internal sealed class InterfaceSubnetsRequestHandler(
   IInterfaceSubnetProvider interfaceSubnetProvider,
   ILogger logger
-) : IMessageHandler {
-  public string MessageType => SubnetsRequest.MessageType;
-
-  public async Task HandleAsync(
-    Message envelope,
-    IMessageEnvelopeConverter converter,
-    IMessageStream stream,
+) : MessageHandler<SubnetsRequest, SubnetsResponse> {
+  public override async Task HandleAsync(
+    SubnetsRequest request,
+    IMessageResponder<SubnetsResponse> responder,
     CancellationToken cancellationToken
   ) {
     logger.LogInformation( "Handling subnet request" );
@@ -26,6 +23,6 @@ internal sealed class SubnetsRequestHandler(
     logger.LogInformation( "Sending subnets: {Subnets}", string.Join( ", ", subnets ) );
 
     var response = new SubnetsResponse { Subnets = subnets };
-    await stream.SendAsync( converter, response, RequestId.Parse( envelope.RequestId ) );
+    await responder.SendAsync( response );
   }
 }

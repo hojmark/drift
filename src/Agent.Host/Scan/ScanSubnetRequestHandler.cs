@@ -11,24 +11,20 @@ namespace Drift.Agent.Host.Scan;
 internal sealed class ScanSubnetRequestHandler(
   ISubnetScannerFactory subnetScannerFactory,
   ILogger logger
-) : IMessageHandler {
-  public string MessageType => ScanSubnetRequest.MessageType;
-
-  public async Task HandleAsync(
-    Message envelope,
-    IMessageEnvelopeConverter converter,
-    IMessageStream stream,
+) : StreamingMessageHandler<ScanSubnetRequest, ScanSubnetProgress, ScanSubnetResponse> {
+  public override async Task HandleAsync(
+    ScanSubnetRequest request,
+    IStreamingMessageResponder<ScanSubnetProgress, ScanSubnetResponse> responder,
     CancellationToken cancellationToken
   ) {
     logger.LogInformation( "Handling scan subnet request" );
 
-    var request = converter.FromRequestEnvelope<ScanSubnetRequest, ScanSubnetCompleteResponse>( envelope );
     var options = new SubnetScanOptions { Cidr = request.Cidr, PingsPerSecond = request.PingsPerSecond };
 
     logger.LogInformation( "Starting scan of {Cidr}", request.Cidr );
 
     var subnetScanner = subnetScannerFactory.Get( request.Cidr );
-    var policy = new ProgressUpdatePolicy( stream, converter, envelope, request.Cidr, logger );
+    var policy = new ProgressUpdatePolicy( responder, request.Cidr, logger );
 
     subnetScanner.ResultUpdated += policy.Handle;
 
@@ -41,8 +37,8 @@ internal sealed class ScanSubnetRequestHandler(
         result.DiscoveredDevices.Count
       );
 
-      var completeResponse = new ScanSubnetCompleteResponse { Result = result };
-      await stream.SendAsync( converter, completeResponse, RequestId.Parse( envelope.RequestId ) );
+      var completeResponse = new ScanSubnetResponse { Result = result };
+      await responder.SendAsync( completeResponse );
     }
     finally {
       subnetScanner.ResultUpdated -= policy.Handle;
@@ -50,9 +46,7 @@ internal sealed class ScanSubnetRequestHandler(
   }
 
   private sealed class ProgressUpdatePolicy {
-    private readonly IMessageStream _stream;
-    private readonly IMessageEnvelopeConverter _converter;
-    private readonly Message _envelope;
+    private readonly IStreamingMessageResponder<ScanSubnetProgress, ScanSubnetResponse> _responder;
     private readonly CidrBlock _cidr;
     private readonly ILogger _logger;
 
@@ -65,15 +59,11 @@ internal sealed class ScanSubnetRequestHandler(
     }
 
     public ProgressUpdatePolicy(
-      IMessageStream stream,
-      IMessageEnvelopeConverter converter,
-      Message envelope,
+      IStreamingMessageResponder<ScanSubnetProgress, ScanSubnetResponse> responder,
       CidrBlock cidr,
       ILogger logger
     ) {
-      _stream = stream;
-      _converter = converter;
-      _envelope = envelope;
+      _responder = responder;
       _cidr = cidr;
       _logger = logger;
       Handle = OnResultUpdated;
@@ -101,7 +91,7 @@ internal sealed class ScanSubnetRequestHandler(
         ProgressPercentage = progressPercentage, DevicesFound = deviceCount, Status = result.Status.ToString()
       };
 
-      _stream.SendFireAndForget( _converter, progressUpdate, RequestId.Parse( _envelope.RequestId ) );
+      _responder.SendProgress( progressUpdate );
 
       _logger.LogDebug(
         "Sent progress update: {Progress}% for {Cidr}",

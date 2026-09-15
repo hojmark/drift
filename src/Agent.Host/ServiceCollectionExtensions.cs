@@ -8,7 +8,7 @@ namespace Drift.Agent.Host;
 public static class ServiceCollectionExtensions {
   extension( IServiceCollection services ) {
     public void AddAgentHandlers() {
-      services.AddScoped<IMessageHandler, SubnetsRequestHandler>();
+      services.AddScoped<IMessageHandler, InterfaceSubnetsRequestHandler>();
       services.AddScoped<IMessageHandler, ScanSubnetRequestHandler>();
     }
   }

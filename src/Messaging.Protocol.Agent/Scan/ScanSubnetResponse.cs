@@ -6,7 +6,7 @@ using Drift.Serialization.Converters;
 
 namespace Drift.Messaging.Protocol.Agent.Scan;
 
-public sealed class ScanSubnetCompleteResponse : IResponse {
+public sealed class ScanSubnetResponse : IResponse {
   public static string MessageType => "scan-complete";
 
   public required SubnetScanResult Result {
@@ -14,7 +14,7 @@ public sealed class ScanSubnetCompleteResponse : IResponse {
     init;
   }
 
-  public static JsonTypeInfo JsonInfo => ScanSubnetCompleteResponseJsonContext.Default.ScanSubnetCompleteResponse;
+  public static JsonTypeInfo JsonInfo => ScanSubnetCompleteResponseJsonContext.Default.ScanSubnetResponse;
 }
 
 [JsonSourceGenerationOptions(
@@ -24,5 +24,5 @@ public sealed class ScanSubnetCompleteResponse : IResponse {
   ],
   PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase
 )]
-[JsonSerializable( typeof(ScanSubnetCompleteResponse) )]
+[JsonSerializable( typeof(ScanSubnetResponse) )]
 internal sealed partial class ScanSubnetCompleteResponseJsonContext : JsonSerializerContext;

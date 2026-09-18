@@ -19,8 +19,21 @@
     //"pinDigests": true
   },
   "semanticCommits": "enabled",
-  "updatePinnedDependencies": false,
   "packageRules": [
+    {
+      "description": "Disable pinned dependency updates for NuGet",
+      "matchManagers": [
+        "nuget"
+      ],
+      "updatePinnedDependencies": false
+    },
+    {
+      "description": "Enable pinned updates for .NET tools",
+      "matchFileNames": [
+        ".config/dotnet-tools.json"
+      ],
+      "updatePinnedDependencies": true
+    },
     {
       "groupName": "all non-major NuGet dependencies",
       "groupSlug": "nuget-non-major",

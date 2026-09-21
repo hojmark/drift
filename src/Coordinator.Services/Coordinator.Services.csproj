@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Drift.Coordinator.Host.Tests" />
+    <InternalsVisibleTo Include="Drift.Cli.Tests" />
+    <InternalsVisibleTo Include="Drift.Coordinator.Host" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Serialization\Serialization.csproj" />
+    <ProjectReference Include="..\Messaging.Client\Messaging.Client.csproj" />
+    <ProjectReference Include="..\Messaging.Protocol.Agent\Messaging.Protocol.Agent.csproj" />
+    <ProjectReference Include="..\Networking.Core.Abstractions\Networking.Core.Abstractions.csproj" />
+    <ProjectReference Include="..\Scanning\Scanning.csproj" />
+    <ProjectReference Include="..\Serialization\Serialization.csproj" />
+    <ProjectReference Include="..\Spec\Spec.csproj" />
+  </ItemGroup>
+
+</Project>

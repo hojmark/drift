@@ -1,6 +1,6 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Common;
+using Drift.Cli.Commands.Common.Commands;
 using Drift.Cli.Commands.Init.Helpers;
 using Drift.Cli.Commands.Scan.NonInteractive;
 using Drift.Cli.Presentation.Console;
@@ -61,7 +61,7 @@ internal class InitCommand : CommandBase<InitParameters, InitCommandHandler> {
 
 internal class InitCommandHandler(
   IOutputManager output,
-  INetworkScanner scanner,
+  IScanOrchestrator scanOrchestrator,
   IInterfaceSubnetProvider interfaceSubnetProvider
 ) : ICommandHandler<InitParameters> {
   // TODO skip emojis in output if redirected?
@@ -87,7 +87,7 @@ internal class InitCommandHandler(
       return ExitCodes.GeneralError;
     }
 
-    var success = await Initialize( initOptions );
+    var success = await Initialize( initOptions, cancellationToken );
 
     if ( !success ) {
       return ExitCodes.GeneralError;
@@ -95,7 +95,7 @@ internal class InitCommandHandler(
 
     if ( isInteractive ) {
       output.Normal.WriteLine();
-      output.Normal.WriteLineCTA( $"{Chars.Bulb} Next step: Run", $"drift scan {initOptions.Name}" );
+      output.Normal.WriteLineCTA( "Next step: Run", $"drift scan {initOptions.Name}" );
     }
 
     output.Log.LogDebug( "init command completed" );
@@ -170,7 +170,7 @@ internal class InitCommandHandler(
 
   private static string GetEnvPath( string name ) => Path.GetFullPath( $"{name}.env.yaml" );
 
-  private async Task<bool> Initialize( InitOptions options ) {
+  private async Task<bool> Initialize( InitOptions options, CancellationToken cancellationToken ) {
     try {
       var specPath = GetSpecPath( options.Name );
       // var envPath = GetEnvPath( options.Name );
@@ -179,12 +179,14 @@ internal class InitCommandHandler(
         return false;
       }
 
-      var scanOptions = new NetworkScanOptions { Cidrs = interfaceSubnetProvider.Get().ToList() };
+      var scanOptions = new NetworkScanOptions {
+        Cidrs = ( await interfaceSubnetProvider.GetAsync() ).Select( subnet => subnet.Cidr ).ToList()
+      };
 
       LogSubnetDetails( scanOptions );
 
       if ( options.Discover ) {
-        var result = await PerformScanAsync( scanOptions );
+        var result = await PerformScanAsync( scanOptions, cancellationToken );
 
         output.Log.LogInformation( "Scan completed" );
         output.Log.LogDebug(
@@ -219,11 +221,14 @@ internal class InitCommandHandler(
 #pragma warning restore S2139
   }
 
-  private async Task<NetworkScanResult> PerformScanAsync( NetworkScanOptions request ) {
+  private async Task<NetworkScanResult> PerformScanAsync(
+    NetworkScanOptions request,
+    CancellationToken cancellationToken
+  ) {
     if ( output.Is( OutputFormat.Normal ) ) {
       return await output.Normal.GetAnsiConsole().Status().StartAsync(
         "Scanning network ...",
-        async _ => await scanner.ScanAsync( request, output.GetLogger() )
+        async _ => await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken )
       );
     }
 
@@ -241,11 +246,11 @@ internal class InitCommandHandler(
       }
 
       try {
-        scanner.ResultUpdated += LogProgress;
-        return await scanner.ScanAsync( request, output.GetLogger() );
+        scanOrchestrator.ResultUpdated += LogProgress;
+        return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
       }
       finally {
-        scanner.ResultUpdated -= LogProgress;
+        scanOrchestrator.ResultUpdated -= LogProgress;
       }
     }
 

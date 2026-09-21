@@ -3,6 +3,7 @@ using Drift.Domain.Device.Addresses;
 namespace Drift.Domain.Device.Discovered;
 
 public record DiscoveredDevice : IAddressableDevice {
+  // TODO use DeviceAddressSet?
   public List<IDeviceAddress> Addresses {
     get;
     init;

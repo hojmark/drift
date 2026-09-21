@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
+using Drift.Cli.Settings.V1_preview.Environments;
 using Drift.Cli.Settings.V1_preview.FeatureFlags;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -10,23 +11,23 @@ internal sealed class SerializationTests {
   [Test]
   public async Task DefaultContents() {
     // Arrange
-    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
+    ISettingsLocation location = new TemporarySettingsLocation();
 
     // Act
     new CliSettings().Write( NullLogger.Instance, location );
 
     // Assert
-    var json = await File.ReadAllTextAsync( location.GetFile() );
+    var json = await File.ReadAllTextAsync( location.File );
     Console.WriteLine( json );
     await Verify( json );
 
-    Directory.Delete( location.GetDirectory(), true );
+    Directory.Delete( location.Directory, true );
   }
 
   [Test]
   public void WriteAndReadRoundtrip() {
     // Arrange
-    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
+    ISettingsLocation location = new TemporarySettingsLocation();
     var logger = NullLogger.Instance;
     var original = new CliSettings {
       Features = {
@@ -37,7 +38,7 @@ internal sealed class SerializationTests {
 
     // Act
     original.Write( logger, location );
-    var reloaded = CliSettings.Read( logger, location );
+    var reloaded = CliSettings.Read( location, logger );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -46,35 +47,64 @@ internal sealed class SerializationTests {
       Assert.That( reloaded.Features[0].Enabled, Is.True );
     }
 
-    Directory.Delete( location.GetDirectory(), true );
+    Directory.Delete( location.Directory, true );
+  }
+
+  [Test]
+  public void EnvironmentsWriteAndReadRoundtrip() {
+    // Arrange
+    ISettingsLocation location = new TemporarySettingsLocation();
+    var logger = NullLogger.Instance;
+    var original = new CliSettings {
+      Environments = {
+        new EnvironmentSetting( "main-site", "192.168.1.10:51515" ),
+        new EnvironmentSetting( "backup-site", "192.168.2.10:51515" )
+      },
+      ActiveEnvironment = "main-site"
+    };
+
+    // Act
+    original.Write( logger, location );
+    var reloaded = CliSettings.Read( location, logger );
+
+    // Assert
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( reloaded.Environments, Has.Count.EqualTo( 2 ) );
+      Assert.That( reloaded.Environments[0].Name, Is.EqualTo( "main-site" ) );
+      Assert.That( reloaded.Environments[0].Address, Is.EqualTo( "192.168.1.10:51515" ) );
+      Assert.That( reloaded.ActiveEnvironment, Is.EqualTo( "main-site" ) );
+      Assert.That( reloaded.GetActiveEnvironment(), Is.EqualTo( original.Environments[0] ) );
+    }
+
+    Directory.Delete( location.Directory, true );
   }
 
   [Test]
   public async Task LoadsDefaultsWhenBadJson() {
     // Arrange
-    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
-    Directory.CreateDirectory( location.GetDirectory() );
-    await File.WriteAllTextAsync( location.GetFile(), "garbage" );
+    ISettingsLocation location = new TemporarySettingsLocation();
+    Directory.CreateDirectory( location.Directory );
+    await File.WriteAllTextAsync( location.File, "garbage" );
     var defaultSettings = new CliSettings();
 
     // Act
-    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( location, NullLogger.Instance );
 
     // Assert
     var defaultSettingsJson = JsonSerializer.Serialize( defaultSettings );
     var loadedSettingsJson = JsonSerializer.Serialize( loadedSettings );
     Assert.That( defaultSettingsJson, Is.EqualTo( loadedSettingsJson ) );
 
-    Directory.Delete( location.GetDirectory(), true );
+    Directory.Delete( location.Directory, true );
   }
 
   [Test]
   public void ReturnsDefaultsWhenNoFile() {
     // Arrange
-    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
+    ISettingsLocation location = new TemporarySettingsLocation();
 
     // Act
-    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( location, NullLogger.Instance );
 
     // Assert
     var defaultSettingsJson = JsonSerializer.Serialize( new CliSettings() );
@@ -85,44 +115,44 @@ internal sealed class SerializationTests {
   [Test]
   public void CannotOverwriteWhenNotLoaded() {
     // Arrange
-    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
+    ISettingsLocation location = new TemporarySettingsLocation();
     new CliSettings().Write( NullLogger.Instance, location );
 
     // Act / Assert
     Assert.Throws<InvalidOperationException>( () => new CliSettings().Write( NullLogger.Instance, location ) );
 
-    Directory.Delete( location.GetDirectory(), true );
+    Directory.Delete( location.Directory, true );
   }
 
   [Test]
   public void CannotOverwriteWhenLoadedFromDifferentFile() {
     // Arrange
-    ISettingsLocationProvider location1 = new TemporarySettingsLocationProvider();
-    ISettingsLocationProvider location2 = new TemporarySettingsLocationProvider();
+    ISettingsLocation location1 = new TemporarySettingsLocation();
+    ISettingsLocation location2 = new TemporarySettingsLocation();
     new CliSettings().Write( NullLogger.Instance, location1 );
     new CliSettings().Write( NullLogger.Instance, location2 );
-    var reloaded1 = CliSettings.Read( NullLogger.Instance, location1 );
+    var reloaded1 = CliSettings.Read( location1, NullLogger.Instance );
 
     // Act / Assert
     Assert.Throws<InvalidOperationException>( () => reloaded1.Write( NullLogger.Instance, location2 ) );
 
-    Directory.Delete( location1.GetDirectory(), true );
-    Directory.Delete( location2.GetDirectory(), true );
+    Directory.Delete( location1.Directory, true );
+    Directory.Delete( location2.Directory, true );
   }
 
   [Test]
   public async Task CannotOverwriteWhenDefaultsWereReturnedDueToBadJson() {
     // Arrange
-    ISettingsLocationProvider location = new TemporarySettingsLocationProvider();
-    Directory.CreateDirectory( location.GetDirectory() );
-    await File.WriteAllTextAsync( location.GetFile(), "garbage" );
+    ISettingsLocation location = new TemporarySettingsLocation();
+    Directory.CreateDirectory( location.Directory );
+    await File.WriteAllTextAsync( location.File, "garbage" );
 
     // Act
-    var loadedSettings = CliSettings.Read( NullLogger.Instance, location );
+    var loadedSettings = CliSettings.Read( location, NullLogger.Instance );
 
     // Assert
     Assert.Throws<InvalidOperationException>( () => loadedSettings.Write( NullLogger.Instance, location ) );
 
-    Directory.Delete( location.GetDirectory(), true );
+    Directory.Delete( location.Directory, true );
   }
 }

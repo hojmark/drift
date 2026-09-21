@@ -78,7 +78,7 @@ internal sealed class InitCommandTests {
   [Test]
   public async Task MissingNameOption() {
     // Arrange / Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "init --overwrite" );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( "init --overwrite" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -95,7 +95,7 @@ internal sealed class InitCommandTests {
 
     try {
       // Act
-      var (exitCode, _, _) = await DriftTestCli.InvokeFromTestAsync(
+      var (exitCode, _, _) = await DriftTestCli.InvokeAsync(
         "init",
         cancellationToken: cancellationTokenSource.Token
       );
@@ -119,14 +119,14 @@ internal sealed class InitCommandTests {
   ) {
     // Arrange
     var serviceConfig = ( IServiceCollection services ) => {
-      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
+      services.AddScoped<IScanOrchestrator>( _ => new PredefinedScanOrchestrator( ScanResult ) );
       services.AddScoped<IInterfaceSubnetProvider>( sp =>
         new PredefinedInterfaceSubnetProvider( Interfaces, sp.GetRequiredService<IOutputManager>().GetLogger() )
       );
     };
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync(
       $"init {SpecNameWithDiscovery} --discover {outputFormat} {verbose}",
       serviceConfig
     );
@@ -136,7 +136,9 @@ internal sealed class InitCommandTests {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
       var verifyOutputTask = Verify( output.ToString() + error );
       if ( outputFormat == "-o log" ) {
-        await verifyOutputTask.ScrubLogOutputTime();
+        await verifyOutputTask
+          .ScrubLogOutputTime()
+          .ScrubGuid();
       }
       else {
         await verifyOutputTask;
@@ -151,11 +153,11 @@ internal sealed class InitCommandTests {
   public async Task GenerateSpecWithoutDiscoverySuccess() {
     // Arrange
     var serviceConfig = ( IServiceCollection services ) => {
-      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner( ScanResult ) );
+      services.AddScoped<IScanOrchestrator>( _ => new PredefinedScanOrchestrator( ScanResult ) );
     };
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync(
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync(
       $"init {SpecNameWithoutDiscovery}",
       serviceConfig
     );

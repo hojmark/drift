@@ -1,0 +1,10 @@
+﻿Coordinator scan <scan-id> started
+
+10.0.0.0/24 (2 devices)
+├── 10.0.0.100     AA-BB-0A-00-00-64    Online (unknown device)
+└── 10.0.0.101     AA-BB-0A-00-00-65    Online (unknown device)
+
+192.168.1.0/24 (2 devices)
+├── 192.168.1.100  AA-BB-C0-A8-01-64    Online (unknown device)
+└── 192.168.1.101  AA-BB-C0-A8-01-65    Online (unknown device)
+

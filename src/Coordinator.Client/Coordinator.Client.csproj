@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ApiSpecFile>$(MSBuildThisFileDirectory)..\Coordinator.Api.OpenApi\openapi.json</ApiSpecFile>
+    <KiotaOutputDirectory>$(MSBuildThisFileDirectory)Generated</KiotaOutputDirectory>
+    <KiotaStampFile>$(MSBuildProjectDirectory)\obj\$(Configuration)\$(TargetFramework)\kiota.stamp</KiotaStampFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Coordinator.Api.OpenApi\Coordinator.Api.OpenApi.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Spec\Spec.csproj" />
+    <ProjectReference Include="..\Serialization\Serialization.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Kiota.Bundle" />
+  </ItemGroup>
+
+  <Target Name="RestoreKiotaTool" BeforeTargets="GenerateKiotaClient">
+    <Exec Command="dotnet tool restore" />
+  </Target>
+
+  <Target
+    Name="GenerateKiotaClient"
+    BeforeTargets="BeforeCompile"
+    DependsOnTargets="RestoreKiotaTool"
+    Inputs="$(ApiSpecFile)"
+    Outputs="$(KiotaStampFile)">
+    <Exec Command="dotnet tool run kiota generate -l CSharp -d &quot;$(ApiSpecFile)&quot; -c ControlClient -n Drift.Coordinator.Client.Generated -o &quot;$(KiotaOutputDirectory)&quot; --clean-output --ebc --tam Internal --additional-data false" />
+    <Touch Files="$(KiotaStampFile)" AlwaysCreate="true" />
+  </Target>
+
+</Project>

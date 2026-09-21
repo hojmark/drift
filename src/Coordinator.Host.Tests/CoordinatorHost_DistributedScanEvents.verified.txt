@@ -1,0 +1,11 @@
+﻿event: scan
+id: 1
+data: {"eventId":1,"scanId":"<scan-id>","status":"Running","progress":0,"result":null}
+
+event: scan
+id: 2
+data: {"eventId":2,"scanId":"<scan-id>","status":"Running","progress":100,"result":null}
+
+event: scan
+id: 3
+data: {"eventId":3,"scanId":"<scan-id>","status":"Completed","progress":100,"result":{"subnets":[{"cidrBlock":"10.42.0.0/24","discoveredDevices":[],"discoveryAttempts":[],"metadata":{"startedAt":"<time>","endedAt":"<time>"},"status":"Success","progress":0}],"metadata":{"startedAt":"<time>","endedAt":"<time>"},"status":"Success","progress":100}}

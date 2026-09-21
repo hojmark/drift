@@ -5,13 +5,10 @@ network:
   devices:
   - id: device-1
     addresses:
-    - type: ip-v4
-      value: 192.168.0.10
+      ipv4: 192.168.0.10
   - id: device-2
     addresses:
-    - type: ip-v4
-      value: 192.168.0.11
+      ipv4: 192.168.0.11
   - id: device-3
     addresses:
-    - type: ip-v4
-      value: 192.168.0.12
+      ipv4: 192.168.0.12

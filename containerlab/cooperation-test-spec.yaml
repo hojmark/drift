@@ -1,0 +1,22 @@
+version: "v1-preview"
+
+network:
+  subnets:
+    - address: 172.20.20.0/24
+  devices: []
+
+agents:
+  - id: agent_coop_agent1
+    address: http://clab-drift-cooperation-test-agent1:5000
+    authentication:
+      type: none
+
+  - id: agent_coop_agent2
+    address: http://clab-drift-cooperation-test-agent2:5000
+    authentication:
+      type: none
+
+  - id: agent_coop_agent3
+    address: http://clab-drift-cooperation-test-agent3:5000
+    authentication:
+      type: none

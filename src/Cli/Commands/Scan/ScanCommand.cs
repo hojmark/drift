@@ -110,8 +110,6 @@ internal sealed class ScanCommandHandler(
     var inventory = new Inventory { Network = spec };
     var scanRequest = new NetworkScanOptions();
 
-    output.GetLogger().LogDebug( "Starting scan UI" );
-
     var exitCode = await StartUiAsync( parameters, inventory, scanOrchestrator, scanRequest, cancellationToken );
 
     output.Log.LogDebug( "scan command completed" );

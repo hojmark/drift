@@ -14,6 +14,11 @@ public static partial class YamlConverter {
     return Deserialize( reader.ReadToEnd() );
   }
 
+  public static Inventory Deserialize( string yaml ) {
+    var spec = DeserializeToDto( yaml );
+    return Mapper.ToDomain( spec );
+  }
+
   public static Inventory Deserialize( FileInfo fileInfo ) {
     using var stream = fileInfo.Open( FileMode.Open, FileAccess.Read, FileShare.Read );
     return Deserialize( stream );
@@ -28,10 +33,5 @@ public static partial class YamlConverter {
     var spec = deserializer.Deserialize<DriftSpec?>( yaml ); // null when the YAML is an empty string
 
     return spec ?? new DriftSpec();
-  }
-
-  private static Inventory Deserialize( string yaml ) {
-    var spec = DeserializeToDto( yaml );
-    return Mapper.ToDomain( spec );
   }
 }

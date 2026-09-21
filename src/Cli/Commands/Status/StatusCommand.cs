@@ -8,7 +8,7 @@ internal sealed class StatusCommand : CommandBase<StatusParameters, StatusComman
     "status",
     "Show Drift status",
     provider,
-    includeSpecArgument: false 
+    includeSpecArgument: false
   ) {
   }
 

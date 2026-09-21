@@ -1,0 +1,648 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "drift | v1",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/api/v1/status": {
+      "get": {
+        "tags": [
+          "drift"
+        ],
+        "summary": "Get server status",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerStatusDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/spec": {
+      "put": {
+        "tags": [
+          "drift"
+        ],
+        "summary": "Replace the coordinator spec",
+        "requestBody": {
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "drift"
+        ],
+        "summary": "Get the coordinator spec",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/agents": {
+      "get": {
+        "tags": [
+          "drift"
+        ],
+        "summary": "List registered agents and refresh their connection status",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgentStateDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agents/enrollments": {
+      "post": {
+        "tags": [
+          "drift"
+        ],
+        "summary": "Enroll an agent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollAgentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentStateDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agents/enrollment-requests": {
+      "post": {
+        "tags": [
+          "drift"
+        ],
+        "summary": "Request agent enrollment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollAgentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentStateDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agents/{id}": {
+      "delete": {
+        "tags": [
+          "drift"
+        ],
+        "summary": "Remove an enrolled agent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/v1/scans": {
+      "post": {
+        "tags": [
+          "drift"
+        ],
+        "summary": "Start a network scan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartScanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartScanResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scans/{id}": {
+      "get": {
+        "tags": [
+          "drift"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanStatusResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scans/{id}/results": {
+      "get": {
+        "tags": [
+          "drift"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scans/{id}/events": {
+      "get": {
+        "tags": [
+          "drift"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddressFamily": {
+        "type": "integer"
+      },
+      "AgentConnectionStatusDto": {
+        "enum": [
+          "Unknown",
+          "Connected",
+          "Unavailable"
+        ]
+      },
+      "AgentEnrollmentStatusDto": {
+        "enum": [
+          "NotEnrolled",
+          "Enrolled"
+        ]
+      },
+      "AgentStateDto": {
+        "required": [
+          "id",
+          "address",
+          "enrollmentStatus",
+          "connectionStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string",
+            "format": "uri"
+          },
+          "enrollmentStatus": {
+            "$ref": "#/components/schemas/AgentEnrollmentStatusDto"
+          },
+          "connectionStatus": {
+            "$ref": "#/components/schemas/AgentConnectionStatusDto"
+          }
+        }
+      },
+      "CidrBlock": {
+        "type": "object",
+        "properties": {
+          "networkAddress": {
+            "description": "Gets the network address portion of the CIDR block.",
+            "$ref": "#/components/schemas/IPAddress"
+          },
+          "prefixLength": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Gets the prefix length of the CIDR block, indicating the number of leading 1-bits in the subnet mask.",
+            "format": "int32"
+          }
+        },
+        "description": "Represents a CIDR (Classless Inter-Domain Routing) block, which defines a range of IP addresses\nusing a network address and a prefix length. For example, `192.168.1.0/24`."
+      },
+      "EnrollAgentRequest": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "HttpValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "IPAddress": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "addressFamily": {
+            "$ref": "#/components/schemas/AddressFamily"
+          },
+          "isIPv4MappedToIPv6": {
+            "type": "boolean"
+          },
+          "isIPv6LinkLocal": {
+            "type": "boolean"
+          },
+          "isIPv6Multicast": {
+            "type": "boolean"
+          },
+          "isIPv6SiteLocal": {
+            "type": "boolean"
+          },
+          "isIPv6Teredo": {
+            "type": "boolean"
+          },
+          "isIPv6UniqueLocal": {
+            "type": "boolean"
+          },
+          "scopeId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "instance": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ScanStatusDto": {
+        "enum": [
+          "Queued",
+          "Running",
+          "Completed",
+          "Cancelled",
+          "Failed"
+        ]
+      },
+      "ScanStatusResponseDto": {
+        "required": [
+          "scanId",
+          "status",
+          "progress"
+        ],
+        "type": "object",
+        "properties": {
+          "scanId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ScanStatusDto"
+          },
+          "progress": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "uint8"
+          }
+        }
+      },
+      "ServerStatusDto": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ServerStatusDtoValue"
+          }
+        }
+      },
+      "ServerStatusDtoValue": {
+        "enum": [
+          "Ready"
+        ]
+      },
+      "StartScanRequest": {
+        "type": "object",
+        "properties": {
+          "cidrs": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CidrBlock"
+            }
+          },
+          "pingsPerSecond": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32",
+            "default": 50
+          }
+        }
+      },
+      "StartScanResponseDto": {
+        "required": [
+          "scanId",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "scanId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ScanStatusDto"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "drift"
+    }
+  ]
+}

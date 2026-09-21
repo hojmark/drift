@@ -1,0 +1,4 @@
+﻿Coordinator scan <scan-id> started
+
+192.168.10.0/24 (0 devices)
+

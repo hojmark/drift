@@ -14,13 +14,14 @@ internal partial class NormalOutput(
   TextWriter errOut,
   bool plainOutput = false,
   bool verbose = false,
-  bool veryVerbose = false
+  bool veryVerbose = false,
+  TextWriter? ansiConsoleOut = null
 ) : INormalOutput {
   // TODO test
   private const bool MarkupOutput = false;
 
   public IAnsiConsole GetAnsiConsole() {
-    var settings = new AnsiConsoleSettings { Out = new AnsiConsoleOutput( stdOut ) };
+    var settings = new AnsiConsoleSettings { Out = new AnsiConsoleOutput( ansiConsoleOut ?? stdOut ) };
 
     if ( plainOutput ) {
       settings.Ansi = AnsiSupport.No;
@@ -79,14 +80,13 @@ internal partial class NormalOutput(
           // ... on bgcolor]
         }
       }
-      else {
-        if ( foreground.HasValue ) {
-          System.Console.ForegroundColor = foreground.Value;
-        }
 
-        if ( background.HasValue ) {
-          System.Console.BackgroundColor = background.Value;
-        }
+      if ( foreground.HasValue ) {
+        System.Console.ForegroundColor = foreground.Value;
+      }
+
+      if ( background.HasValue ) {
+        System.Console.BackgroundColor = background.Value;
       }
 
       textWriter.Write( line );
@@ -100,9 +100,8 @@ internal partial class NormalOutput(
           System.Console.BackgroundColor = background.Value;
         }
       }
-      else {
-        System.Console.ResetColor();
-      }
+
+      System.Console.ResetColor();
 
       textWriter.WriteLine();
     }

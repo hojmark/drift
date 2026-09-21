@@ -2,12 +2,10 @@ namespace Drift.Cli.Presentation.Console.Managers.Outputs;
 
 internal partial class NormalOutput {
   public void WriteVeryVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
+    string text
   ) {
     if ( veryVerbose ) {
-      WriteInternal( stdOut, 0, text, foreground, background );
+      WriteInternal( stdOut, 0, text, ConsoleColor.DarkGray );
     }
   }
 
@@ -18,12 +16,10 @@ internal partial class NormalOutput {
   }
 
   public void WriteLineVeryVerbose(
-    string text,
-    ConsoleColor? foreground = ConsoleColor.DarkGray,
-    ConsoleColor? background = null
+    string text
   ) {
     if ( veryVerbose ) {
-      WriteLineInternal( stdOut, 0, text, foreground, background );
+      WriteLineInternal( stdOut, 0, text, ConsoleColor.DarkGray );
     }
   }
 }

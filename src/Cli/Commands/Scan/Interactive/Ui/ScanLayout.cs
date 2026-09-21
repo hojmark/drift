@@ -103,7 +103,9 @@ internal class ScanLayout( NetworkId? networkId, IAnsiConsole console ) {
     );
   }
 
-  private static Markup BuildFooter() {
+  private static Markup BuildFooter( /*int scroll, int maxScroll, int selectedIndex, List<UiSubnet> subnets */ ) {
+    const string keyColor = "bold";
+
     var keyActions = new Dictionary<string, string> {
       { "q", "quit" },
       { "r", "restart" },
@@ -118,7 +120,7 @@ internal class ScanLayout( NetworkId? networkId, IAnsiConsole console ) {
     var footerParts = new List<string>();
 
     foreach ( var kvp in keyActions ) {
-      footerParts.Add( $"[bold]{kvp.Key}[/] {kvp.Value}" );
+      footerParts.Add( $"[{keyColor}]{kvp.Key}[/] {kvp.Value}" );
     }
 
     // footerParts.Add( $"[grey]Scroll: {scroll}/{maxScroll}[/]" );

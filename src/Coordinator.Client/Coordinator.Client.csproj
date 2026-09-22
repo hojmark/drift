@@ -27,7 +27,7 @@
     DependsOnTargets="RestoreKiotaTool"
     Inputs="$(ApiSpecFile)"
     Outputs="$(KiotaStampFile)">
-    <Exec Command="dotnet tool run kiota generate -l CSharp -d &quot;$(ApiSpecFile)&quot; -c ControlClient -n Drift.Coordinator.Client.Generated -o &quot;$(KiotaOutputDirectory)&quot; --clean-output --ebc --tam Internal --additional-data false" />
+    <Exec Command="dotnet tool run kiota generate -l CSharp -d &quot;$(ApiSpecFile)&quot; -c ControlClient -n Drift.Coordinator.Client.Generated -o &quot;$(KiotaOutputDirectory)&quot; --clean-output --ebc --tam Internal --additional-data false --disable-validation-rules NoServerEntry --disable-validation-rules KnownAndNotSupportedFormats" />
     <Touch Files="$(KiotaStampFile)" AlwaysCreate="true" />
   </Target>
 

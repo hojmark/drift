@@ -18,9 +18,9 @@ internal static class DriftTestCli {
     string args,
     Action<IServiceCollection>? configureServices = null,
     RootCommandFactory.CommandRegistration[]? customCommands = null,
-    CancellationToken cancellationToken = default,
     bool redirectConsole = true,
-    ISettingsLocation? settingsLocation = null
+    ISettingsLocation? settingsLocation = null,
+    CancellationToken cancellationToken = default
   ) {
     settingsLocation ??= new TemporarySettingsLocation();
     var token = cancellationToken;
@@ -111,8 +111,8 @@ internal static class DriftTestCli {
     var task = InvokeAsync(
       args,
       configureServices,
-      cancellationToken: cts.Token,
-      redirectConsole: false
+      redirectConsole: false,
+      cancellationToken: cts.Token
     );
 
     return new RunningCliCommand( task, cts );

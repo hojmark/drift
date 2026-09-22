@@ -26,7 +26,9 @@ public sealed class ControlApiClient : IDisposable {
   private readonly ControlClient _generatedClient;
 
   // Used for handwritten SSE which Kiota does not support.
+#pragma warning disable S1133
   [Obsolete( "Use the generated client" )]
+#pragma warning restore S1133
   private readonly HttpClient _httpClient;
 
   private ControlApiClient( HttpClient httpClient, ControlClient generatedClient ) {

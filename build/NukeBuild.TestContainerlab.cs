@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Drift.Build.Utilities;
 using Nuke.Common;
@@ -38,11 +39,7 @@ sealed partial class NukeBuild {
       CliContainer: "clab-drift-simple-test-cli",
       CoordinatorAddress: "http://clab-drift-simple-test-server:51510",
       AgentIds: ["agent_test1"],
-      Assertions: [
-        new ScanAssertion( "Management subnet scanned", output => output.Contains( "172.20.20.0/24" ) ),
-        new ScanAssertion( "The active coordinator environment was used",
-          output => output.Contains( "Using active coordinator environment" ) ),
-      ]
+      SnapshotFile: "simple-test-scan-output.json"
     ),
     new(
       Name: "cooperation-test",
@@ -51,11 +48,7 @@ sealed partial class NukeBuild {
       CliContainer: "clab-drift-cooperation-test-cli",
       CoordinatorAddress: "http://clab-drift-cooperation-test-server:51510",
       AgentIds: ["agent_coop_agent1", "agent_coop_agent2", "agent_coop_agent3"],
-      Assertions: [
-        new ScanAssertion( "Management subnet scanned", output => output.Contains( "172.20.20.0/24" ) ),
-        new ScanAssertion( "The active coordinator environment was used",
-          output => output.Contains( "Using active coordinator environment" ) ),
-      ]
+      SnapshotFile: "cooperation-test-scan-output.json"
     ),
     new(
       Name: "subnet-isolation-test",
@@ -64,12 +57,7 @@ sealed partial class NukeBuild {
       CliContainer: "clab-drift-subnet-isolation-test-cli",
       CoordinatorAddress: "http://clab-drift-subnet-isolation-test-server:51510",
       AgentIds: ["agent_subnet_agent1", "agent_subnet_agent2"],
-      Assertions: [
-        new ScanAssertion( "Subnet-A scanned", output => output.Contains( "192.168.10.0/24" ) ),
-        new ScanAssertion( "Subnet-B scanned", output => output.Contains( "192.168.20.0/24" ) ),
-        new ScanAssertion( "The active coordinator environment was used",
-          output => output.Contains( "Using active coordinator environment" ) ),
-      ]
+      SnapshotFile: "subnet-isolation-test-scan-output.json"
     ),
   ];
 
@@ -274,14 +262,10 @@ sealed partial class NukeBuild {
   private static async Task RunScanAndAssertAsync( AbsolutePath specFile, ContainerlabTestCase testCase ) {
     Log.Information( "Running scan for test case: {Name}", testCase.Name );
 
-    // Give agent(s) a moment to finish starting up
-    // TODO try without fixed delay
-    // await Task.Delay( TimeSpan.FromSeconds( 5 ) );
-
-    Log.Debug( "Copying spec to CLI container {Container}...", testCase.CliContainer );
+    //Log.Debug( "Copying spec to CLI container {Container}...", testCase.CliContainer );
     Docker( $"cp {specFile} {testCase.CliContainer}:/tmp/spec.yaml" ).AssertZeroExitCode();
 
-    Log.Information( "Configuring the CLI to use coordinator {Address}...", testCase.CoordinatorAddress );
+    //Log.Information( "Configuring the CLI to use coordinator {Address}...", testCase.CoordinatorAddress );
     RunCliCommand( testCase, $"env add container-server {testCase.CoordinatorAddress}" );
     await RunCliCommandWithRetryAsync( testCase, "spec apply /tmp/spec.yaml" );
 
@@ -289,32 +273,25 @@ sealed partial class NukeBuild {
       await RunCliCommandWithRetryAsync( testCase, $"enrollment add {agentId}" );
     }
 
-    Log.Information( "Running scan in {Container}...", testCase.CliContainer );
-    var scanResult = Docker(
-      $"exec {testCase.CliContainer} /app/drift scan /tmp/spec.yaml -v",
-      timeout: TimeSpan.FromMinutes( 5 )
-    );
+    var scanResult = RunCliCommand( testCase, "scan --output Json", timeout: TimeSpan.FromMinutes( 5 ) );
 
-    foreach ( var line in scanResult.Output ) {
-      Log.Debug( "[scan:{Name}] {Line}", testCase.Name, line.Text );
-    }
-
-    scanResult.AssertZeroExitCode();
-
-    AssertScanOutput( testCase, scanResult.Output.Select( o => o.Text ) );
+    AssertScanSnapshot( testCase, scanResult.Output.Select( o => o.Text ) );
   }
 
-  private static void RunCliCommand( ContainerlabTestCase testCase, string command ) {
-    Docker( $"exec {testCase.CliContainer} /app/drift {command}" ).AssertZeroExitCode();
+  private static IProcess RunCliCommand( ContainerlabTestCase testCase, string command, TimeSpan? timeout = null ) {
+    return Docker( $"exec {testCase.CliContainer} /app/drift {command}", timeout: timeout ).AssertZeroExitCode();
   }
 
-  private static async Task RunCliCommandWithRetryAsync( ContainerlabTestCase testCase, string command ) {
+  private static async Task<IProcess> RunCliCommandWithRetryAsync(
+    ContainerlabTestCase testCase,
+    string command,
+    TimeSpan? timeout = null
+  ) {
     Exception lastException = null;
 
     for ( var attempt = 1; attempt <= 10; attempt++ ) {
       try {
-        RunCliCommand( testCase, command );
-        return;
+        return RunCliCommand( testCase, command, timeout );
       }
       catch ( Exception exception ) {
         lastException = exception;
@@ -326,27 +303,25 @@ sealed partial class NukeBuild {
     throw new InvalidOperationException( $"CLI command '{command}' did not succeed", lastException );
   }
 
-  private static void AssertScanOutput( ContainerlabTestCase testCase, IEnumerable<string> outputLines ) {
-    var output = string.Join( "\n", outputLines );
-    var failures = new List<string>();
+  private static void AssertScanSnapshot( ContainerlabTestCase testCase, IEnumerable<string> outputLines ) {
+    var actual = string.Join( System.Environment.NewLine, outputLines ).Trim();
+    actual = Regex.Replace( actual, "(?i)\\b[0-9a-f]{2}([-:][0-9a-f]{2}){5}\\b", "<mac>" );
 
-    foreach ( var assertion in testCase.Assertions ) {
-      if ( assertion.Check( output ) ) {
-        Log.Debug( "Assertion passed: {Description}", assertion.Description );
-      }
-      else {
-        failures.Add( assertion.Description );
-        Log.Error( "Assertion failed: {Description}", assertion.Description );
-      }
+    var snapshotFile = Paths.ContainerlabsDirectory / testCase.SnapshotFile;
+    if ( !File.Exists( snapshotFile ) ) {
+      throw new FileNotFoundException( "Scan snapshot not found", snapshotFile );
     }
 
-    if ( failures.Count > 0 ) {
-      Log.Error( "Scan output was:\n{Output}", output );
-      var failList = string.Join( "\n", failures.Select( f => $"  FAIL: {f}" ) );
-      throw new Exception( $"Scan assertions failed for '{testCase.Name}':\n{failList}" );
+    var expected = File.ReadAllText( snapshotFile ).Trim();
+    if ( !string.Equals( actual, expected, StringComparison.Ordinal ) ) {
+      Log.Error(
+        "Scan output did not match snapshot for '{Name}'.\nActual:\n{Actual}\nExpected:\n{Expected}",
+        testCase.Name, actual, expected
+      );
+      throw new Exception( $"Scan output did not match snapshot for '{testCase.Name}'" );
     }
 
-    Log.Information( "All {Count} assertions passed for '{Name}'", testCase.Assertions.Length, testCase.Name );
+    Log.Information( "Scan output matched snapshot for '{Name}'", testCase.Name );
   }
 
   private static void ClabLogger( OutputType type, string text ) => Log.Debug( text );
@@ -386,7 +361,7 @@ sealed partial class NukeBuild {
 /// <param name="CliContainer">Name of the container hosting the Drift CLI</param>
 /// <param name="CoordinatorAddress">Address of the coordinator used by the CLI</param>
 /// <param name="AgentIds">IDs of the agents declared in the spec and enrolled before scanning</param>
-/// <param name="Assertions">A collection of assertions to be run against the scan output</param>
+/// <param name="SnapshotFile">File containing the expected JSON scan output</param>
 sealed record ContainerlabTestCase(
   string Name,
   string TopologyFile,
@@ -394,8 +369,5 @@ sealed record ContainerlabTestCase(
   string CliContainer,
   string CoordinatorAddress,
   string[] AgentIds,
-  ScanAssertion[] Assertions
+  string SnapshotFile
 );
-
-/// <summary>A named assertion over scan output text.</summary>
-sealed record ScanAssertion( string Description, Func<string, bool> Check );

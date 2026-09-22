@@ -8,6 +8,7 @@ internal class ConsoleOutputManager(
   // TODO mixed parameter levels
   ILogger consoleLogger,
   TextWriter normalStdOut,
+  TextWriter jsonStdOut,
   TextWriter normalErrOut,
   bool normalVerbose,
   bool normalVeryVerbose,
@@ -26,7 +27,7 @@ internal class ConsoleOutputManager(
 
   public IJsonOutput Json {
     get;
-  } = default!;
+  } = new JsonOutput( jsonStdOut );
 
   public TextReader GetReader() {
     return reader;

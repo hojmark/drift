@@ -1,2 +1,1 @@
-﻿Validating {CurrentDirectory}unittest.spec.yaml  
-✓ Valid
+﻿[38;5;2m✓[0m Valid

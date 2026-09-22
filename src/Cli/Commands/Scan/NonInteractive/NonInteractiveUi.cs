@@ -40,7 +40,7 @@ internal sealed class NonInteractiveUi( IOutputManager output, IScanOrchestrator
     OutputFormat outputFormat,
     CancellationToken cancellationToken
   ) {
-    var result = await PerformScanAsync( scanRequest, cancellationToken );
+    var result = await PerformScanAsync( scanRequest, outputFormat, cancellationToken );
 
     if ( cancellationToken.IsCancellationRequested || result.Status == ScanResultStatus.Canceled ) {
       output.Normal.WriteLineWarning( "Scan canceled" );
@@ -77,6 +77,7 @@ internal sealed class NonInteractiveUi( IOutputManager output, IScanOrchestrator
       outputFormat switch {
         OutputFormat.Normal => new NormalScanRenderer( output.Normal ),
         OutputFormat.Log => new LogScanRenderer( output.Log ),
+        OutputFormat.Json => new JsonScanRenderer( output.Json ),
         _ => new NullRenderer<IList<Subnet>>()
       };
 
@@ -89,54 +90,58 @@ internal sealed class NonInteractiveUi( IOutputManager output, IScanOrchestrator
 
   private async Task<NetworkScanResult> PerformScanAsync(
     NetworkScanOptions request,
+    OutputFormat outputFormat,
     CancellationToken cancellationToken
   ) {
-    if ( output.Is( OutputFormat.Normal ) ) {
-      var dCol = new TaskDescriptionColumn { Alignment = Justify.Right };
-      var pCol = new PercentageColumn { Style = new Style( Color.Cyan1 ), CompletedStyle = new Style( Color.Green1 ) };
+    switch ( outputFormat ) {
+      case OutputFormat.Normal:
+        var dCol = new TaskDescriptionColumn { Alignment = Justify.Right };
+        var pCol = new PercentageColumn {
+          Style = new Style( Color.Cyan1 ), CompletedStyle = new Style( Color.Green1 )
+        };
 
-      return await output.Normal.GetAnsiConsole().Progress()
-        .AutoClear( true )
-        .Columns( dCol, pCol )
-        .StartAsync( async ctx => {
-          var progressBar = ctx.AddTask( "Ping Scan" );
+        return await output.Normal.GetAnsiConsole().Progress()
+          .AutoClear( true )
+          .Columns( dCol, pCol )
+          .StartAsync( async ctx => {
+            var progressBar = ctx.AddTask( "Ping Scan" );
 
-          EventHandler<NetworkScanResult> updater = ( _, r ) => {
-            progressBar.Value = r.Progress;
-          };
+            EventHandler<NetworkScanResult> updater = ( _, r ) => {
+              progressBar.Value = r.Progress;
+            };
 
-          try {
-            scanOrchestrator.ResultUpdated += updater;
-            return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
-          }
-          finally {
-            scanOrchestrator.ResultUpdated -= updater;
-          }
-        } );
-    }
+            try {
+              scanOrchestrator.ResultUpdated += updater;
+              return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
+            }
+            finally {
+              scanOrchestrator.ResultUpdated -= updater;
+            }
+          } );
+      case OutputFormat.Log:
+        var lastLogTime = DateTime.MinValue;
 
-    if ( output.Is( OutputFormat.Log ) ) {
-      var lastLogTime = DateTime.MinValue;
+        // TODO refactor to PerformScan like in InitCommand
 
-      // TODO refactor to PerformScan like in InitCommand
+        EventHandler<NetworkScanResult> updater = ( _, r ) => {
+          UpdateProgressDebounced(
+            r.Progress,
+            progress => output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress ),
+            ref lastLogTime
+          );
+        };
 
-      EventHandler<NetworkScanResult> updater = ( _, r ) => {
-        UpdateProgressDebounced(
-          r.Progress,
-          progress => output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress ),
-          ref lastLogTime
-        );
-      };
-
-      try {
-        scanOrchestrator.ResultUpdated += updater;
+        try {
+          scanOrchestrator.ResultUpdated += updater;
+          return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
+        }
+        finally {
+          scanOrchestrator.ResultUpdated -= updater;
+        }
+      case OutputFormat.Json:
         return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
-      }
-      finally {
-        scanOrchestrator.ResultUpdated -= updater;
-      }
+      default:
+        throw new ArgumentOutOfRangeException( nameof(outputFormat), outputFormat, null );
     }
-
-    throw new NotImplementedException();
   }
 }

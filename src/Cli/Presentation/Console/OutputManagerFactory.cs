@@ -113,6 +113,7 @@ internal class OutputManagerFactory(
     return new ConsoleOutputManager(
       logger,
       consoleOuts.StdOut,
+      consoleOuts.JsonOut,
       consoleOuts.ErrOut,
       verbose,
       veryVerbose,
@@ -125,7 +126,7 @@ internal class OutputManagerFactory(
     );
   }
 
-  private static (TextWriter StdOut, TextWriter ErrOut) GetConsoleOuts(
+  private static (TextWriter StdOut, TextWriter JsonOut, TextWriter ErrOut) GetConsoleOuts(
     OutputFormat outputFormat,
     bool verbose,
     bool veryVerbose,
@@ -134,13 +135,18 @@ internal class OutputManagerFactory(
     bool plainConsole,
     TextReader outputReader
   ) {
+    if ( outputFormat == OutputFormat.Json ) {
+      return ( TextWriter.Null, consoleOut, TextWriter.Null );
+    }
+
     if ( outputFormat is not OutputFormat.Normal ) {
-      return ( TextWriter.Null, TextWriter.Null );
+      return ( TextWriter.Null, TextWriter.Null, TextWriter.Null );
     }
 
     var tempOutputManager = new ConsoleOutputManager(
       NullLogger.Instance,
       consoleOut,
+      TextWriter.Null,
       consoleErr,
       verbose,
       veryVerbose,
@@ -152,7 +158,7 @@ internal class OutputManagerFactory(
     tempOutputManager.Normal.WriteLineVerbose( "Output format is 'Normal' using 'Verbose' output" );
     tempOutputManager.Normal.WriteLineVeryVerbose( "Output format is 'Normal' using 'Very Verbose' output" );
 
-    return ( consoleOut, consoleErr );
+    return ( consoleOut, TextWriter.Null, consoleErr );
   }
 
   private static ILogger GetLogger(

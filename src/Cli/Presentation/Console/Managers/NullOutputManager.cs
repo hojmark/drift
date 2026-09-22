@@ -36,6 +36,10 @@ internal class NullOutputManager : IOutputManager {
 }
 
 internal class NullOutput : INormalOutput, ILogOutput, IJsonOutput {
+  public void WriteLine( string text ) {
+    // No-op
+  }
+
   public void WriteVeryVerbose(
     string text
   ) {

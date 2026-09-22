@@ -200,8 +200,8 @@ internal sealed class AgentTestHarness : IAsyncDisposable {
     return DriftTestCli.InvokeAsync(
       arguments,
       configureServices: ConfigureApplicationDataLocation,
-      cancellationToken: _cancellationTokenSource.Token,
-      settingsLocation: _settingsLocation
+      settingsLocation: _settingsLocation,
+      cancellationToken: _cancellationTokenSource.Token
     );
   }
 

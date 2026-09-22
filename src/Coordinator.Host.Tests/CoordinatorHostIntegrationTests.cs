@@ -305,11 +305,15 @@ internal sealed class CoordinatorHostIntegrationTests {
         Assert.That( resultResponse.StatusCode, Is.EqualTo( HttpStatusCode.OK ), resultJson );
         Assert.That( resultJson, Contains.Substring( "10.42.0.0/24" ) );
         Assert.That( resultJson, Contains.Substring( "\"status\":\"Success\"" ) );
-        Assert.That( clientResults,
-          Has.Some.Matches<NetworkScanResult>( result => result.Status == ScanResultStatus.Success ) );
+        Assert.That(
+          clientResults,
+          Has.Some.Matches<NetworkScanResult>( result => result.Status == ScanResultStatus.Success )
+        );
         Assert.That( clientResult.Status, Is.EqualTo( ScanResultStatus.Success ) );
-        Assert.That( clientResult.Subnets,
-          Has.Some.Matches<SubnetScanResult>( subnet => subnet.CidrBlock == new CidrBlock( "10.42.0.0/24" ) ) );
+        Assert.That(
+          clientResult.Subnets,
+          Has.Some.Matches<SubnetScanResult>( subnet => subnet.CidrBlock == new CidrBlock( "10.42.0.0/24" ) )
+        );
       }
 
       await Verify( events.TrimEnd() )

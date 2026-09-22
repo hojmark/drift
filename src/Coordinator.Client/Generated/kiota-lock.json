@@ -30,6 +30,9 @@
   ],
   "includePatterns": [],
   "excludePatterns": [],
-  "disabledValidationRules": [],
+  "disabledValidationRules": [
+    "NoServerEntry",
+    "KnownAndNotSupportedFormats"
+  ],
   "allowedExternalOrigins": []
 }

@@ -1,0 +1,35 @@
+{
+  "subnets": [
+    {
+      "cidr": "172.20.20.0/24",
+      "deviceCount": 5,
+      "devices": [
+        {
+          "ip": "172.20.20.1",
+          "mac": "<mac>",
+          "state": "Online (unknown device)"
+        },
+        {
+          "ip": "172.20.20.2",
+          "mac": "<mac>",
+          "state": "Online (unknown device)"
+        },
+        {
+          "ip": "172.20.20.3",
+          "mac": "<mac>",
+          "state": "Online (unknown device)"
+        },
+        {
+          "ip": "172.20.20.4",
+          "mac": "<mac>",
+          "state": "Online (unknown device)"
+        },
+        {
+          "ip": "172.20.20.5",
+          "mac": "<mac>",
+          "state": "Online (unknown device)"
+        }
+      ]
+    }
+  ]
+}

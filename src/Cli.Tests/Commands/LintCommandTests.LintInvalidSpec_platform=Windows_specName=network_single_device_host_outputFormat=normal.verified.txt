@@ -1,2 +1,2 @@
-﻿• /: Required properties ["version"] are not present
-• /network/subnets/0: Required properties ["address"] are not present
+﻿/: Required properties ["version"] are not present
+/network/subnets/0: Required properties ["address"] are not present

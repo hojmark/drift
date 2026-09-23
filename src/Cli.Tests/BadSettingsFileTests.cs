@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
+using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Tests.Utils;
 using Drift.TestUtilities;
 using Environment = Drift.TestUtilities.Environment;
@@ -30,12 +31,14 @@ internal sealed class BadSettingsFileTests {
   public async Task BadSettingsFile_FallsBackToDefault(
     [Values( Platform.Linux, Platform.Windows )]
     Platform platform
+    // TODO [Values( "", "-o normal", "-o log" )] string? outputFormat = null
   ) {
     Environment.SkipIfNot( platform );
 
     // Act
     var (exitCode, output, error) = await DriftTestCli.InvokeAsync(
-      "lint ../../../../Spec.Tests/resources/network_single_subnet.yaml"
+      $"lint ../../../../Spec.Tests/resources/network_single_subnet.yaml",
+      settingsLocation: new DefaultSettingsLocation() // Note: DefaultSettingsLocation will read the environment variable
     );
 
     // Assert

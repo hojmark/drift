@@ -31,7 +31,7 @@ public partial class CliSettings {
       return settings;
     }
     catch ( Exception e ) {
-      logger?.LogError( e, "Error reading settings file: {Path}. Using defaults.", location?.File );
+      logger?.LogError( e, "Error reading settings file: {Path}. Using defaults.", location.File );
       return new CliSettings();
     }
   }

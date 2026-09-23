@@ -134,11 +134,12 @@ internal sealed class InitCommandTests {
     // Assert
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-      var verifyOutputTask = Verify( output.ToString() + error );
+      var verifyOutputTask = Verify( output.ToString() + error )
+        .ScrubDataDirectory()
+        .ScrubGuid();
       if ( outputFormat == "-o log" ) {
         await verifyOutputTask
-          .ScrubLogOutputTime()
-          .ScrubGuid();
+          .ScrubLogOutputTime();
       }
       else {
         await verifyOutputTask;

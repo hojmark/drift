@@ -41,8 +41,8 @@ internal abstract class CommandBase<TParameters, THandler> : Command
 
       var settingsLocation = serviceProvider.GetRequiredService<ISettingsLocation>();
       var driftDataLocation = serviceProvider.GetRequiredService<IDriftDataLocation>();
-      output.Log.LogDebug( "Data directory: {DataDirectory}", driftDataLocation.Directory );
-      output.Log.LogDebug( "Settings directory: {SettingsDirectory}", settingsLocation.Directory );
+      output.GetLogger().LogDebug( "Data directory: {DataDirectory}", driftDataLocation.Directory );
+      output.GetLogger().LogDebug( "Settings directory: {SettingsDirectory}", settingsLocation.Directory );
       // Uses a null logger: the --output option's default value factory already reads (and logs errors for)
       // the settings file once per invocation; avoid surfacing the same error a second time here.
       // TODO read cached settings instead?

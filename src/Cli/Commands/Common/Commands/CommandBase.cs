@@ -38,13 +38,14 @@ internal abstract class CommandBase<TParameters, THandler> : Command
       serviceProvider.GetRequiredService<ParseResultHolder>().ParseResult = parseResult;
 
       var output = serviceProvider.GetRequiredService<IOutputManager>();
-      // Uses a null logger: the --output option's default value factory already reads (and logs errors for)
-      // the settings file once per invocation; avoid surfacing the same error a second time here.
-      // TODO read cached settings instead?
+
       var settingsLocation = serviceProvider.GetRequiredService<ISettingsLocation>();
       var driftDataLocation = serviceProvider.GetRequiredService<IDriftDataLocation>();
       output.Log.LogDebug( "Data directory: {DataDirectory}", driftDataLocation.Directory );
       output.Log.LogDebug( "Settings directory: {SettingsDirectory}", settingsLocation.Directory );
+      // Uses a null logger: the --output option's default value factory already reads (and logs errors for)
+      // the settings file once per invocation; avoid surfacing the same error a second time here.
+      // TODO read cached settings instead?
       var activeEnvironment = CliSettings.Read( settingsLocation, NullLogger.Instance ).ActiveEnvironment;
       output.WriteEnvironmentHeader( activeEnvironment );
 

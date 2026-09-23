@@ -1,0 +1,3 @@
+✓ Removed 'env1'
+No environments are configured.
+💡️ Add one with drift env add <name> <address>

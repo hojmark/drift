@@ -1,0 +1,11 @@
+﻿[INF] Control API listening on port <port> (HTTP)
+[INF] Listening for inbound agent connections on port <port> (gRPC)
+[INF] Server started
+[INF] Agent enrollment requested for agent_one
+[INF] Agent agent_one enrolled and connected
+[INF] Coordinator scan <scan-id> queued with 50 pings per second
+[INF] Coordinator scan <scan-id> started with 1 requested subnets and 1 enrolled agents
+[INF] Coordinator scan <scan-id> agent agent_one reported 1 subnets; assigned 1
+[INF] Coordinator scan <scan-id> assigned 1 subnets to agents and will scan 0 locally
+[INF] Coordinator scan <scan-id> starting remote scan of 10.42.0.0/24 on agent agent_one
+[INF] Coordinator scan <scan-id> completed with 1 subnet results and status Success

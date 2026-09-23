@@ -17,7 +17,13 @@ Options:
 Commands:
   init <spec>  Create a network spec
   scan <spec>  Scan the network and detect drift
+  spec         Manage the coordinator network spec
+  enrollment   Manage coordinator agent enrollment
   lint <spec>  Validate a network spec
+  agent        Manage the local Drift agent
+  server       Manage the local Drift server
+  env          Manage Drift environments
+  status       Show Drift status
 
 Required command was not provided.
 Unrecognized command or argument 'nonexisting'.

@@ -44,18 +44,22 @@ internal class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvid
         specFileContents = await sr.ReadToEndAsync();
       }
 
-      var valid = SpecValidator.Validate( specFileContents, SpecVersion.V1_preview ).IsValid;
+      var isValid = SpecValidator.Validate( specFileContents, SpecVersion.V1_preview ).IsValid;
 
-      output.Normal.WriteLineValidity( valid );
+      if ( isValid ) {
+        output.Normal.WriteLineSuccess( "Valid" );
+      }
+      else {
+        output.Normal.WriteLineError( "Validation failed" );
+      }
 
       // output.Normal.WriteLine();
 
-      spec = YamlConverter.Deserialize( filePath );
+      spec = YamlConverter.Deserialize( specFileContents );
       spec.Network.Id = GetNetworkId( filePath );
 
       output.Log.LogDebug( "Network ID: {ID}", spec.Network.Id );
-      output.Normal.WriteVerbose( "Network ID: " );
-      output.Normal.WriteLineVerbose( $"{spec.Network.Id}", ConsoleColor.Cyan );
+      output.Normal.WriteLineVerbose( $"Network ID: {spec.Network.Id}" );
 
       output.Normal.WriteLine();
     }

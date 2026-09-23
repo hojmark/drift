@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using Drift.Domain.Device.Addresses;
 
 namespace Drift.Domain;
 
@@ -58,4 +59,7 @@ public readonly record struct CidrBlock {
   }
 
   public override string ToString() => $"{NetworkAddress}/{PrefixLength}";
+
+  public bool Contains( IpV4Address ip ) =>
+    IPNetwork.Parse( ToString() ).Contains( IPAddress.Parse( ip.Value ) );
 }

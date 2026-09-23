@@ -18,7 +18,13 @@
 <time> Commands:
 <time>   init <spec>  Create a network spec
 <time>   scan <spec>  Scan the network and detect drift
+<time>   spec         Manage the coordinator network spec
+<time>   enrollment   Manage coordinator agent enrollment
 <time>   lint <spec>  Validate a network spec
+<time>   agent        Manage the local Drift agent
+<time>   server       Manage the local Drift server
+<time>   env          Manage Drift environments
+<time>   status       Show Drift status
 <time> 
 ,
   Item2: 

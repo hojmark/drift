@@ -1,0 +1,6 @@
+[INF] Control API listening on port <port> (HTTP)
+[INF] Listening for inbound agent connections on port <port> (gRPC)
+[INF] Server started
+[INF] Agent enrollment request received for agent_one
+[INF] Agent enrollment requested for agent_one
+[INF] Agent agent_one enrolled and connected

@@ -40,7 +40,9 @@ internal sealed class LinuxFpingSubnetScanner : ISubnetScanner {
         return;
       }
 
-      discoveredDevices.Add( new DiscoveredDevice { Addresses = [new IpV4Address( data )] } );
+      discoveredDevices.Add( new DiscoveredDevice {
+        Addresses = new DeviceAddressSet( ip: new IpV4Address( data ) ).ToAddresses()
+      } );
       var elapsed = stopwatch.Elapsed;
       var estimatedScanned = elapsed.TotalSeconds * options.PingsPerSecond;
       var progress = Math.Min( 99, Math.Ceiling( ( estimatedScanned / ipRange.Count ) * 100 ) );

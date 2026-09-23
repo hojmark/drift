@@ -13,7 +13,7 @@ using Spectre.Console;
 
 namespace Drift.Cli.Commands.Scan.NonInteractive;
 
-internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner scanner ) {
+internal sealed class NonInteractiveUi( IOutputManager output, IScanOrchestrator scanOrchestrator ) {
   // TODO make private
   internal static void UpdateProgressDebounced(
     Percentage progress,
@@ -37,18 +37,47 @@ internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner s
   internal async Task<int> RunAsync(
     NetworkScanOptions scanRequest,
     Network? network,
-    OutputFormat outputFormat
+    OutputFormat outputFormat,
+    CancellationToken cancellationToken
   ) {
-    var result = await PerformScanAsync( scanRequest );
+    var result = await PerformScanAsync( scanRequest, outputFormat, cancellationToken );
+
+    if ( cancellationToken.IsCancellationRequested || result.Status == ScanResultStatus.Canceled ) {
+      output.Normal.WriteLineWarning( "Scan canceled" );
+      output.Log.LogWarning( "Scan canceled" );
+      return ExitCodes.Canceled;
+    }
+
+    if ( result.Status == ScanResultStatus.Error ) {
+      output.Normal.WriteLineError( "Scan failed." );
+      output.Log.LogError(
+        "Scan failed with {ErrorCount} subnet error(s)",
+        result.Subnets.Count( subnet => subnet.Status == ScanResultStatus.Error )
+      );
+      RenderResult( result, network, outputFormat );
+      return ExitCodes.GeneralError;
+    }
+
+    if ( result.Status != ScanResultStatus.Success ) {
+      output.Normal.WriteLineError( $"Scan ended in an unexpected state: {result.Status}." );
+      output.Log.LogError( "Scan ended in unexpected state {Status}", result.Status );
+      return ExitCodes.GeneralError;
+    }
 
     output.Log.LogInformation( "Scan completed" );
 
+    RenderResult( result, network, outputFormat );
+    return ExitCodes.Success;
+  }
+
+  private void RenderResult( NetworkScanResult result, Network? network, OutputFormat outputFormat ) {
     var uiSubnets = NetworkScanResultProcessor.Process( result, network );
 
     IRenderer<List<Subnet>> renderer =
       outputFormat switch {
         OutputFormat.Normal => new NormalScanRenderer( output.Normal ),
         OutputFormat.Log => new LogScanRenderer( output.Log ),
+        OutputFormat.Json => new JsonScanRenderer( output.Json ),
         _ => new NullRenderer<IList<Subnet>>()
       };
 
@@ -57,57 +86,62 @@ internal sealed class NonInteractiveUi( IOutputManager output, INetworkScanner s
     output.Normal.WriteLine();
 
     renderer.Render( uiSubnets );
-
-    return ExitCodes.Success;
   }
 
-  private async Task<NetworkScanResult> PerformScanAsync( NetworkScanOptions request ) {
-    if ( output.Is( OutputFormat.Normal ) ) {
-      var dCol = new TaskDescriptionColumn { Alignment = Justify.Right };
-      var pCol = new PercentageColumn { Style = new Style( Color.Cyan1 ), CompletedStyle = new Style( Color.Green1 ) };
+  private async Task<NetworkScanResult> PerformScanAsync(
+    NetworkScanOptions request,
+    OutputFormat outputFormat,
+    CancellationToken cancellationToken
+  ) {
+    switch ( outputFormat ) {
+      case OutputFormat.Normal:
+        var dCol = new TaskDescriptionColumn { Alignment = Justify.Right };
+        var pCol = new PercentageColumn {
+          Style = new Style( Color.Cyan1 ), CompletedStyle = new Style( Color.Green1 )
+        };
 
-      return await output.Normal.GetAnsiConsole().Progress()
-        .AutoClear( true )
-        .Columns( dCol, pCol )
-        .StartAsync( async ctx => {
-          var progressBar = ctx.AddTask( "Ping Scan" );
+        return await output.Normal.GetAnsiConsole().Progress()
+          .AutoClear( true )
+          .Columns( dCol, pCol )
+          .StartAsync( async ctx => {
+            var progressBar = ctx.AddTask( "Ping Scan" );
 
-          EventHandler<NetworkScanResult> updater = ( _, r ) => {
-            progressBar.Value = r.Progress;
-          };
+            EventHandler<NetworkScanResult> updater = ( _, r ) => {
+              progressBar.Value = r.Progress;
+            };
 
-          try {
-            scanner.ResultUpdated += updater;
-            return await scanner.ScanAsync( request, output.GetLogger() );
-          }
-          finally {
-            scanner.ResultUpdated -= updater;
-          }
-        } );
+            try {
+              scanOrchestrator.ResultUpdated += updater;
+              return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
+            }
+            finally {
+              scanOrchestrator.ResultUpdated -= updater;
+            }
+          } );
+      case OutputFormat.Log:
+        var lastLogTime = DateTime.MinValue;
+
+        // TODO refactor to PerformScan like in InitCommand
+
+        EventHandler<NetworkScanResult> updater = ( _, r ) => {
+          UpdateProgressDebounced(
+            r.Progress,
+            progress => output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress ),
+            ref lastLogTime
+          );
+        };
+
+        try {
+          scanOrchestrator.ResultUpdated += updater;
+          return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
+        }
+        finally {
+          scanOrchestrator.ResultUpdated -= updater;
+        }
+      case OutputFormat.Json:
+        return await scanOrchestrator.ScanAsync( request, output.GetLogger(), cancellationToken );
+      default:
+        throw new ArgumentOutOfRangeException( nameof(outputFormat), outputFormat, null );
     }
-
-    if ( output.Is( OutputFormat.Log ) ) {
-      var lastLogTime = DateTime.MinValue;
-
-      // TODO refactor to PerformScan like in InitCommand
-
-      EventHandler<NetworkScanResult> updater = ( _, r ) => {
-        UpdateProgressDebounced(
-          r.Progress,
-          progress => output.Log.LogInformation( "{TaskName}: {CompletionPct}", "Ping Scan", progress ),
-          ref lastLogTime
-        );
-      };
-
-      try {
-        scanner.ResultUpdated += updater;
-        return await scanner.ScanAsync( request, output.GetLogger() );
-      }
-      finally {
-        scanner.ResultUpdated -= updater;
-      }
-    }
-
-    throw new NotImplementedException();
   }
 }

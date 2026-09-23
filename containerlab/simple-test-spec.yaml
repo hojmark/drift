@@ -1,0 +1,12 @@
+version: "v1-preview"
+
+network:
+  subnets:
+    - address: 172.20.20.0/24
+  devices: []
+
+agents:
+  - id: agent_test1
+    address: http://clab-drift-simple-test-agent1:5000
+    authentication:
+      type: none

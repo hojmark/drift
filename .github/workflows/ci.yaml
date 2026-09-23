@@ -59,6 +59,15 @@ jobs:
           --project ./build/_build.csproj
           --target CheckBuildWarnings
 
+      - name: Check generated files
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "The build changed tracked or untracked files:"
+            git status --short
+            exit 1
+          fi
+
   test-windows:
     name: 🪟 Test
     runs-on: windows-latest
@@ -91,3 +100,12 @@ jobs:
           dotnet run
           --project ./build/_build.csproj
           --target CheckBuildWarnings
+
+      - name: Check generated files
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "The build changed tracked or untracked files:"
+            git status --short
+            exit 1
+          fi

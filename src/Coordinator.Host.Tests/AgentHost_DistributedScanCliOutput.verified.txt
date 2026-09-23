@@ -1,0 +1,8 @@
+﻿[INF] Listening for inbound server connections on port <port> (gRPC)
+[INF] Agent started
+[INF] Running 'AgentStatusRequestHandler'
+[INF] Running 'InterfaceSubnetsRequestHandler'
+[INF] Sending subnets: 10.42.0.0/24
+[INF] Running 'ScanSubnetRequestHandler'
+[INF] Starting scan of 10.42.0.0/24
+[INF] Scan complete for 10.42.0.0/24: 0 devices found

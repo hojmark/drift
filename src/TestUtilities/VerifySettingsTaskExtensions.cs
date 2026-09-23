@@ -15,6 +15,13 @@ public static partial class VerifySettingsTaskExtensions {
       return settings
         .ScrubLinesWithReplace( line => GuidRegex().Replace( line, "<guid>" ) );
     }
+
+    public SettingsTask ScrubDataDirectory() {
+      return settings
+        .ScrubLinesWithReplace( line =>
+          Regex.Replace( line, "Data directory: .+", "Data directory: <data-directory>" )
+        );
+    }
   }
 
   [GeneratedRegex( "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" )]

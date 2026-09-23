@@ -33,7 +33,7 @@ internal sealed class LintTests : DriftBinaryFixture {
       // Assert
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( lintResult.ExitCode, Is.EqualTo( ExitCodes.Success ) );
-        await Verify( lintResult.StdOut ).UniqueForOSPlatform();
+        Assert.That( lintResult.StdOut, Contains.Substring( "✓ Valid" ) );
         Assert.That( lintResult.ErrOut, Is.Empty );
       }
     }

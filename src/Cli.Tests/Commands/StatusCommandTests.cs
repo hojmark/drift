@@ -57,14 +57,16 @@ internal sealed class StatusCommandTests {
       "status",
       settingsLocation: SettingsLocation
     );
-    var rendered = output.ToString();
 
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
       Assert.That( error.ToString(), Is.Empty );
-      Assert.That( rendered, Does.Contain( "site-a @ http://127.0.0.1:1" ) );
-      Assert.That( rendered, Does.Contain( "Status: Unavailable" ) );
-      Assert.That( rendered, Does.Contain( "Connection refused (127.0.0.1:1)" ) );
+      await Verify(
+        string.Join(
+          Environment.NewLine,
+          output.ToString()?.Split( Environment.NewLine ).Take( 5 ) ?? throw new Exception( "Failed to parse output" )
+        )
+      ).UniqueForOSPlatform();
     }
   }
 

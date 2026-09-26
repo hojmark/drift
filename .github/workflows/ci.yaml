@@ -91,3 +91,18 @@ jobs:
           dotnet run
           --project ./build/_build.csproj
           --target CheckBuildWarnings
+
+  markdown-lint:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Use Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+
+      - name: Lint markdown
+        run: |
+          npm i -g markdownlint-cli@0.49.1
+          markdownlint --config .markdownlint.jsonc '**/*.md'

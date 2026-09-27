@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Dev Drive
-        uses: samypr100/setup-dev-drive@v4
+        uses: samypr100/setup-dev-drive@562171fe8df7401fdf582d766cd3b6ab80d5b1a0 # v4
         with:
           workspace-copy: true
           trusted-dev-drive: true

@@ -3,6 +3,7 @@ using Drift.Common;
 namespace Drift.Cli.E2ETests.General.Installation;
 
 [Platform( "Win" )]
+[Parallelizable( ParallelScope.Children )]
 internal sealed partial class InstallPsTests {
   private const int ScriptExitCodeSuccess = 0;
   private const int ScriptExitCodeFailure = 1;

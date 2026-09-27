@@ -237,6 +237,7 @@ internal sealed partial class InstallPsTests {
 
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
+  [NonParallelizable]
   public async Task InstallAddsToUserPath( string shell ) {
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-path-" + Guid.NewGuid() );
@@ -280,6 +281,7 @@ internal sealed partial class InstallPsTests {
 
   [TestCase( "pwsh" )]
   [TestCase( "powershell" )]
+  [NonParallelizable]
   public async Task InstallDoesNotDuplicateInUserPath( string shell ) {
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-nodup-" + Guid.NewGuid() );

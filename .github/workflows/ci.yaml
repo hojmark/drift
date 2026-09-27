@@ -69,10 +69,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+      - name: Set up Dev Drive
+        uses: samypr100/setup-dev-drive@v4
+        with:
+          workspace-copy: true
+          trusted-dev-drive: true
+          drive-size: 6GB
+
+      - name: Use Dev Drive for NuGet packages
+        shell: pwsh
+        run: |
+          $packages = if ($env:NUGET_PACKAGES) {
+            $env:NUGET_PACKAGES
+          } else {
+            Join-Path $env:DEV_DRIVE 'nuget\global-packages'
+          }
+          New-Item -ItemType Directory -Force -Path $packages | Out-Null
+          "NUGET_PACKAGES=$packages" >> $env:GITHUB_ENV
+
       - name: Set up runner
         uses: ./.github/actions/setup-runner
 
       - name: Run tests
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: >
           dotnet run
           --project ./build/_build.csproj
@@ -82,11 +101,13 @@ jobs:
           --platform win_x64
 
       - name: Display test results
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         continue-on-error: true
         if: always()
         run: dotnet trx --verbosity normal
 
       - name: Check for warnings
+        working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: >
           dotnet run
           --project ./build/_build.csproj

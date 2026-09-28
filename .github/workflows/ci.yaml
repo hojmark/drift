@@ -143,5 +143,4 @@ jobs:
 
       - name: Lint markdown
         run: |
-          npm i -g markdownlint-cli@0.49.1
-          markdownlint --config .markdownlint.jsonc '**/*.md'
+          ./lint-markdown.sh

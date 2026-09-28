@@ -42,7 +42,7 @@ In production, agents generate and persist their own ID at `/root/.config/drift/
 ## NUKE target parameters
 
 | Parameter | Description |
-|---|---|
+| --- | --- |
 | `--clab-topology <name>` | Run only the named topology (e.g. `simple-test`). Runs all if omitted. |
 | `--skip-clab-deploy` | Skip deployment — useful when topology is already running |
 | `--keep-clab-running` | Keep containers running after tests for debugging |
@@ -50,12 +50,14 @@ In production, agents generate and persist their own ID at `/root/.config/drift/
 ## Troubleshooting
 
 **Deploy fails with "Link not found"** — This is a known issue with rootless Podman + pasta networking. The NUKE target works around it by pre-creating the `clab` management network before deploying. If you are deploying manually, run:
+
 ```bash
 docker network rm clab 2>/dev/null; docker network create --subnet 172.20.20.0/24 --ipv6 --subnet 3fff:172:20:20::/64 clab
 containerlab deploy --topo simple-test.clab.yaml
 ```
 
 **Agents not starting** — Check container logs:
+
 ```bash
 docker logs clab-drift-simple-test-agent1
 docker logs clab-drift-cooperation-test-agent1
@@ -63,6 +65,7 @@ docker logs clab-drift-subnet-isolation-test-agent1
 ```
 
 **Cannot reach agents** — Verify containers are on same network:
+
 ```bash
 docker network inspect clab
 ```

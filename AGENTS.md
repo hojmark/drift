@@ -34,7 +34,7 @@ dotnet test src/Domain.Tests --filter "FullyQualifiedName~MyTest"
 The solution is split into focused projects. The main ones:
 
 | Project | Role |
-|---|---|
+| --- | --- |
 | `Cli` | Entry point; commands: `init`, `scan`, `agent start`; AOT-compiled |
 | `Cli.Abstractions` | Shared CLI constants: exit codes, env var names, port numbers, file names |
 | `Cli.Settings` | User settings file (`~/.config/drift/settings.json`) |
@@ -63,7 +63,7 @@ Schema generators live in `Spec.SchemaGenerator.Cli` and `Cli.Settings.SchemaGen
 
 ### Data flow
 
-```
+```text
 YAML spec → Spec (parse/validate) → Domain types (declared state)
                                           ↓
 Network → Scanning → Domain types (discovered state)

@@ -1,5 +1,6 @@
 stryker-config:
   solution: "Drift.sln"
+  test-case-filter: "Category!=E2E"
   project: "src/Diff/Diff.csproj" # TODO Remove
   #test-runner: "mtp"
   mutation-level": "Basic" # TODO should be at least Standard
@@ -7,6 +8,6 @@ stryker-config:
     enabled: false
     fallback-version: main
     # Requires AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY env vars to be set
-    provider: "Disk"
+    provider: "S3"
     s3-bucket-name: "drift-ci"
     s3-endpoint: "https://495396a2e23f5c4746cba0c7126d5ca3.eu.r2.cloudflarestorage.com"

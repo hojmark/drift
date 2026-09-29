@@ -5,7 +5,6 @@ using Drift.Messaging.Protocol.Agent;
 using Drift.Networking.Client;
 using Drift.Networking.Core;
 using Drift.Networking.Server;
-using Drift.Scanning;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;

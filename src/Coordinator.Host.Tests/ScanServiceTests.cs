@@ -163,7 +163,8 @@ internal sealed class ScanServiceTests {
     }
 
     public void PublishProgress() {
-      ResultUpdated?.Invoke( this,
+      ResultUpdated?.Invoke(
+        this,
         new NetworkScanResult {
           Metadata = new Metadata { StartedAt = DateTime.UtcNow },
           Progress = new Percentage( 50 ),

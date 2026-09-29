@@ -57,9 +57,6 @@ internal class AgentStartCommandHandler(
     return ExitCodes.Success;
 
     void ConfigureServices( IServiceCollection services ) {
-      // Add peer protocol message handlers
-      services.AddAgentHandlers();
-
       // Allow test overrides
       configureServicesOverride?.Invoke( services );
     }

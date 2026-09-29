@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Coordinator.Host;
 
-// TODO mostly a duplicate of AgentHost
+// TODO mostly a duplicate of AgentHostse
 public static class CoordinatorHost {
   public static Task Run(
     ushort controlPort,
@@ -42,30 +42,34 @@ public static class CoordinatorHost {
   ) {
     var builder = WebApplication.CreateSlimBuilder();
 
-    builder.Services.AddCoordinatorApi();
     builder.Logging.ClearProviders();
     builder.Services.AddSingleton( logger );
+    builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
+
     // TODO consolidate all the addmessaging* into single configurable extension that can be used for all roles
     // (CLI, Agent, Coordinator) with different config flags. Should be high-level (domain preferred)
-    builder.Services.AddMessagingServer( options => {
-      options.EnableDetailedErrors = true;
-    } );
+    if ( agentPort is not null ) {
+      builder.Services.AddMessagingServer( options => {
+        options.EnableDetailedErrors = true;
+      } );
+    }
+
     builder.Services.AddMessagingClient();
-    builder.Services.AddAgentClient();
     var messagingOptions = new MessagingOptions {
       MessageAssembly = typeof(AgentProtocolMessagesAssemblyMarker).Assembly
     };
     builder.Services.AddMessagingCore( messagingOptions );
-    builder.Services.AddScanning();
-    builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
+
+    builder.Services.AddCoordinatorApi();
     builder.Services.AddCoordinatorServices();
+
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
       // Agent gRPC
-      if ( agentPort is { } port ) {
+      if ( agentPort is not null ) {
         options.ListenAnyIP(
-          port,
+          agentPort.Value,
           o => o.Protocols = HttpProtocols.Http2 // gRPC requires HTTP/2
         );
       }
@@ -78,17 +82,21 @@ public static class CoordinatorHost {
     } );
 
     var app = builder.Build();
+
+    // Note: code reading StoppingToken before this point will get CancellationToken.None
+    messagingOptions.StoppingToken = app.Lifetime.ApplicationStopping;
+
     app.Services.GetRequiredService<ICoordinatorDataLocation>().EnsureCreated();
 
     app.AddGlobalExceptionHandling( logger );
     app.AddRequestLogging( logger );
 
-    // Note: code reading StoppingToken before this point will get CancellationToken.None
-    messagingOptions.StoppingToken = app.Lifetime.ApplicationStopping;
-
     app.MapUi();
     app.MapCoordinatorApi();
-    app.MapMessagingServerEndpoints();
+    if ( agentPort is not null ) {
+      app.MapMessagingServerEndpoints();
+    }
+
     app.MapOpenApi( "/api/v1/openapi.json" );
     app.MapSwaggerUI( "api", options => {
         options.SwaggerEndpoint( "/api/v1/openapi.json", "Control API v1" );

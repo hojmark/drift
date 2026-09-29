@@ -83,9 +83,8 @@ internal static class RootCommandFactory {
     services.AddScoped<ParseResultHolder>();
     ConfigureOutput( services, toConsole, plainConsole );
     ConfigureSpecProvider( services );
-    ConfigureSubnetProvider( services );
-    ConfigureScanServices( services );
     ConfigureInteractiveServices( services );
+    services.AddScanning();
     services.AddScoped<EnvironmentTargetProvider>();
   }
 
@@ -126,14 +125,6 @@ internal static class RootCommandFactory {
 
   private static void ConfigureSpecProvider( IServiceCollection services ) {
     services.AddScoped<ISpecFileProvider, FileSystemSpecProvider>();
-  }
-
-  public static void ConfigureSubnetProvider( IServiceCollection services ) {
-    services.AddScoped<IInterfaceSubnetProvider, PhysicalInterfaceSubnetProvider>();
-  }
-
-  private static void ConfigureScanServices( IServiceCollection services ) {
-    services.AddScanning();
   }
 
   private static void ConfigureBuiltInCommandHandlers( IServiceCollection services ) {

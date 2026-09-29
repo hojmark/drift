@@ -131,7 +131,8 @@ internal sealed class StatusCommandTests {
     var agentTask = AgentHost.Run(
       agentPort,
       NullLogger.Instance,
-      services => services.AddAgentHandlers(),
+      _ => {
+      },
       agentCancellation.Token,
       agentReady
     );

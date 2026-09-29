@@ -127,7 +127,6 @@ internal sealed class CoordinatorHostIntegrationTests {
       agentPort,
       agentLogger,
       services => {
-        services.AddAgentHandlers();
         services.AddSingleton<IInterfaceSubnetProvider>(
           new PredefinedInterfaceSubnetProvider(
             [
@@ -226,7 +225,6 @@ internal sealed class CoordinatorHostIntegrationTests {
       agentPort,
       agentLogger,
       services => {
-        services.AddAgentHandlers();
         services.AddSingleton<IInterfaceSubnetProvider>(
           new PredefinedInterfaceSubnetProvider(
             [

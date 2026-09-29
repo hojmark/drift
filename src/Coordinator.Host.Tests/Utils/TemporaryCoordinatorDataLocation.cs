@@ -4,9 +4,9 @@ namespace Drift.Coordinator.Host.Tests.Utils;
 
 // TODO duplicate type
 internal sealed class TemporaryCoordinatorDataLocation : ICoordinatorDataLocation {
-  private readonly string _directory = System.IO.Directory.CreateTempSubdirectory( "drift-coordinator-test-" ).FullName;
-
-  public string Directory => _directory;
+  public string Directory {
+    get;
+  } = System.IO.Directory.CreateTempSubdirectory( "drift-coordinator-test-" ).FullName;
 
   public string SpecFile => Path.Combine( Directory, "spec.yaml" );
 

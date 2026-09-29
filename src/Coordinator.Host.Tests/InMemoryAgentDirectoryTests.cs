@@ -26,9 +26,7 @@ internal sealed class InMemoryAgentDirectoryTests {
 
   [Test]
   public void EquivalentAgentIds_ReferToTheSameRegistration() {
-    var directory = new InMemoryAgentDirectory(
-      Array.Empty<EnrolledAgent>()
-    );
+    var directory = new InMemoryAgentDirectory( [] );
     var enrolledId = AgentId.Parse( "agent_one", null );
     var equivalentId = AgentId.Parse( "agent_one", null );
 

@@ -83,8 +83,7 @@ public static class CoordinatorHost {
     app.AddGlobalExceptionHandling( logger );
     app.AddRequestLogging( logger );
 
-    // Note: a service reading StoppingToken during initialization (really, any code run before this point)
-    // will get CancellationToken.None.
+    // Note: code reading StoppingToken before this point will get CancellationToken.None
     messagingOptions.StoppingToken = app.Lifetime.ApplicationStopping;
 
     app.MapUi();

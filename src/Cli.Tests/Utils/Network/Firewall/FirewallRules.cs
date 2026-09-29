@@ -6,7 +6,7 @@ namespace Drift.Cli.Tests.Utils.Network.Firewall;
 /// Use <see cref="FirewallEvaluator"/> to evaluate rules with subnet awareness.
 /// </summary>
 public sealed class FirewallRules {
-  private readonly List<FirewallRule> _rules = new();
+  private readonly List<FirewallRule> _rules = [];
 
   /// <summary>
   /// Add an ALLOW rule. Rules are evaluated in the order they are added.

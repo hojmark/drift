@@ -121,15 +121,15 @@ internal sealed class MapperTests {
 
     // Assert
     var domainPolicy = domain.Agents[0].Policy?[0];
-    Assert.That( domainPolicy?.To, Is.EquivalentTo( new[] { "router" } ) );
+    Assert.That( domainPolicy?.To, Is.EquivalentTo( ["router"] ) );
     Assert.That( domainPolicy?.Expect, Is.EqualTo( "reachable" ) );
-    Assert.That( domainPolicy?.Port, Is.EquivalentTo( new[] { 443 } ) );
+    Assert.That( domainPolicy?.Port, Is.EquivalentTo( [443] ) );
     Assert.That( domainPolicy?.Protocol, Is.EqualTo( "tcp" ) );
-    Assert.That( domainPolicy?.Probe, Is.EquivalentTo( new[] { "tls" } ) );
+    Assert.That( domainPolicy?.Probe, Is.EquivalentTo( ["tls"] ) );
     Assert.That( domainPolicy?.Fallback, Is.EqualTo( "gateway" ) );
 
     var roundTrippedPolicy = roundTripped.Agents?[0].Policy?[0];
-    Assert.That( roundTrippedPolicy?.To, Is.EquivalentTo( new[] { "router" } ) );
+    Assert.That( roundTrippedPolicy?.To, Is.EquivalentTo( ["router"] ) );
     Assert.That( roundTrippedPolicy?.Expect, Is.EqualTo( "reachable" ) );
   }
 }

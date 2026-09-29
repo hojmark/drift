@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Drift.Coordinator.Api.Control;
 
+#pragma warning disable SA1118
 [JsonSourceGenerationOptions(
   PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-#pragma warning disable SA1118
   Converters = [
     typeof(AgentIdConverter),
     typeof(CidrBlockJsonConverter),

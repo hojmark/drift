@@ -17,7 +17,9 @@ namespace Drift.Coordinator.Api.Control;
 internal static class EndpointRouteBuilderExtensions {
   extension( IEndpointRouteBuilder endpoints ) {
     public void MapControlApi() {
-      var api = endpoints.MapGroup( "/api/v1" ).WithTags( "drift" );
+      var api = endpoints
+        .MapGroup( "/api/v1" )
+        .WithTags( "drift" );
 
       api.MapGet(
           "/status",

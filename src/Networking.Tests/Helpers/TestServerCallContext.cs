@@ -12,7 +12,7 @@ internal sealed class TestServerCallContext : ServerCallContext {
   private TestServerCallContext( Metadata requestHeaders, CancellationToken cancellationToken ) {
     _requestHeaders = requestHeaders;
     _cancellationToken = cancellationToken;
-    _responseTrailers = new Metadata();
+    _responseTrailers = [];
     _authContext = new AuthContext( string.Empty, new Dictionary<string, List<AuthProperty>>() );
     _userState = new Dictionary<object, object>();
   }
@@ -56,7 +56,7 @@ internal sealed class TestServerCallContext : ServerCallContext {
     Metadata? requestHeaders = null,
     CancellationToken cancellationToken = default
   ) {
-    return new TestServerCallContext( requestHeaders ?? new Metadata(), cancellationToken );
+    return new TestServerCallContext( requestHeaders ?? [], cancellationToken );
   }
 
   protected override ContextPropagationToken CreatePropagationTokenCore( ContextPropagationOptions? options ) {

@@ -34,12 +34,12 @@ internal sealed class RemoteScanOrchestrator(
         exception,
         "Coordinator scan event stream interrupted; trying the result endpoint"
       );
-      latest = await client.GetResultAsync( scanId, cancellationToken );
+      latest = await client.GetScanAsync( scanId, cancellationToken );
       ResultUpdated?.Invoke( this, latest );
     }
 
     if ( latest == null ) {
-      latest = await client.GetResultAsync( scanId, cancellationToken );
+      latest = await client.GetScanAsync( scanId, cancellationToken );
       ResultUpdated?.Invoke( this, latest );
     }
 

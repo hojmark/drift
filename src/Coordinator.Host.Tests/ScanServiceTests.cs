@@ -21,7 +21,7 @@ internal sealed class ScanServiceTests {
     using var provider = services.BuildServiceProvider();
     var service = new ScanService(
       provider.GetRequiredService<IServiceScopeFactory>(),
-      new InMemoryAgentDirectory( Array.Empty<EnrolledAgent>() ),
+      new InMemoryAgentDirectory( [] ),
       new CoordinatorSpec( new Inventory { Network = new() } ),
       NullLogger.Instance
     );
@@ -46,7 +46,7 @@ internal sealed class ScanServiceTests {
     using var provider = services.BuildServiceProvider();
     var service = new ScanService(
       provider.GetRequiredService<IServiceScopeFactory>(),
-      new InMemoryAgentDirectory( Array.Empty<EnrolledAgent>() ),
+      new InMemoryAgentDirectory( [] ),
       new CoordinatorSpec( new Inventory { Network = new() } ),
       NullLogger.Instance
     );
@@ -71,7 +71,7 @@ internal sealed class ScanServiceTests {
     using var provider = services.BuildServiceProvider();
     var service = new ScanService(
       provider.GetRequiredService<IServiceScopeFactory>(),
-      new InMemoryAgentDirectory( Array.Empty<EnrolledAgent>() ),
+      new InMemoryAgentDirectory( [] ),
       new CoordinatorSpec( new Inventory { Network = new() } ),
       NullLogger.Instance
     );
@@ -94,7 +94,7 @@ internal sealed class ScanServiceTests {
     var allEvents = new[] { initial }.Concat( remaining ).ToArray();
     Assert.That( allEvents.Select( scanEvent => scanEvent.EventId ), Is.EqualTo( new long[] { 1, 2, 3 } ) );
     Assert.That( allEvents.Select( scanEvent => scanEvent.Status ), Is.EqualTo(
-      new[] { ScanStatus.Running, ScanStatus.Running, ScanStatus.Completed } ) );
+      [ScanStatus.Running, ScanStatus.Running, ScanStatus.Completed] ) );
   }
 
   [Test]
@@ -106,19 +106,17 @@ internal sealed class ScanServiceTests {
     var logger = new StringLogger();
     var service = new ScanService(
       provider.GetRequiredService<IServiceScopeFactory>(),
-      new InMemoryAgentDirectory( Array.Empty<EnrolledAgent>() ),
+      new InMemoryAgentDirectory( [] ),
       new CoordinatorSpec(
-        new Inventory {
-          Network = new Network {
-            Subnets = [new DeclaredSubnet { Address = "192.168.10.0/24" }]
-          }
-        }
+        new Inventory { Network = new Network { Subnets = [new DeclaredSubnet { Address = "192.168.10.0/24" }] } }
       ),
       logger
     );
 
     var response = service.Start( new StartScanCommand() );
-    for ( var attempt = 0; attempt < 100 && service.Get( response.ScanId ).Status is not ScanStatus.Completed; attempt++ ) {
+    for ( var attempt = 0;
+         attempt < 100 && service.Get( response.ScanId ).Status is not ScanStatus.Completed;
+         attempt++ ) {
       await Task.Delay( 10 );
     }
 
@@ -144,8 +142,11 @@ internal sealed class ScanServiceTests {
   }
 
   private sealed class ControlledScanOrchestrator : IScanOrchestrator {
-    public TaskCompletionSource Started { get; } = new( TaskCreationOptions.RunContinuationsAsynchronously );
-    private readonly TaskCompletionSource _completion = new( TaskCreationOptions.RunContinuationsAsynchronously );
+    public TaskCompletionSource Started {
+      get;
+    } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    private readonly TaskCompletionSource _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public event EventHandler<NetworkScanResult>? ResultUpdated;
 
     public async Task<NetworkScanResult> ScanAsync(
@@ -162,11 +163,12 @@ internal sealed class ScanServiceTests {
     }
 
     public void PublishProgress() {
-      ResultUpdated?.Invoke( this, new NetworkScanResult {
-        Metadata = new Metadata { StartedAt = DateTime.UtcNow },
-        Progress = new Percentage( 50 ),
-        Status = ScanResultStatus.InProgress
-      } );
+      ResultUpdated?.Invoke( this,
+        new NetworkScanResult {
+          Metadata = new Metadata { StartedAt = DateTime.UtcNow },
+          Progress = new Percentage( 50 ),
+          Status = ScanResultStatus.InProgress
+        } );
     }
 
     public void Complete() => _completion.SetResult();

@@ -16,6 +16,8 @@ using Drift.TestUtilities.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
+// ReSharper disable MethodSupportsCancellation
+
 namespace Drift.Coordinator.Host.Tests;
 
 internal sealed class CoordinatorHostIntegrationTests {
@@ -296,7 +298,7 @@ internal sealed class CoordinatorHostIntegrationTests {
         clientResults.Add( result );
       }
 
-      var clientResult = await controlApiClient.GetResultAsync( scanId, CancellationToken.None );
+      var clientResult = await controlApiClient.GetScanAsync( scanId, CancellationToken.None );
 
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( eventsResponse.StatusCode, Is.EqualTo( HttpStatusCode.OK ) );

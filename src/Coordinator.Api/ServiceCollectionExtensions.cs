@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Coordinator.Api;
 
-public static class CoordinatorApiExtensions {
+public static class ServiceCollectionExtensions {
   public static IServiceCollection AddCoordinatorApi( this IServiceCollection services ) {
     services.AddSingleton<CoordinatorApiMarker>();
     services.AddOpenApi( "v1", options => options.AddDocumentTransformer( new CoordinatorOpenApiTransformer() ) );
@@ -46,7 +46,7 @@ internal sealed class CoordinatorApiValidationFilter : IStartupFilter {
       var marker = app.ApplicationServices.GetRequiredService<CoordinatorApiMarker>();
       if ( !marker.EndpointsMapped ) {
         throw new InvalidOperationException(
-          $"API endpoints were not mapped. Map them by calling '{nameof(IEndpointRouteBuilder)}.{nameof(CoordinatorApiExtensions.MapCoordinatorApi)}'."
+          $"API endpoints were not mapped. Map them by calling '{nameof(IEndpointRouteBuilder)}.{nameof(ServiceCollectionExtensions.MapCoordinatorApi)}'."
         );
       }
     };

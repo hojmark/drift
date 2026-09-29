@@ -41,17 +41,17 @@ public class DriftResult {
   public List<IAddressableDevice> Devices {
     get;
     set;
-  } = new();
+  } = [];
 
   public List<DeclaredDevice> MissingDevices {
     get;
     set;
-  } = new();
+  } = [];
 
   public List<DiscoveredDevice> UnexpectedDevices {
     get;
     set;
-  } = new();
+  } = [];
 
   // Useful for single exit code reporting
   // public bool IsDriftDetected => Devices.DevicesWithDrift().Any() || MissingDevices.Any() || UnexpectedDevices.Any() ;

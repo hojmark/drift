@@ -34,6 +34,13 @@ public static class ServiceCollectionExtensions {
   }
 }
 
+internal sealed class MessagingServerMarker {
+  internal bool EndpointsMapped {
+    get;
+    set;
+  }
+}
+
 internal sealed class MessagingServerValidationFilter : IStartupFilter {
   public Action<IApplicationBuilder> Configure( Action<IApplicationBuilder> next ) {
     return app => {

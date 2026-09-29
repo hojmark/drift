@@ -17,7 +17,8 @@ using GeneratedStartScanRequest = Drift.Coordinator.Client.Generated.Models.Star
 namespace Drift.Coordinator.Client;
 
 // Kiota generates nullable response types even when the API contract guarantees a response body.
-// This is an unfortunate limitation affecting several calls in this client; see https://github.com/microsoft/kiota/issues/3911.
+// This is an unfortunate limitation affecting several calls in this client.
+// See https://github.com/microsoft/kiota/issues/3911.
 
 /// <summary>
 /// The Control API client.
@@ -299,9 +300,9 @@ public sealed class ControlApiClient : IDisposable {
   }
 
   /// <summary>
-  /// Retrieves a completed scan result after an interrupted event stream.
+  /// Retrieves a scan result.
   /// </summary>
-  public async Task<NetworkScanResult> GetResultAsync( Guid scanId, CancellationToken cancellationToken ) {
+  public async Task<NetworkScanResult> GetScanAsync( Guid scanId, CancellationToken cancellationToken ) {
     try {
       await using var responseStream = await _generatedClient.Api.V1.Scans[scanId].Results.GetAsync(
         cancellationToken: cancellationToken

@@ -4,16 +4,20 @@ using Drift.Coordinator.Services.Agents.Enrollment;
 using Drift.Coordinator.Services.Scans;
 using Drift.Coordinator.Services.Spec;
 using Drift.Coordinator.Services.State;
+using Drift.Messaging.Client;
+using Drift.Scanning;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Coordinator.Host;
 
-public static class ServiceCollectionExtensions {
+internal static class ServiceCollectionExtensions {
   /// <summary>
   /// Registers the coordinator services used by the Control API and remote Agent requests.
   /// </summary>
   /// <param name="services">The service collection to add coordinator services to.</param>
-  public static void AddCoordinatorServices( this IServiceCollection services ) {
+  internal static void AddCoordinatorServices( this IServiceCollection services ) {
+    services.AddScanning();
+
     services.AddSingleton<IDriftDataLocation, DefaultDriftDataLocation>();
     services.AddSingleton<ICoordinatorDataLocation, DefaultCoordinatorDataLocation>();
     services.AddSingleton<ICoordinatorSpecStore, FileCoordinatorSpecStore>();
@@ -34,5 +38,7 @@ public static class ServiceCollectionExtensions {
     services.AddSingleton<AgentManagementService>();
     services.AddSingleton<SpecService>();
     services.AddSingleton<ScanService>();
+
+    services.AddAgentClient();
   }
 }

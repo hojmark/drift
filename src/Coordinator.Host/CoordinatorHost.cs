@@ -60,8 +60,8 @@ public static class CoordinatorHost {
     };
     builder.Services.AddMessagingCore( messagingOptions );
 
-    builder.Services.AddCoordinatorApi();
     builder.Services.AddCoordinatorServices();
+    builder.Services.AddCoordinatorApi();
 
     configureServices?.Invoke( builder.Services );
 

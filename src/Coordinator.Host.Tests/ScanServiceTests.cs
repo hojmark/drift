@@ -43,7 +43,7 @@ internal sealed class ScanServiceTests {
     var services = new ServiceCollection();
     services.AddScoped<IScanOrchestrator, TestScanOrchestrator>();
     services.AddScoped<IInterfaceSubnetProvider, EmptyInterfaceSubnetProvider>();
-    using var provider = services.BuildServiceProvider();
+    await using var provider = services.BuildServiceProvider();
     var service = new ScanService(
       provider.GetRequiredService<IServiceScopeFactory>(),
       new InMemoryAgentDirectory( [] ),
@@ -68,7 +68,7 @@ internal sealed class ScanServiceTests {
     var services = new ServiceCollection();
     services.AddScoped<IScanOrchestrator>( _ => orchestrator );
     services.AddScoped<IInterfaceSubnetProvider, EmptyInterfaceSubnetProvider>();
-    using var provider = services.BuildServiceProvider();
+    await using var provider = services.BuildServiceProvider();
     var service = new ScanService(
       provider.GetRequiredService<IServiceScopeFactory>(),
       new InMemoryAgentDirectory( [] ),
@@ -102,7 +102,7 @@ internal sealed class ScanServiceTests {
     var services = new ServiceCollection();
     services.AddScoped<IScanOrchestrator, TestScanOrchestrator>();
     services.AddScoped<IInterfaceSubnetProvider, EmptyInterfaceSubnetProvider>();
-    using var provider = services.BuildServiceProvider();
+    await using var provider = services.BuildServiceProvider();
     var logger = new StringLogger();
     var service = new ScanService(
       provider.GetRequiredService<IServiceScopeFactory>(),

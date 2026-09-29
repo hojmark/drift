@@ -39,7 +39,7 @@ internal class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvid
       output.Normal.Write( $"  {filePath}  ", ConsoleColor.Cyan );
 
       string specFileContents;
-      using ( var fs = filePath.Open( FileMode.Open, FileAccess.Read, FileShare.Read ) )
+      await using ( var fs = filePath.Open( FileMode.Open, FileAccess.Read, FileShare.Read ) )
       using ( var sr = new StreamReader( fs ) ) {
         specFileContents = await sr.ReadToEndAsync();
       }

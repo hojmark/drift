@@ -55,7 +55,9 @@ internal static class RootCommandFactory {
   internal static RootCommand Create(
     bool toConsole,
     bool plainConsole = false,
-    Action<IServiceCollection>? configureServices = null,
+    Action<IServiceCollection>? configureCliServices = null,
+    Action<IServiceCollection>? configureAgentHostServices = null,
+    Action<IServiceCollection>? configureCoordinatorHostServices = null,
     CommandRegistration[]? customCommands = null
   ) {
     var services = new ServiceCollection();
@@ -63,10 +65,16 @@ internal static class RootCommandFactory {
     ConfigureBuiltInCommandHandlers( services );
     ConfigureDynamicCommands( services, customCommands ?? [] );
 
-    if ( configureServices != null ) {
-      configureServices.Invoke( services );
-      // Allow agent host to override it's services with the same configuration
-      services.AddScoped<Action<IServiceCollection>>( _ => configureServices );
+    if ( configureCliServices != null ) {
+      configureCliServices.Invoke( services );
+    }
+
+    if ( configureAgentHostServices != null ) {
+      services.AddSingleton( new AgentHostServiceConfiguration( configureAgentHostServices ) );
+    }
+
+    if ( configureCoordinatorHostServices != null ) {
+      services.AddSingleton( new CoordinatorHostServiceConfiguration( configureCoordinatorHostServices ) );
     }
 
     var provider = services.BuildServiceProvider();

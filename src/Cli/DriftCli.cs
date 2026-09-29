@@ -11,7 +11,9 @@ internal static class DriftCli {
     string[] args,
     bool toConsole = true,
     bool plainConsole = false,
-    Action<IServiceCollection>? configureServices = null,
+    Action<IServiceCollection>? configureCliServices = null,
+    Action<IServiceCollection>? configureAgentHostServices = null,
+    Action<IServiceCollection>? configureCoordinatorHostServices = null,
     RootCommandFactory.CommandRegistration[]? customCommands = null,
     Action<InvocationConfiguration>? configureInvocation = null,
     CancellationToken cancellationToken = default
@@ -27,7 +29,9 @@ internal static class DriftCli {
       var rootCommand = RootCommandFactory.Create(
         toConsole: toConsole,
         plainConsole: plainConsole,
-        configureServices,
+        configureCliServices: configureCliServices,
+        configureAgentHostServices: configureAgentHostServices,
+        configureCoordinatorHostServices: configureCoordinatorHostServices,
         customCommands
       );
 

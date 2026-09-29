@@ -159,7 +159,10 @@ internal sealed class AgentTestHarness : IAsyncDisposable {
       var agent = await DriftTestCli.StartAgentAsync(
         $"--port {agentConfig.Address.Port}{additionalArgs}",
         _cancellationTokenSource.Token,
-        BuildAgentConfiguration( agentConfig )
+        services => {
+          ConfigureApplicationDataLocation( services );
+          BuildAgentConfiguration( agentConfig )( services );
+        }
       );
       _runningAgents.Add( ( agentConfig, agent ) );
     }
@@ -199,7 +202,7 @@ internal sealed class AgentTestHarness : IAsyncDisposable {
   private Task<CliCommandResult> InvokeCliAsync( string arguments ) {
     return DriftTestCli.InvokeAsync(
       arguments,
-      configureServices: ConfigureApplicationDataLocation,
+      configureCliServices: ConfigureApplicationDataLocation,
       settingsLocation: _settingsLocation,
       cancellationToken: _cancellationTokenSource.Token
     );

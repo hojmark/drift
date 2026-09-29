@@ -2,10 +2,10 @@ using System.CommandLine;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Agent.Subcommands;
 using Drift.Cli.Commands.Common.Commands;
+using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Coordinator.Host;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Server.Subcommands.Start;
@@ -25,8 +25,8 @@ internal class ServerStartCommand : CommandBase<ServerStartParameters, ServerSta
 
 internal class ServerStartCommandHandler(
   IOutputManager output,
-  AgentLifetime? agentLifetime = null,
-  Action<IServiceCollection>? configureServicesOverride = null
+  NestedHostLifetime? coordinatorLifetime = null,
+  CoordinatorHostServiceConfiguration? hostServiceConfiguration = null
 )
   : ICommandHandler<ServerStartParameters> {
   public async Task<int> Invoke( ServerStartParameters parameters, CancellationToken cancellationToken ) {
@@ -52,9 +52,9 @@ internal class ServerStartCommandHandler(
         parameters.PortS,
         parameters.NoAgent ? null : parameters.PortAgent,
         logger,
-        ConfigureServices,
+        hostServiceConfiguration?.Configure,
         cancellationToken,
-        agentLifetime?.Ready
+        coordinatorLifetime?.Ready
       );
     }
     catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
@@ -64,10 +64,5 @@ internal class ServerStartCommandHandler(
     output.Log.LogDebug( "Completed 'server start' command" );
 
     return ExitCodes.Success;
-
-    void ConfigureServices( IServiceCollection services ) {
-      // Allow test overrides
-      configureServicesOverride?.Invoke( services );
-    }
   }
 }

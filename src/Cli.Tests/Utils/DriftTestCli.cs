@@ -1,6 +1,6 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using Drift.Cli.Commands.Agent.Subcommands;
+using Drift.Cli.Commands;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.Tests;
@@ -16,7 +16,9 @@ internal static class DriftTestCli {
 
   internal static async Task<CliCommandResult> InvokeAsync(
     string args,
-    Action<IServiceCollection>? configureServices = null,
+    Action<IServiceCollection>? configureCliServices = null,
+    Action<IServiceCollection>? configureAgentHostServices = null,
+    Action<IServiceCollection>? configureCoordinatorHostServices = null,
     RootCommandFactory.CommandRegistration[]? customCommands = null,
     bool redirectConsole = true,
     ISettingsLocation? settingsLocation = null,
@@ -42,7 +44,7 @@ internal static class DriftTestCli {
     // Register test settings
     Action<IServiceCollection> wrappedConfigure = services => {
       services.AddSingleton( settingsLocation );
-      configureServices?.Invoke( services );
+      configureCliServices?.Invoke( services );
     };
 
     /*
@@ -65,12 +67,14 @@ internal static class DriftTestCli {
       try {
         var exitCode = await DriftCli.InvokeAsync(
           CommandLineParser.SplitCommandLine( args ).ToArray(),
-          false,
-          true,
-          wrappedConfigure,
-          customCommands,
-          ConfigureInvocation,
-          token
+          toConsole: false,
+          plainConsole: true,
+          configureCliServices: wrappedConfigure,
+          configureAgentHostServices: configureAgentHostServices,
+          configureCoordinatorHostServices: configureCoordinatorHostServices,
+          customCommands: customCommands,
+          configureInvocation: ConfigureInvocation,
+          cancellationToken: token
         );
 
         return new CliCommandResult { ExitCode = exitCode, Output = output, Error = error };
@@ -86,12 +90,14 @@ internal static class DriftTestCli {
     try {
       var exitCode = await DriftCli.InvokeAsync(
         CommandLineParser.SplitCommandLine( args ).ToArray(),
-        false,
-        true,
-        wrappedConfigure,
-        customCommands,
-        ConfigureInvocation,
-        token
+        toConsole: false,
+        plainConsole: true,
+        configureCliServices: wrappedConfigure,
+        configureAgentHostServices: configureAgentHostServices,
+        configureCoordinatorHostServices: configureCoordinatorHostServices,
+        customCommands: customCommands,
+        configureInvocation: ConfigureInvocation,
+        cancellationToken: token
       );
 
       return new CliCommandResult { ExitCode = exitCode, Output = output, Error = error };
@@ -104,13 +110,17 @@ internal static class DriftTestCli {
   internal static RunningCliCommand StartAsync(
     string args,
     Action<IServiceCollection> configureServices,
-    CancellationToken cancellationToken
+    CancellationToken cancellationToken,
+    Action<IServiceCollection>? configureAgentHostServices = null,
+    Action<IServiceCollection>? configureCoordinatorHostServices = null
   ) {
     var cts = CancellationTokenSource.CreateLinkedTokenSource( cancellationToken );
 
     var task = InvokeAsync(
       args,
-      configureServices,
+      configureCliServices: configureServices,
+      configureAgentHostServices: configureAgentHostServices,
+      configureCoordinatorHostServices: configureCoordinatorHostServices,
       redirectConsole: false,
       cancellationToken: cts.Token
     );
@@ -124,25 +134,25 @@ internal static class DriftTestCli {
   internal static async Task<RunningCliCommand> StartAgentAsync(
     string args,
     CancellationToken cancellationToken,
-    Action<IServiceCollection>? configureServices = null
+    Action<IServiceCollection>? configure = null
   ) {
-    var readyTcs = new AgentLifetime();
+    var lifetime = new NestedHostLifetime();
 
     var command = StartAsync(
       "agent start " + args,
       services => {
-        services.AddSingleton( readyTcs );
-        configureServices?.Invoke( services );
+        services.AddSingleton( lifetime );
       },
-      cancellationToken
+      cancellationToken,
+      configureAgentHostServices: configure
     );
 
     // Wait for either readiness or command exit
-    var completed = await Task.WhenAny( readyTcs.Ready.Task, command.Completion );
+    var completed = await Task.WhenAny( lifetime.Ready.Task, command.Completion );
 
     if ( completed == command.Completion ) {
-      var com = await command.Completion;
-      throw new InvalidOperationException( "Command exited before agent was started. Details:\n" + com.Error );
+      var result = await command.Completion;
+      throw new InvalidOperationException( "Command exited before agent was started. Details:\n" + result.Error );
     }
 
     return command;
@@ -154,25 +164,25 @@ internal static class DriftTestCli {
   internal static async Task<RunningCliCommand> StartServerAsync(
     string args,
     CancellationToken cancellationToken,
-    Action<IServiceCollection>? configureServices = null
+    Action<IServiceCollection>? configure = null
   ) {
-    var readyTcs = new AgentLifetime();
+    var lifetime = new NestedHostLifetime();
 
     var command = StartAsync(
       "server start " + args,
       services => {
-        services.AddSingleton( readyTcs );
-        configureServices?.Invoke( services );
+        services.AddSingleton( lifetime );
       },
-      cancellationToken
+      cancellationToken,
+      configureCoordinatorHostServices: configure
     );
 
     // Wait for either readiness or command exit
-    var completed = await Task.WhenAny( readyTcs.Ready.Task, command.Completion );
+    var completed = await Task.WhenAny( lifetime.Ready.Task, command.Completion );
 
     if ( completed == command.Completion ) {
-      var com = await command.Completion;
-      throw new InvalidOperationException( "Command exited before server was started. Details:\n" + com.Error );
+      var result = await command.Completion;
+      throw new InvalidOperationException( "Command exited before server was started. Details:\n" + result.Error );
     }
 
     return command;

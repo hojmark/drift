@@ -6,7 +6,8 @@ namespace Drift.Cli.Settings.Tests;
 #pragma warning disable CA1515
 public sealed class TemporarySettingsLocation : ISettingsLocation {
 #pragma warning restore CA1515
-  private readonly string _directory = Path.Combine( Path.GetTempPath(), Guid.NewGuid().ToString() );
 
-  public string Directory => _directory;
+  public string Directory {
+    get;
+  } = Path.Combine( Path.GetTempPath(), Guid.NewGuid().ToString() );
 }

@@ -1,13 +1,13 @@
 using System.Text.Json;
-using Drift.Cli.Settings.Serialization;
+using Drift.Common.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Settings.V1_preview;
 
 public partial class CliSettings {
-  private ISettingsLocation? _loadLocation;
+  private IDriftSettingsLocation? _loadLocation;
 
-  public static CliSettings Read( ISettingsLocation location, ILogger? logger = null ) {
+  public static CliSettings Read( IDriftSettingsLocation location, ILogger? logger = null ) {
     try {
       logger?.LogTrace( "Reading settings from file: {Path}", location.File );
 
@@ -36,7 +36,7 @@ public partial class CliSettings {
     }
   }
 
-  public void Write( ILogger logger, ISettingsLocation location ) {
+  public void Write( ILogger logger, IDriftSettingsLocation location ) {
     logger.LogTrace( "Writing settings to file: {Path}", location.File );
 
     if ( !Directory.Exists( location.Directory ) ) {

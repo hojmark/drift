@@ -1,13 +1,13 @@
 using Drift.Cli.Abstractions;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
 using Drift.Cli.Settings.V1_preview.Environments;
+using Drift.Common.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Infrastructure;
 
 internal sealed class EnvironmentTargetProvider(
-  ISettingsLocation settingsLocation,
+  IDriftSettingsLocation settingsLocation,
   ILogger logger
 ) {
   public EnvironmentTarget Resolve() {

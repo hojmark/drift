@@ -21,7 +21,7 @@ public static class DriftDirectories {
     }
   }
 
-  public static string DriftDataDirectory {
+  public static string DataDirectory {
     get {
       if ( RuntimeInformation.IsOSPlatform( OSPlatform.Windows ) ) {
         return Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData ), "Drift" );

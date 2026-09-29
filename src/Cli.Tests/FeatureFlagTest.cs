@@ -3,11 +3,11 @@ using Drift.Cli.Commands.Common.Commands;
 using Drift.Cli.Commands.Common.Parameters;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.Tests;
 using Drift.Cli.Settings.V1_preview;
 using Drift.Cli.Settings.V1_preview.FeatureFlags;
 using Drift.Cli.Tests.Utils;
+using Drift.Common.IO;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Drift.Cli.Tests;
@@ -16,7 +16,7 @@ internal sealed class FeatureFlagTest {
   private const string DummyCodeCommand = "dummy";
   private const int DummyCommandExitCode = 1337;
   private static readonly FeatureFlag MyFeature = new("myFeature");
-  private static readonly ISettingsLocation SettingsLocation = new TemporarySettingsLocation();
+  private static readonly IDriftSettingsLocation SettingsLocation = new TemporarySettingsLocation();
 
   [Test]
   public async Task SettingsControlFlag( [Values( false, true, null )] bool? featureEnabled ) {

@@ -2,8 +2,8 @@ using System.CommandLine;
 using System.Diagnostics;
 using Drift.Cli.Presentation.Console;
 using Drift.Cli.Presentation.Console.Logging;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
+using Drift.Common.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Common;
@@ -42,7 +42,7 @@ internal static class CommonParameters {
       Description = "Very verbose output", Arity = ArgumentArity.Zero, Hidden = true
     };
 
-    internal static Option<OutputFormat> CreateOutputFormat( ISettingsLocation settingsLocation ) =>
+    internal static Option<OutputFormat> CreateOutputFormat( IDriftSettingsLocation settingsLocation ) =>
       new(OutputFormatName, "-o") {
         DefaultValueFactory = _ =>
           CliSettings.Read(

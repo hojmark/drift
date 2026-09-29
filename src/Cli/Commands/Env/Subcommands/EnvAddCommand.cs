@@ -5,9 +5,9 @@ using Drift.Cli.Commands.Common.Parameters;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
 using Drift.Cli.Settings.V1_preview.Environments;
+using Drift.Common.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Env.Subcommands;
@@ -51,7 +51,7 @@ internal record EnvAddParameters : BaseParameters {
 
 internal class EnvAddCommandHandler(
   IOutputManager output,
-  ISettingsLocation settingsLocation
+  IDriftSettingsLocation settingsLocation
 ) : ICommandHandler<EnvAddParameters> {
   public Task<int> Invoke( EnvAddParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running 'env add' command" );

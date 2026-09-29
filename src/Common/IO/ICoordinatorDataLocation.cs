@@ -1,4 +1,4 @@
-namespace Drift.Coordinator.Services.State;
+namespace Drift.Common.IO;
 
 /// <summary>
 /// Defines the coordinator-owned files and directories that make up its local data root.

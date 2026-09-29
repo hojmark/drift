@@ -2,8 +2,8 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using Drift.Cli.Commands;
 using Drift.Cli.Infrastructure;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.Tests;
+using Drift.Common.IO;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli.Tests.Utils;
@@ -21,7 +21,7 @@ internal static class DriftTestCli {
     Action<IServiceCollection>? configureCoordinatorHostServices = null,
     RootCommandFactory.CommandRegistration[]? customCommands = null,
     bool redirectConsole = true,
-    ISettingsLocation? settingsLocation = null,
+    IDriftSettingsLocation? settingsLocation = null,
     CancellationToken cancellationToken = default
   ) {
     settingsLocation ??= new TemporarySettingsLocation();

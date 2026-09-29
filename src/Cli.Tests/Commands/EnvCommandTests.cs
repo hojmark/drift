@@ -1,14 +1,14 @@
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.Tests;
 using Drift.Cli.Settings.V1_preview;
 using Drift.Cli.Settings.V1_preview.Environments;
 using Drift.Cli.Tests.Utils;
+using Drift.Common.IO;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Drift.Cli.Tests.Commands;
 
 internal sealed partial class EnvCommandTests {
-  private ISettingsLocation SettingsLocation {
+  private IDriftSettingsLocation SettingsLocation {
     get;
   } = new TemporarySettingsLocation();
 

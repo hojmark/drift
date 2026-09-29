@@ -37,8 +37,8 @@ internal sealed class BadSettingsFileTests {
 
     // Act
     var (exitCode, output, error) = await DriftTestCli.InvokeAsync(
-      $"lint ../../../../Spec.Tests/resources/network_single_subnet.yaml",
-      settingsLocation: new DefaultSettingsLocation() // Note: DefaultSettingsLocation will read the environment variable
+      "lint ../../../../Spec.Tests/resources/network_single_subnet.yaml",
+      settingsLocation: new DefaultDriftSettingsLocation() // Note: DefaultSettingsLocation will read the environment variable
     );
 
     // Assert

@@ -4,8 +4,8 @@ using Drift.Cli.Commands.Common.Commands;
 using Drift.Cli.Commands.Common.Parameters;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
+using Drift.Common.IO;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Spectre.Console.Rendering;
@@ -34,7 +34,7 @@ internal record EnvListParameters : BaseParameters {
 
 internal class EnvListCommandHandler(
   IOutputManager output,
-  ISettingsLocation settingsLocation
+  IDriftSettingsLocation settingsLocation
 ) : ICommandHandler<EnvListParameters> {
   public Task<int> Invoke( EnvListParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running 'env list' command" );

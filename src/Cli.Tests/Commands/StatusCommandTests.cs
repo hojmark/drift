@@ -2,21 +2,20 @@ using System.Net;
 using System.Net.Sockets;
 using Drift.Agent.Host;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.Tests;
 using Drift.Cli.Settings.V1_preview;
 using Drift.Cli.Settings.V1_preview.Environments;
 using Drift.Cli.Tests.Utils;
 using Drift.Cli.Tests.Utils.Coordinator;
+using Drift.Common.IO;
 using Drift.Coordinator.Host;
-using Drift.Coordinator.Services.State;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Drift.Cli.Tests.Commands;
 
 internal sealed class StatusCommandTests {
-  private ISettingsLocation SettingsLocation {
+  private IDriftSettingsLocation SettingsLocation {
     get;
   } = new TemporarySettingsLocation();
 
@@ -39,7 +38,7 @@ internal sealed class StatusCommandTests {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
       Assert.That( error.ToString(), Is.Empty );
       Assert.That( output.ToString(), Does.Contain( "Data directory:" ) );
-      Assert.That( output.ToString(), Does.Contain( "Config directory:" ) );
+      Assert.That( output.ToString(), Does.Contain( "Settings directory:" ) );
       Assert.That( output.ToString(), Does.Contain( "Local addresses:" ) );
       Assert.That( output.ToString(), Does.Contain( "local @ local" ) );
       Assert.That( output.ToString(), Does.Contain( "Status: Local scanning" ) );

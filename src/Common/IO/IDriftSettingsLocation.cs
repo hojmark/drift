@@ -1,8 +1,11 @@
 using Drift.Cli.Abstractions;
 
-namespace Drift.Cli.Settings.Serialization;
+namespace Drift.Common.IO;
 
-public interface ISettingsLocation {
+/// <summary>
+/// Resolves Drift's settings location.
+/// </summary>
+public interface IDriftSettingsLocation {
   string Directory {
     get;
   }

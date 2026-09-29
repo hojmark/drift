@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
 using Drift.Cli.Settings.V1_preview.Environments;
 using Drift.Cli.Settings.V1_preview.FeatureFlags;
+using Drift.Common.IO;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Drift.Cli.Settings.Tests;
@@ -11,7 +11,7 @@ internal sealed class SerializationTests {
   [Test]
   public async Task DefaultContents() {
     // Arrange
-    ISettingsLocation location = new TemporarySettingsLocation();
+    IDriftSettingsLocation location = new TemporarySettingsLocation();
 
     // Act
     new CliSettings().Write( NullLogger.Instance, location );
@@ -27,7 +27,7 @@ internal sealed class SerializationTests {
   [Test]
   public void WriteAndReadRoundtrip() {
     // Arrange
-    ISettingsLocation location = new TemporarySettingsLocation();
+    IDriftSettingsLocation location = new TemporarySettingsLocation();
     var logger = NullLogger.Instance;
     var original = new CliSettings {
       Features = {
@@ -53,7 +53,7 @@ internal sealed class SerializationTests {
   [Test]
   public void EnvironmentsWriteAndReadRoundtrip() {
     // Arrange
-    ISettingsLocation location = new TemporarySettingsLocation();
+    IDriftSettingsLocation location = new TemporarySettingsLocation();
     var logger = NullLogger.Instance;
     var original = new CliSettings {
       Environments = {
@@ -82,7 +82,7 @@ internal sealed class SerializationTests {
   [Test]
   public async Task LoadsDefaultsWhenBadJson() {
     // Arrange
-    ISettingsLocation location = new TemporarySettingsLocation();
+    IDriftSettingsLocation location = new TemporarySettingsLocation();
     Directory.CreateDirectory( location.Directory );
     await File.WriteAllTextAsync( location.File, "garbage" );
     var defaultSettings = new CliSettings();
@@ -101,7 +101,7 @@ internal sealed class SerializationTests {
   [Test]
   public void ReturnsDefaultsWhenNoFile() {
     // Arrange
-    ISettingsLocation location = new TemporarySettingsLocation();
+    IDriftSettingsLocation location = new TemporarySettingsLocation();
 
     // Act
     var loadedSettings = CliSettings.Read( location, NullLogger.Instance );
@@ -115,7 +115,7 @@ internal sealed class SerializationTests {
   [Test]
   public void CannotOverwriteWhenNotLoaded() {
     // Arrange
-    ISettingsLocation location = new TemporarySettingsLocation();
+    IDriftSettingsLocation location = new TemporarySettingsLocation();
     new CliSettings().Write( NullLogger.Instance, location );
 
     // Act / Assert
@@ -127,8 +127,8 @@ internal sealed class SerializationTests {
   [Test]
   public void CannotOverwriteWhenLoadedFromDifferentFile() {
     // Arrange
-    ISettingsLocation location1 = new TemporarySettingsLocation();
-    ISettingsLocation location2 = new TemporarySettingsLocation();
+    IDriftSettingsLocation location1 = new TemporarySettingsLocation();
+    IDriftSettingsLocation location2 = new TemporarySettingsLocation();
     new CliSettings().Write( NullLogger.Instance, location1 );
     new CliSettings().Write( NullLogger.Instance, location2 );
     var reloaded1 = CliSettings.Read( location1, NullLogger.Instance );
@@ -143,7 +143,7 @@ internal sealed class SerializationTests {
   [Test]
   public async Task CannotOverwriteWhenDefaultsWereReturnedDueToBadJson() {
     // Arrange
-    ISettingsLocation location = new TemporarySettingsLocation();
+    IDriftSettingsLocation location = new TemporarySettingsLocation();
     Directory.CreateDirectory( location.Directory );
     await File.WriteAllTextAsync( location.File, "garbage" );
 

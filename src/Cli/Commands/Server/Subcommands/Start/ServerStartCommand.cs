@@ -1,6 +1,5 @@
 using System.CommandLine;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Commands.Agent.Subcommands;
 using Drift.Cli.Commands.Common.Commands;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Logging;

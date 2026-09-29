@@ -2,13 +2,11 @@ using System.Collections.Immutable;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.Tests;
 using Drift.Cli.Tests.Utils.Coordinator;
 using Drift.Cli.Tests.Utils.Network.Topology;
 using Drift.Cli.Tests.Utils.Testing;
 using Drift.Common.IO;
-using Drift.Coordinator.Services.State;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
@@ -33,7 +31,7 @@ internal sealed class AgentTestHarness : IAsyncDisposable {
   private readonly List<AgentConfiguration> _agentConfigs;
   private readonly CoordinatorConfiguration _coordinatorConfig;
   private readonly CancellationTokenSource _cancellationTokenSource;
-  private readonly ISettingsLocation _settingsLocation;
+  private readonly IDriftSettingsLocation _driftSettingsLocation;
   private readonly IDriftDataLocation _driftDataLocation;
   private readonly ICoordinatorDataLocation _dataLocation;
   private readonly string _specFilePath;
@@ -47,7 +45,7 @@ internal sealed class AgentTestHarness : IAsyncDisposable {
     List<AgentConfiguration> agentConfigs,
     CoordinatorConfiguration coordinatorConfig,
     TemporaryCoordinatorDataLocation dataLocation,
-    ISettingsLocation settingsLocation,
+    IDriftSettingsLocation driftSettingsLocation,
     IDriftDataLocation driftDataLocation,
     TimeSpan timeout
   ) {
@@ -56,7 +54,7 @@ internal sealed class AgentTestHarness : IAsyncDisposable {
     _coordinatorConfig = coordinatorConfig;
     _controlPort = TcpUtils.GetFreePort();
     _dataLocation = dataLocation;
-    _settingsLocation = settingsLocation;
+    _driftSettingsLocation = driftSettingsLocation;
     _driftDataLocation = driftDataLocation;
     _specFilePath = Path.Combine( dataLocation.Directory, "test.spec.yaml" );
     _serverAddress = new Uri( $"http://127.0.0.1:{_controlPort}" );
@@ -203,7 +201,7 @@ internal sealed class AgentTestHarness : IAsyncDisposable {
     return DriftTestCli.InvokeAsync(
       arguments,
       configureCliServices: ConfigureApplicationDataLocation,
-      settingsLocation: _settingsLocation,
+      settingsLocation: _driftSettingsLocation,
       cancellationToken: _cancellationTokenSource.Token
     );
   }
@@ -319,7 +317,7 @@ internal sealed class AgentTestHarness : IAsyncDisposable {
 
     _cancellationTokenSource.Dispose();
     DeleteDirectory( _dataLocation.Directory );
-    DeleteDirectory( _settingsLocation.Directory );
+    DeleteDirectory( _driftSettingsLocation.Directory );
     DeleteDirectory( _driftDataLocation.Directory );
   }
 

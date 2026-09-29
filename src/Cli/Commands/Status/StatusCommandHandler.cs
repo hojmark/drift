@@ -4,7 +4,6 @@ using Drift.Cli.Commands.Common.Commands;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
 using Drift.Cli.Settings.V1_preview.Environments;
 using Drift.Common.IO;
@@ -17,8 +16,8 @@ namespace Drift.Cli.Commands.Status;
 
 internal sealed class StatusCommandHandler(
   IOutputManager output,
-  ISettingsLocation settingsLocation,
-  IDriftDataLocation driftDataLocation
+  IDriftSettingsLocation settingsLocation,
+  IDriftDataLocation dataLocation
 ) : ICommandHandler<StatusParameters> {
   private static readonly TimeSpan StatusProbeTimeout = TimeSpan.FromSeconds( 2 );
 
@@ -63,7 +62,8 @@ internal sealed class StatusCommandHandler(
       );
     }
 
-    Render( environments, settingsLocation, driftDataLocation );
+    Render( environments );
+
     return ExitCodes.Success;
   }
 
@@ -131,11 +131,7 @@ internal sealed class StatusCommandHandler(
     }
   }
 
-  private void Render(
-    IReadOnlyCollection<StatusEnvironment> environments,
-    ISettingsLocation settingsLocation,
-    IDriftDataLocation driftDataLocation
-  ) {
+  private void Render( IReadOnlyCollection<StatusEnvironment> environments ) {
     var console = output.Normal.GetAnsiConsole();
 
     console.MarkupLine( "[bold]Environment[/]" );
@@ -172,8 +168,8 @@ internal sealed class StatusCommandHandler(
     console.MarkupLine( "[bold]CLI[/]" );
     console.MarkupLine( "-------------------------------" );
 
-    console.MarkupLine( $"  Data directory: {Escape( driftDataLocation.Directory )}" );
-    console.MarkupLine( $"  Config directory: {Escape( settingsLocation.Directory )}" );
+    console.MarkupLine( $"  Data directory: {dataLocation.Directory}" );
+    console.MarkupLine( $"  Settings directory: {settingsLocation.Directory}" );
     RenderLocalAddresses( console );
   }
 

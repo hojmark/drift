@@ -1,4 +1,5 @@
 using Drift.Agent.Host.Scan;
+using Drift.Agent.Host.State;
 using Drift.Agent.Host.Status;
 using Drift.Agent.Host.Subnets;
 using Drift.Common.IO;

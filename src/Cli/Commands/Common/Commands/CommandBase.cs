@@ -3,7 +3,6 @@ using Drift.Cli.Abstractions;
 using Drift.Cli.Commands.Common.Parameters;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
 using Drift.Common.IO;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +23,7 @@ internal abstract class CommandBase<TParameters, THandler> : Command
     Add( CommonParameters.Options.Verbose );
     // TODO re-intro when fixed
     // AddOption( GlobalParameters.Options.VeryVerbose );
-    Add( CommonParameters.Options.CreateOutputFormat( provider.GetRequiredService<ISettingsLocation>() ) );
+    Add( CommonParameters.Options.CreateOutputFormat( provider.GetRequiredService<IDriftSettingsLocation>() ) );
 
     // TODO hack
     if ( includeSpecArgument ) {
@@ -39,14 +38,14 @@ internal abstract class CommandBase<TParameters, THandler> : Command
 
       var output = serviceProvider.GetRequiredService<IOutputManager>();
 
-      var settingsLocation = serviceProvider.GetRequiredService<ISettingsLocation>();
+      var driftSettingsLocation = serviceProvider.GetRequiredService<IDriftSettingsLocation>();
       var driftDataLocation = serviceProvider.GetRequiredService<IDriftDataLocation>();
       output.GetLogger().LogDebug( "Data directory: {DataDirectory}", driftDataLocation.Directory );
-      output.GetLogger().LogDebug( "Settings directory: {SettingsDirectory}", settingsLocation.Directory );
+      output.GetLogger().LogDebug( "Settings directory: {SettingsDirectory}", driftSettingsLocation.Directory );
       // Uses a null logger: the --output option's default value factory already reads (and logs errors for)
       // the settings file once per invocation; avoid surfacing the same error a second time here.
       // TODO read cached settings instead?
-      var activeEnvironment = CliSettings.Read( settingsLocation, NullLogger.Instance ).ActiveEnvironment;
+      var activeEnvironment = CliSettings.Read( driftSettingsLocation, NullLogger.Instance ).ActiveEnvironment;
       output.WriteEnvironmentHeader( activeEnvironment );
 
       var handler = serviceProvider.GetRequiredService<THandler>();

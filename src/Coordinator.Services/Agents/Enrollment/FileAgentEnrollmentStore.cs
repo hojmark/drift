@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Drift.Coordinator.Services.State;
+using Drift.Common.IO;
 using Drift.Serialization.Converters;
 
 namespace Drift.Coordinator.Services.Agents.Enrollment;

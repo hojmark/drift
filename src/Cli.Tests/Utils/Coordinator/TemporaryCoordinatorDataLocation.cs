@@ -1,4 +1,4 @@
-using Drift.Coordinator.Services.State;
+using Drift.Common.IO;
 
 namespace Drift.Cli.Tests.Utils.Coordinator;
 

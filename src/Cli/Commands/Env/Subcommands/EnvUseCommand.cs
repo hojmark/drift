@@ -5,9 +5,9 @@ using Drift.Cli.Commands.Common.Parameters;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Presentation.Rendering;
-using Drift.Cli.Settings.Serialization;
 using Drift.Cli.Settings.V1_preview;
 using Drift.Cli.Settings.V1_preview.Environments;
+using Drift.Common.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Env.Subcommands;
@@ -43,7 +43,7 @@ internal record EnvUseParameters : BaseParameters {
 
 internal class EnvUseCommandHandler(
   IOutputManager output,
-  ISettingsLocation settingsLocation
+  IDriftSettingsLocation settingsLocation
 ) : ICommandHandler<EnvUseParameters> {
   public Task<int> Invoke( EnvUseParameters parameters, CancellationToken cancellationToken ) {
     output.Log.LogDebug( "Running 'env use' command" );

@@ -28,7 +28,6 @@ using Drift.Common;
 using Drift.Common.IO;
 using Drift.Domain.ExecutionEnvironment;
 using Drift.Scanning;
-using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -86,7 +85,7 @@ internal static class RootCommandFactory {
 
   private static void ConfigureDefaults( IServiceCollection services, bool toConsole, bool plainConsole ) {
     services.AddSingleton<IDriftDataLocation, DefaultDriftDataLocation>();
-    services.AddSingleton<ISettingsLocation, DefaultSettingsLocation>();
+    services.AddSingleton<IDriftSettingsLocation, DefaultDriftSettingsLocation>();
     services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
     services.AddScoped<ParseResultHolder>();
     ConfigureOutput( services, toConsole, plainConsole );

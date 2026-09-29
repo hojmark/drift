@@ -3,7 +3,7 @@ using Drift.Common.IO;
 
 namespace Drift.Cli.Settings.Serialization;
 
-public sealed class DefaultSettingsLocation : ISettingsLocation {
+public sealed class DefaultDriftSettingsLocation : IDriftSettingsLocation {
   public string Directory {
     get {
       var configDirOverride = Environment.GetEnvironmentVariable( nameof(EnvVar.Drift_ConfigDir) );

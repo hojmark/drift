@@ -22,7 +22,7 @@ topology:
     server:
       kind: linux
       image: localhost:5000/drift:dev
-      cmd: server start --port 51510 --no-agent
+      cmd: server start --port 51510 --no-agent-port
 
     agent1:
       kind: linux

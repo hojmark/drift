@@ -38,8 +38,6 @@ public static class AgentHost {
     builder.Services.AddSingleton( logger );
     builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
 
-    // TODO consolidate all the addmessaging* into single configurable extension that can be used for all roles
-    // (CLI, Agent, Coordinator) with different config flags. Should be high-level (domain preferred)
     builder.Services.AddMessagingServer( options => {
       options.EnableDetailedErrors = true;
     } );
@@ -54,9 +52,10 @@ public static class AgentHost {
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
-      options.ListenAnyIP( port, o => {
-        o.Protocols = HttpProtocols.Http2; // gRPC requires HTTP/2
-      } );
+      options.ListenAnyIP(
+        port,
+        o => o.Protocols = HttpProtocols.Http2 // gRPC requires HTTP/2
+      );
     } );
 
     var app = builder.Build();

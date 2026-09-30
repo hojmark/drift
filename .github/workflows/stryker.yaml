@@ -34,7 +34,7 @@ jobs:
           --reporter cleartext
           --reporter html
           --reporter json
-          --reporter progress
+          --reporter dots
       
       - name: Post step summary
         run: |

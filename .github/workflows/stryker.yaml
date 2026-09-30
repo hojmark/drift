@@ -9,7 +9,7 @@ jobs:
   stryker:
     name: Run Stryker
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 360
     steps:
       - name: Run Stryker
         run: >

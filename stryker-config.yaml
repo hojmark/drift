@@ -1,0 +1,12 @@
+stryker-config:
+  solution: "Drift.sln"
+  test-case-filter: "Category!=E2E"
+  #test-runner: "mtp" # TODO migrate all tests to MTP
+  mutation-level": "Basic"
+  baseline:
+    enabled: true
+    fallback-version: main
+    # Requires AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY env vars to be set
+    provider: "S3"
+    s3-bucket-name: "drift-ci"
+    s3-endpoint: "https://495396a2e23f5c4746cba0c7126d5ca3.eu.r2.cloudflarestorage.com"

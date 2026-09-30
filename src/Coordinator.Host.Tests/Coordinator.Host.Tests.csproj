@@ -6,10 +6,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Agent.Host\Agent.Host.csproj" />
-     <ProjectReference Include="..\Coordinator.Client\Coordinator.Client.csproj" />
+    <ProjectReference Include="..\Coordinator.Client\Coordinator.Client.csproj" />
     <ProjectReference Include="..\Coordinator.Host\Coordinator.Host.csproj" />
     <ProjectReference Include="..\Coordinator.Services\Coordinator.Services.csproj" />
+    <ProjectReference Include="..\TestUtilities.Hosts\TestUtilities.Hosts.csproj" />
     <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 

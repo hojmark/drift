@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
-using Drift.Agent.Host;
 using Drift.Common.IO;
 using Drift.Coordinator.Client;
 using Drift.Coordinator.Client.Models;
@@ -12,6 +11,7 @@ using Drift.Domain;
 using Drift.Domain.Scan;
 using Drift.Scanning.Scanners.Factories;
 using Drift.Scanning.Subnets.Interface;
+using Drift.TestUtilities.Hosts;
 using Drift.TestUtilities.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -25,20 +25,13 @@ internal sealed class CoordinatorHostIntegrationTests {
   public async Task ServerStatus_IsAvailable() {
     var controlPort = GetFreePort();
     var agentPort = GetFreePort();
-    await using var app = CoordinatorHost.Build( controlPort, agentPort, NullLogger.Instance );
+    await using var app = await RunningCoordinatorHost.StartAsync( controlPort, agentPort, NullLogger.Instance );
+    using var client = app.CreateHttpClient();
+    using var response = await client.GetAsync( "/api/v1/status" );
 
-    await app.StartAsync();
-    try {
-      using var client = new HttpClient { BaseAddress = new Uri( $"http://127.0.0.1:{controlPort}" ) };
-      using var response = await client.GetAsync( "/api/v1/status" );
-
-      using ( Assert.EnterMultipleScope() ) {
-        Assert.That( response.StatusCode, Is.EqualTo( HttpStatusCode.OK ) );
-        Assert.That( await response.Content.ReadAsStringAsync(), Is.EqualTo( "{\"status\":\"Ready\"}" ) );
-      }
-    }
-    finally {
-      await app.StopAsync();
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( response.StatusCode, Is.EqualTo( HttpStatusCode.OK ) );
+      Assert.That( await response.Content.ReadAsStringAsync(), Is.EqualTo( "{\"status\":\"Ready\"}" ) );
     }
   }
 
@@ -46,23 +39,16 @@ internal sealed class CoordinatorHostIntegrationTests {
   public async Task ApiDocsUi_IsAvailable() {
     var controlPort = GetFreePort();
     var agentPort = GetFreePort();
-    await using var app = CoordinatorHost.Build( controlPort, agentPort, NullLogger.Instance );
+    await using var app = await RunningCoordinatorHost.StartAsync( controlPort, agentPort, NullLogger.Instance );
+    using var client = app.CreateHttpClient();
 
-    await app.StartAsync();
-    try {
-      using var client = new HttpClient { BaseAddress = new Uri( $"http://127.0.0.1:{controlPort}" ) };
+    using var uiResponse = await client.GetAsync( "/api" );
+    using var documentResponse = await client.GetAsync( "/api/v1/openapi.json" );
 
-      using var uiResponse = await client.GetAsync( "/api" );
-      using var documentResponse = await client.GetAsync( "/api/v1/openapi.json" );
-
-      using ( Assert.EnterMultipleScope() ) {
-        Assert.That( uiResponse.StatusCode, Is.EqualTo( HttpStatusCode.OK ) );
-        Assert.That( await uiResponse.Content.ReadAsStringAsync(), Contains.Substring( "Drift API" ) );
-        Assert.That( documentResponse.StatusCode, Is.EqualTo( HttpStatusCode.OK ) );
-      }
-    }
-    finally {
-      await app.StopAsync();
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( uiResponse.StatusCode, Is.EqualTo( HttpStatusCode.OK ) );
+      Assert.That( await uiResponse.Content.ReadAsStringAsync(), Contains.Substring( "Drift API" ) );
+      Assert.That( documentResponse.StatusCode, Is.EqualTo( HttpStatusCode.OK ) );
     }
   }
 
@@ -71,23 +57,21 @@ internal sealed class CoordinatorHostIntegrationTests {
     var controlPort = GetFreePort();
     var agentPort = GetFreePort();
     var dataLocation = new TemporaryCoordinatorDataLocation();
-    await using var coordinator = CoordinatorHost.Build(
+    await using var coordinator = await RunningCoordinatorHost.StartAsync(
       controlPort,
       agentPort,
       NullLogger.Instance,
       services => services.AddSingleton<ICoordinatorDataLocation>( dataLocation )
     );
-
     try {
-      await coordinator.StartAsync();
-      using var client = new HttpClient { BaseAddress = new Uri( $"http://127.0.0.1:{controlPort}" ) };
+      using var client = coordinator.CreateHttpClient();
       using var response = await client.PostAsync(
         "/api/v1/agents/enrollments",
         new StringContent( "{\"id\":\"agent_one\"}", Encoding.UTF8, "application/json" )
       );
       var body = await response.Content.ReadAsStringAsync();
 
-      using var controlApiClient = ControlApiClient.Create( client.BaseAddress );
+      using var controlApiClient = ControlApiClient.Create( coordinator.Address );
       var exception = Assert.ThrowsAsync<HttpRequestException>( async () =>
         await controlApiClient.EnrollAgentAsync(
           AgentId.Parse( "agent_one", null ),
@@ -121,9 +105,8 @@ internal sealed class CoordinatorHostIntegrationTests {
     var dataLocation = new TemporaryCoordinatorDataLocation();
     var agentLogger = new StringLogger();
     var coordinatorLogger = new StringLogger();
-    using var agentCancellation = new CancellationTokenSource();
-    var agentReady = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
-    var agentTask = AgentHost.Run(
+    var agentDirectory = new InMemoryAgentDirectory( [] );
+    await using var agent = await RunningAgentHost.StartAsync(
       agentPort,
       agentLogger,
       services => {
@@ -138,22 +121,21 @@ internal sealed class CoordinatorHostIntegrationTests {
             ]
           )
         );
-      },
-      agentCancellation.Token,
-      agentReady
+      }
     );
-    await agentReady.Task.WaitAsync( TimeSpan.FromSeconds( 10 ) );
 
-    await using var coordinator = CoordinatorHost.Build(
+    await using var coordinator = await RunningCoordinatorHost.StartAsync(
       controlPort,
       coordinatorAgentPort,
       coordinatorLogger,
-      services => services.AddSingleton<ICoordinatorDataLocation>( dataLocation )
+      services => {
+        services.AddSingleton<ICoordinatorDataLocation>( dataLocation );
+        services.AddSingleton<IAgentDirectory>( agentDirectory );
+      }
     );
 
     try {
-      await coordinator.StartAsync();
-      using var client = new HttpClient { BaseAddress = new Uri( $"http://127.0.0.1:{controlPort}" ) };
+      using var client = coordinator.CreateHttpClient();
 
       dataLocation.EnsureCreated();
       await File.WriteAllTextAsync(
@@ -179,7 +161,7 @@ internal sealed class CoordinatorHostIntegrationTests {
         Assert.That( enrollmentRequestJson, Contains.Substring( "\"connectionStatus\":\"Unknown\"" ) );
       }
 
-      using var controlApiClient = ControlApiClient.Create( client.BaseAddress );
+      using var controlApiClient = ControlApiClient.Create( coordinator.Address );
       var enrollmentResult = await controlApiClient.EnrollAgentAsync(
         AgentId.Parse( "agent_one", null ),
         CancellationToken.None
@@ -199,14 +181,7 @@ internal sealed class CoordinatorHostIntegrationTests {
     }
     finally {
       await coordinator.StopAsync();
-      agentCancellation.Cancel();
-      try {
-        await agentTask;
-      }
-      catch ( OperationCanceledException ) when ( agentCancellation.IsCancellationRequested ) {
-        Assert.That( agentCancellation.IsCancellationRequested, Is.True );
-      }
-
+      await agent.StopAsync();
       Directory.Delete( dataLocation.Directory, true );
     }
   }
@@ -219,9 +194,8 @@ internal sealed class CoordinatorHostIntegrationTests {
     var dataLocation = new TemporaryCoordinatorDataLocation();
     var agentLogger = new StringLogger();
     var coordinatorLogger = new StringLogger();
-    using var agentCancellation = new CancellationTokenSource();
-    var agentReady = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
-    var agentTask = AgentHost.Run(
+    var agentDirectory = new InMemoryAgentDirectory( [] );
+    await using var agent = await RunningAgentHost.StartAsync(
       agentPort,
       agentLogger,
       services => {
@@ -237,22 +211,21 @@ internal sealed class CoordinatorHostIntegrationTests {
           )
         );
         services.AddSingleton<ISubnetScannerFactory, TestSubnetScannerFactory>();
-      },
-      agentCancellation.Token,
-      agentReady
+      }
     );
-    await agentReady.Task.WaitAsync( TimeSpan.FromSeconds( 10 ) );
 
-    await using var coordinator = CoordinatorHost.Build(
+    await using var coordinator = await RunningCoordinatorHost.StartAsync(
       controlPort,
       coordinatorAgentPort,
       coordinatorLogger,
-      services => services.AddSingleton<ICoordinatorDataLocation>( dataLocation )
+      services => {
+        services.AddSingleton<ICoordinatorDataLocation>( dataLocation );
+        services.AddSingleton<IAgentDirectory>( agentDirectory );
+      }
     );
 
     try {
-      await coordinator.StartAsync();
-      using var client = new HttpClient { BaseAddress = new Uri( $"http://127.0.0.1:{controlPort}" ) };
+      using var client = coordinator.CreateHttpClient();
 
       using var specResponse = await client.PutAsync(
         "/api/v1/spec",
@@ -278,10 +251,9 @@ internal sealed class CoordinatorHostIntegrationTests {
         new StringContent( "{\"id\":\"agent_one\"}", Encoding.UTF8, "application/json" )
       );
       Assert.That( enrollmentResponse.StatusCode, Is.EqualTo( HttpStatusCode.OK ) );
-      var agentDirectory = coordinator.Services.GetRequiredService<IAgentDirectory>();
       agentDirectory.MarkUnavailable( AgentId.Parse( "agent_one", null ) );
 
-      using var controlApiClient = ControlApiClient.Create( client.BaseAddress );
+      using var controlApiClient = ControlApiClient.Create( coordinator.Address );
       var scanId = await controlApiClient.StartScanAsync( 50, CancellationToken.None );
 
       using var eventsResponse = await client.GetAsync(
@@ -330,14 +302,7 @@ internal sealed class CoordinatorHostIntegrationTests {
     }
     finally {
       await coordinator.StopAsync();
-      agentCancellation.Cancel();
-      try {
-        await agentTask;
-      }
-      catch ( OperationCanceledException ) when ( agentCancellation.IsCancellationRequested ) {
-        Assert.That( agentCancellation.IsCancellationRequested, Is.True );
-      }
-
+      await agent.StopAsync();
       Directory.Delete( dataLocation.Directory, true );
     }
   }

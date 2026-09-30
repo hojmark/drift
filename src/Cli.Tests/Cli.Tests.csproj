@@ -7,6 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Cli.Settings.Tests\Cli.Settings.Tests.csproj" />
     <ProjectReference Include="..\Cli\Cli.csproj" />
+    <ProjectReference Include="..\TestUtilities.Hosts\TestUtilities.Hosts.csproj" />
     <ProjectReference Include="..\Scanning.Tests\Scanning.Tests.csproj" />
     <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>

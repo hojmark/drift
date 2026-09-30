@@ -19,19 +19,19 @@ namespace Drift.Coordinator.Host;
 
 public static class CoordinatorHost {
   public static Task Run(
-    ushort controlPort,
+    ushort port,
     ushort? agentPort,
     ILogger logger,
     Action<IServiceCollection>? configureServices,
     CancellationToken cancellationToken,
     TaskCompletionSource? ready = null
   ) {
-    var app = Build( controlPort, agentPort, logger, configureServices, ready );
+    var app = Build( port, agentPort, logger, configureServices, ready );
     return app.RunAsync( cancellationToken );
   }
 
-  public static WebApplication Build(
-    ushort controlPort,
+  private static WebApplication Build(
+    ushort port,
     ushort? agentPort,
     ILogger logger,
     Action<IServiceCollection>? configureServices = null,
@@ -71,7 +71,7 @@ public static class CoordinatorHost {
 
       // UI HTTP
       options.ListenAnyIP(
-        controlPort,
+        port,
         o => o.Protocols = HttpProtocols.Http1
       );
     } );
@@ -117,9 +117,9 @@ public static class CoordinatorHost {
         "Coordinator data directory: {DataDirectory}",
         app.Services.GetRequiredService<ICoordinatorDataLocation>().Directory
       );
-      logger.LogInformation( "Control API listening on port {Port} (HTTP)", controlPort );
-      if ( agentPort is { } port ) {
-        logger.LogInformation( "Listening for inbound agent connections on port {Port} (gRPC)", port );
+      logger.LogInformation( "Control API listening on port {Port} (HTTP)", port );
+      if ( agentPort is not null ) {
+        logger.LogInformation( "Listening for inbound agent connections on port {Port} (gRPC)", agentPort.Value );
       }
       else {
         logger.LogWarning(

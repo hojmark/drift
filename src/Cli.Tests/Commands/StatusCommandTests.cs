@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Sockets;
-using Drift.Agent.Host;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Settings.Tests;
 using Drift.Cli.Settings.V1_preview;
@@ -8,7 +7,7 @@ using Drift.Cli.Settings.V1_preview.Environments;
 using Drift.Cli.Tests.Utils;
 using Drift.Cli.Tests.Utils.Coordinator;
 using Drift.Common.IO;
-using Drift.Coordinator.Host;
+using Drift.TestUtilities.Hosts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -125,17 +124,12 @@ internal sealed class StatusCommandTests {
     var controlPort = GetFreePort();
     var agentPort = GetFreePort();
     var dataLocation = new TemporaryCoordinatorDataLocation();
-    using var agentCancellation = new CancellationTokenSource();
-    var agentReady = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
-    var agentTask = AgentHost.Run(
+    await using var agent = await RunningAgentHost.StartAsync(
       agentPort,
       NullLogger.Instance,
       _ => {
-      },
-      agentCancellation.Token,
-      agentReady
+      }
     );
-    await agentReady.Task.WaitAsync( TimeSpan.FromSeconds( 10 ) );
     dataLocation.EnsureCreated();
     await File.WriteAllTextAsync(
       dataLocation.AgentEnrollmentFile,
@@ -149,8 +143,7 @@ internal sealed class StatusCommandTests {
         ]
         """
     );
-
-    await using var coordinator = CoordinatorHost.Build(
+    await using var coordinator = await RunningCoordinatorHost.StartAsync(
       controlPort,
       null,
       NullLogger.Instance,
@@ -158,10 +151,9 @@ internal sealed class StatusCommandTests {
     );
 
     try {
-      await coordinator.StartAsync();
       var settings = new CliSettings {
         ActiveEnvironment = "site-a",
-        Environments = [new EnvironmentSetting( "site-a", $"http://127.0.0.1:{controlPort}" )]
+        Environments = [new EnvironmentSetting( "site-a", coordinator.Address.ToString() )]
       };
       settings.Write( NullLogger.Instance, SettingsLocation );
 
@@ -174,7 +166,7 @@ internal sealed class StatusCommandTests {
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
         Assert.That( error.ToString(), Is.Empty );
-        Assert.That( rendered, Does.Contain( $"site-a @ http://127.0.0.1:{controlPort}" ) );
+        Assert.That( rendered, Does.Contain( $"site-a @ {coordinator.Address}" ) );
         Assert.That( rendered, Does.Contain( "Status: Ready" ) );
         Assert.That( rendered, Does.Contain( "Agents (1):" ) );
         Assert.That(
@@ -185,14 +177,6 @@ internal sealed class StatusCommandTests {
     }
     finally {
       await coordinator.StopAsync();
-      agentCancellation.Cancel();
-      try {
-        await agentTask;
-      }
-      catch ( OperationCanceledException ) when ( agentCancellation.IsCancellationRequested ) {
-        // Expected when stopping the test agent.
-      }
-
       Directory.Delete( dataLocation.Directory, true );
     }
   }

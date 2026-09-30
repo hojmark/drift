@@ -1,6 +1,7 @@
 stryker-config:
   solution: "Drift.sln"
   test-case-filter: "Category!=E2E"
+  project: "src/Diff/Diff.csproj"
   #test-runner: "mtp" # TODO migrate all tests to MTP
   mutation-level": "Basic"
   baseline:

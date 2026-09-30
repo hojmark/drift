@@ -1,0 +1,23 @@
+name: 🧟 Stryker
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+
+jobs:
+  stryker:
+    name: Run Stryker
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Run Stryker
+        run: >
+          dotnet stryker --with-baseline:main -v 'ci'
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: strkyer-output
+          path: StrykerOutput/
+          if-no-files-found: error

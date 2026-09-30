@@ -75,4 +75,5 @@ jobs:
         run: >
           docker run --rm anchore/grype:latest
           --fail-on high
+          --only-fixed
           hojmark/drift:latest

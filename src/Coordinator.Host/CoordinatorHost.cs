@@ -17,7 +17,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Coordinator.Host;
 
-// TODO mostly a duplicate of AgentHostse
 public static class CoordinatorHost {
   public static Task Run(
     ushort controlPort,
@@ -44,8 +43,6 @@ public static class CoordinatorHost {
     builder.Services.AddSingleton( logger );
     builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
 
-    // TODO consolidate all the addmessaging* into single configurable extension that can be used for all roles
-    // (CLI, Agent, Coordinator) with different config flags. Should be high-level (domain preferred)
     if ( agentPort is not null ) {
       builder.Services.AddMessagingServer( options => {
         options.EnableDetailedErrors = true;

@@ -168,7 +168,7 @@ internal sealed class AgentTestHarness : IAsyncDisposable {
 
   private async Task StartServerAsync() {
     _runningServer = await DriftTestCli.StartServerAsync(
-      $"--port {_controlPort} --no-agent",
+      $"--port {_controlPort} --no-agent-port",
       _cancellationTokenSource.Token,
       BuildServerConfiguration()
     );

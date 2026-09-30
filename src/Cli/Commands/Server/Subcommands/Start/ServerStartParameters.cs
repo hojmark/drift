@@ -6,33 +6,39 @@ namespace Drift.Cli.Commands.Server.Subcommands.Start;
 
 internal record ServerStartParameters : BaseParameters {
   internal static class Options {
+    // TODO implement
     internal static readonly Option<bool> Daemon = new("--daemon", "-d") {
       Description = "Run the server as a background daemon"
     };
 
-    internal static readonly Option<bool> NoAgent = new("--no-agent") {
+    // TODO implement
+    internal static readonly Option<bool> NoLocalAgent = new("--no-local-agent") {
+      Description =
+        "Do not host a local agent alongside the coordinator. A remote agent is needed to perform agent tasks."
+    };
+
+    internal static readonly Option<bool> NoAgentPort = new("--no-agent-port") {
       Description = "Do not listen for incoming agent connections. Outbound connections are still possible."
     };
 
     internal static readonly Option<ushort> PortClient = new("--port", "-p") {
       DefaultValueFactory = _ => Ports.AgentDefault - 5,
-      Description =
-        "Set the client port (client-to-server communication). Must match the port used by the client / CLI."
+      Description = "Set the client port (client-to-server communication)."
     };
 
     internal static readonly Option<ushort> PortAgent = new("--port-agent", "-pa") {
       DefaultValueFactory = _ => Ports.AgentDefault,
-      Description = "Set the agent port (agent-to-server communication). Must match the port used by the agent."
+      Description = "Set the inbound agent port (agent-to-server communication)."
     };
   }
 
   internal ServerStartParameters( ParseResult parseResult ) : base( parseResult ) {
-    PortS = parseResult.GetValue( Options.PortClient );
+    Port = parseResult.GetValue( Options.PortClient );
     PortAgent = parseResult.GetValue( Options.PortAgent );
-    NoAgent = parseResult.GetValue( Options.NoAgent );
+    NoAgentPort = parseResult.GetValue( Options.NoAgentPort );
   }
 
-  public ushort PortS {
+  public ushort Port {
     get;
     set;
   }
@@ -42,7 +48,7 @@ internal record ServerStartParameters : BaseParameters {
     set;
   }
 
-  public bool NoAgent {
+  public bool NoAgentPort {
     get;
     set;
   }

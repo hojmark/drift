@@ -14,7 +14,7 @@ internal class ServerStartCommand : CommandBase<ServerStartParameters, ServerSta
   internal ServerStartCommand( IServiceProvider provider ) : base( "start", "Start a local Drift server", provider ) {
     Options.Add( ServerStartParameters.Options.PortClient );
     Options.Add( ServerStartParameters.Options.PortAgent );
-    Options.Add( ServerStartParameters.Options.NoAgent );
+    Options.Add( ServerStartParameters.Options.NoAgentPort );
   }
 
   protected override ServerStartParameters CreateParameters( ParseResult result ) {
@@ -48,8 +48,8 @@ internal class ServerStartCommandHandler(
 
     try {
       await CoordinatorHost.Run(
-        parameters.PortS,
-        parameters.NoAgent ? null : parameters.PortAgent,
+        parameters.Port,
+        parameters.NoAgentPort ? null : parameters.PortAgent,
         logger,
         hostServiceConfiguration?.Configure,
         cancellationToken,

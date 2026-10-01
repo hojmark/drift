@@ -16,18 +16,18 @@ namespace Drift.Agent.Host;
 
 public static class AgentHost {
   public static Task Run(
-    ushort? port,
+    AgentConfiguration configuration,
     ILogger logger,
     Action<IServiceCollection>? configureServices,
     CancellationToken cancellationToken,
     TaskCompletionSource? ready = null
   ) {
-    var app = Build( port, logger, configureServices, ready );
+    var app = Build( configuration, logger, configureServices, ready );
     return app.RunAsync( cancellationToken );
   }
 
   private static WebApplication Build(
-    ushort? port,
+    AgentConfiguration configuration,
     ILogger logger,
     Action<IServiceCollection>? configureServices = null,
     TaskCompletionSource? ready = null
@@ -38,7 +38,7 @@ public static class AgentHost {
     builder.Services.AddSingleton( logger );
     builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
 
-    if ( port is not null ) {
+    if ( configuration.Port is not null ) {
       builder.Services.AddMessagingServer( options => {
         options.EnableDetailedErrors = true;
       } );
@@ -55,9 +55,9 @@ public static class AgentHost {
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
-      if ( port is not null ) {
+      if ( configuration.Port is not null ) {
         options.ListenAnyIP(
-          port.Value,
+          configuration.Port.Value,
           o => o.Protocols = HttpProtocols.Http2 // gRPC requires HTTP/2
         );
       }
@@ -70,7 +70,7 @@ public static class AgentHost {
 
     app.Services.GetRequiredService<IAgentDataLocation>().EnsureCreated();
 
-    if ( port is not null ) {
+    if ( configuration.Port is not null ) {
       app.MapMessagingServerEndpoints();
     }
 
@@ -79,8 +79,8 @@ public static class AgentHost {
         "Agent data directory: {DataDirectory}",
         app.Services.GetRequiredService<IAgentDataLocation>().Directory
       );
-      if ( port is not null ) {
-        logger.LogInformation( "Port: {Port} (gRPC)", port.Value );
+      if ( configuration.Port is not null ) {
+        logger.LogInformation( "Port: {Port} (gRPC)", configuration.Port.Value );
       }
       else {
         logger.LogWarning(

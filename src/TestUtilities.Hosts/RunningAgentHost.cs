@@ -29,7 +29,7 @@ public sealed class RunningAgentHost : IAsyncDisposable {
     var host = new RunningAgentHost(
       port,
       cancellation,
-      AgentHost.Run( port, logger, configureServices, cancellation.Token, ready )
+      AgentHost.Run( new AgentConfiguration { Port = port }, logger, configureServices, cancellation.Token, ready )
     );
 
     try {

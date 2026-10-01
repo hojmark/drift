@@ -47,7 +47,7 @@ internal class AgentStartCommandHandler(
 
     try {
       await AgentHost.Run(
-        parameters.Port,
+        new AgentConfiguration { Port = parameters.Port },
         logger,
         hostServiceConfiguration?.Configure,
         cancellationToken,

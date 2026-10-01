@@ -2,7 +2,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.TestUtilities.IO;
 
-public sealed class StringLogger( TextWriter? writer = null ) : ILogger {
+public sealed class StringLogger( TextWriter? writer = null, LogLevel minimumLogLevel = LogLevel.Information )
+  : ILogger {
   private readonly TextWriter _writer = writer ?? new StringWriter();
 
   public void Log<TState>(
@@ -27,7 +28,7 @@ public sealed class StringLogger( TextWriter? writer = null ) : ILogger {
   }
 
   public bool IsEnabled( LogLevel logLevel ) {
-    return logLevel != LogLevel.None;
+    return logLevel >= minimumLogLevel;
   }
 
   public IDisposable? BeginScope<TState>( TState state ) where TState : notnull {

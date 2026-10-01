@@ -24,18 +24,17 @@ public sealed class RunningCoordinatorHost : IAsyncDisposable {
   }
 
   public static async Task<RunningCoordinatorHost> StartAsync(
-    ushort controlPort,
-    ushort? agentPort,
+    CoordinatorConfiguration configuration,
     ILogger logger,
     Action<IServiceCollection>? configureServices = null
   ) {
     var cancellation = new CancellationTokenSource();
     var ready = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
-    var address = new Uri( $"http://127.0.0.1:{controlPort}" );
+    var address = new Uri( $"http://127.0.0.1:{configuration.Port}" );
     var host = new RunningCoordinatorHost(
       address,
       cancellation,
-      CoordinatorHost.Run( controlPort, agentPort, logger, configureServices, cancellation.Token, ready )
+      CoordinatorHost.Run( configuration, logger, configureServices, cancellation.Token, ready )
     );
 
     try {

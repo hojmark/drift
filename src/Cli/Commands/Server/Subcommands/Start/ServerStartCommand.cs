@@ -48,8 +48,9 @@ internal class ServerStartCommandHandler(
 
     try {
       await CoordinatorHost.Run(
-        parameters.Port,
-        parameters.NoAgentPort ? null : parameters.PortAgent,
+        new CoordinatorConfiguration {
+          Port = parameters.Port, AgentPort = parameters.NoAgentPort ? null : parameters.PortAgent
+        },
         logger,
         hostServiceConfiguration?.Configure,
         cancellationToken,

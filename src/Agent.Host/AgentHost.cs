@@ -16,7 +16,7 @@ namespace Drift.Agent.Host;
 
 public static class AgentHost {
   public static Task Run(
-    ushort port,
+    ushort? port,
     ILogger logger,
     Action<IServiceCollection>? configureServices,
     CancellationToken cancellationToken,
@@ -27,7 +27,7 @@ public static class AgentHost {
   }
 
   private static WebApplication Build(
-    ushort port,
+    ushort? port,
     ILogger logger,
     Action<IServiceCollection>? configureServices = null,
     TaskCompletionSource? ready = null
@@ -38,9 +38,12 @@ public static class AgentHost {
     builder.Services.AddSingleton( logger );
     builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
 
-    builder.Services.AddMessagingServer( options => {
-      options.EnableDetailedErrors = true;
-    } );
+    if ( port is not null ) {
+      builder.Services.AddMessagingServer( options => {
+        options.EnableDetailedErrors = true;
+      } );
+    }
+
     builder.Services.AddMessagingClient();
     var messagingOptions = new MessagingOptions {
       MessageAssembly = typeof(AgentProtocolMessagesAssemblyMarker).Assembly
@@ -52,10 +55,12 @@ public static class AgentHost {
     configureServices?.Invoke( builder.Services );
 
     builder.WebHost.ConfigureKestrel( options => {
-      options.ListenAnyIP(
-        port,
-        o => o.Protocols = HttpProtocols.Http2 // gRPC requires HTTP/2
-      );
+      if ( port is not null ) {
+        options.ListenAnyIP(
+          port.Value,
+          o => o.Protocols = HttpProtocols.Http2 // gRPC requires HTTP/2
+        );
+      }
     } );
 
     var app = builder.Build();
@@ -63,31 +68,26 @@ public static class AgentHost {
     // Note: code reading StoppingToken before this point will get CancellationToken.None
     messagingOptions.StoppingToken = app.Lifetime.ApplicationStopping;
 
-    // Unreachable while Kestrel ListenOptions.Protocols is HTTP/2-only (browsers can't speak HTTP/2 without TLS),
-    // but kept here for when this is moved to its own HTTP/1.1 port.
-    // Setting it to Http1AndHttp2 is not an option since that degrades ALL connections, including gRPC
-    // calls, to HTTP/1.1, which then fail against gRPC's HTTP/2-only endpoints with HTTP_1_1_REQUIRED.
-    // See https://github.com/grpc/grpc-dotnet/issues/979. So this must stay HTTP/2-only until either
-    // TLS is added or the friendly "/" page below is moved to its own HTTP/1.1-only port.
-    // app.MapGet( "/", () =>
-    //   // TODO Render figlet using same flf as in the help command
-    //   """
-    //     ___          _    __   _
-    //    |   \   _ _  (_)  / _| | |_
-    //    | |) | | '_| | | |  _| |  _|
-    //    |___/  |_|   |_| |_|    \__|
-    //   """
-    //   +
-    //   "\n\nAgent"
-    // );
-    app.MapMessagingServerEndpoints();
+    app.Services.GetRequiredService<IAgentDataLocation>().EnsureCreated();
+
+    if ( port is not null ) {
+      app.MapMessagingServerEndpoints();
+    }
 
     app.Lifetime.ApplicationStarted.Register( () => {
       logger.LogDebug(
         "Agent data directory: {DataDirectory}",
         app.Services.GetRequiredService<IAgentDataLocation>().Directory
       );
-      logger.LogInformation( "Listening for inbound server connections on port {Port} (gRPC)", port );
+      if ( port is not null ) {
+        logger.LogInformation( "Port: {Port} (gRPC)", port.Value );
+      }
+      else {
+        logger.LogWarning(
+          "Not listening for inbound server connections. Outbound connections are still possible."
+        );
+      }
+
       logger.LogInformation( "Agent started" );
       ready?.TrySetResult();
     } );
@@ -97,6 +97,19 @@ public static class AgentHost {
     app.Lifetime.ApplicationStopped.Register( () => {
       logger.LogInformation( "Agent stopped" );
     } );
+
+    logger.LogInformation(
+      """
+
+       ___          _    __   _
+      |   \   _ _  (_)  / _| | |_
+      | |) | | '_| | | |  _| |  _|
+      |___/  |_|   |_| |_|    \__| AGENT 
+
+
+      """
+    );
+    logger.LogInformation( "Version: {Version}", DriftMetadata.Version );
 
     return app;
   }

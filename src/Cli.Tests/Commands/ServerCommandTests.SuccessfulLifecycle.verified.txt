@@ -2,8 +2,15 @@
 Distributed scanning via agents is a preview feature and should be used with caution.
 Communication is unencrypted and unauthenticated. Do not use on untrusted networks.
 -------------------------------------------------------------------------------------
-Control API listening on port 51510 (HTTP)
-Listening for inbound agent connections on port 51515 (gRPC)
+
+ ___          _    __   _
+|   \   _ _  (_)  / _| | |_
+| |) | | '_| | | |  _| |  _|
+|___/  |_|   |_| |_|    \__| SERVER 
+
+Version: <version>
+Control API port: 51510 (HTTP)
+Agent port: 51515 (gRPC)
 Server started
 Server stopping...
 Server stopped

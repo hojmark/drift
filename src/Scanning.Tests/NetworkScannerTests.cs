@@ -6,6 +6,7 @@ using Drift.Domain.Scan;
 using Drift.Scanning.Scanners;
 using Drift.Scanning.Tests.Utils;
 using Drift.TestUtilities.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Scanning.Tests;
 
@@ -34,7 +35,7 @@ internal sealed class ScanOrchestratorTests {
         ? new WindowsPingSubnetScanner( pingTool )
         : throw new PlatformNotSupportedException();
 
-    var logger = new StringLogger();
+    var logger = new StringLogger( minimumLogLevel: LogLevel.Debug );
 
     var scanOrchestrator = new ScanOrchestrator( new PredefinedSubnetScannerFactory( subnetScanner ) );
 

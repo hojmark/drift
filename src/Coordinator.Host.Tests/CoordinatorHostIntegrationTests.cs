@@ -11,6 +11,7 @@ using Drift.Domain;
 using Drift.Domain.Scan;
 using Drift.Scanning.Scanners.Factories;
 using Drift.Scanning.Subnets.Interface;
+using Drift.TestUtilities;
 using Drift.TestUtilities.Hosts;
 using Drift.TestUtilities.IO;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,9 +24,10 @@ namespace Drift.Coordinator.Host.Tests;
 internal sealed class CoordinatorHostIntegrationTests {
   [Test]
   public async Task ServerStatus_IsAvailable() {
-    var controlPort = GetFreePort();
-    var agentPort = GetFreePort();
-    await using var app = await RunningCoordinatorHost.StartAsync( controlPort, agentPort, NullLogger.Instance );
+    await using var app = await RunningCoordinatorHost.StartAsync(
+      new CoordinatorConfiguration { Port = GetFreePort(), AgentPort = GetFreePort() },
+      NullLogger.Instance
+    );
     using var client = app.CreateHttpClient();
     using var response = await client.GetAsync( "/api/v1/status" );
 
@@ -37,9 +39,10 @@ internal sealed class CoordinatorHostIntegrationTests {
 
   [Test]
   public async Task ApiDocsUi_IsAvailable() {
-    var controlPort = GetFreePort();
-    var agentPort = GetFreePort();
-    await using var app = await RunningCoordinatorHost.StartAsync( controlPort, agentPort, NullLogger.Instance );
+    await using var app = await RunningCoordinatorHost.StartAsync(
+      new CoordinatorConfiguration { Port = GetFreePort(), AgentPort = GetFreePort() },
+      NullLogger.Instance
+    );
     using var client = app.CreateHttpClient();
 
     using var uiResponse = await client.GetAsync( "/api" );
@@ -58,8 +61,7 @@ internal sealed class CoordinatorHostIntegrationTests {
     var agentPort = GetFreePort();
     var dataLocation = new TemporaryCoordinatorDataLocation();
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
-      controlPort,
-      agentPort,
+      new CoordinatorConfiguration { Port = controlPort, AgentPort = agentPort },
       NullLogger.Instance,
       services => services.AddSingleton<ICoordinatorDataLocation>( dataLocation )
     );
@@ -125,8 +127,9 @@ internal sealed class CoordinatorHostIntegrationTests {
     );
 
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
-      controlPort,
-      coordinatorAgentPort,
+      new CoordinatorConfiguration {
+        Port = controlPort, AgentPort = coordinatorAgentPort, EnableRequestLogging = false
+      },
       coordinatorLogger,
       services => {
         services.AddSingleton<ICoordinatorDataLocation>( dataLocation );
@@ -173,11 +176,13 @@ internal sealed class CoordinatorHostIntegrationTests {
       }
 
       await Verify( GetInformationLogs( agentLogger, agentPort ) )
-        .UseFileName( "AgentHost_CliOutput" );
+        .UseFileName( "AgentHost_CliOutput" )
+        .ScrubVersion();
       await Verify(
           GetInformationLogs( coordinatorLogger, controlPort, coordinatorAgentPort, agentPort )
         )
-        .UseFileName( "CoordinatorHost_CliOutput" );
+        .UseFileName( "CoordinatorHost_CliOutput" )
+        .ScrubVersion();
     }
     finally {
       await coordinator.StopAsync();
@@ -215,8 +220,9 @@ internal sealed class CoordinatorHostIntegrationTests {
     );
 
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
-      controlPort,
-      coordinatorAgentPort,
+      new CoordinatorConfiguration {
+        Port = controlPort, AgentPort = coordinatorAgentPort, EnableRequestLogging = false
+      },
       coordinatorLogger,
       services => {
         services.AddSingleton<ICoordinatorDataLocation>( dataLocation );
@@ -296,9 +302,11 @@ internal sealed class CoordinatorHostIntegrationTests {
           "<time>"
         ) );
       await Verify( GetInformationLogs( agentLogger, agentPort ) )
-        .UseFileName( "AgentHost_DistributedScanCliOutput" );
+        .UseFileName( "AgentHost_DistributedScanCliOutput" )
+        .ScrubVersion();
       await Verify( GetInformationLogs( coordinatorLogger, controlPort, coordinatorAgentPort, agentPort ) )
-        .UseFileName( "CoordinatorHost_DistributedScanCliOutput" );
+        .UseFileName( "CoordinatorHost_DistributedScanCliOutput" )
+        .ScrubVersion();
     }
     finally {
       await coordinator.StopAsync();
@@ -314,15 +322,7 @@ internal sealed class CoordinatorHostIntegrationTests {
   }
 
   private static string GetInformationLogs( StringLogger logger, params ushort[] ports ) {
-    var output = logger.ToString()
-      .Split( System.Environment.NewLine, StringSplitOptions.RemoveEmptyEntries )
-      .Where( line =>
-        line.StartsWith( "[INF]", StringComparison.Ordinal ) &&
-        !line.Contains( "HTTP request", StringComparison.Ordinal ) &&
-        !line.Contains( "Inbound stream", StringComparison.Ordinal ) &&
-        !line.Contains( "Creating Inbound", StringComparison.Ordinal ) &&
-        !line.Contains( "Stream #", StringComparison.Ordinal )
-      );
+    var output = logger.ToString().Split( System.Environment.NewLine );
 
     var result = string.Join( System.Environment.NewLine, output );
     foreach ( var port in ports ) {
@@ -331,6 +331,6 @@ internal sealed class CoordinatorHostIntegrationTests {
 
     result = Regex.Replace( result, "[0-9a-f]{8}-[0-9a-f-]{27}", "<scan-id>" );
 
-    return result + System.Environment.NewLine;
+    return result;
   }
 }

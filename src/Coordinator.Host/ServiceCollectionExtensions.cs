@@ -11,15 +11,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Drift.Coordinator.Host;
 
 internal static class ServiceCollectionExtensions {
-  /// <summary>
-  /// Registers the coordinator services used by the Control API and remote Agent requests.
-  /// </summary>
-  /// <param name="services">The service collection to add coordinator services to.</param>
   internal static void AddCoordinatorServices( this IServiceCollection services ) {
     services.AddScanning();
 
     services.AddSingleton<IDriftDataLocation, DefaultDriftDataLocation>();
     services.AddSingleton<ICoordinatorDataLocation, DefaultCoordinatorDataLocation>();
+
     services.AddSingleton<ICoordinatorSpecStore, FileCoordinatorSpecStore>();
     services.AddSingleton<CoordinatorSpec>();
     services.AddSingleton<IAgentEnrollmentStore, FileAgentEnrollmentStore>();
@@ -35,6 +32,7 @@ internal static class ServiceCollectionExtensions {
       return new InMemoryAgentDirectory( initialAgents );
     } );
     services.AddSingleton<AgentGateway>();
+
     services.AddSingleton<AgentManagementService>();
     services.AddSingleton<SpecService>();
     services.AddSingleton<ScanService>();

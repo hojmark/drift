@@ -263,7 +263,7 @@ public sealed class ScanService(
   }
 
   private sealed class ScanState( Guid id ) {
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private ScanStatus _status = ScanStatus.Queued;
     private byte _progress;
     private long _eventId;

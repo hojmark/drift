@@ -14,7 +14,7 @@ internal sealed class MessageStreamManager(
   MessagingOptions options
 ) : IMessageStreamManager {
   private readonly Dictionary<AgentId, Connection> _connections = new();
-  private readonly object _lock = new();
+  private readonly Lock _lock = new();
 
   public IMessageStreamConnection GetOrCreate( Uri peerAddress, AgentId id ) {
     logger.LogDebug(

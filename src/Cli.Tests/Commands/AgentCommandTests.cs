@@ -1,5 +1,6 @@
 using Drift.Cli.Abstractions;
 using Drift.Cli.Tests.Utils;
+using Drift.TestUtilities;
 
 namespace Drift.Cli.Tests.Commands;
 
@@ -36,7 +37,7 @@ internal sealed class AgentCommandTests {
 
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-      await Verify( output.ToString() );
+      await Verify( output.ToString() ).ScrubVersion();
       Assert.That( error.ToString(), Is.Empty );
     }
   }

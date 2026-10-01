@@ -7,4 +7,8 @@ namespace Drift.Agent.Host.State;
 /// </summary>
 public sealed class DefaultAgentDataLocation( IDriftDataLocation driftDataLocation ) : IAgentDataLocation {
   public string Directory => Path.Combine( driftDataLocation.Directory, "agent" );
+
+  public void EnsureCreated() {
+    System.IO.Directory.CreateDirectory( Directory );
+  }
 }

@@ -7,6 +7,7 @@ using Drift.Cli.Settings.V1_preview.Environments;
 using Drift.Cli.Tests.Utils;
 using Drift.Cli.Tests.Utils.Coordinator;
 using Drift.Common.IO;
+using Drift.Coordinator.Host;
 using Drift.TestUtilities.Hosts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -144,8 +145,7 @@ internal sealed class StatusCommandTests {
         """
     );
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
-      controlPort,
-      null,
+      new CoordinatorConfiguration { Port = controlPort },
       NullLogger.Instance,
       services => services.AddSingleton<ICoordinatorDataLocation>( dataLocation )
     );

@@ -19,20 +19,18 @@ namespace Drift.Coordinator.Host;
 
 public static class CoordinatorHost {
   public static Task Run(
-    ushort port,
-    ushort? agentPort,
+    CoordinatorConfiguration configuration,
     ILogger logger,
     Action<IServiceCollection>? configureServices,
     CancellationToken cancellationToken,
     TaskCompletionSource? ready = null
   ) {
-    var app = Build( port, agentPort, logger, configureServices, ready );
+    var app = Build( configuration, logger, configureServices, ready );
     return app.RunAsync( cancellationToken );
   }
 
   private static WebApplication Build(
-    ushort port,
-    ushort? agentPort,
+    CoordinatorConfiguration configuration,
     ILogger logger,
     Action<IServiceCollection>? configureServices = null,
     TaskCompletionSource? ready = null
@@ -43,7 +41,7 @@ public static class CoordinatorHost {
     builder.Services.AddSingleton( logger );
     builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
 
-    if ( agentPort is not null ) {
+    if ( configuration.AgentPort is not null ) {
       builder.Services.AddMessagingServer( options => {
         options.EnableDetailedErrors = true;
       } );
@@ -62,16 +60,16 @@ public static class CoordinatorHost {
 
     builder.WebHost.ConfigureKestrel( options => {
       // Agent gRPC
-      if ( agentPort is not null ) {
+      if ( configuration.AgentPort is not null ) {
         options.ListenAnyIP(
-          agentPort.Value,
+          configuration.AgentPort.Value,
           o => o.Protocols = HttpProtocols.Http2 // gRPC requires HTTP/2
         );
       }
 
       // UI HTTP
       options.ListenAnyIP(
-        port,
+        configuration.Port,
         o => o.Protocols = HttpProtocols.Http1
       );
     } );
@@ -84,11 +82,13 @@ public static class CoordinatorHost {
     app.Services.GetRequiredService<ICoordinatorDataLocation>().EnsureCreated();
 
     app.AddGlobalExceptionHandling( logger );
-    app.AddRequestLogging( logger );
+    if ( configuration.EnableRequestLogging ) {
+      app.AddRequestLogging( logger );
+    }
 
     app.MapUi();
     app.MapCoordinatorApi();
-    if ( agentPort is not null ) {
+    if ( configuration.AgentPort is not null ) {
       app.MapMessagingServerEndpoints();
     }
 
@@ -99,31 +99,18 @@ public static class CoordinatorHost {
       }
     );
 
-    /*logger.LogInformation( "\n" +
-                           $"""
-                             ___          _    __   _
-                            |   \   _ _  (_)  / _| | |_
-                            | |) | | '_| | | |  _| |  _|
-                            |___/  |_|   |_| |_|    \__|
-                            Agent
-
-                            Version: 1.2.3
-                            API docs: /api
-                            """
-    );*/
-
     app.Lifetime.ApplicationStarted.Register( () => {
       logger.LogDebug(
         "Coordinator data directory: {DataDirectory}",
         app.Services.GetRequiredService<ICoordinatorDataLocation>().Directory
       );
-      logger.LogInformation( "Control API listening on port {Port} (HTTP)", port );
-      if ( agentPort is not null ) {
-        logger.LogInformation( "Listening for inbound agent connections on port {Port} (gRPC)", agentPort.Value );
+      logger.LogInformation( "Control API port: {Port} (HTTP)", configuration.Port );
+      if ( configuration.AgentPort is not null ) {
+        logger.LogInformation( "Agent port: {Port} (gRPC)", configuration.AgentPort.Value );
       }
       else {
         logger.LogWarning(
-          "The server is not listening for inbound agent connections. Outbound connections are still possible."
+          "Not listening for inbound agent connections. Outbound connections are still possible."
         );
       }
 
@@ -136,6 +123,19 @@ public static class CoordinatorHost {
     app.Lifetime.ApplicationStopped.Register( () => {
       logger.LogInformation( "Server stopped" );
     } );
+
+    logger.LogInformation(
+      """
+
+       ___          _    __   _
+      |   \   _ _  (_)  / _| | |_
+      | |) | | '_| | | |  _| |  _|
+      |___/  |_|   |_| |_|    \__| SERVER 
+
+
+      """
+    );
+    logger.LogInformation( "Version: {Version}", DriftMetadata.Version );
 
     return app;
   }

@@ -1,5 +1,13 @@
-﻿[INF] Control API listening on port <port> (HTTP)
-[INF] Listening for inbound agent connections on port <port> (gRPC)
+﻿[INF] 
+ ___          _    __   _
+|   \   _ _  (_)  / _| | |_
+| |) | | '_| | | |  _| |  _|
+|___/  |_|   |_| |_|    \__| SERVER 
+
+
+[INF] Version: <version>
+[INF] Control API port: <port> (HTTP)
+[INF] Agent port: <port> (gRPC)
 [INF] Server started
 [INF] Agent enrollment requested for agent_one
 [INF] Agent agent_one enrolled and connected
@@ -9,3 +17,4 @@
 [INF] Coordinator scan <scan-id> assigned 1 subnets to agents and will scan 0 locally
 [INF] Coordinator scan <scan-id> starting remote scan of 10.42.0.0/24 on agent agent_one
 [INF] Coordinator scan <scan-id> completed with 1 subnet results and status Success
+

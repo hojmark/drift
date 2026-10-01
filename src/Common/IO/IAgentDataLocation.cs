@@ -4,4 +4,6 @@ public interface IAgentDataLocation {
   string Directory {
     get;
   }
+
+  void EnsureCreated();
 }

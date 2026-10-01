@@ -16,15 +16,15 @@ internal sealed class InboundMessageService( IMessageStreamManager messageStream
     ServerCallContext context
   ) {
     try {
-      logger.LogInformation( "Inbound stream starting..." );
+      logger.LogDebug( "Inbound stream starting..." );
       var connection = messageStreamManager.Create( requestStream, responseStream, context );
-      logger.LogInformation( "Stream #{StreamNo} created", connection.Stream.InstanceNo );
+      logger.LogDebug( "Stream #{StreamNo} created", connection.Stream.InstanceNo );
 
       // The stream is closed when the method returns.
       // We thus wait for the read loop to complete (meaning that this client is no longer interested in the stream).
       await connection.Stream.ReadTask;
 
-      logger.LogInformation( "Stream #{StreamNo} completed", connection.Stream.InstanceNo );
+      logger.LogDebug( "Stream #{StreamNo} completed", connection.Stream.InstanceNo );
     }
     catch ( Exception ex ) {
       logger.LogError( ex, "Inbound stream failed" );

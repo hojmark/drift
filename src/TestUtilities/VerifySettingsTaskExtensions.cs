@@ -22,6 +22,13 @@ public static partial class VerifySettingsTaskExtensions {
           Regex.Replace( line, "Data directory: .+", "Data directory: <data-directory>" )
         );
     }
+
+    public SettingsTask ScrubVersion() {
+      return settings
+        .ScrubLinesWithReplace( line =>
+          Regex.Replace( line, "Version: .+", "Version: <version>" )
+        );
+    }
   }
 
   [GeneratedRegex( "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" )]

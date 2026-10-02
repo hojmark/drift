@@ -4,6 +4,7 @@ This directory contains [Containerlab](https://containerlab.dev/) topologies for
 
 ## Prerequisites
 
+- Linux
 - [Containerlab](https://containerlab.dev/) installed
 - Docker, or Podman with Docker CLI shim
 - Drift Docker image: `localhost:5000/drift:dev`
@@ -15,36 +16,23 @@ This directory contains [Containerlab](https://containerlab.dev/) topologies for
 dotnet nuke Test
 
 # Run only containerlab tests
-dotnet nuke Test_E2EClab
+dotnet nuke TestE2E_Clab
 
 # Run a single topology for debugging
-dotnet nuke Test_E2EClab --clab-topology simple-test
+dotnet nuke TestE2E_Clab --clab-topology simple-test
 
 # Keep containers running after tests (for debugging)
-dotnet nuke Test_E2EClab --keep-clab-running
+dotnet nuke TestE2E_Clab --keep-clab-running
 ```
 
-## Agent identity
-
-Agents in these topologies use the `--id` flag to set a fixed, predictable agent ID:
-
-```yaml
-agent1:
-  kind: linux
-  image: localhost:5000/drift:dev
-  cmd: agent start --adoptable --port 5000 --id agentid_test1
-```
-
-The `--id` flag is hidden from the help output and logs a warning when used — it is only for testing.
-
-In production, agents generate and persist their own ID at `/root/.config/drift/agent/agent-identity.json`.
+The target deploys and destroys each topology automatically. Use `--skip-clab-deploy` to run against an already deployed topology.
 
 ## NUKE target parameters
 
 | Parameter | Description |
 | --- | --- |
 | `--clab-topology <name>` | Run only the named topology (e.g. `simple-test`). Runs all if omitted. |
-| `--skip-clab-deploy` | Skip deployment — useful when topology is already running |
+| `--skip-clab-deploy` | Skip deployment — useful when the topology is already running |
 | `--keep-clab-running` | Keep containers running after tests for debugging |
 
 ## Troubleshooting

@@ -40,7 +40,7 @@ topology:
     agent1:
       kind: linux
       image: localhost:5000/drift:dev
-      cmd: agent start --adoptable --port 5000 --id agent_subnet_agent1
+      cmd: agent start --port 5000
       exec:
         - ip link add br0 type bridge
         - ip link set eth1 master br0
@@ -55,7 +55,7 @@ topology:
     agent2:
       kind: linux
       image: localhost:5000/drift:dev
-      cmd: agent start --adoptable --port 5000 --id agent_subnet_agent2
+      cmd: agent start --port 5000
       exec:
         - ip link add br0 type bridge
         - ip link set eth1 master br0

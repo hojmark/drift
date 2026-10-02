@@ -8,8 +8,6 @@ namespace Drift.Agent.Host.Scan;
 
 internal sealed class ProgressUpdatePolicy {
   private readonly IStreamingMessageResponder<ScanSubnetProgress, ScanSubnetResponse> _responder;
-  private readonly CidrBlock _cidr;
-  private readonly ILogger _logger;
 
   private byte _lastProgressPercentage;
   private uint _lastDeviceCount;
@@ -19,14 +17,8 @@ internal sealed class ProgressUpdatePolicy {
     get;
   }
 
-  public ProgressUpdatePolicy(
-    IStreamingMessageResponder<ScanSubnetProgress, ScanSubnetResponse> responder,
-    CidrBlock cidr,
-    ILogger logger
-  ) {
+  public ProgressUpdatePolicy( IStreamingMessageResponder<ScanSubnetProgress, ScanSubnetResponse> responder ) {
     _responder = responder;
-    _cidr = cidr;
-    _logger = logger;
     Handle = OnResultUpdated;
   }
 
@@ -53,11 +45,5 @@ internal sealed class ProgressUpdatePolicy {
     };
 
     _responder.SendProgress( progressUpdate );
-
-    _logger.LogDebug(
-      "Sent progress update: {Progress}% for {Cidr}",
-      progressPercentage,
-      _cidr
-    );
   }
 }

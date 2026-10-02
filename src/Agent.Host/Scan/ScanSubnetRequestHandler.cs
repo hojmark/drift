@@ -20,7 +20,7 @@ internal sealed class ScanSubnetRequestHandler(
     Logger.LogInformation( "Starting scan of {Cidr}", request.Cidr );
 
     var subnetScanner = subnetScannerFactory.Get( request.Cidr );
-    var policy = new ProgressUpdatePolicy( responder, request.Cidr, Logger );
+    var policy = new ProgressUpdatePolicy( responder );
 
     subnetScanner.ResultUpdated += policy.Handle;
 

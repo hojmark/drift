@@ -30,8 +30,8 @@ internal sealed class AgentHostListenerTests {
     );
 
     try {
-      await ready.Task.WaitAsync( TimeSpan.FromSeconds( 10 ) );
-      var boundAddresses = await addresses.Task.WaitAsync( TimeSpan.FromSeconds( 10 ) );
+      await ready.Task.WaitAsync( TimeSpan.FromSeconds( 10 ), cancellation.Token );
+      var boundAddresses = await addresses.Task.WaitAsync( TimeSpan.FromSeconds( 10 ), cancellation.Token );
 
       Assert.That( boundAddresses, Is.Empty );
     }

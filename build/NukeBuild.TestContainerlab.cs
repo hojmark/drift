@@ -28,8 +28,6 @@ sealed partial class NukeBuild {
 
   /// <summary>
   /// Defines all Containerlab integration test cases.
-  /// Each test case specifies a topology, its spec file, the CLI container name,
-  /// and assertions to validate the scan output.
   /// </summary>
   private static readonly ContainerlabTestCase[] TestCases = [
     new(
@@ -124,6 +122,7 @@ sealed partial class NukeBuild {
     Log.Warning( "Only selecting test case(s) matching topology '{Topology}'", ClabTopology );
 
     var selected = TestCases.Where( tc => tc.Name == ClabTopology ).ToArray();
+
     if ( !selected.Any() ) {
       throw new Exception(
         $"No test case found matching topology '{ClabTopology}'. " +
@@ -156,8 +155,9 @@ sealed partial class NukeBuild {
         await DeployTopologyAsync( testCase.TopologyFile );
       }
 
-      await RunScanAndAssertAsync( specFile, testCase );
-      return true;
+      var scanResult = await RunScan( specFile, testCase );
+
+      return AssertMatches( testCase, scanResult.Output.Select( o => o.Text ) );
     }
     catch ( Exception ex ) {
       Log.Error( "Test case '{Name}' failed: {Error}", testCase.Name, ex.Message );
@@ -195,10 +195,6 @@ sealed partial class NukeBuild {
       Paths.ContainerlabsDirectory,
       timeout: TimeSpan.FromMinutes( 5 )
     ).AssertZeroExitCode();
-
-    // TODO try to disable fixed waiting
-    // Log.Information( "Waiting for containers to be ready..." );
-    // await Task.Delay( TimeSpan.FromSeconds( 10 ) );
   }
 
   private static void DestroyTopologyIfExists( string topologyFile ) {
@@ -211,22 +207,26 @@ sealed partial class NukeBuild {
       ).AssertZeroExitCode();
     }
     catch {
-      Log.Debug( "No existing topology to destroy (or destroy failed — continuing)" );
+      Log.Debug( "No existing topology to destroy or destroy failed — continuing" );
     }
   }
 
   /// <summary>
+  /// <p>
   /// Pre-creates the 'clab' management network before deploying.
-  ///
+  /// </p>
+  /// <p>
   /// Rootless Podman with pasta networking does NOT create kernel bridge interfaces.
   /// Containerlab always tries `ip link show br-&lt;network-id&gt;` immediately after
   /// creating a new network, which fatally fails ("Link not found") because no
   /// kernel bridge was created. However, when the network already exists,
   /// Containerlab skips the creation step and reuses it — avoiding the fatal lookup.
-  ///
+  /// </p>
+  /// <p>
   /// Strategy: try to remove any stale 'clab' network (ignore failure — may be in
   /// use by another running topology), then create it. Ignore "already exists" errors
   /// from create — the important thing is the network is present before deploy.
+  /// </p>
   /// </summary>
   private static void EnsureClabManagementNetwork() {
     Log.Debug( "Pre-creating Containerlab management network..." );
@@ -247,6 +247,7 @@ sealed partial class NukeBuild {
 
   private static async Task DestroyTopologyAsync( string topologyFile ) {
     Log.Information( "Destroying topology: {File}", topologyFile );
+
     try {
       Clab(
         $"destroy --topo {topologyFile} --cleanup",
@@ -259,7 +260,7 @@ sealed partial class NukeBuild {
     }
   }
 
-  private static async Task RunScanAndAssertAsync( AbsolutePath specFile, ContainerlabTestCase testCase ) {
+  private static async Task<IProcess> RunScan( AbsolutePath specFile, ContainerlabTestCase testCase ) {
     Log.Information( "Running scan for test case: {Name}", testCase.Name );
 
     //Log.Debug( "Copying spec to CLI container {Container}...", testCase.CliContainer );
@@ -267,21 +268,20 @@ sealed partial class NukeBuild {
 
     //Log.Information( "Configuring the CLI to use coordinator {Address}...", testCase.CoordinatorAddress );
     RunCliCommand( testCase, $"env add container-server {testCase.CoordinatorAddress}" );
-    await RunCliCommandWithRetryAsync( testCase, "spec apply /tmp/spec.yaml" );
+    RunCliCommand( testCase, "spec apply /tmp/spec.yaml" );
 
     foreach ( var agentId in testCase.AgentIds ) {
-      await RunCliCommandWithRetryAsync( testCase, $"enrollment add {agentId}" );
+      RunCliCommand( testCase, $"enrollment add {agentId}" );
     }
 
-    var scanResult = RunCliCommand( testCase, "scan --output Json", timeout: TimeSpan.FromMinutes( 5 ) );
-
-    AssertScanSnapshot( testCase, scanResult.Output.Select( o => o.Text ) );
+    return RunCliCommand( testCase, "scan --output Json", timeout: TimeSpan.FromMinutes( 5 ) );
   }
 
   private static IProcess RunCliCommand( ContainerlabTestCase testCase, string command, TimeSpan? timeout = null ) {
     return Docker( $"exec {testCase.CliContainer} /app/drift {command}", timeout: timeout ).AssertZeroExitCode();
   }
 
+  // Unused?
   private static async Task<IProcess> RunCliCommandWithRetryAsync(
     ContainerlabTestCase testCase,
     string command,
@@ -303,7 +303,7 @@ sealed partial class NukeBuild {
     throw new InvalidOperationException( $"CLI command '{command}' did not succeed", lastException );
   }
 
-  private static void AssertScanSnapshot( ContainerlabTestCase testCase, IEnumerable<string> outputLines ) {
+  private static bool AssertMatches( ContainerlabTestCase testCase, IEnumerable<string> outputLines ) {
     var actual = string.Join( System.Environment.NewLine, outputLines ).Trim();
     actual = Regex.Replace( actual, "(?i)\\b[0-9a-f]{2}([-:][0-9a-f]{2}){5}\\b", "<mac>" );
 
@@ -318,10 +318,12 @@ sealed partial class NukeBuild {
         "Scan output did not match snapshot for '{Name}'.\nActual:\n{Actual}\nExpected:\n{Expected}",
         testCase.Name, actual, expected
       );
-      throw new Exception( $"Scan output did not match snapshot for '{testCase.Name}'" );
+      return false;
     }
 
     Log.Information( "Scan output matched snapshot for '{Name}'", testCase.Name );
+
+    return true;
   }
 
   private static void ClabLogger( OutputType type, string text ) => Log.Debug( text );

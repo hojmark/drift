@@ -27,17 +27,17 @@ topology:
     agent1:
       kind: linux
       image: localhost:5000/drift:dev
-      cmd: agent start --adoptable --port 5000 --id agent_coop_agent1
+      cmd: agent start --port 5000
 
     agent2:
       kind: linux
       image: localhost:5000/drift:dev
-      cmd: agent start --adoptable --port 5000 --id agent_coop_agent2
+      cmd: agent start --port 5000
 
     agent3:
       kind: linux
       image: localhost:5000/drift:dev
-      cmd: agent start --adoptable --port 5000 --id agent_coop_agent3
+      cmd: agent start --port 5000
 
     target1:
       kind: linux

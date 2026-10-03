@@ -72,7 +72,6 @@ internal sealed class NamingTests : DriftArchitectureFixture {
     Console.WriteLine( $"Found {interfaces.Length} interfaces:\n\n" + string.Join( "\n", interfaces ) );
   }
 
-
   [Test]
   public void TestClassesShouldEndWithTests() {
     var rule = Members().That()

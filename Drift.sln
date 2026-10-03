@@ -132,12 +132,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clab", "Clab", "{BA370A6D-DD96-4E5B-82B4-5CE7B6860F26}"
 	ProjectSection(SolutionItems) = preProject
 		containerlab\README.md = containerlab\README.md
-		containerlab\cooperation-test-spec.yaml = containerlab\cooperation-test-spec.yaml
+		containerlab\cooperation-test.spec.yaml = containerlab\cooperation-test.spec.yaml
 		containerlab\cooperation-test.clab.yaml = containerlab\cooperation-test.clab.yaml
-		containerlab\simple-test-spec.yaml = containerlab\simple-test-spec.yaml
+		containerlab\simple-test.spec.yaml = containerlab\simple-test.spec.yaml
 		containerlab\simple-test.clab.yaml = containerlab\simple-test.clab.yaml
-		containerlab\subnet-isolation-test-spec.yaml = containerlab\subnet-isolation-test-spec.yaml
+		containerlab\subnet-isolation-test.spec.yaml = containerlab\subnet-isolation-test.spec.yaml
 		containerlab\subnet-isolation-test.clab.yaml = containerlab\subnet-isolation-test.clab.yaml
+		containerlab\cooperation-test-scan-output.json = containerlab\cooperation-test-scan-output.json
+		containerlab\simple-test-scan-output.json = containerlab\simple-test-scan-output.json
+		containerlab\subnet-isolation-test-scan-output.json = containerlab\subnet-isolation-test-scan-output.json
 	EndProjectSection
 EndProject
 Global

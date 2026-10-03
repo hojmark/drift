@@ -1,7 +1,9 @@
+using Drift.Coordinator.Services.Models;
 using Drift.Domain;
 using Drift.Messaging.Client;
 using Drift.Messaging.Protocol.Agent.Status;
 using Drift.Networking.Core.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace Drift.Coordinator.Services.Agents;
 
@@ -10,7 +12,8 @@ namespace Drift.Coordinator.Services.Agents;
 /// </summary>
 public sealed class AgentGateway(
   IAgentClient client,
-  IAgentDirectory agentDirectory
+  IAgentDirectory agentDirectory,
+  ILogger logger
 ) {
   /// <summary>
   /// Checks an enrolled agent's availability by requesting its lightweight status.
@@ -40,10 +43,13 @@ public sealed class AgentGateway(
         throw new InvalidOperationException( $"Agent '{agentId}' is not ready." );
       }
 
-      agentDirectory.MarkConnected( agentId );
+      MarkConnected( enrolledAgent );
     }
-    catch {
-      agentDirectory.MarkUnavailable( agentId );
+    catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
+      throw;
+    }
+    catch ( Exception exception ) {
+      MarkUnavailable( enrolledAgent, exception );
       throw;
     }
   }
@@ -67,11 +73,14 @@ public sealed class AgentGateway(
         timeout,
         cancellationToken
       );
-      agentDirectory.MarkConnected( agentId );
+      MarkConnected( enrolledAgent );
       return response;
     }
-    catch {
-      agentDirectory.MarkUnavailable( agentId );
+    catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
+      throw;
+    }
+    catch ( Exception exception ) {
+      MarkUnavailable( enrolledAgent, exception );
       throw;
     }
   }
@@ -100,12 +109,42 @@ public sealed class AgentGateway(
         timeout,
         cancellationToken
       );
-      agentDirectory.MarkConnected( agentId );
+      MarkConnected( enrolledAgent );
       return response;
     }
-    catch {
-      agentDirectory.MarkUnavailable( agentId );
+    catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
       throw;
+    }
+    catch ( Exception exception ) {
+      MarkUnavailable( enrolledAgent, exception );
+      throw;
+    }
+  }
+
+  private void MarkConnected( EnrolledAgent agent ) {
+    var previousStatus = agentDirectory.MarkConnected( agent.Id );
+    if ( previousStatus is not null and not AgentConnectionStatus.Connected ) {
+      logger.LogInformation(
+        "Connection to agent {AgentId} at {Address} changed from {PreviousStatus} to {ConnectionStatus}",
+        agent.Id,
+        agent.Address,
+        previousStatus,
+        AgentConnectionStatus.Connected
+      );
+    }
+  }
+
+  private void MarkUnavailable( EnrolledAgent agent, Exception exception ) {
+    var previousStatus = agentDirectory.MarkUnavailable( agent.Id );
+    if ( previousStatus is not null and not AgentConnectionStatus.Unavailable ) {
+      logger.LogWarning(
+        "Connection to agent {AgentId} at {Address} changed from {PreviousStatus} to {ConnectionStatus}: {Reason}",
+        agent.Id,
+        agent.Address,
+        previousStatus,
+        AgentConnectionStatus.Unavailable,
+        exception.GetBaseException().Message
+      );
     }
   }
 

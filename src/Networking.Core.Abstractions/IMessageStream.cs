@@ -12,6 +12,10 @@ public interface IMessageStream : IAsyncDisposable {
     get;
   }
 
+  public ConnectionSide Side {
+    get;
+  }
+
   public Task ReadTask {
     get;
   }

@@ -12,6 +12,31 @@ namespace Drift.Networking.Tests;
 
 internal sealed class MessageStreamManagerTests {
   [Test]
+  public async Task OutboundStreamAttemptLogsACreatedAndDisposedPair() {
+    using var cts = new CancellationTokenSource();
+    var logger = new StringLogger( minimumLogLevel: LogLevel.Debug );
+    var services = new ServiceCollection();
+    services.AddSingleton<ILogger>( logger );
+    services.AddSingleton<IMessageHandler>( _ => new TestRequestHandler( logger ) );
+    services.AddMessagingCore( new MessagingOptions { StoppingToken = cts.Token } );
+    services.AddMessagingClient();
+    await using var provider = services.BuildServiceProvider();
+    var manager = provider.GetRequiredService<IMessageStreamManager>();
+
+    var connection = manager.GetOrCreate(
+      new Uri( "http://127.0.0.1:1" ),
+      AgentId.Parse( "agent_unavailable", null )
+    );
+    await connection.Completion.WaitAsync( TimeSpan.FromSeconds( 5 ) );
+    await connection.DisposeAsync();
+
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( logger.ToString(), Does.Contain( "Outbound stream #" ).And.Contain( "created" ) );
+      Assert.That( logger.ToString(), Does.Contain( "Outbound stream #" ).And.Contain( "disposed" ) );
+    }
+  }
+
+  [Test]
   public async Task IncomingMessageIsDispatchedToHandler() {
     // Arrange
     var cts = new CancellationTokenSource();
@@ -74,8 +99,8 @@ internal sealed class MessageStreamManagerTests {
 
       Assert.That( secondConnection.Stream, Is.SameAs( firstConnection.Stream ) );
       using ( Assert.EnterMultipleScope() ) {
-        Assert.That( firstConnection.RemoteId, Is.EqualTo( AgentId.Parse( "agent_test123", null ) ) );
-        Assert.That( firstConnection.Side, Is.EqualTo( ConnectionSide.Inbound ) );
+        Assert.That( firstConnection.Stream.RemoteId, Is.EqualTo( AgentId.Parse( "agent_test123", null ) ) );
+        Assert.That( firstConnection.Stream.Side, Is.EqualTo( ConnectionSide.Inbound ) );
         Assert.That( firstConnection.Completion.IsCompleted, Is.False );
       }
     }

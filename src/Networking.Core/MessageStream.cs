@@ -23,8 +23,34 @@ public sealed class MessageStream : IMessageStream {
     MessageDispatcher dispatcher,
     ILogger logger,
     CancellationToken cancellationToken
+  ) : this( reader, writer, dispatcher, logger, ConnectionSide.Inbound, null, cancellationToken ) {
+  }
+
+  public MessageStream(
+    Uri address,
+    IAsyncStreamReader<Message> reader,
+    IAsyncStreamWriter<Message> writer,
+    MessageDispatcher dispatcher,
+    ILogger logger,
+    CancellationToken cancellationToken
+  ) : this( reader, writer, dispatcher, logger, ConnectionSide.Outbound, address, cancellationToken ) {
+  }
+
+  private MessageStream(
+    IAsyncStreamReader<Message> reader,
+    IAsyncStreamWriter<Message> writer,
+    MessageDispatcher dispatcher,
+    ILogger logger,
+    ConnectionSide side,
+    Uri? address,
+    CancellationToken cancellationToken
   ) {
-    Side = ConnectionSide.Inbound;
+    if ( side == ConnectionSide.Inbound && address != null ) {
+      throw new Exception( "Inbound connections cannot specify an address" );
+    }
+
+    Side = side;
+    Address = address;
     _reader = reader;
     _writer = writer;
     _dispatcher = dispatcher;
@@ -39,23 +65,11 @@ public sealed class MessageStream : IMessageStream {
     );
   }
 
-  public MessageStream(
-    Uri address,
-    IAsyncStreamReader<Message> reader,
-    IAsyncStreamWriter<Message> writer,
-    MessageDispatcher dispatcher,
-    ILogger logger,
-    CancellationToken cancellationToken
-  ) : this( reader, writer, dispatcher, logger, cancellationToken ) {
-    Side = ConnectionSide.Outbound;
-    Address = address;
-  }
-
   public int InstanceNo {
     get;
   } = Interlocked.Increment( ref _instanceCounter );
 
-  private ConnectionSide Side {
+  public ConnectionSide Side {
     get;
   }
 
@@ -91,7 +105,7 @@ public sealed class MessageStream : IMessageStream {
               [nameof(Message.ReplyTo)] = message.ReplyTo
             }
           );
-          _logger.LogDebug( "Received message. Dispatching to handler..." );
+          _logger.LogDebug( "Received {MessageType} message. Dispatching to handler...", message.MessageType );
           await _dispatcher.DispatchAsync( message, this, _connectionCancellation.Token );
           _logger.LogDebug( "Dispatch completed. Waiting for next message..." );
         }

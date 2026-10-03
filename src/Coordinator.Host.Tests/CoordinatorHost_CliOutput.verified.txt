@@ -11,4 +11,5 @@
 [INF] Server started
 [INF] Agent enrollment request received for agent_one
 [INF] Agent enrollment requested for agent_one
+[INF] Connection to agent agent_one at http://127.0.0.1:<port>/ changed from Unknown to Connected
 [INF] Agent agent_one enrolled and connected

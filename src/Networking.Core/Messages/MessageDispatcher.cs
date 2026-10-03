@@ -24,8 +24,6 @@ public sealed class MessageDispatcher {
   }
 
   public async Task DispatchAsync( Message message, MessageStream stream, CancellationToken ct = default ) {
-    _logger.LogDebug( "Dispatching message: {Type}", message.MessageType );
-
     // If this is a response to a pending request, complete it
     if ( !string.IsNullOrEmpty( message.ReplyTo ) ) {
       var requestId = RequestId.Parse( message.ReplyTo );

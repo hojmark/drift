@@ -16,6 +16,7 @@ internal sealed class Connection : IMessageStreamConnection {
   private readonly MessageResponseCorrelator _correlator;
   private readonly AsyncServiceScope _scope;
   private readonly CancellationTokenSource? _connectionCancellation;
+  private readonly ILogger _logger;
   private int _disposeStarted;
   private int _closedLocally;
 
@@ -23,26 +24,15 @@ internal sealed class Connection : IMessageStreamConnection {
     IMessageStream stream,
     MessageResponseCorrelator correlator,
     AsyncServiceScope scope,
-    ConnectionSide side,
-    Uri? remoteAddress,
-    CancellationTokenSource? connectionCancellation
+    CancellationTokenSource? connectionCancellation,
+    ILogger logger
   ) {
     Stream = stream;
     _correlator = correlator;
     _scope = scope;
-    Side = side;
-    RemoteAddress = remoteAddress;
     _connectionCancellation = connectionCancellation;
-  }
-
-  public AgentId RemoteId => Stream.RemoteId;
-
-  public Uri? RemoteAddress {
-    get;
-  }
-
-  public ConnectionSide Side {
-    get;
+    _logger = logger;
+    LogCreated();
   }
 
   public IMessageStream Stream {
@@ -51,7 +41,7 @@ internal sealed class Connection : IMessageStreamConnection {
 
   public Task Completion => Stream.ReadTask;
 
-  internal bool WasClosedLocally => Volatile.Read( ref _closedLocally ) != 0;
+  private bool WasClosedLocally => Volatile.Read( ref _closedLocally ) != 0;
 
   internal void MarkClosedLocally() {
     Interlocked.Exchange( ref _closedLocally, 1 );
@@ -65,8 +55,9 @@ internal sealed class Connection : IMessageStreamConnection {
     ILogger logger,
     MessagingOptions options
   ) {
+    var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource( options.StoppingToken );
     var (client, _) = messageClientFactory.Create( remoteAddress );
-    var callOptions = new CallOptions( new Metadata { { "agent-id", remoteId } } );
+    var callOptions = new CallOptions( new Metadata { { GrpcMetadataExtensions.AgentIdKey, remoteId } } );
     var call = client.Connect( callOptions );
     var scope = scopeFactory.CreateAsyncScope();
     var dispatcher = scope.ServiceProvider.GetRequiredService<MessageDispatcher>();
@@ -80,7 +71,7 @@ internal sealed class Connection : IMessageStreamConnection {
       options.StoppingToken
     ) { RemoteId = remoteId };
 
-    return new Connection( stream, correlator, scope, ConnectionSide.Outbound, remoteAddress, null );
+    return new Connection( stream, correlator, scope, connectionCancellation, logger );
   }
 
   public static Connection CreateInbound(
@@ -107,7 +98,7 @@ internal sealed class Connection : IMessageStreamConnection {
       connectionCancellation.Token
     ) { RemoteId = remoteId };
 
-    return new Connection( stream, correlator, scope, ConnectionSide.Inbound, null, connectionCancellation );
+    return new Connection( stream, correlator, scope, connectionCancellation, logger );
   }
 
   public Task<Message> WaitForResponseAsync(
@@ -149,14 +140,38 @@ internal sealed class Connection : IMessageStreamConnection {
     }
 
     _correlator.FailPendingRequests(
-      new IOException( $"Messaging stream for agent '{RemoteId}' was closed." )
+      new IOException( $"Messaging stream for agent '{Stream.RemoteId}' was closed." )
     );
     try {
       await Stream.DisposeAsync();
     }
     finally {
-      await _scope.DisposeAsync();
-      _connectionCancellation?.Dispose();
+      LogDisposed();
+      try {
+        await _scope.DisposeAsync();
+      }
+      finally {
+        _connectionCancellation?.Dispose();
+      }
     }
+  }
+
+  private void LogCreated() {
+    var direction = Stream.Side == ConnectionSide.Outbound ? "to" : "from";
+    _logger.LogDebug(
+      "{ConnectionSide} stream #{StreamNo} {Direction} agent {AgentId} created",
+      Stream.Side,
+      Stream.InstanceNo,
+      direction,
+      Stream.RemoteId
+    );
+  }
+
+  private void LogDisposed() {
+    var direction = Stream.Side == ConnectionSide.Outbound ? "to" : "from";
+    var message = WasClosedLocally
+      ? "{ConnectionSide} stream #{StreamNo} {Direction} agent {AgentId} disposed locally"
+      : "{ConnectionSide} stream #{StreamNo} {Direction} agent {AgentId} disposed";
+    _logger.LogDebug( message, Stream.Side, Stream.InstanceNo, direction, Stream.RemoteId );
   }
 }

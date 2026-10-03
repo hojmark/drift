@@ -54,6 +54,8 @@ public abstract class RequestHandler<TRequest, TResponse> : IMessageHandler
       new MessageResponder<TResponse>( stream, converter, requestId ),
       cancellationToken
     );
+
+    Logger.LogDebug( "Completed '{HandlerName}'", GetType().Name );
   }
 
   public abstract Task HandleAsync(

@@ -1,0 +1,158 @@
+using Drift.Coordinator.Services.Models;
+using Drift.Domain;
+using Drift.Messaging.Client;
+using Drift.Messaging.Protocol.Agent.Status;
+using Drift.Networking.Core.Abstractions;
+using Microsoft.Extensions.Logging;
+
+namespace Drift.Coordinator.Services.Agents;
+
+/// <summary>
+/// Provides the coordinator's communication boundary for enrolled agents.
+/// </summary>
+public sealed class AgentGateway(
+  IAgentClient client,
+  IAgentDirectory agentDirectory,
+  ILogger logger
+) {
+  /// <summary>
+  /// Checks an enrolled agent's availability by requesting its lightweight status.
+  /// </summary>
+  public async Task CheckStatusAsync( AgentId agentId, CancellationToken cancellationToken ) {
+    await CheckStatusAsync( agentId, TimeSpan.FromSeconds( 10 ), cancellationToken );
+  }
+
+  /// <summary>
+  /// Checks an enrolled agent's availability with a caller-supplied timeout.
+  /// </summary>
+  public async Task CheckStatusAsync(
+    AgentId agentId,
+    TimeSpan timeout,
+    CancellationToken cancellationToken
+  ) {
+    var enrolledAgent = GetEnrolledAgent( agentId );
+
+    try {
+      var response = await client.RequestAsync<AgentStatusRequest, AgentStatusResponse>(
+        enrolledAgent.ToDomainAgent(),
+        new AgentStatusRequest(),
+        timeout,
+        cancellationToken
+      );
+      if ( response.Status != AgentStatus.Ready ) {
+        throw new InvalidOperationException( $"Agent '{agentId}' is not ready." );
+      }
+
+      MarkConnected( enrolledAgent );
+    }
+    catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
+      throw;
+    }
+    catch ( Exception exception ) {
+      MarkUnavailable( enrolledAgent, exception );
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Sends a typed request to an enrolled agent.
+  /// </summary>
+  /// <typeparam name="TRequest">The request type sent to the agent.</typeparam>
+  /// <typeparam name="TResponse">The response type returned by the agent.</typeparam>
+  public async Task<TResponse> RequestAsync<TRequest, TResponse>(
+    AgentId agentId,
+    TRequest request,
+    TimeSpan timeout,
+    CancellationToken cancellationToken
+  ) where TRequest : IRequest<TResponse> where TResponse : IResponse {
+    var enrolledAgent = GetEnrolledAgent( agentId );
+    try {
+      var response = await client.RequestAsync<TRequest, TResponse>(
+        enrolledAgent.ToDomainAgent(),
+        request,
+        timeout,
+        cancellationToken
+      );
+      MarkConnected( enrolledAgent );
+      return response;
+    }
+    catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
+      throw;
+    }
+    catch ( Exception exception ) {
+      MarkUnavailable( enrolledAgent, exception );
+      throw;
+    }
+  }
+
+  /// <summary>
+  /// Sends a typed streaming request to an enrolled agent and forwards its progress.
+  /// </summary>
+  /// <typeparam name="TRequest">The streaming request type sent to the agent.</typeparam>
+  /// <typeparam name="TProgress">The progress response type.</typeparam>
+  /// <typeparam name="TResponse">The final response type returned by the agent.</typeparam>
+  public async Task<TResponse> RequestStreamingAsync<TRequest, TProgress, TResponse>(
+    AgentId agentId,
+    TRequest request,
+    Action<TProgress> onProgress,
+    TimeSpan timeout,
+    CancellationToken cancellationToken
+  ) where TRequest : IStreamingRequest<TProgress, TResponse>
+    where TProgress : IResponse
+    where TResponse : IResponse {
+    var enrolledAgent = GetEnrolledAgent( agentId );
+    try {
+      var response = await client.RequestStreamingAsync<TRequest, TProgress, TResponse>(
+        enrolledAgent.ToDomainAgent(),
+        request,
+        onProgress,
+        timeout,
+        cancellationToken
+      );
+      MarkConnected( enrolledAgent );
+      return response;
+    }
+    catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
+      throw;
+    }
+    catch ( Exception exception ) {
+      MarkUnavailable( enrolledAgent, exception );
+      throw;
+    }
+  }
+
+  private void MarkConnected( EnrolledAgent agent ) {
+    var previousStatus = agentDirectory.MarkConnected( agent.Id );
+    if ( previousStatus is not null and not AgentConnectionStatus.Connected ) {
+      logger.LogInformation(
+        "Connection to agent {AgentId} at {Address} changed from {PreviousStatus} to {ConnectionStatus}",
+        agent.Id,
+        agent.Address,
+        previousStatus,
+        AgentConnectionStatus.Connected
+      );
+    }
+  }
+
+  private void MarkUnavailable( EnrolledAgent agent, Exception exception ) {
+    var previousStatus = agentDirectory.MarkUnavailable( agent.Id );
+    if ( previousStatus is not null and not AgentConnectionStatus.Unavailable ) {
+      logger.LogWarning(
+        "Connection to agent {AgentId} at {Address} changed from {PreviousStatus} to {ConnectionStatus}: {Reason}",
+        agent.Id,
+        agent.Address,
+        previousStatus,
+        AgentConnectionStatus.Unavailable,
+        exception.GetBaseException().Message
+      );
+    }
+  }
+
+  private EnrolledAgent GetEnrolledAgent( AgentId agentId ) {
+    if ( agentDirectory.TryGet( agentId, out var enrolledAgent ) && enrolledAgent is not null ) {
+      return enrolledAgent;
+    }
+
+    throw new KeyNotFoundException( $"Agent '{agentId}' was not found." );
+  }
+}

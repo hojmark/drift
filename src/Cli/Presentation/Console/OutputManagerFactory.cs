@@ -29,7 +29,7 @@ internal class OutputManagerFactory(
   bool toConsole = true
 ) : IOutputManagerFactory {
   public IOutputManager Create( ParseResult result, bool plainConsole ) {
-    var outputFormat = result.GetValue( CommonParameters.Options.OutputFormat );
+    var outputFormat = result.GetValue<OutputFormat>( CommonParameters.Options.OutputFormatName );
     var verbose = result.GetValue( CommonParameters.Options.Verbose );
     var veryVerbose = result.GetValue( CommonParameters.Options.VeryVerbose );
 
@@ -59,16 +59,34 @@ internal class OutputManagerFactory(
     bool plainConsole
   ) {
     var bridge = new WriterReaderBridge();
-    var outWrapper = new CompoundTextWriter();
-    outWrapper.Writers.Add( bridge.Writer );
+
+    // Validate that we don't have duplicate writer instances that would break synchronization
     if ( !interactiveOutputOnly ) {
-      outWrapper.Writers.Add( consoleOut );
+      if ( ReferenceEquals( consoleOut, consoleErr ) ) {
+        throw new InvalidOperationException(
+          $"{nameof(consoleOut)} and {nameof(consoleErr)} cannot be the same instance - this would break thread synchronization"
+        );
+      }
+
+      if ( ReferenceEquals( bridge.Writer, consoleOut ) || ReferenceEquals( bridge.Writer, consoleErr ) ) {
+        throw new InvalidOperationException(
+          $"bridge.Writer cannot be the same instance as {nameof(consoleOut)} or {nameof(consoleErr)} - this would break thread synchronization"
+        );
+      }
+    }
+
+    var syncBridgeWriter = TextWriter.Synchronized( bridge.Writer );
+
+    var outWrapper = new CompoundTextWriter();
+    outWrapper.Writers.Add( syncBridgeWriter );
+    if ( !interactiveOutputOnly ) {
+      outWrapper.Writers.Add( TextWriter.Synchronized( consoleOut ) );
     }
 
     var errWrapper = new CompoundTextWriter();
-    errWrapper.Writers.Add( bridge.Writer );
+    errWrapper.Writers.Add( syncBridgeWriter );
     if ( !interactiveOutputOnly ) {
-      errWrapper.Writers.Add( consoleErr );
+      errWrapper.Writers.Add( TextWriter.Synchronized( consoleErr ) );
     }
 
     var consoleOuts = GetConsoleOuts(
@@ -95,16 +113,20 @@ internal class OutputManagerFactory(
     return new ConsoleOutputManager(
       logger,
       consoleOuts.StdOut,
+      consoleOuts.JsonOut,
       consoleOuts.ErrOut,
       verbose,
       veryVerbose,
       outputFormat,
       plainConsole,
-      bridge.Reader
+      bridge.Reader,
+      // When in interactive mode, text output is suppressed from the terminal (goes to pipe only),
+      // but the AnsiConsole for the Live display must still write to the real terminal.
+      interactiveOutputOnly ? consoleOut : null
     );
   }
 
-  private static (TextWriter StdOut, TextWriter ErrOut) GetConsoleOuts(
+  private static (TextWriter StdOut, TextWriter JsonOut, TextWriter ErrOut) GetConsoleOuts(
     OutputFormat outputFormat,
     bool verbose,
     bool veryVerbose,
@@ -113,13 +135,18 @@ internal class OutputManagerFactory(
     bool plainConsole,
     TextReader outputReader
   ) {
+    if ( outputFormat == OutputFormat.Json ) {
+      return ( TextWriter.Null, consoleOut, TextWriter.Null );
+    }
+
     if ( outputFormat is not OutputFormat.Normal ) {
-      return ( TextWriter.Null, TextWriter.Null );
+      return ( TextWriter.Null, TextWriter.Null, TextWriter.Null );
     }
 
     var tempOutputManager = new ConsoleOutputManager(
       NullLogger.Instance,
       consoleOut,
+      TextWriter.Null,
       consoleErr,
       verbose,
       veryVerbose,
@@ -131,7 +158,7 @@ internal class OutputManagerFactory(
     tempOutputManager.Normal.WriteLineVerbose( "Output format is 'Normal' using 'Verbose' output" );
     tempOutputManager.Normal.WriteLineVeryVerbose( "Output format is 'Normal' using 'Very Verbose' output" );
 
-    return ( consoleOut, consoleErr );
+    return ( consoleOut, TextWriter.Null, consoleErr );
   }
 
   private static ILogger GetLogger(

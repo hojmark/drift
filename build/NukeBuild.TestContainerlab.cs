@@ -33,7 +33,7 @@ sealed partial class NukeBuild {
     new(
       Name: "simple-test",
       TopologyFile: "simple-test.clab.yaml",
-      SpecFile: "simple-test-spec.yaml",
+      SpecFile: "simple-test.spec.yaml",
       CliContainer: "clab-drift-simple-test-cli",
       CoordinatorAddress: "http://clab-drift-simple-test-server:51510",
       AgentIds: ["agent_test1"],
@@ -42,7 +42,7 @@ sealed partial class NukeBuild {
     new(
       Name: "cooperation-test",
       TopologyFile: "cooperation-test.clab.yaml",
-      SpecFile: "cooperation-test-spec.yaml",
+      SpecFile: "cooperation-test.spec.yaml",
       CliContainer: "clab-drift-cooperation-test-cli",
       CoordinatorAddress: "http://clab-drift-cooperation-test-server:51510",
       AgentIds: ["agent_coop_agent1", "agent_coop_agent2", "agent_coop_agent3"],
@@ -51,7 +51,7 @@ sealed partial class NukeBuild {
     new(
       Name: "subnet-isolation-test",
       TopologyFile: "subnet-isolation-test.clab.yaml",
-      SpecFile: "subnet-isolation-test-spec.yaml",
+      SpecFile: "subnet-isolation-test.spec.yaml",
       CliContainer: "clab-drift-subnet-isolation-test-cli",
       CoordinatorAddress: "http://clab-drift-subnet-isolation-test-server:51510",
       AgentIds: ["agent_subnet_agent1", "agent_subnet_agent2"],

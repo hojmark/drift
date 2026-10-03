@@ -8,5 +8,4 @@
 [INF] Version: <version>
 [INF] Port: <port> (gRPC)
 [INF] Agent started
-[INF] Creating Inbound stream from agent agent_one
 [INF] Running 'AgentStatusRequestHandler'

@@ -53,7 +53,8 @@ internal sealed class InboundTests {
     await connectTask.WaitAsync( TimeSpan.FromSeconds( 1 ) );
 
     Assert.That( logger.ToString(), Does.Contain( "Inbound stream #" ) );
-    Assert.That( logger.ToString(), Does.Contain( "agent_test123 closed" ) );
+    Assert.That( logger.ToString(), Does.Contain( "agent_test123 created" ) );
+    Assert.That( logger.ToString(), Does.Contain( "agent_test123 disposed" ) );
     Assert.That( logger.ToString(), Does.Not.Contain( "closed locally" ) );
   }
 

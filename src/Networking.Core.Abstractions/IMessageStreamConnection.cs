@@ -7,18 +7,6 @@ namespace Drift.Networking.Core.Abstractions;
 /// Represents the shared messaging state for one active peer connection.
 /// </summary>
 public interface IMessageStreamConnection : IAsyncDisposable {
-  AgentId RemoteId {
-    get;
-  }
-
-  Uri? RemoteAddress {
-    get;
-  }
-
-  ConnectionSide Side {
-    get;
-  }
-
   IMessageStream Stream {
     get;
   }

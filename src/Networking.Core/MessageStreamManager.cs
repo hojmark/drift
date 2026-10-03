@@ -7,6 +7,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Networking.Core;
 
+/// <inheritdoc />
+/// <remarks>
+/// The manager reuses active streams where possible and owns the lifetime of streams it creates or accepts.
+/// Disposing the manager closes all streams it currently manages.
+/// </remarks>
 internal sealed class MessageStreamManager(
   ILogger logger,
   IMessagingClientFactory? messageClientFactory,
@@ -16,6 +21,7 @@ internal sealed class MessageStreamManager(
   private readonly Dictionary<AgentId, Connection> _connections = new();
   private readonly Lock _lock = new();
 
+  /// <inheritdoc />
   public IMessageStreamConnection GetOrCreate( Uri peerAddress, AgentId id ) {
     logger.LogDebug(
       "Getting or creating {ConnectionSide} stream to agent {Id} ({Address})",
@@ -53,6 +59,7 @@ internal sealed class MessageStreamManager(
     }
   }
 
+  /// <inheritdoc />
   public IMessageStreamConnection Create(
     IAsyncStreamReader<Message> requestStream,
     IAsyncStreamWriter<Message> responseStream,
@@ -66,11 +73,6 @@ internal sealed class MessageStreamManager(
       logger,
       options
     );
-    logger.LogInformation(
-      "Creating {ConnectionSide} stream from agent {Id}",
-      connection.Side,
-      connection.RemoteId
-    );
     Add( connection );
     return connection;
   }
@@ -78,18 +80,18 @@ internal sealed class MessageStreamManager(
   private void Add( Connection connection ) {
     logger.LogTrace( "Created {Connection}", connection );
     lock ( _lock ) {
-      if ( _connections.TryGetValue( connection.RemoteId, out var previous ) &&
+      if ( _connections.TryGetValue( connection.Stream.RemoteId, out var previous ) &&
            !ReferenceEquals( previous, connection ) ) {
         logger.LogWarning(
           "Replacing duplicate {ConnectionSide} stream for remote {Id} (stream #{StreamNo})",
-          connection.Side,
-          connection.RemoteId,
+          connection.Stream.Side,
+          connection.Stream.RemoteId,
           previous.Stream.InstanceNo
         );
         _ = CloseLocallyAsync( previous );
       }
 
-      _connections[connection.RemoteId] = connection;
+      _connections[connection.Stream.RemoteId] = connection;
     }
 
     _ = connection.Completion.ContinueWith(
@@ -102,15 +104,14 @@ internal sealed class MessageStreamManager(
 
   private void RemoveCompleted( Connection connection ) {
     lock ( _lock ) {
-      if ( !_connections.TryGetValue( connection.RemoteId, out var current ) ||
+      if ( !_connections.TryGetValue( connection.Stream.RemoteId, out var current ) ||
            !ReferenceEquals( current, connection ) ) {
         return;
       }
 
-      _connections.Remove( connection.RemoteId );
+      _connections.Remove( connection.Stream.RemoteId );
     }
 
-    LogClosed( connection );
     _ = connection.DisposeAfterCompletionAsync().AsTask();
   }
 
@@ -128,21 +129,8 @@ internal sealed class MessageStreamManager(
     }
   }
 
-  private async Task CloseLocallyAsync( Connection connection ) {
+  private static async Task CloseLocallyAsync( Connection connection ) {
     connection.MarkClosedLocally();
-    LogClosed( connection );
     await connection.DisposeAsync();
-  }
-
-  private void LogClosed( Connection connection ) {
-    var message = connection.WasClosedLocally
-      ? "{ConnectionSide} stream #{StreamNo} to agent {AgentId} closed locally"
-      : "{ConnectionSide} stream #{StreamNo} to agent {AgentId} closed";
-    logger.LogInformation(
-      message,
-      connection.Side,
-      connection.Stream.InstanceNo,
-      connection.RemoteId
-    );
   }
 }

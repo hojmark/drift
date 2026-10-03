@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Drift.Cli.Tests;
 
-internal sealed class FeatureFlagTest {
+internal sealed class FeatureFlagTests {
   private const string DummyCodeCommand = "dummy";
   private const int DummyCommandExitCode = 1337;
   private static readonly FeatureFlag MyFeature = new("myFeature");

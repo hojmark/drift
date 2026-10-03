@@ -44,21 +44,22 @@ internal sealed class InMemoryAgentDirectory : IAgentDirectory {
     return _connectionStatuses.GetValueOrDefault( id, AgentConnectionStatus.Unknown );
   }
 
-  public bool MarkConnected( AgentId id ) {
-    if ( !_agents.ContainsKey( id ) ) {
-      return false;
-    }
-
-    _connectionStatuses[id] = AgentConnectionStatus.Connected;
-    return true;
+  public AgentConnectionStatus? MarkConnected( AgentId id ) {
+    return SetConnectionStatus( id, AgentConnectionStatus.Connected );
   }
 
-  public bool MarkUnavailable( AgentId id ) {
-    if ( !_agents.ContainsKey( id ) ) {
-      return false;
+  public AgentConnectionStatus? MarkUnavailable( AgentId id ) {
+    return SetConnectionStatus( id, AgentConnectionStatus.Unavailable );
+  }
+
+  private AgentConnectionStatus? SetConnectionStatus( AgentId id, AgentConnectionStatus status ) {
+    // Retry if another caller changes the status before the update.
+    while ( _connectionStatuses.TryGetValue( id, out var previousStatus ) ) {
+      if ( previousStatus == status || _connectionStatuses.TryUpdate( id, status, previousStatus ) ) {
+        return previousStatus;
+      }
     }
 
-    _connectionStatuses[id] = AgentConnectionStatus.Unavailable;
-    return true;
+    return null;
   }
 }

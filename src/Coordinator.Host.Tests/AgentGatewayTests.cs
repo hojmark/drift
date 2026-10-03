@@ -4,6 +4,9 @@ using Drift.Domain;
 using Drift.Messaging.Client;
 using Drift.Messaging.Protocol.Agent.Status;
 using Drift.Networking.Core.Abstractions;
+using Drift.TestUtilities.IO;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Drift.Coordinator.Host.Tests;
 
@@ -12,7 +15,7 @@ internal sealed class AgentGatewayTests {
   public async Task CheckStatusAsync_WhenAgentIsReady_MarksAgentConnected() {
     var id = AgentId.Parse( "agent_one", null );
     var directory = new InMemoryAgentDirectory( [CreateAgent( id )] );
-    var gateway = new AgentGateway( new FakeAgentClient(), directory );
+    var gateway = new AgentGateway( new FakeAgentClient(), directory, NullLogger.Instance );
 
     await gateway.CheckStatusAsync( id, CancellationToken.None );
 
@@ -20,11 +23,30 @@ internal sealed class AgentGatewayTests {
   }
 
   [Test]
+  public async Task CheckStatusAsync_WhenAgentTransitionsFromUnknownToConnected_LogsStateChangeOnce() {
+    var id = AgentId.Parse( "agent_one", null );
+    var directory = new InMemoryAgentDirectory( [CreateAgent( id )] );
+    var logger = new TestLogger( captureEntries: true );
+    var gateway = new AgentGateway( new FakeAgentClient(), directory, logger );
+
+    await gateway.CheckStatusAsync( id, CancellationToken.None );
+    await gateway.CheckStatusAsync( id, CancellationToken.None );
+
+    var stateChangeLogs = logger.Entries
+      .Where( entry => entry.Message.Contains( "changed from Unknown to Connected", StringComparison.Ordinal ) )
+      .ToArray();
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( stateChangeLogs, Has.Length.EqualTo( 1 ) );
+      Assert.That( stateChangeLogs[0].Level, Is.EqualTo( LogLevel.Information ) );
+    }
+  }
+
+  [Test]
   public void CheckStatusAsync_WhenRequestFails_MarksAgentUnavailableAndRethrows() {
     var id = AgentId.Parse( "agent_one", null );
     var directory = new InMemoryAgentDirectory( [CreateAgent( id )] );
     var exception = new InvalidOperationException( "request failed" );
-    var gateway = new AgentGateway( new FakeAgentClient( exception ), directory );
+    var gateway = new AgentGateway( new FakeAgentClient( exception ), directory, NullLogger.Instance );
 
     var thrown = Assert.ThrowsAsync<InvalidOperationException>( async () =>
       await gateway.CheckStatusAsync( id, CancellationToken.None )
@@ -36,19 +58,52 @@ internal sealed class AgentGatewayTests {
     }
   }
 
+  [Test]
+  public async Task CheckStatusAsync_LogsOnlyUnavailableAndRecoveryTransitions() {
+    var id = AgentId.Parse( "agent_one", null );
+    var directory = new InMemoryAgentDirectory( [CreateAgent( id )] );
+    var client = new FakeAgentClient( new InvalidOperationException( "Connection refused" ) );
+    var logger = new TestLogger( captureEntries: true );
+    var gateway = new AgentGateway( client, directory, logger );
+
+    for ( var attempt = 0; attempt < 2; attempt++ ) {
+      Assert.ThrowsAsync<InvalidOperationException>( async () =>
+        await gateway.CheckStatusAsync( id, CancellationToken.None )
+      );
+    }
+
+    client.Exception = null;
+    await gateway.CheckStatusAsync( id, CancellationToken.None );
+
+    var warningLogs = logger.Entries.Where( entry => entry.Level == LogLevel.Warning ).ToArray();
+    var informationLogs = logger.Entries.Where( entry => entry.Level == LogLevel.Information ).ToArray();
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( warningLogs, Has.Length.EqualTo( 1 ) );
+      Assert.That( warningLogs[0].Message, Does.Contain( "Connection to agent agent_one" ) );
+      Assert.That( warningLogs[0].Message, Does.Contain( "Connection refused" ) );
+      Assert.That( informationLogs, Has.Length.EqualTo( 1 ) );
+      Assert.That( informationLogs[0].Message, Does.Contain( "changed from Unavailable to Connected" ) );
+    }
+  }
+
   private static EnrolledAgent CreateAgent( AgentId id ) {
     return new EnrolledAgent( id, new Uri( "http://127.0.0.1:5001" ), DateTimeOffset.UtcNow );
   }
 
   private sealed class FakeAgentClient( Exception? exception = null ) : IAgentClient {
+    public Exception? Exception {
+      get;
+      set;
+    } = exception;
+
     public Task<TResponse> RequestAsync<TRequest, TResponse>(
       Domain.Agent agent,
       TRequest message,
       TimeSpan? timeout = null,
       CancellationToken cancellationToken = default
     ) where TResponse : IResponse where TRequest : IRequest<TResponse> {
-      if ( exception is not null ) {
-        return Task.FromException<TResponse>( exception );
+      if ( Exception is not null ) {
+        return Task.FromException<TResponse>( Exception );
       }
 
       return Task.FromResult( (TResponse) (IResponse) new AgentStatusResponse { Status = AgentStatus.Ready } );

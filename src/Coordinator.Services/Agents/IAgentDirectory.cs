@@ -9,8 +9,13 @@ namespace Drift.Coordinator.Services.Agents;
 public interface IAgentDirectory {
   IReadOnlyCollection<EnrolledAgent> GetEnrolledAgents();
   AgentConnectionStatus GetConnectionStatus( AgentId id );
-  bool MarkConnected( AgentId id );
-  bool MarkUnavailable( AgentId id );
+
+  /// <summary>Marks an agent connected and returns its previous status.</summary>
+  AgentConnectionStatus? MarkConnected( AgentId id );
+
+  /// <summary>Marks an agent unavailable and returns its previous status.</summary>
+  AgentConnectionStatus? MarkUnavailable( AgentId id );
+
   bool TryGet( AgentId id, out EnrolledAgent? agent );
   EnrolledAgent Enroll( AgentId id, Uri address );
   bool Remove( AgentId id );

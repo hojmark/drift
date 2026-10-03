@@ -49,7 +49,7 @@ internal sealed class MessageStreamManagerTests {
     var serviceCollection = new ServiceCollection();
     var logger = new StringLogger( TestContext.Out );
     serviceCollection.AddSingleton<ILogger>( logger );
-    serviceCollection.AddSingleton<IMessageHandler>( _ => new TestMessageHandler( logger ) );
+    serviceCollection.AddSingleton<IMessageHandler>( _ => new TestRequestHandler( logger ) );
     serviceCollection.AddMessagingCore( new MessagingOptions { StoppingToken = cts.Token } );
     serviceCollection.AddMessagingClient();
     await using var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -86,12 +86,12 @@ internal sealed class MessageStreamManagerTests {
     }
   }
 
-  private static (IMessageStreamManager, TestMessageHandler messageHandler) CreateStreamManager(
+  private static (IMessageStreamManager, TestRequestHandler messageHandler) CreateStreamManager(
     CancellationTokenSource cts
   ) {
     var serviceCollection = new ServiceCollection();
     var logger = new StringLogger( TestContext.Out );
-    var messageHandler = new TestMessageHandler( logger );
+    var messageHandler = new TestRequestHandler( logger );
     serviceCollection.AddSingleton<ILogger>( logger );
     serviceCollection.AddSingleton<IMessageHandler>( _ => messageHandler );
     serviceCollection.AddMessagingCore( new MessagingOptions { StoppingToken = cts.Token } );

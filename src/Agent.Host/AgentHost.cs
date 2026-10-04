@@ -38,17 +38,16 @@ public static class AgentHost {
     builder.Services.AddSingleton( logger );
     builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
 
+    var messagingOptions = new MessagingOptions {
+      MessageAssembly = typeof(AgentProtocolMessagesAssemblyMarker).Assembly
+    };
+    builder.Services.AddMessagingCore( messagingOptions );
+    builder.Services.AddMessagingClient();
     if ( configuration.Port is not null ) {
       builder.Services.AddMessagingServer( options => {
         options.EnableDetailedErrors = true;
       } );
     }
-
-    builder.Services.AddMessagingClient();
-    var messagingOptions = new MessagingOptions {
-      MessageAssembly = typeof(AgentProtocolMessagesAssemblyMarker).Assembly
-    };
-    builder.Services.AddMessagingCore( messagingOptions );
 
     builder.Services.AddAgentServices();
 

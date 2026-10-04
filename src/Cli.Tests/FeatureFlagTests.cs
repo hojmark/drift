@@ -16,7 +16,7 @@ internal sealed class FeatureFlagTests {
   private const string DummyCodeCommand = "dummy";
   private const int DummyCommandExitCode = 1337;
   private static readonly FeatureFlag MyFeature = new("myFeature");
-  private static readonly IDriftSettingsLocation SettingsLocation = new TemporarySettingsLocation();
+  private static readonly IDriftSettingsLocation SettingsLocation = new TemporaryDriftSettingsLocation();
 
   [Test]
   public async Task SettingsControlFlag( [Values( false, true, null )] bool? featureEnabled ) {

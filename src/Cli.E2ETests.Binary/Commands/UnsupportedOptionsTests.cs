@@ -4,6 +4,7 @@ namespace Drift.Cli.E2ETests.Binary.Commands;
 
 internal sealed class UnsupportedOptionsTests : DriftBinaryFixture {
   [TestCase( "" )]
+  [TestCase( "--version" )]
   [TestCase( "status" )]
   [TestCase( "env list" )]
   // [TestCase( "agent start --bogus" )]

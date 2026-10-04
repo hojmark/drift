@@ -37,7 +37,7 @@ internal sealed class InboundTests {
   [Test]
   public async Task InboundStreamCloseIsLogged() {
     using var cts = new CancellationTokenSource();
-    var logger = new StringLogger();
+    var logger = new StringLogger( minimumLogLevel: LogLevel.Debug );
     var inboundMessageService = CreateInboundMessageService( cts, logger );
 
     var callContext = TestServerCallContext.Create();

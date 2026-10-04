@@ -10,7 +10,7 @@ namespace Drift.Cli.Tests.Commands;
 internal sealed partial class EnvCommandTests {
   private IDriftSettingsLocation SettingsLocation {
     get;
-  } = new TemporarySettingsLocation();
+  } = new TemporaryDriftSettingsLocation();
 
   private Task<CliCommandResult> InvokeAsync( string args ) {
     return DriftTestCli.InvokeAsync( args, settingsLocation: SettingsLocation );

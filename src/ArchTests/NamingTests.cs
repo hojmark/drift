@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using ArchUnitNET.Domain;
 using ArchUnitNET.NUnit;
 using Drift.ArchTests.Fixtures;
+using Drift.Common.IO;
 using Drift.Domain.Device;
 using Drift.Networking.Core.Abstractions;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
@@ -21,6 +22,8 @@ internal sealed class NamingTests : DriftArchitectureFixture {
 
   [TestCase( new[] { typeof(RequestHandler<,>), typeof(StreamingRequestHandler<,,>) }, 2 )]
   [TestCase( new[] { typeof(IAddressableDevice) }, 1 )]
+  [TestCase( new[] { typeof(IDriftSettingsLocation) }, 3 )]
+  [TestCase( new[] { typeof(IDriftDataLocation) }, 3 )]
   public void DescendantsShouldEndWithImplementedTypeSuffix( Type[] handlerTypes, int wordCount ) {
     foreach ( var handlerType in handlerTypes ) {
       // Remove generic arity ("RequestHandler`2" -> "RequestHandler")

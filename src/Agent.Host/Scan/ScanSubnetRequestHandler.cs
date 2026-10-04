@@ -19,13 +19,12 @@ internal sealed class ScanSubnetRequestHandler(
 
     Logger.LogInformation( "Starting scan of {Cidr}", request.Cidr );
 
-    var subnetScanner = subnetScannerFactory.Get( request.Cidr );
+    var scanner = subnetScannerFactory.Get( request.Cidr );
     var policy = new ProgressUpdatePolicy( responder );
-
-    subnetScanner.ResultUpdated += policy.Handle;
+    scanner.ResultUpdated += policy.Handle;
 
     try {
-      var result = await subnetScanner.ScanAsync( options, Logger, cancellationToken );
+      var result = await scanner.ScanAsync( options, Logger, cancellationToken );
 
       Logger.LogInformation(
         "Scan complete for {Cidr}: {DeviceCount} devices found",
@@ -33,11 +32,11 @@ internal sealed class ScanSubnetRequestHandler(
         result.DiscoveredDevices.Count
       );
 
-      var completeResponse = new ScanSubnetResponse { Result = result };
-      await responder.SendAsync( completeResponse );
+      var finalResponse = new ScanSubnetResponse { Result = result };
+      await responder.SendAsync( finalResponse );
     }
     finally {
-      subnetScanner.ResultUpdated -= policy.Handle;
+      scanner.ResultUpdated -= policy.Handle;
     }
   }
 }

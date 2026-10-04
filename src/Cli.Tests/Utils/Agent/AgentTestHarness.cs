@@ -78,7 +78,7 @@ internal sealed class AgentTestHarness : IAsyncDisposable {
       agentConfigs,
       coordinatorConfig,
       new TemporaryCoordinatorDataLocation(),
-      new TemporarySettingsLocation(),
+      new TemporaryDriftSettingsLocation(),
       new TemporaryDriftDataLocation(),
       timeout ?? TimeSpan.FromMinutes( 1 )
     );

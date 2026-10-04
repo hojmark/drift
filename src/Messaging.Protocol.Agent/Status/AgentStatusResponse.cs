@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Drift.Common;
 using Drift.Networking.Core.Abstractions;
 
 namespace Drift.Messaging.Protocol.Agent.Status;
@@ -11,6 +12,10 @@ public sealed class AgentStatusResponse : IResponse {
     get;
     init;
   }
+
+  public string Version {
+    get;
+  } = DriftMetadata.Version;
 
   public static JsonTypeInfo JsonInfo => AgentStatusResponseJsonContext.Default.AgentStatusResponse;
 }

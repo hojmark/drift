@@ -41,17 +41,16 @@ public static class CoordinatorHost {
     builder.Services.AddSingleton( logger );
     builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
 
+    var messagingOptions = new MessagingOptions {
+      MessageAssembly = typeof(AgentProtocolMessagesAssemblyMarker).Assembly
+    };
+    builder.Services.AddMessagingCore( messagingOptions );
+    builder.Services.AddMessagingClient();
     if ( configuration.AgentPort is not null ) {
       builder.Services.AddMessagingServer( options => {
         options.EnableDetailedErrors = true;
       } );
     }
-
-    builder.Services.AddMessagingClient();
-    var messagingOptions = new MessagingOptions {
-      MessageAssembly = typeof(AgentProtocolMessagesAssemblyMarker).Assembly
-    };
-    builder.Services.AddMessagingCore( messagingOptions );
 
     builder.Services.AddCoordinatorServices();
     builder.Services.AddCoordinatorApi();

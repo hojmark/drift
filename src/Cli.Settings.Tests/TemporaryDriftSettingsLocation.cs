@@ -4,7 +4,7 @@ namespace Drift.Cli.Settings.Tests;
 
 // Currently used by FeatureFlagTests in Cli.Tests
 #pragma warning disable CA1515
-public sealed class TemporarySettingsLocation : IDriftSettingsLocation {
+public sealed class TemporaryDriftSettingsLocation : IDriftSettingsLocation {
 #pragma warning restore CA1515
 
   public string Directory {

@@ -96,17 +96,17 @@ internal static class RootCommandFactory {
   }
 
   private static RootCommand CreateRootCommand( IServiceProvider provider ) {
-    // TODO 'from' or 'against'?
     var rootCommand =
+      // TODO 'from' or 'against'?
       new RootCommand( $"{Chars.SatelliteAntenna} Drift CLI — monitor network drift against your declared state" ) {
         new InitCommand( provider ),
         new ScanCommand( provider ),
+        new LintCommand( provider ),
+        new EnvCommand( provider ),
         new SpecCommand( provider ),
         new EnrollmentCommand( provider ),
-        new LintCommand( provider ),
         new AgentCommand( provider ),
         new ServerCommand( provider ),
-        new EnvCommand( provider ),
         new StatusCommand( provider )
       };
 
@@ -142,10 +142,12 @@ internal static class RootCommandFactory {
     services.AddScoped<ServerStartCommandHandler>();
     services.AddScoped<SpecApplyCommandHandler>();
     services.AddScoped<EnrollmentAddCommandHandler>();
+
     services.AddScoped<EnvAddCommandHandler>();
     services.AddScoped<EnvListCommandHandler>();
     services.AddScoped<EnvUseCommandHandler>();
     services.AddScoped<EnvRemoveCommandHandler>();
+
     services.AddScoped<StatusCommandHandler>();
   }
 

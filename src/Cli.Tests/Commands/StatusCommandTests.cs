@@ -17,7 +17,7 @@ namespace Drift.Cli.Tests.Commands;
 internal sealed class StatusCommandTests {
   private IDriftSettingsLocation SettingsLocation {
     get;
-  } = new TemporarySettingsLocation();
+  } = new TemporaryDriftSettingsLocation();
 
   [TearDown]
   public void TearDown() {

@@ -1,3 +1,4 @@
+using Drift.Common;
 using Drift.Coordinator.Services.Models;
 using Drift.Domain;
 using Drift.Messaging.Client;
@@ -41,6 +42,15 @@ public sealed class AgentGateway(
       );
       if ( response.Status != AgentStatus.Ready ) {
         throw new InvalidOperationException( $"Agent '{agentId}' is not ready." );
+      }
+
+      if ( response.Version != DriftMetadata.Version ) {
+        logger.LogWarning(
+          "Agent '{AgentId}' is running version '{AgentVersion}', but coordinator is running version '{CoordinatorVersion}'. YMMV.",
+          agentId,
+          response.Version,
+          DriftMetadata.Version
+        );
       }
 
       MarkConnected( enrolledAgent );

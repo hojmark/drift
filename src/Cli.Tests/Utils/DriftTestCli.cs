@@ -24,7 +24,7 @@ internal static class DriftTestCli {
     IDriftSettingsLocation? settingsLocation = null,
     CancellationToken cancellationToken = default
   ) {
-    settingsLocation ??= new TemporarySettingsLocation();
+    settingsLocation ??= new TemporaryDriftSettingsLocation();
     var token = cancellationToken;
     CancellationTokenSource? cancellationTokenSource = null;
 

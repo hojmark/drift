@@ -19,10 +19,10 @@ internal static class OutputManagerExtensions {
   /// </summary>
   public static void WarnAgentPreview( this IOutputManager outputManager ) {
     var logger = outputManager.GetLogger();
-    logger.LogWarning( "-------------------------------------- PREVIEW --------------------------------------" );
+    logger.LogWarning( "-------------------------------------- PREVIEW ---------------------------------------------" );
     logger.LogWarning( "Distributed scanning via agents is a preview feature and should be used with caution." );
-    logger.LogWarning( "Communication is unencrypted and unauthenticated. Do not use on untrusted networks." );
-    logger.LogWarning( "-------------------------------------------------------------------------------------" );
+    logger.LogWarning( "All communication between CLI/server/agent is unencrypted. Do not use on untrusted networks." );
+    logger.LogWarning( "--------------------------------------------------------------------------------------------" );
   }
 
   /// <summary>

@@ -1,7 +1,7 @@
-﻿-------------------------------------- PREVIEW --------------------------------------
+﻿-------------------------------------- PREVIEW ---------------------------------------------
 Distributed scanning via agents is a preview feature and should be used with caution.
-Communication is unencrypted and unauthenticated. Do not use on untrusted networks.
--------------------------------------------------------------------------------------
+All communication between CLI/server/agent is unencrypted. Do not use on untrusted networks.
+--------------------------------------------------------------------------------------------
 
  ___          _    __   _
 |   \   _ _  (_)  / _| | |_

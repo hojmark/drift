@@ -9,7 +9,7 @@ Communication is unencrypted and unauthenticated. Do not use on untrusted networ
 |___/  |_|   |_| |_|    \__| AGENT 
 
 Version: <version>
-Port: 51515 (gRPC)
+Port: <port>
 Agent started
 Agent stopping...
 Agent stopped

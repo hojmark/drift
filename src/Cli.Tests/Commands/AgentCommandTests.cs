@@ -26,7 +26,7 @@ internal sealed class AgentCommandTests {
     using var tcs = new CancellationTokenSource();
 
     var runningCommand = await DriftTestCli.StartAgentAsync(
-      string.Empty,
+      "--port " + TcpUtils.GetFreePort(),
       cancellationToken: tcs.Token
     );
 
@@ -36,7 +36,7 @@ internal sealed class AgentCommandTests {
 
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-      await Verify( output.ToString() ).ScrubVersion();
+      await Verify( output.ToString() ).ScrubVersion().ScrubPort();
       Assert.That( error.ToString(), Is.Empty );
     }
   }

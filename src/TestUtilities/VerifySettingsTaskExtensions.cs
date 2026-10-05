@@ -23,6 +23,13 @@ public static partial class VerifySettingsTaskExtensions {
         );
     }
 
+    public SettingsTask ScrubPort() {
+      return settings
+        .ScrubLinesWithReplace( line =>
+          Regex.Replace( line, "Port: .+", "Port: <port>" )
+        );
+    }
+
     public SettingsTask ScrubVersion() {
       return settings
         .ScrubLinesWithReplace( line =>

@@ -12,19 +12,20 @@ internal sealed partial class EnvCommandTests {
     );
 
     // Act
-    var (exitCode, output, error) = await InvokeAsync( "env remove env1" );
+    var (exitCode, output, error) = await InvokeAsync( "env remove env2" );
 
     // Assert
     await Verify( output.ToString() + error );
     Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
 
-    var settings = ReadSettings();
-    Assert.That( settings.Environments, Has.Count.EqualTo( 1 ) );
-    Assert.That( settings.Environments[0].Name, Is.EqualTo( "env2" ) );
+    var updatedSettings = ReadSettings();
+    Assert.That( updatedSettings.Environments, Has.Count.EqualTo( 1 ) );
+    Assert.That( updatedSettings.Environments[0].Name, Is.EqualTo( "env1" ) );
+    Assert.That( updatedSettings.ActiveEnvironment, Is.EqualTo( "env1" ) );
   }
 
   [Test]
-  public async Task EnvRemove_RemovesActiveEnvironment_ClearsActive() {
+  public async Task EnvRemove_RemovesActiveEnvironment_FallsBackToLocal() {
     // Arrange
     CreateInitialEnvironments(
       ( "env1", "host1:5000" ),
@@ -72,7 +73,7 @@ internal sealed partial class EnvCommandTests {
   }
 
   [Test]
-  public async Task EnvRemove_RemoveLastEnvironment_ClearsActive_AdvisesCreatingOne() {
+  public async Task EnvRemove_RemovesLastConfiguredEnvironment_FallsBackToLocal() {
     // Arrange
     CreateInitialEnvironment( "env1", "host1:5000" );
 
@@ -105,13 +106,24 @@ internal sealed partial class EnvCommandTests {
   }
 
   [Test]
-  public async Task EnvRemove_NoEnvironments_FailsWithError() {
+  public async Task EnvRemove_UnknownEnvironmentWithNoConfiguredEnvironments_FailsWithError() {
     // Arrange / Act
     var (exitCode, output, error) = await InvokeAsync( "env remove myenv" );
 
     // Assert
     await Verify( output.ToString() + error );
     Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
+  }
+
+  [Test]
+  public async Task EnvRemove_BuiltInLocal_FailsWithError() {
+    // Arrange / Act
+    var (exitCode, output, error) = await InvokeAsync( "env remove local" );
+
+    // Assert
+    await Verify( output.ToString() + error );
+    Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
+    Assert.That( ReadSettings().Environments, Is.Empty );
   }
 
   [Test]

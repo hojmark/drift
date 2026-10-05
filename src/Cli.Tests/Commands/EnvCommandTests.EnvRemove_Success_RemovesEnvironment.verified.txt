@@ -1,3 +1,1 @@
-✓ Removed 'env1'
-No environment is active.
-💡️ Set one with drift env use <name>
+﻿✓ Removed 'env2'

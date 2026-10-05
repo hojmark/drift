@@ -61,6 +61,17 @@ internal sealed partial class EnvCommandTests {
   }
 
   [Test]
+  public async Task EnvAdd_BuiltInLocal_FailsWithError() {
+    // Arrange / Act
+    var (exitCode, output, error) = await InvokeAsync( "env add local localhost:5000" );
+
+    // Assert
+    await Verify( output.ToString() + error );
+    Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
+    Assert.That( ReadSettings().Environments, Is.Empty );
+  }
+
+  [Test]
   public async Task EnvAdd_MissingName_FailsWithError() {
     // Arrange / Act
     var (exitCode, _, error) = await InvokeAsync( "env add localhost:5000" );

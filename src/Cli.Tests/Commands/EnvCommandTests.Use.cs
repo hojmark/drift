@@ -39,13 +39,27 @@ internal sealed partial class EnvCommandTests {
   }
 
   [Test]
-  public async Task EnvUse_NoEnvironments_FailsWithError() {
+  public async Task EnvUse_UnknownEnvironmentWithNoConfiguredEnvironments_FailsWithError() {
     // Arrange / Act
     var (exitCode, output, error) = await InvokeAsync( "env use myenv" );
 
     // Assert
     await Verify( output.ToString() + error );
     Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
+  }
+
+  [Test]
+  public async Task EnvUse_Local_SetsBuiltInEnvironmentActive() {
+    // Arrange
+    CreateInitialEnvironment( "env1", "host1:5000" );
+
+    // Act
+    var (exitCode, output, error) = await InvokeAsync( "env use local" );
+
+    // Assert
+    await Verify( output.ToString() + error );
+    Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
+    Assert.That( ReadSettings().ActiveEnvironment, Is.Null );
   }
 
   [Test]

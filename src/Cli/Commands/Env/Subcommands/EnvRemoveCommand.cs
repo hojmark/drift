@@ -72,14 +72,7 @@ internal class EnvRemoveCommandHandler(
     output.Normal.WriteLineSuccess( $"Removed '{parameters.Name}'" );
 
     if ( removedActiveEnvironment ) {
-      if ( settings.Environments.Count > 0 ) {
-        output.Normal.WriteLineWarning( "No environment is active." );
-        output.Normal.WriteLineCTA( "Set one with", "drift env use <name>" );
-      }
-      else {
-        output.Normal.WriteLineWarning( "No environments are configured." );
-        output.Normal.WriteLineCTA( "Add one with", "drift env add <name> <address>" );
-      }
+      output.Normal.WriteLine( $"'{BuiltInEnvironmentNames.Local}' is active" );
     }
 
     return Task.FromResult( ExitCodes.Success );

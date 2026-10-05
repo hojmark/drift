@@ -9,6 +9,7 @@ using Drift.Cli.Tests.Utils.Coordinator;
 using Drift.Common.IO;
 using Drift.Coordinator.Host;
 using Drift.TestUtilities.Hosts;
+using Drift.TestUtilities.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -122,8 +123,8 @@ internal sealed class StatusCommandTests {
 
   [Test]
   public async Task Status_CoordinatorWithEnrolledAgent_ShowsAgentState() {
-    var controlPort = GetFreePort();
-    var agentPort = GetFreePort();
+    var controlPort = TcpUtils.GetFreePort();
+    var agentPort = TcpUtils.GetFreePort();
     var dataLocation = new TemporaryCoordinatorDataLocation();
     await using var agent = await RunningAgentHost.StartAsync(
       agentPort,
@@ -179,11 +180,5 @@ internal sealed class StatusCommandTests {
       await coordinator.StopAsync();
       Directory.Delete( dataLocation.Directory, true );
     }
-  }
-
-  private static ushort GetFreePort() {
-    using var listener = new TcpListener( IPAddress.Loopback, 0 );
-    listener.Start();
-    return (ushort) ( (IPEndPoint) listener.LocalEndpoint ).Port;
   }
 }

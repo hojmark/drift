@@ -1,11 +1,10 @@
 using Drift.Cli.Abstractions;
 using Drift.Cli.Tests.Utils;
 using Drift.TestUtilities;
+using Drift.TestUtilities.IO;
 
 namespace Drift.Cli.Tests.Commands;
 
-// TODO picking a random port to remove NonParallelizable
-[NonParallelizable]
 internal sealed class AgentCommandTests {
   [CancelAfter( 3000 )]
   [Test]
@@ -13,7 +12,7 @@ internal sealed class AgentCommandTests {
     using var tcs = new CancellationTokenSource( TimeSpan.FromMilliseconds( 2000 ) );
 
     var (exitCode, output, _) = await DriftTestCli.InvokeAsync(
-      "agent start",
+      "agent start --port " + TcpUtils.GetFreePort(),
       cancellationToken: tcs.Token
     );
 

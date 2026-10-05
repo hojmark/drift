@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using Drift.Common.IO;
@@ -25,7 +24,7 @@ internal sealed class CoordinatorHostIntegrationTests {
   [Test]
   public async Task ServerStatus_IsAvailable() {
     await using var app = await RunningCoordinatorHost.StartAsync(
-      new CoordinatorConfiguration { Port = GetFreePort(), AgentPort = GetFreePort() },
+      new CoordinatorConfiguration { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
       NullLogger.Instance
     );
     using var client = app.CreateHttpClient();
@@ -40,7 +39,7 @@ internal sealed class CoordinatorHostIntegrationTests {
   [Test]
   public async Task ApiDocsUi_IsAvailable() {
     await using var app = await RunningCoordinatorHost.StartAsync(
-      new CoordinatorConfiguration { Port = GetFreePort(), AgentPort = GetFreePort() },
+      new CoordinatorConfiguration { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
       NullLogger.Instance
     );
     using var client = app.CreateHttpClient();
@@ -57,8 +56,8 @@ internal sealed class CoordinatorHostIntegrationTests {
 
   [Test]
   public async Task Enrollment_UndeclaredAgent_ReturnsUsefulError() {
-    var controlPort = GetFreePort();
-    var agentPort = GetFreePort();
+    var controlPort = TcpUtils.GetFreePort();
+    var agentPort = TcpUtils.GetFreePort();
     var dataLocation = new TemporaryCoordinatorDataLocation();
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
       new CoordinatorConfiguration { Port = controlPort, AgentPort = agentPort },
@@ -101,9 +100,9 @@ internal sealed class CoordinatorHostIntegrationTests {
 
   [Test]
   public async Task Enrollment_ConnectsToRealAgentAndReportsConnectedStatus() {
-    var controlPort = GetFreePort();
-    var coordinatorAgentPort = GetFreePort();
-    var agentPort = GetFreePort();
+    var controlPort = TcpUtils.GetFreePort();
+    var coordinatorAgentPort = TcpUtils.GetFreePort();
+    var agentPort = TcpUtils.GetFreePort();
     var dataLocation = new TemporaryCoordinatorDataLocation();
     var agentLogger = new StringLogger();
     var coordinatorLogger = new StringLogger();
@@ -193,9 +192,9 @@ internal sealed class CoordinatorHostIntegrationTests {
 
   [Test]
   public async Task DistributedScan_ReconnectsEnrolledAgentAfterConnectionStateReset() {
-    var controlPort = GetFreePort();
-    var coordinatorAgentPort = GetFreePort();
-    var agentPort = GetFreePort();
+    var controlPort = TcpUtils.GetFreePort();
+    var coordinatorAgentPort = TcpUtils.GetFreePort();
+    var agentPort = TcpUtils.GetFreePort();
     var dataLocation = new TemporaryCoordinatorDataLocation();
     var agentLogger = new StringLogger();
     var coordinatorLogger = new StringLogger();
@@ -313,12 +312,6 @@ internal sealed class CoordinatorHostIntegrationTests {
       await agent.StopAsync();
       Directory.Delete( dataLocation.Directory, true );
     }
-  }
-
-  private static ushort GetFreePort() {
-    using var listener = new TcpListener( IPAddress.Loopback, 0 );
-    listener.Start();
-    return (ushort) ( (IPEndPoint) listener.LocalEndpoint ).Port;
   }
 
   private static string GetInformationLogs( StringLogger logger, params ushort[] ports ) {

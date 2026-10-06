@@ -59,8 +59,10 @@ internal sealed class FirewallRulesTests {
     );
 
     // Assert
-    Assert.That( toExternalAllowed, Is.True );
-    Assert.That( toInternalAllowed, Is.False );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( toExternalAllowed, Is.True );
+      Assert.That( toInternalAllowed, Is.False );
+    }
   }
 
   [Test]
@@ -118,8 +120,10 @@ internal sealed class FirewallRulesTests {
     );
 
     // Assert
-    Assert.That( toDeniedAllowed, Is.False );
-    Assert.That( toAllowedAllowed, Is.True, "Traffic to other device should be allowed" );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( toDeniedAllowed, Is.False );
+      Assert.That( toAllowedAllowed, Is.True, "Traffic to other device should be allowed" );
+    }
   }
 
   [Test]
@@ -142,8 +146,10 @@ internal sealed class FirewallRulesTests {
     );
 
     // Assert
-    Assert.That( bastionAllowed, Is.True, "Bastion host should be allowed" );
-    Assert.That( otherDenied, Is.False, "Other DMZ hosts should be denied" );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( bastionAllowed, Is.True, "Bastion host should be allowed" );
+      Assert.That( otherDenied, Is.False, "Other DMZ hosts should be denied" );
+    }
   }
 
   [Test]
@@ -165,8 +171,10 @@ internal sealed class FirewallRulesTests {
     );
 
     // Assert
-    Assert.That( deviceInRange, Is.False, "Device in CIDR range should be blocked" );
-    Assert.That( deviceOutOfRange, Is.True, "Device outside CIDR range should be allowed" );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( deviceInRange, Is.False, "Device in CIDR range should be blocked" );
+      Assert.That( deviceOutOfRange, Is.True, "Device outside CIDR range should be allowed" );
+    }
   }
 
   [Test]
@@ -189,8 +197,10 @@ internal sealed class FirewallRulesTests {
     );
 
     // Assert
-    Assert.That( allowedRange, Is.True, "Device in allowed CIDR range should pass" );
-    Assert.That( deniedRange, Is.False, "Device outside allowed range should be denied" );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( allowedRange, Is.True, "Device in allowed CIDR range should pass" );
+      Assert.That( deniedRange, Is.False, "Device outside allowed range should be denied" );
+    }
   }
 
   [Test]
@@ -216,8 +226,10 @@ internal sealed class FirewallRulesTests {
     );
 
     // Assert
-    Assert.That( specificAllowed, Is.True, "Specific device exception should be allowed" );
-    Assert.That( genericDenied, Is.False, "Generic subnet traffic should be denied" );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( specificAllowed, Is.True, "Specific device exception should be allowed" );
+      Assert.That( genericDenied, Is.False, "Generic subnet traffic should be denied" );
+    }
   }
 
   [Test]
@@ -239,8 +251,10 @@ internal sealed class FirewallRulesTests {
     );
 
     // Assert
-    Assert.That( guestToGuest, Is.False );
-    Assert.That( guestToInternet, Is.True );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( guestToGuest, Is.False );
+      Assert.That( guestToInternet, Is.True );
+    }
   }
 
   [Test]

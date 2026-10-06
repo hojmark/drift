@@ -19,9 +19,11 @@ internal sealed partial class EnvCommandTests {
     Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
 
     var updatedSettings = ReadSettings();
-    Assert.That( updatedSettings.Environments, Has.Count.EqualTo( 1 ) );
-    Assert.That( updatedSettings.Environments[0].Name, Is.EqualTo( "env1" ) );
-    Assert.That( updatedSettings.ActiveEnvironment, Is.EqualTo( "env1" ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( updatedSettings.Environments, Has.Count.EqualTo( 1 ) );
+      Assert.That( updatedSettings.Environments[0].Name, Is.EqualTo( "env1" ) );
+      Assert.That( updatedSettings.ActiveEnvironment, Is.EqualTo( "env1" ) );
+    }
   }
 
   [Test]
@@ -44,8 +46,10 @@ internal sealed partial class EnvCommandTests {
     Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
 
     var updatedSettings = ReadSettings();
-    Assert.That( updatedSettings.ActiveEnvironment, Is.Null );
-    Assert.That( updatedSettings.Environments, Has.Count.EqualTo( 1 ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( updatedSettings.ActiveEnvironment, Is.Null );
+      Assert.That( updatedSettings.Environments, Has.Count.EqualTo( 1 ) );
+    }
   }
 
   [Test]
@@ -68,8 +72,10 @@ internal sealed partial class EnvCommandTests {
     Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
 
     var updatedSettings = ReadSettings();
-    Assert.That( updatedSettings.ActiveEnvironment, Is.EqualTo( "env2" ) );
-    Assert.That( updatedSettings.Environments, Has.Count.EqualTo( 2 ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( updatedSettings.ActiveEnvironment, Is.EqualTo( "env2" ) );
+      Assert.That( updatedSettings.Environments, Has.Count.EqualTo( 2 ) );
+    }
   }
 
   [Test]
@@ -85,8 +91,10 @@ internal sealed partial class EnvCommandTests {
     Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
 
     var settings = ReadSettings();
-    Assert.That( settings.Environments, Is.Empty );
-    Assert.That( settings.ActiveEnvironment, Is.Null );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( settings.Environments, Is.Empty );
+      Assert.That( settings.ActiveEnvironment, Is.Null );
+    }
   }
 
   [Test]
@@ -122,8 +130,10 @@ internal sealed partial class EnvCommandTests {
 
     // Assert
     await Verify( output.ToString() + error );
-    Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
-    Assert.That( ReadSettings().Environments, Is.Empty );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
+      Assert.That( ReadSettings().Environments, Is.Empty );
+    }
   }
 
   [Test]
@@ -132,7 +142,9 @@ internal sealed partial class EnvCommandTests {
     var (exitCode, _, error) = await InvokeAsync( "env remove" );
 
     // Assert
-    Assert.That( exitCode, Is.EqualTo( ExitCodes.SystemCommandLineDefaultError ) );
-    Assert.That( error.ToString(), Does.Contain( "Required argument missing for command: 'remove'." ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.SystemCommandLineDefaultError ) );
+      Assert.That( error.ToString(), Does.Contain( "Required argument missing for command: 'remove'." ) );
+    }
   }
 }

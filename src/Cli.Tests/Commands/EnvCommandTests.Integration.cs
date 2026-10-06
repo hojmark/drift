@@ -4,13 +4,12 @@ namespace Drift.Cli.Tests.Commands;
 
 internal sealed partial class EnvCommandTests {
   [Test]
-  public async Task EnvWorkflow_AddMultipleAndManage_Works() {
+  public async Task EnvWorkflow() {
     // Arrange / Act
-
     var (exitCode1, _, _) = await InvokeAsync( "env add env1 host1:5000" );
     var (exitCode2, _, _) = await InvokeAsync( "env add env2 host2:5000" );
     var (exitCode3, _, _) = await InvokeAsync( "env use env2" );
-    var (exitCode4, output, error) = await InvokeAsync( "env list" );
+    var (exitCode4, output4, error4) = await InvokeAsync( "env list" );
 
     // Assert - exit codes
     using ( Assert.EnterMultipleScope() ) {
@@ -21,7 +20,7 @@ internal sealed partial class EnvCommandTests {
     }
 
     // Assert - output
-    await Verify( output.ToString() + error );
+    await Verify( output4.ToString() + error4 );
 
     // Assert - settings
     var settings = ReadSettings();

@@ -20,8 +20,10 @@ internal sealed partial class ScanCommandTests {
     var result = await harness.RunCliAsync( "scan" );
 
     // Assert
-    Assert.That( result.ScanExitCode, Is.EqualTo( ExitCodes.Success ) );
-    Assert.That( result.EnrolledAgentIds, Has.Count.EqualTo( 2 ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( result.ScanExitCode, Is.EqualTo( ExitCodes.Success ) );
+      Assert.That( result.EnrolledAgentIds, Has.Count.EqualTo( 2 ) );
+    }
 
     // Verify full output
     await Verify( result.CombinedOutput )
@@ -57,8 +59,10 @@ internal sealed partial class ScanCommandTests {
     var result = await harness.RunCliAsync( "scan" );
 
     // Assert
-    Assert.That( result.ScanExitCode, Is.EqualTo( ExitCodes.Success ) );
-    Assert.That( result.EnrolledAgentIds, Has.Count.EqualTo( 1 ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( result.ScanExitCode, Is.EqualTo( ExitCodes.Success ) );
+      Assert.That( result.EnrolledAgentIds, Has.Count.EqualTo( 1 ) );
+    }
 
     await Verify( result.CombinedOutput )
       .UseFileName( $"{nameof(ScanCommandTests)}.{nameof(WithAgents_EmptyResults_Succeeds)}" );
@@ -75,8 +79,10 @@ internal sealed partial class ScanCommandTests {
     var result = await harness.RunCliAsync( "scan" );
 
     // Assert
-    Assert.That( result.ScanExitCode, Is.EqualTo( ExitCodes.Success ) );
-    Assert.That( result.EnrolledAgentIds, Has.Count.EqualTo( 2 ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( result.ScanExitCode, Is.EqualTo( ExitCodes.Success ) );
+      Assert.That( result.EnrolledAgentIds, Has.Count.EqualTo( 2 ) );
+    }
 
     await Verify( result.CombinedOutput )
       .UseFileName( $"{nameof(ScanCommandTests)}.{nameof(WithAgents_NoLocalInterfaces_UsesRemoteScanning)}" );
@@ -124,8 +130,10 @@ internal sealed partial class ScanCommandTests {
     var result = await harness.RunCliAsync( "scan" );
 
     // Assert
-    Assert.That( result.ScanExitCode, Is.EqualTo( ExitCodes.Success ) );
-    Assert.That( result.EnrolledAgentIds, Has.Count.EqualTo( 2 ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( result.ScanExitCode, Is.EqualTo( ExitCodes.Success ) );
+      Assert.That( result.EnrolledAgentIds, Has.Count.EqualTo( 2 ) );
+    }
 
     // The result should contain each discovered device once.
     await Verify( result.CombinedOutput )
@@ -173,8 +181,10 @@ internal sealed partial class ScanCommandTests {
     var result = await harness.RunCliAsync( "scan" );
 
     // Assert
-    Assert.That( result.ScanExitCode, Is.EqualTo( ExitCodes.Success ) );
-    Assert.That( result.EnrolledAgentIds, Has.Count.EqualTo( 2 ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( result.ScanExitCode, Is.EqualTo( ExitCodes.Success ) );
+      Assert.That( result.EnrolledAgentIds, Has.Count.EqualTo( 2 ) );
+    }
 
     // Verify output contains only devices visible through the agent topology.
     await Verify( result.CombinedOutput )

@@ -58,8 +58,10 @@ internal sealed partial class EnvCommandTests {
 
     // Assert
     await Verify( output.ToString() + error );
-    Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-    Assert.That( ReadSettings().ActiveEnvironment, Is.Null );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
+      Assert.That( ReadSettings().ActiveEnvironment, Is.Null );
+    }
   }
 
   [Test]
@@ -95,7 +97,9 @@ internal sealed partial class EnvCommandTests {
     var (exitCode, _, error) = await InvokeAsync( "env use" );
 
     // Assert
-    Assert.That( exitCode, Is.EqualTo( ExitCodes.SystemCommandLineDefaultError ) );
-    Assert.That( error.ToString(), Does.Contain( "Required argument missing for command: 'use'." ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.SystemCommandLineDefaultError ) );
+      Assert.That( error.ToString(), Does.Contain( "Required argument missing for command: 'use'." ) );
+    }
   }
 }

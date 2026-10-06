@@ -30,8 +30,10 @@ internal sealed class MessageHandlerTests {
       .GetValue( null );
 
     // Assert
-    Assert.That( messageTypeValue, Is.Not.Null.And.Not.Empty );
-    Assert.That( jsonInfoValue, Is.Not.Null );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( messageTypeValue, Is.Not.Null.And.Not.Empty );
+      Assert.That( jsonInfoValue, Is.Not.Null );
+    }
   }
 
   private static List<Type> GetAllConcreteMessageTypes( Type baseType ) {

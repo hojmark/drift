@@ -6,9 +6,10 @@ namespace Drift.Cli.Tests.Commands;
 internal sealed partial class EnvCommandTests {
   [Test]
   public async Task EnvAdd_Success_AddsEnvironmentAndSetsActive() {
-    // Arrange / Act
+    // Arrange
     WriteSettings( new CliSettings() );
 
+    // Act
     var (exitCode, output, error) = await InvokeAsync(
       "env add myenv localhost:5000"
     );
@@ -19,9 +20,11 @@ internal sealed partial class EnvCommandTests {
 
     var settings = ReadSettings();
     Assert.That( settings.Environments, Has.Count.EqualTo( 1 ) );
-    Assert.That( settings.Environments[0].Name, Is.EqualTo( "myenv" ) );
-    Assert.That( settings.Environments[0].Address, Is.EqualTo( "localhost:5000" ) );
-    Assert.That( settings.ActiveEnvironment, Is.EqualTo( "myenv" ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( settings.Environments[0].Name, Is.EqualTo( "myenv" ) );
+      Assert.That( settings.Environments[0].Address, Is.EqualTo( "localhost:5000" ) );
+      Assert.That( settings.ActiveEnvironment, Is.EqualTo( "myenv" ) );
+    }
   }
 
   [Test]
@@ -37,8 +40,10 @@ internal sealed partial class EnvCommandTests {
     Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
 
     var settings = ReadSettings();
-    Assert.That( settings.Environments, Has.Count.EqualTo( 2 ) );
-    Assert.That( settings.ActiveEnvironment, Is.EqualTo( "env1" ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( settings.Environments, Has.Count.EqualTo( 2 ) );
+      Assert.That( settings.ActiveEnvironment, Is.EqualTo( "env1" ) );
+    }
   }
 
   [Test]
@@ -67,8 +72,10 @@ internal sealed partial class EnvCommandTests {
 
     // Assert
     await Verify( output.ToString() + error );
-    Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
-    Assert.That( ReadSettings().Environments, Is.Empty );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
+      Assert.That( ReadSettings().Environments, Is.Empty );
+    }
   }
 
   [Test]
@@ -77,8 +84,10 @@ internal sealed partial class EnvCommandTests {
     var (exitCode, _, error) = await InvokeAsync( "env add localhost:5000" );
 
     // Assert
-    Assert.That( exitCode, Is.EqualTo( ExitCodes.SystemCommandLineDefaultError ) );
-    Assert.That( error.ToString(), Does.Contain( "Required argument missing for command: 'add'." ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.SystemCommandLineDefaultError ) );
+      Assert.That( error.ToString(), Does.Contain( "Required argument missing for command: 'add'." ) );
+    }
   }
 
   [Test]
@@ -87,7 +96,9 @@ internal sealed partial class EnvCommandTests {
     var (exitCode, _, error) = await InvokeAsync( "env add myenv" );
 
     // Assert
-    Assert.That( exitCode, Is.EqualTo( ExitCodes.SystemCommandLineDefaultError ) );
-    Assert.That( error.ToString(), Does.Contain( "Required argument missing for command: 'add'." ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.SystemCommandLineDefaultError ) );
+      Assert.That( error.ToString(), Does.Contain( "Required argument missing for command: 'add'." ) );
+    }
   }
 }

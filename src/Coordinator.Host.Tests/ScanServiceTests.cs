@@ -57,9 +57,11 @@ internal sealed class ScanServiceTests {
       events.Add( scanEvent );
     }
 
-    Assert.That( events, Is.Not.Empty );
-    Assert.That( events.Select( scanEvent => scanEvent.EventId ), Is.Ordered );
-    Assert.That( events[^1].Status, Is.EqualTo( ScanStatus.Completed ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( events, Is.Not.Empty );
+      Assert.That( events.Select( scanEvent => scanEvent.EventId ), Is.Ordered );
+      Assert.That( events[^1].Status, Is.EqualTo( ScanStatus.Completed ) );
+    }
   }
 
   [Test]
@@ -92,9 +94,12 @@ internal sealed class ScanServiceTests {
     }
 
     var allEvents = new[] { initial }.Concat( remaining ).ToArray();
-    Assert.That( allEvents.Select( scanEvent => scanEvent.EventId ), Is.EqualTo( new long[] { 1, 2, 3 } ) );
-    Assert.That( allEvents.Select( scanEvent => scanEvent.Status ), Is.EqualTo(
-      [ScanStatus.Running, ScanStatus.Running, ScanStatus.Completed] ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( allEvents.Select( scanEvent => scanEvent.EventId ), Is.EqualTo( new long[] { 1, 2, 3 } ) );
+      Assert.That( allEvents.Select( scanEvent => scanEvent.Status ), Is.EqualTo(
+        [ScanStatus.Running, ScanStatus.Running, ScanStatus.Completed] )
+      );
+    }
   }
 
   [Test]

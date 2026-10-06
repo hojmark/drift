@@ -63,16 +63,20 @@ internal sealed class MapperTests {
 
     // Assert
     var addresses = domain.Network.Devices[0].Addresses;
-    Assert.That( addresses, Has.Count.EqualTo( 2 ) );
-    Assert.That( addresses.Single( a => a.Value == "192.168.1.10" ).IsId, Is.True );
-    Assert.That( addresses.Single( a => a.Value == "nas.local" ).IsId, Is.False );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( addresses, Has.Count.EqualTo( 2 ) );
+      Assert.That( addresses.Single( a => a.Value == "192.168.1.10" ).IsId, Is.True );
+      Assert.That( addresses.Single( a => a.Value == "nas.local" ).IsId, Is.False );
+    }
 
     // Round-trip: info address must come back under `info:`, not `addresses:`
     var roundTripped = Mapper.ToDto( domain );
     var device = roundTripped.Network.Devices![0];
-    Assert.That( device.Addresses.Ipv4, Is.EqualTo( "192.168.1.10" ) );
-    Assert.That( device.Addresses.Hostname, Is.Null );
-    Assert.That( device.Info?.Hostname, Is.EqualTo( "nas.local" ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( device.Addresses.Ipv4, Is.EqualTo( "192.168.1.10" ) );
+      Assert.That( device.Addresses.Hostname, Is.Null );
+      Assert.That( device.Info?.Hostname, Is.EqualTo( "nas.local" ) );
+    }
   }
 
   [Test]
@@ -87,8 +91,10 @@ internal sealed class MapperTests {
     var roundTripped = Mapper.ToDto( domain );
 
     // Assert
-    Assert.That( domain.Server?.Address, Is.EqualTo( "http://server:5000" ) );
-    Assert.That( roundTripped.Server?.Address, Is.EqualTo( "http://server:5000" ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( domain.Server?.Address, Is.EqualTo( "http://server:5000" ) );
+      Assert.That( roundTripped.Server?.Address, Is.EqualTo( "http://server:5000" ) );
+    }
   }
 
   [Test]
@@ -121,15 +127,19 @@ internal sealed class MapperTests {
 
     // Assert
     var domainPolicy = domain.Agents[0].Policy?[0];
-    Assert.That( domainPolicy?.To, Is.EquivalentTo( ["router"] ) );
-    Assert.That( domainPolicy?.Expect, Is.EqualTo( "reachable" ) );
-    Assert.That( domainPolicy?.Port, Is.EquivalentTo( [443] ) );
-    Assert.That( domainPolicy?.Protocol, Is.EqualTo( "tcp" ) );
-    Assert.That( domainPolicy?.Probe, Is.EquivalentTo( ["tls"] ) );
-    Assert.That( domainPolicy?.Fallback, Is.EqualTo( "gateway" ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( domainPolicy?.To, Is.EquivalentTo( ["router"] ) );
+      Assert.That( domainPolicy?.Expect, Is.EqualTo( "reachable" ) );
+      Assert.That( domainPolicy?.Port, Is.EquivalentTo( [443] ) );
+      Assert.That( domainPolicy?.Protocol, Is.EqualTo( "tcp" ) );
+      Assert.That( domainPolicy?.Probe, Is.EquivalentTo( ["tls"] ) );
+      Assert.That( domainPolicy?.Fallback, Is.EqualTo( "gateway" ) );
+    }
 
     var roundTrippedPolicy = roundTripped.Agents?[0].Policy?[0];
-    Assert.That( roundTrippedPolicy?.To, Is.EquivalentTo( ["router"] ) );
-    Assert.That( roundTrippedPolicy?.Expect, Is.EqualTo( "reachable" ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( roundTrippedPolicy?.To, Is.EquivalentTo( ["router"] ) );
+      Assert.That( roundTrippedPolicy?.Expect, Is.EqualTo( "reachable" ) );
+    }
   }
 }

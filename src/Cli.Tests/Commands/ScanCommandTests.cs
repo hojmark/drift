@@ -233,9 +233,7 @@ internal sealed partial class ScanCommandTests {
   [Test]
   public async Task WithSpec_DeclaredSubnetNotOnLocalInterface_Warns() {
     var inventory = new Inventory {
-      Network = new Network {
-        Subnets = [new DeclaredSubnet { Address = "192.168.10.0/24" }]
-      }
+      Network = new Network { Subnets = [new DeclaredSubnet { Address = "192.168.10.0/24" }] }
     };
     var serviceConfig = ConfigureServices( [], [], inventory );
 

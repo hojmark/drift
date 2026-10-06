@@ -116,7 +116,7 @@ internal sealed partial class EnvCommandTests {
   [Test]
   public async Task EnvRemove_NonExistentEnvironmentWithNoConfiguredEnvironments_FailsWithError() {
     // Arrange / Act
-    var (exitCode, output, error) = await InvokeAsync( "env remove myenv" );
+    var (exitCode, output, error) = await InvokeAsync( "env remove nonexistent" );
 
     // Assert
     await Verify( output.ToString() + error );

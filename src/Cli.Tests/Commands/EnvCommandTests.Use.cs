@@ -39,9 +39,9 @@ internal sealed partial class EnvCommandTests {
   }
 
   [Test]
-  public async Task EnvUse_UnknownEnvironmentWithNoConfiguredEnvironments_FailsWithError() {
+  public async Task EnvUse_NonExistentEnvironmentWithNoConfiguredEnvironments_FailsWithError() {
     // Arrange / Act
-    var (exitCode, output, error) = await InvokeAsync( "env use myenv" );
+    var (exitCode, output, error) = await InvokeAsync( "env use nonexistent" );
 
     // Assert
     await Verify( output.ToString() + error );

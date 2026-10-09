@@ -1,4 +1,5 @@
 using Drift.Common.IO;
+using Drift.Coordinator.Host.Agents;
 using Drift.Coordinator.Services.Agents;
 using Drift.Coordinator.Services.Agents.Enrollment;
 using Drift.Coordinator.Services.Scans;
@@ -36,6 +37,8 @@ internal static class ServiceCollectionExtensions {
     services.AddSingleton<AgentManagementService>();
     services.AddSingleton<SpecService>();
     services.AddSingleton<ScanService>();
+
+    services.AddHostedService<AgentConnectionMonitor>();
 
     services.AddAgentClient();
   }

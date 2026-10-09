@@ -14,12 +14,14 @@ namespace Drift.Networking.Core;
 /// </remarks>
 internal sealed class MessageStreamManager(
   ILogger logger,
-  IMessagingClientFactory? messageClientFactory,
+  IMessagingClientFactory messageClientFactory,
   IServiceScopeFactory scopeFactory,
   MessagingOptions options
 ) : IMessageStreamManager {
   private readonly Dictionary<AgentId, Connection> _connections = new();
   private readonly Lock _lock = new();
+
+  public event Action<AgentId, ConnectionCloseOrigin>? ConnectionClosed;
 
   /// <inheritdoc />
   public IMessageStreamConnection GetOrCreate( Uri peerAddress, AgentId id ) {
@@ -30,6 +32,8 @@ internal sealed class MessageStreamManager(
       peerAddress
     );
 
+    Connection connection;
+
     lock ( _lock ) {
       if ( _connections.TryGetValue( id, out var existing ) ) {
         if ( !existing.Completion.IsCompleted ) {
@@ -37,16 +41,9 @@ internal sealed class MessageStreamManager(
         }
 
         _connections.Remove( id );
-        _ = CloseLocallyAsync( existing );
       }
 
-      if ( messageClientFactory is null ) {
-        throw new InvalidOperationException(
-          $"Cannot create {nameof(ConnectionSide.Outbound)} stream since {nameof(messageClientFactory)} is null"
-        );
-      }
-
-      var connection = Connection.CreateOutbound(
+      connection = Connection.CreateOutbound(
         peerAddress,
         id,
         messageClientFactory,
@@ -54,9 +51,12 @@ internal sealed class MessageStreamManager(
         logger,
         options
       );
-      Add( connection );
-      return connection;
+      _connections[id] = connection;
     }
+
+    _ = HandleCompletionAsync( connection );
+
+    return connection;
   }
 
   /// <inheritdoc />
@@ -73,64 +73,60 @@ internal sealed class MessageStreamManager(
       logger,
       options
     );
-    Add( connection );
-    return connection;
-  }
 
-  private void Add( Connection connection ) {
-    logger.LogTrace( "Created {Connection}", connection );
+    Connection? replaced;
     lock ( _lock ) {
-      if ( _connections.TryGetValue( connection.Stream.RemoteId, out var previous ) &&
-           !ReferenceEquals( previous, connection ) ) {
+      if ( _connections.TryGetValue( connection.Stream.RemoteId, out replaced ) ) {
         logger.LogWarning(
           "Replacing duplicate {ConnectionSide} stream for remote {Id} (stream #{StreamNo})",
           connection.Stream.Side,
           connection.Stream.RemoteId,
-          previous.Stream.InstanceNo
+          replaced.Stream.InstanceNo
         );
-        _ = CloseLocallyAsync( previous );
       }
 
       _connections[connection.Stream.RemoteId] = connection;
     }
 
-    _ = connection.Completion.ContinueWith(
-      _ => RemoveCompleted( connection ),
-      CancellationToken.None,
-      TaskContinuationOptions.ExecuteSynchronously,
-      TaskScheduler.Default
-    );
-  }
-
-  private void RemoveCompleted( Connection connection ) {
-    lock ( _lock ) {
-      if ( !_connections.TryGetValue( connection.Stream.RemoteId, out var current ) ||
-           !ReferenceEquals( current, connection ) ) {
-        return;
-      }
-
-      _connections.Remove( connection.Stream.RemoteId );
+    if ( replaced is not null ) {
+      _ = replaced.DisposeAsync().AsTask();
     }
 
-    _ = connection.DisposeAfterCompletionAsync().AsTask();
+    _ = HandleCompletionAsync( connection );
+
+    return connection;
+  }
+
+  private async Task HandleCompletionAsync( Connection connection ) {
+    await connection.Completion;
+
+    try {
+      lock ( _lock ) {
+        if ( _connections.TryGetValue( connection.Stream.RemoteId, out var current ) &&
+             ReferenceEquals( current, connection ) ) {
+          _connections.Remove( connection.Stream.RemoteId );
+        }
+      }
+
+      ConnectionClosed?.Invoke( connection.Stream.RemoteId, connection.ClosureOrigin );
+    }
+    finally {
+      await connection.DisposeAfterCompletionAsync();
+    }
   }
 
   public async ValueTask DisposeAsync() {
-    Connection[] connections;
+    Connection[] disposable;
+
     lock ( _lock ) {
-      connections = _connections.Values.ToArray();
+      disposable = _connections.Values.ToArray();
       _connections.Clear();
     }
 
     logger.LogDebug( "Disposing stream manager (including all streams)" );
-    foreach ( var connection in connections ) {
+    foreach ( var connection in disposable ) {
       logger.LogTrace( "Disposing stream #{StreamNo}", connection.Stream.InstanceNo );
-      await CloseLocallyAsync( connection );
+      await connection.DisposeAsync();
     }
-  }
-
-  private static async Task CloseLocallyAsync( Connection connection ) {
-    connection.MarkClosedLocally();
-    await connection.DisposeAsync();
   }
 }

@@ -1,3 +1,4 @@
+using Drift.Coordinator.Host.Tests.Utils;
 using Drift.Coordinator.Services.Agents;
 using Drift.Coordinator.Services.Models;
 using Drift.Domain;
@@ -15,7 +16,8 @@ internal sealed class AgentGatewayTests {
   public async Task CheckStatusAsync_WhenAgentIsReady_MarksAgentConnected() {
     var id = AgentId.Parse( "agent_one", null );
     var directory = new InMemoryAgentDirectory( [CreateAgent( id )] );
-    var gateway = new AgentGateway( new FakeAgentClient(), directory, NullLogger.Instance );
+    await using var streams = new FakeMessageStreamManager();
+    using var gateway = new AgentGateway( new FakeAgentClient(), directory, streams, NullLogger.Instance );
 
     await gateway.CheckStatusAsync( id, CancellationToken.None );
 
@@ -27,7 +29,8 @@ internal sealed class AgentGatewayTests {
     var id = AgentId.Parse( "agent_one", null );
     var directory = new InMemoryAgentDirectory( [CreateAgent( id )] );
     var logger = new TestLogger( captureEntries: true );
-    var gateway = new AgentGateway( new FakeAgentClient(), directory, logger );
+    await using var streams = new FakeMessageStreamManager();
+    using var gateway = new AgentGateway( new FakeAgentClient(), directory, streams, logger );
 
     await gateway.CheckStatusAsync( id, CancellationToken.None );
     await gateway.CheckStatusAsync( id, CancellationToken.None );
@@ -46,7 +49,8 @@ internal sealed class AgentGatewayTests {
     var id = AgentId.Parse( "agent_one", null );
     var directory = new InMemoryAgentDirectory( [CreateAgent( id )] );
     var exception = new InvalidOperationException( "request failed" );
-    var gateway = new AgentGateway( new FakeAgentClient( exception ), directory, NullLogger.Instance );
+    using var streams = new FakeMessageStreamManager();
+    using var gateway = new AgentGateway( new FakeAgentClient( exception ), directory, streams, NullLogger.Instance );
 
     var thrown = Assert.ThrowsAsync<InvalidOperationException>( async () =>
       await gateway.CheckStatusAsync( id, CancellationToken.None )
@@ -64,7 +68,8 @@ internal sealed class AgentGatewayTests {
     var directory = new InMemoryAgentDirectory( [CreateAgent( id )] );
     var client = new FakeAgentClient( new InvalidOperationException( "Connection refused" ) );
     var logger = new TestLogger( captureEntries: true );
-    var gateway = new AgentGateway( client, directory, logger );
+    await using var streams = new FakeMessageStreamManager();
+    using var gateway = new AgentGateway( client, directory, streams, logger );
 
     for ( var attempt = 0; attempt < 2; attempt++ ) {
       Assert.ThrowsAsync<InvalidOperationException>( async () =>
@@ -83,6 +88,33 @@ internal sealed class AgentGatewayTests {
       Assert.That( warningLogs[0].Message, Does.Contain( "Connection refused" ) );
       Assert.That( informationLogs, Has.Length.EqualTo( 1 ) );
       Assert.That( informationLogs[0].Message, Does.Contain( "changed from Unavailable to Connected" ) );
+    }
+  }
+
+  [Test]
+  public async Task ConnectionClosureOnlyMarksAgentUnavailableWhenClosureIsRemote() {
+    var id = AgentId.Parse( "agent_one", null );
+    var directory = new InMemoryAgentDirectory( [CreateAgent( id )] );
+    var logger = new TestLogger( captureEntries: true );
+    await using var streams = new FakeMessageStreamManager();
+    using var gateway = new AgentGateway( new FakeAgentClient(), directory, streams, logger );
+    await gateway.CheckStatusAsync( id, CancellationToken.None );
+
+    streams.Close( id, ConnectionCloseOrigin.Local );
+    Assert.That( directory.GetConnectionStatus( id ), Is.EqualTo( AgentConnectionStatus.Connected ) );
+    streams.Close( id, ConnectionCloseOrigin.Unknown );
+
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( directory.GetConnectionStatus( id ), Is.EqualTo( AgentConnectionStatus.Unavailable ) );
+      Assert.That(
+        logger.Entries.Count( entry => entry.Level == LogLevel.Warning &&
+                                       entry.Message.Contains(
+                                         "changed from Connected to Unavailable",
+                                         StringComparison.Ordinal
+                                       )
+        ),
+        Is.EqualTo( 1 )
+      );
     }
   }
 

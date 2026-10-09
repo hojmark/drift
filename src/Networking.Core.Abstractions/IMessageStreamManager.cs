@@ -9,6 +9,11 @@ namespace Drift.Networking.Core.Abstractions;
 /// </summary>
 public interface IMessageStreamManager : IAsyncDisposable {
   /// <summary>
+  /// Occurs once when a messaging connection ends.
+  /// </summary>
+  public event Action<AgentId, ConnectionCloseOrigin>? ConnectionClosed;
+
+  /// <summary>
   /// Gets the existing stream for an agent, or creates an outbound stream to that agent.
   /// </summary>
   /// <param name="peerAddress">The address of the remote agent.</param>

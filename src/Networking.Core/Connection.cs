@@ -16,6 +16,7 @@ internal sealed class Connection : IMessageStreamConnection {
   private readonly MessageResponseCorrelator _correlator;
   private readonly AsyncServiceScope _scope;
   private readonly CancellationTokenSource? _connectionCancellation;
+  private readonly CancellationToken _applicationStoppingToken;
   private readonly ILogger _logger;
   private int _disposeStarted;
   private int _closedLocally;
@@ -25,12 +26,14 @@ internal sealed class Connection : IMessageStreamConnection {
     MessageResponseCorrelator correlator,
     AsyncServiceScope scope,
     CancellationTokenSource? connectionCancellation,
-    ILogger logger
+    ILogger logger,
+    CancellationToken applicationStoppingToken
   ) {
     Stream = stream;
     _correlator = correlator;
     _scope = scope;
     _connectionCancellation = connectionCancellation;
+    _applicationStoppingToken = applicationStoppingToken;
     _logger = logger;
     LogCreated();
   }
@@ -41,11 +44,10 @@ internal sealed class Connection : IMessageStreamConnection {
 
   public Task Completion => Stream.ReadTask;
 
-  private bool WasClosedLocally => Volatile.Read( ref _closedLocally ) != 0;
-
-  internal void MarkClosedLocally() {
-    Interlocked.Exchange( ref _closedLocally, 1 );
-  }
+  internal ConnectionCloseOrigin ClosureOrigin =>
+    Volatile.Read( ref _closedLocally ) != 0 || _applicationStoppingToken.IsCancellationRequested
+      ? ConnectionCloseOrigin.Local
+      : ConnectionCloseOrigin.Unknown;
 
   public static Connection CreateOutbound(
     Uri remoteAddress,
@@ -71,7 +73,7 @@ internal sealed class Connection : IMessageStreamConnection {
       options.StoppingToken
     ) { RemoteId = remoteId };
 
-    return new Connection( stream, correlator, scope, connectionCancellation, logger );
+    return new Connection( stream, correlator, scope, connectionCancellation, logger, options.StoppingToken );
   }
 
   public static Connection CreateInbound(
@@ -98,7 +100,7 @@ internal sealed class Connection : IMessageStreamConnection {
       connectionCancellation.Token
     ) { RemoteId = remoteId };
 
-    return new Connection( stream, correlator, scope, connectionCancellation, logger );
+    return new Connection( stream, correlator, scope, connectionCancellation, logger, options.StoppingToken );
   }
 
   public Task<Message> WaitForResponseAsync(
@@ -125,14 +127,12 @@ internal sealed class Connection : IMessageStreamConnection {
     );
   }
 
-  public async ValueTask DisposeAsync() {
-    MarkClosedLocally();
-    await DisposeCoreAsync();
+  public ValueTask DisposeAsync() {
+    Interlocked.Exchange( ref _closedLocally, 1 );
+    return DisposeCoreAsync();
   }
 
-  internal async ValueTask DisposeAfterCompletionAsync() {
-    await DisposeCoreAsync();
-  }
+  internal ValueTask DisposeAfterCompletionAsync() => DisposeCoreAsync();
 
   private async ValueTask DisposeCoreAsync() {
     if ( Interlocked.Exchange( ref _disposeStarted, 1 ) != 0 ) {
@@ -142,6 +142,7 @@ internal sealed class Connection : IMessageStreamConnection {
     _correlator.FailPendingRequests(
       new IOException( $"Messaging stream for agent '{Stream.RemoteId}' was closed." )
     );
+
     try {
       await Stream.DisposeAsync();
     }
@@ -169,9 +170,13 @@ internal sealed class Connection : IMessageStreamConnection {
 
   private void LogDisposed() {
     var direction = Stream.Side == ConnectionSide.Outbound ? "to" : "from";
-    var message = WasClosedLocally
-      ? "{ConnectionSide} stream #{StreamNo} {Direction} agent {AgentId} disposed locally"
-      : "{ConnectionSide} stream #{StreamNo} {Direction} agent {AgentId} disposed";
-    _logger.LogDebug( message, Stream.Side, Stream.InstanceNo, direction, Stream.RemoteId );
+    _logger.LogDebug(
+      "{ConnectionSide} stream #{StreamNo} {Direction} agent {AgentId} disposed (closure origin: {ClosureOrigin})",
+      Stream.Side,
+      Stream.InstanceNo,
+      direction,
+      Stream.RemoteId,
+      ClosureOrigin
+    );
   }
 }

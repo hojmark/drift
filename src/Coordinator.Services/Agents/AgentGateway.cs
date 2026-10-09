@@ -11,11 +11,25 @@ namespace Drift.Coordinator.Services.Agents;
 /// <summary>
 /// Provides the coordinator's communication boundary for enrolled agents.
 /// </summary>
-public sealed class AgentGateway(
-  IAgentClient client,
-  IAgentDirectory agentDirectory,
-  ILogger logger
-) {
+public sealed class AgentGateway : IDisposable {
+  private readonly IAgentClient _client;
+  private readonly IAgentDirectory _agentDirectory;
+  private readonly ILogger _logger;
+  private readonly IMessageStreamManager _messageStreamManager;
+
+  public AgentGateway(
+    IAgentClient client,
+    IAgentDirectory agentDirectory,
+    IMessageStreamManager messageStreamManager,
+    ILogger logger
+  ) {
+    _client = client;
+    _agentDirectory = agentDirectory;
+    _messageStreamManager = messageStreamManager;
+    _logger = logger;
+    _messageStreamManager.ConnectionClosed += OnConnectionClosed;
+  }
+
   /// <summary>
   /// Checks an enrolled agent's availability by requesting its lightweight status.
   /// </summary>
@@ -32,20 +46,22 @@ public sealed class AgentGateway(
     CancellationToken cancellationToken
   ) {
     var enrolledAgent = GetEnrolledAgent( agentId );
+    using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource( cancellationToken );
 
     try {
-      var response = await client.RequestAsync<AgentStatusRequest, AgentStatusResponse>(
+      var request = _client.RequestAsync<AgentStatusRequest, AgentStatusResponse>(
         enrolledAgent.ToDomainAgent(),
         new AgentStatusRequest(),
         timeout,
-        cancellationToken
+        timeoutCancellation.Token
       );
+      var response = await request.WaitAsync( timeout, cancellationToken );
       if ( response.Status != AgentStatus.Ready ) {
         throw new InvalidOperationException( $"Agent '{agentId}' is not ready." );
       }
 
       if ( response.Version != DriftMetadata.Version ) {
-        logger.LogWarning(
+        _logger.LogWarning(
           "Agent '{AgentId}' is running version '{AgentVersion}', but coordinator is running version '{CoordinatorVersion}'. YMMV.",
           agentId,
           response.Version,
@@ -57,6 +73,19 @@ public sealed class AgentGateway(
     }
     catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
       throw;
+    }
+    catch ( TimeoutException exception ) {
+      // TODO request stack cancellation on timeout should be owned by AgentClient!
+      if ( !cancellationToken.IsCancellationRequested ) {
+        await timeoutCancellation.CancelAsync();
+      }
+
+      var timeoutException = new TimeoutException(
+        $"Status check for agent '{agentId}' timed out after {timeout}.",
+        exception
+      );
+      MarkUnavailable( enrolledAgent, timeoutException );
+      throw timeoutException;
     }
     catch ( Exception exception ) {
       MarkUnavailable( enrolledAgent, exception );
@@ -77,7 +106,7 @@ public sealed class AgentGateway(
   ) where TRequest : IRequest<TResponse> where TResponse : IResponse {
     var enrolledAgent = GetEnrolledAgent( agentId );
     try {
-      var response = await client.RequestAsync<TRequest, TResponse>(
+      var response = await _client.RequestAsync<TRequest, TResponse>(
         enrolledAgent.ToDomainAgent(),
         request,
         timeout,
@@ -112,7 +141,7 @@ public sealed class AgentGateway(
     where TResponse : IResponse {
     var enrolledAgent = GetEnrolledAgent( agentId );
     try {
-      var response = await client.RequestStreamingAsync<TRequest, TProgress, TResponse>(
+      var response = await _client.RequestStreamingAsync<TRequest, TProgress, TResponse>(
         enrolledAgent.ToDomainAgent(),
         request,
         onProgress,
@@ -132,9 +161,9 @@ public sealed class AgentGateway(
   }
 
   private void MarkConnected( EnrolledAgent agent ) {
-    var previousStatus = agentDirectory.MarkConnected( agent.Id );
+    var previousStatus = _agentDirectory.MarkConnected( agent.Id );
     if ( previousStatus is not null and not AgentConnectionStatus.Connected ) {
-      logger.LogInformation(
+      _logger.LogInformation(
         "Connection to agent {AgentId} at {Address} changed from {PreviousStatus} to {ConnectionStatus}",
         agent.Id,
         agent.Address,
@@ -145,9 +174,9 @@ public sealed class AgentGateway(
   }
 
   private void MarkUnavailable( EnrolledAgent agent, Exception exception ) {
-    var previousStatus = agentDirectory.MarkUnavailable( agent.Id );
+    var previousStatus = _agentDirectory.MarkUnavailable( agent.Id );
     if ( previousStatus is not null and not AgentConnectionStatus.Unavailable ) {
-      logger.LogWarning(
+      _logger.LogWarning(
         "Connection to agent {AgentId} at {Address} changed from {PreviousStatus} to {ConnectionStatus}: {Reason}",
         agent.Id,
         agent.Address,
@@ -159,10 +188,25 @@ public sealed class AgentGateway(
   }
 
   private EnrolledAgent GetEnrolledAgent( AgentId agentId ) {
-    if ( agentDirectory.TryGet( agentId, out var enrolledAgent ) && enrolledAgent is not null ) {
+    if ( _agentDirectory.TryGet( agentId, out var enrolledAgent ) && enrolledAgent is not null ) {
       return enrolledAgent;
     }
 
     throw new KeyNotFoundException( $"Agent '{agentId}' was not found." );
+  }
+
+  private void OnConnectionClosed( AgentId agentId, ConnectionCloseOrigin origin ) {
+    if ( origin == ConnectionCloseOrigin.Local ) {
+      // Closing the connection locally doesn't indicate the agent is unavailable
+      return;
+    }
+
+    if ( _agentDirectory.TryGet( agentId, out var enrolledAgent ) && enrolledAgent is not null ) {
+      MarkUnavailable( enrolledAgent, new IOException( "The messaging connection was closed." ) );
+    }
+  }
+
+  public void Dispose() {
+    _messageStreamManager.ConnectionClosed -= OnConnectionClosed;
   }
 }

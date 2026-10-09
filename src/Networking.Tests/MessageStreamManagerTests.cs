@@ -13,21 +13,14 @@ namespace Drift.Networking.Tests;
 internal sealed class MessageStreamManagerTests {
   [Test]
   public async Task OutboundStreamAttemptLogsACreatedAndDisposedPair() {
-    using var cts = new CancellationTokenSource();
     var logger = new StringLogger( minimumLogLevel: LogLevel.Debug );
-    var services = new ServiceCollection();
-    services.AddSingleton<ILogger>( logger );
-    services.AddSingleton<IMessageHandler>( _ => new TestRequestHandler( logger ) );
-    services.AddMessagingCore( new MessagingOptions { StoppingToken = cts.Token } );
-    services.AddMessagingClient();
-    await using var provider = services.BuildServiceProvider();
-    var manager = provider.GetRequiredService<IMessageStreamManager>();
+    await using var fixture = new MessageStreamManagerTestFixture( logger );
 
-    var connection = manager.GetOrCreate(
+    var connection = fixture.Manager.GetOrCreate(
       new Uri( "http://127.0.0.1:1" ),
       AgentId.Parse( "agent_unavailable", null )
     );
-    await connection.Completion.WaitAsync( TimeSpan.FromSeconds( 5 ) );
+    await connection.Completion.WaitAsync( TimeSpan.FromSeconds( 5 ) ); // Should fail almost immediately
     await connection.DisposeAsync();
 
     using ( Assert.EnterMultipleScope() ) {
@@ -38,90 +31,37 @@ internal sealed class MessageStreamManagerTests {
 
   [Test]
   public async Task IncomingMessageIsDispatchedToHandler() {
-    // Arrange
-    var cts = new CancellationTokenSource();
-    var (streamManager, messageHandler) = CreateStreamManager( cts );
-
-    var callContext = TestServerCallContext.Create();
-    callContext.RequestHeaders.Add( "agent-id", "agent_test123" );
-    var duplexStreams = callContext.CreateDuplexStreams();
-    var serverStreams = duplexStreams.Server;
-    var stream = streamManager.Create( serverStreams.RequestStream, serverStreams.ResponseStream, callContext );
+    await using var fixture = new MessageStreamManagerTestFixture();
+    var connection = fixture.OpenInbound( "agent_test123" );
     var converter = new MessageEnvelopeConverter();
 
-    // Act
-    var clientStreams = duplexStreams.Client;
-    await clientStreams.RequestStream.WriteAsync(
-      converter.ToEnvelope<TestMessage, TestMessage>(
-        new TestMessage { Payload = "test123" },
-        RequestId.New()
-      )
+    await connection.RequestStream.WriteAsync(
+      converter.ToEnvelope<TestMessage, TestMessage>( new TestMessage { Payload = "test123" }, RequestId.New() )
     );
+    await fixture.StopAsync();
+    await connection.Completion;
 
-    await cts.CancelAsync();
-    await stream.Stream.ReadTask;
-
-    // Assert
-    Assert.That( messageHandler.LastMessage, Is.Not.Null );
-    Assert.That( messageHandler.LastMessage.Payload, Is.EqualTo( "test123" ) );
-
-    cts.Dispose();
+    Assert.That( fixture.MessageHandler.LastMessage?.Payload, Is.EqualTo( "test123" ) );
   }
 
   [Test]
   public async Task StreamIsSharedAcrossScopes() {
-    using var cts = new CancellationTokenSource();
-    var serviceCollection = new ServiceCollection();
-    var logger = new StringLogger( TestContext.Out );
-    serviceCollection.AddSingleton<ILogger>( logger );
-    serviceCollection.AddSingleton<IMessageHandler>( _ => new TestRequestHandler( logger ) );
-    serviceCollection.AddMessagingCore( new MessagingOptions { StoppingToken = cts.Token } );
-    serviceCollection.AddMessagingClient();
-    await using var serviceProvider = serviceCollection.BuildServiceProvider();
+    await using var fixture = new MessageStreamManagerTestFixture();
+    await using var first = fixture.Services.CreateAsyncScope();
+    await using var second = fixture.Services.CreateAsyncScope();
+    var firstManager = first.ServiceProvider.GetRequiredService<IMessageStreamManager>();
+    var secondManager = second.ServiceProvider.GetRequiredService<IMessageStreamManager>();
+    var firstConnection = fixture.OpenInbound( "agent_test123", firstManager );
+    var secondConnection = secondManager.GetOrCreate(
+      new Uri( "http://127.0.0.1:5001" ),
+      AgentId.Parse( "agent_test123", null )
+    );
 
-    var first = serviceProvider.CreateAsyncScope();
-    var second = serviceProvider.CreateAsyncScope();
-    try {
-      var firstManager = first.ServiceProvider.GetRequiredService<IMessageStreamManager>();
-      var secondManager = second.ServiceProvider.GetRequiredService<IMessageStreamManager>();
-      var callContext = TestServerCallContext.Create();
-      callContext.RequestHeaders.Add( "agent-id", "agent_test123" );
-      var duplexStreams = callContext.CreateDuplexStreams();
-      var firstConnection = firstManager.Create(
-        duplexStreams.Server.RequestStream,
-        duplexStreams.Server.ResponseStream,
-        callContext
-      );
-      var secondConnection = secondManager.GetOrCreate(
-        new Uri( "http://127.0.0.1:5001" ),
-        AgentId.Parse( "agent_test123", null )
-      );
-
-      Assert.That( secondConnection.Stream, Is.SameAs( firstConnection.Stream ) );
-      using ( Assert.EnterMultipleScope() ) {
-        Assert.That( firstConnection.Stream.RemoteId, Is.EqualTo( AgentId.Parse( "agent_test123", null ) ) );
-        Assert.That( firstConnection.Stream.Side, Is.EqualTo( ConnectionSide.Inbound ) );
-        Assert.That( firstConnection.Completion.IsCompleted, Is.False );
-      }
+    Assert.That( secondConnection.Stream, Is.SameAs( firstConnection.Stream ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( firstConnection.Stream.RemoteId, Is.EqualTo( AgentId.Parse( "agent_test123", null ) ) );
+      Assert.That( firstConnection.Stream.Side, Is.EqualTo( ConnectionSide.Inbound ) );
+      Assert.That( firstConnection.Completion.IsCompleted, Is.False );
     }
-    finally {
-      await first.DisposeAsync();
-      await second.DisposeAsync();
-      await cts.CancelAsync();
-    }
-  }
-
-  private static (IMessageStreamManager, TestRequestHandler messageHandler) CreateStreamManager(
-    CancellationTokenSource cts
-  ) {
-    var serviceCollection = new ServiceCollection();
-    var logger = new StringLogger( TestContext.Out );
-    var messageHandler = new TestRequestHandler( logger );
-    serviceCollection.AddSingleton<ILogger>( logger );
-    serviceCollection.AddSingleton<IMessageHandler>( _ => messageHandler );
-    serviceCollection.AddMessagingCore( new MessagingOptions { StoppingToken = cts.Token } );
-    serviceCollection.AddMessagingClient();
-    var serviceProvider = serviceCollection.BuildServiceProvider();
-    return ( serviceProvider.GetRequiredService<IMessageStreamManager>(), messageHandler );
   }
 }

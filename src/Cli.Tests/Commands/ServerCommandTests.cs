@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Tests.Utils;
 using Drift.TestUtilities;
@@ -37,7 +38,14 @@ internal sealed class ServerCommandTests {
 
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-      await Verify( output.ToString() ).ScrubVersion();
+      await Verify( output.ToString() )
+        .ScrubVersion()
+        // Connection state messages are not ordered deterministically (written by background service)
+        .ScrubLinesWithReplace( line => Regex.Replace(
+          line,
+          @"Connection to agent .+ changed from Unknown to Unavailable: The messaging connection was closed\.\r?\n?",
+          string.Empty
+        ) );
       Assert.That( error.ToString(), Is.Empty );
     }
   }

@@ -1,6 +1,10 @@
+using System.Text.RegularExpressions;
 using ArchUnitNET.Domain;
 using ArchUnitNET.NUnit;
 using Drift.ArchTests.Fixtures;
+using Drift.Common.IO;
+using Drift.Domain.Device;
+using Drift.Networking.Core.Abstractions;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
 namespace Drift.ArchTests;
@@ -16,18 +20,63 @@ internal sealed class NamingTests : DriftArchitectureFixture {
     rule.Check( DriftArchitecture );
   }
 
-  [Explicit( "Fix architecture" )] // TODO
+  [TestCase( new[] { typeof(RequestHandler<,>), typeof(StreamingRequestHandler<,,>) }, 2 )]
+  [TestCase( new[] { typeof(IAddressableDevice) }, 1 )]
+  [TestCase( new[] { typeof(IDriftSettingsLocation) }, 3 )]
+  [TestCase( new[] { typeof(IDriftDataLocation) }, 3 )]
+  public void DescendantsShouldEndWithImplementedTypeSuffix( Type[] handlerTypes, int wordCount ) {
+    foreach ( var handlerType in handlerTypes ) {
+      // Remove generic arity ("RequestHandler`2" -> "RequestHandler")
+      string cleanBaseName = Regex.Replace( handlerType.Name, @"`\d+", string.Empty );
+
+      // Split name based on PascalCase ("StreamingRequestHandler" -> ["Streaming", "Request", "Handler"])
+      var words = Regex.Matches( cleanBaseName, "[A-Z][a-z0-9]*" )
+        .Select( m => m.Value )
+        .ToArray();
+
+      if ( words.Length == 0 ) {
+        Assert.Fail( $"Could not determine words from type name: '{handlerType.Name}'" );
+      }
+
+      // Take n last words
+      int takeCount = Math.Min( wordCount, words.Length );
+      string expectedSuffix = string.Join( string.Empty, words.TakeLast( takeCount ) );
+
+      var implementations = Classes().That()
+        .AreAssignableTo( handlerType )
+        .GetObjects( DriftArchitecture )
+        .Where( type => type.FullName != handlerType.FullName )
+        .DistinctBy( type => type.FullName )
+        .ToArray();
+
+      var incorrectlyNamed = implementations
+        .Where( type => !type.Name.EndsWith( expectedSuffix, StringComparison.Ordinal ) )
+        .Select( type => type.FullName )
+        .ToArray();
+
+      Assert.That(
+        incorrectlyNamed,
+        Is.Empty,
+        $"{handlerType.Name} implementations should end with '{expectedSuffix}', but some did not."
+      );
+    }
+  }
+
+  [Test]
+#pragma warning disable S2699
+  public void ListAllInterfacesInSolution() {
+#pragma warning restore S2699
+    var interfaces = Interfaces()
+      .GetObjects( DriftArchitecture )
+      .Select( type => type.FullName )
+      .OrderBy( name => name )
+      .ToArray();
+
+    Console.WriteLine( $"Found {interfaces.Length} interfaces:\n\n" + string.Join( "\n", interfaces ) );
+  }
+
   [Test]
   public void TestClassesShouldEndWithTests() {
-    /*
-     * Assembly names are "FullName" e.g. "Drift.Cli.E2ETests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
-     */
-    /*var testClasses = Classes()
-      .That()
-      .ResideInAssemblyMatching( @".*\.Tests," )
-      .Or()
-      .ResideInAssemblyMatching( @".*\.E2ETests," );*/
-
     var rule = Members().That()
       .HaveAnyAttributes( typeof(TestAttribute) )
       .Should()

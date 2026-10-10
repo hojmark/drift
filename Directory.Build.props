@@ -22,6 +22,7 @@
     <!-- TODO try to enable
     <AnalysisMode>All</AnalysisMode>
     -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <ItemGroup>

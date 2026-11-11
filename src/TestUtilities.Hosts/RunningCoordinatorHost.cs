@@ -1,5 +1,7 @@
+using Drift.Common.IO;
 using Drift.Coordinator.Host;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.TestUtilities.Hosts;
@@ -26,15 +28,22 @@ public sealed class RunningCoordinatorHost : IAsyncDisposable {
   public static async Task<RunningCoordinatorHost> StartAsync(
     CoordinatorConfiguration configuration,
     ILogger logger,
-    Action<IServiceCollection>? configureServices = null
+    Action<IServiceCollection>? configureServices = null,
+    IDriftDataLocation? dataLocation = null
   ) {
+    dataLocation ??= new TemporaryDriftDataLocation();
+    Action<IServiceCollection> configure = services => {
+      services.Replace( ServiceDescriptor.Singleton( dataLocation ) );
+      configureServices?.Invoke( services );
+    };
+
     var cancellation = new CancellationTokenSource();
     var ready = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
     var address = new Uri( $"http://127.0.0.1:{configuration.Port}" );
     var host = new RunningCoordinatorHost(
       address,
       cancellation,
-      CoordinatorHost.Run( configuration, logger, configureServices, cancellation.Token, ready )
+      CoordinatorHost.Run( configuration, logger, configure, cancellation.Token, ready )
     );
 
     try {

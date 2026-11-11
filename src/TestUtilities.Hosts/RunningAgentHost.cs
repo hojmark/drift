@@ -1,5 +1,7 @@
 using Drift.Agent.Host;
+using Drift.Common.IO;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.TestUtilities.Hosts;
@@ -22,14 +24,21 @@ public sealed class RunningAgentHost : IAsyncDisposable {
   public static async Task<RunningAgentHost> StartAsync(
     ushort port,
     ILogger logger,
-    Action<IServiceCollection>? configureServices = null
+    Action<IServiceCollection>? configureServices = null,
+    IDriftDataLocation? dataLocation = null
   ) {
+    dataLocation ??= new TemporaryDriftDataLocation();
+    Action<IServiceCollection> configure = services => {
+      services.Replace( ServiceDescriptor.Singleton( dataLocation ) );
+      configureServices?.Invoke( services );
+    };
+
     var cancellation = new CancellationTokenSource();
     var ready = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
     var host = new RunningAgentHost(
       port,
       cancellation,
-      AgentHost.Run( new AgentConfiguration { Port = port }, logger, configureServices, cancellation.Token, ready )
+      AgentHost.Run( new AgentConfiguration { Port = port }, logger, configure, cancellation.Token, ready )
     );
 
     try {

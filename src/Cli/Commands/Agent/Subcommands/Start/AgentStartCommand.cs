@@ -5,6 +5,9 @@ using Drift.Cli.Commands.Common.Commands;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
+using Drift.Common.IO;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start;
@@ -23,6 +26,7 @@ internal class AgentStartCommand : CommandBase<AgentStartParameters, AgentStartC
 
 internal class AgentStartCommandHandler(
   IOutputManager output,
+  IDriftDataLocation driftDataLocation,
   NestedHostLifetime? agentLifetime = null,
   AgentHostServiceConfiguration? hostServiceConfiguration = null
 )
@@ -49,7 +53,11 @@ internal class AgentStartCommandHandler(
       await AgentHost.Run(
         new AgentConfiguration { Port = parameters.Port },
         logger,
-        hostServiceConfiguration?.Configure,
+        services => {
+          // The host uses the same data location as the CLI
+          services.Replace( ServiceDescriptor.Singleton( driftDataLocation ) );
+          hostServiceConfiguration?.Configure( services );
+        },
         cancellationToken,
         agentLifetime?.Ready
       );

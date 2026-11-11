@@ -18,6 +18,8 @@ charset = utf-8
 # .NET Coding Conventions     #
 ###############################
 
+# Severity levels: silent, suggestion, warning, error
+
 [*.{cs}]
 # Organize usings
 dotnet_sort_system_directives_first = true

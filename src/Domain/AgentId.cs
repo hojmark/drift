@@ -1,11 +1,16 @@
+using System.Text.RegularExpressions;
+
 namespace Drift.Domain;
 
-public sealed class AgentId : IEquatable<AgentId>, IParsable<AgentId> {
+public sealed partial class AgentId : IEquatable<AgentId>, IParsable<AgentId> {
   private const string Prefix = "agent_";
+  private const int MaxSuffixLength = 64;
 
   private AgentId( string value ) {
-    if ( !value.StartsWith( Prefix, StringComparison.OrdinalIgnoreCase ) ) {
-      throw new FormatException( $"Agent ID must start with '{Prefix}'." );
+    if ( !ValidFormat().IsMatch( value ) ) {
+      throw new FormatException(
+        $"Agent ID must be '{Prefix}' followed by 1-{MaxSuffixLength} letters, digits, '_', '-' or '.'."
+      );
     }
 
     Value = value;
@@ -59,4 +64,7 @@ public sealed class AgentId : IEquatable<AgentId>, IParsable<AgentId> {
   public static bool operator !=( AgentId? left, AgentId? right ) => !( left == right );
 
   public override string ToString() => Value;
+
+  [GeneratedRegex( @"\Aagent_[A-Za-z0-9_.-]{1,64}\z", RegexOptions.IgnoreCase )]
+  private static partial Regex ValidFormat();
 }

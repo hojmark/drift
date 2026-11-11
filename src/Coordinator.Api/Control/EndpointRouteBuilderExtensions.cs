@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Drift.Coordinator.Api.Control.Dtos;
 using Drift.Coordinator.Services;
@@ -84,15 +85,19 @@ internal static class EndpointRouteBuilderExtensions {
             [FromServices] ILogger logger,
             CancellationToken cancellationToken
           ) => {
+            if ( !TryParseAgentId( request, logger, "Agent enrollment rejected", out var agentId, out var problem ) ) {
+              return problem;
+            }
+
             try {
-              logger.LogInformation( "Agent enrollment requested for {AgentId}", request.Id );
-              var state = service.EnrollAgent( new EnrollAgentCommand( AgentId.Parse( request.Id, null ) ) );
+              logger.LogInformation( "Agent enrollment requested for {AgentId}", agentId );
+              var state = service.EnrollAgent( new EnrollAgentCommand( agentId ) );
               await agentGateway.CheckStatusAsync( state.Id, cancellationToken );
               logger.LogInformation( "Agent {AgentId} enrolled and connected", state.Id );
               return Results.Ok( service.ListAgents().Single( agent => agent.Id == state.Id ).ToDto() );
             }
             catch ( ArgumentException exception ) {
-              logger.LogWarning( exception, "Agent enrollment rejected for {AgentId}", request.Id );
+              logger.LogWarning( exception, "Agent enrollment rejected for {AgentId}", agentId );
               return Results.Problem(
                 title: "Agent enrollment rejected",
                 detail: GetArgumentErrorMessage( exception ),
@@ -100,10 +105,10 @@ internal static class EndpointRouteBuilderExtensions {
               );
             }
             catch ( Exception exception ) {
-              logger.LogWarning( exception, "Agent enrollment connection check failed for {AgentId}", request.Id );
+              logger.LogWarning( exception, "Agent enrollment connection check failed for {AgentId}", agentId );
               return Results.Problem(
                 title: "Agent connection failed",
-                detail: $"Unable to connect to agent '{request.Id}': {exception.Message}",
+                detail: $"Unable to connect to agent '{agentId}': {exception.Message}",
                 statusCode: StatusCodes.Status503ServiceUnavailable
               );
             }
@@ -121,13 +126,22 @@ internal static class EndpointRouteBuilderExtensions {
             [FromServices] AgentManagementService service,
             [FromServices] ILogger logger
           ) => {
+            if ( !TryParseAgentId(
+                  request,
+                  logger,
+                  "Agent enrollment request rejected",
+                  out var agentId,
+                  out var problem
+                ) ) {
+              return problem;
+            }
+
             try {
-              logger.LogInformation( "Agent enrollment request received for {AgentId}", request.Id );
-              return Results.Ok( service.EnrollAgent( new EnrollAgentCommand( AgentId.Parse( request.Id, null ) ) )
-                .ToDto() );
+              logger.LogInformation( "Agent enrollment request received for {AgentId}", agentId );
+              return Results.Ok( service.EnrollAgent( new EnrollAgentCommand( agentId ) ).ToDto() );
             }
             catch ( ArgumentException exception ) {
-              logger.LogWarning( exception, "Agent enrollment request rejected for {AgentId}", request.Id );
+              logger.LogWarning( exception, "Agent enrollment request rejected for {AgentId}", agentId );
               return Results.Problem(
                 title: "Agent enrollment request rejected",
                 detail: GetArgumentErrorMessage( exception ),
@@ -269,6 +283,34 @@ internal static class EndpointRouteBuilderExtensions {
     }
     catch ( Exception ) when ( !cancellationToken.IsCancellationRequested ) {
       // AgentGateway records the unavailable state before propagating the request failure.
+    }
+  }
+
+  /// <summary>
+  /// Validates the untrusted agent ID from a request. On failure, logs without echoing the raw value (which could
+  /// contain e.g. line breaks to forge log entries) and produces a 400 problem result.
+  /// </summary>
+  private static bool TryParseAgentId(
+    EnrollAgentRequest request,
+    ILogger logger,
+    string problemTitle,
+    [NotNullWhen( true )] out AgentId? agentId,
+    [NotNullWhen( false )] out IResult? problem
+  ) {
+    try {
+      agentId = AgentId.Parse( request.Id, null );
+      problem = null;
+      return true;
+    }
+    catch ( FormatException exception ) {
+      logger.LogWarning( exception, "{ProblemTitle}: invalid agent ID", problemTitle );
+      agentId = null;
+      problem = Results.Problem(
+        title: problemTitle,
+        detail: exception.Message,
+        statusCode: StatusCodes.Status400BadRequest
+      );
+      return false;
     }
   }
 

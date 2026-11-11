@@ -4,7 +4,10 @@ using Drift.Cli.Commands.Common.Commands;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
+using Drift.Common.IO;
 using Drift.Coordinator.Host;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Drift.Cli.Commands.Server.Subcommands.Start;
@@ -24,6 +27,7 @@ internal class ServerStartCommand : CommandBase<ServerStartParameters, ServerSta
 
 internal class ServerStartCommandHandler(
   IOutputManager output,
+  IDriftDataLocation driftDataLocation,
   NestedHostLifetime? coordinatorLifetime = null,
   CoordinatorHostServiceConfiguration? hostServiceConfiguration = null
 )
@@ -52,7 +56,11 @@ internal class ServerStartCommandHandler(
           Port = parameters.Port, AgentPort = parameters.NoAgentPort ? null : parameters.PortAgent
         },
         logger,
-        hostServiceConfiguration?.Configure,
+        services => {
+          // The host uses the same data location as the CLI
+          services.Replace( ServiceDescriptor.Singleton( driftDataLocation ) );
+          hostServiceConfiguration?.Configure( services );
+        },
         cancellationToken,
         coordinatorLifetime?.Ready
       );

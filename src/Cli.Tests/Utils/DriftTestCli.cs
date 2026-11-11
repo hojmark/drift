@@ -4,6 +4,7 @@ using Drift.Cli.Commands;
 using Drift.Cli.Infrastructure;
 using Drift.Cli.Settings.Tests;
 using Drift.Common.IO;
+using Drift.TestUtilities.Hosts;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Drift.Cli.Tests.Utils;
@@ -22,9 +23,12 @@ internal static class DriftTestCli {
     RootCommandFactory.CommandRegistration[]? customCommands = null,
     bool redirectConsole = true,
     IDriftSettingsLocation? settingsLocation = null,
+    IDriftDataLocation? dataLocation = null,
     CancellationToken cancellationToken = default
   ) {
+    // Isolate settings and data unless a test explicitly opts in
     settingsLocation ??= new TemporaryDriftSettingsLocation();
+    dataLocation ??= new TemporaryDriftDataLocation();
     var token = cancellationToken;
     CancellationTokenSource? cancellationTokenSource = null;
 
@@ -41,9 +45,10 @@ internal static class DriftTestCli {
       config.Error = error;
     }
 
-    // Register test settings
+    // Register test settings and data locations
     Action<IServiceCollection> wrappedConfigure = services => {
       services.AddSingleton( settingsLocation );
+      services.AddSingleton( dataLocation );
       configureCliServices?.Invoke( services );
     };
 
@@ -112,7 +117,8 @@ internal static class DriftTestCli {
     Action<IServiceCollection> configureServices,
     CancellationToken cancellationToken,
     Action<IServiceCollection>? configureAgentHostServices = null,
-    Action<IServiceCollection>? configureCoordinatorHostServices = null
+    Action<IServiceCollection>? configureCoordinatorHostServices = null,
+    IDriftDataLocation? dataLocation = null
   ) {
     var cts = CancellationTokenSource.CreateLinkedTokenSource( cancellationToken );
 
@@ -122,6 +128,7 @@ internal static class DriftTestCli {
       configureAgentHostServices: configureAgentHostServices,
       configureCoordinatorHostServices: configureCoordinatorHostServices,
       redirectConsole: false,
+      dataLocation: dataLocation,
       cancellationToken: cts.Token
     );
 
@@ -134,7 +141,8 @@ internal static class DriftTestCli {
   internal static async Task<RunningCliCommand> StartAgentAsync(
     string args,
     CancellationToken cancellationToken,
-    Action<IServiceCollection>? configure = null
+    Action<IServiceCollection>? configure = null,
+    IDriftDataLocation? dataLocation = null
   ) {
     var lifetime = new NestedHostLifetime();
 
@@ -144,7 +152,8 @@ internal static class DriftTestCli {
         services.AddSingleton( lifetime );
       },
       cancellationToken,
-      configureAgentHostServices: configure
+      configureAgentHostServices: configure,
+      dataLocation: dataLocation
     );
 
     // Wait for either readiness or command exit
@@ -164,7 +173,8 @@ internal static class DriftTestCli {
   internal static async Task<RunningCliCommand> StartServerAsync(
     string args,
     CancellationToken cancellationToken,
-    Action<IServiceCollection>? configure = null
+    Action<IServiceCollection>? configure = null,
+    IDriftDataLocation? dataLocation = null
   ) {
     var lifetime = new NestedHostLifetime();
 
@@ -174,7 +184,8 @@ internal static class DriftTestCli {
         services.AddSingleton( lifetime );
       },
       cancellationToken,
-      configureCoordinatorHostServices: configure
+      configureCoordinatorHostServices: configure,
+      dataLocation: dataLocation
     );
 
     // Wait for either readiness or command exit

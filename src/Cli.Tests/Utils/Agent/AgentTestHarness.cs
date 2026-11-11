@@ -14,6 +14,7 @@ using Drift.Domain.Scan;
 using Drift.Scanning.Scanners.Factories;
 using Drift.Scanning.Subnets.Interface;
 using Drift.Spec.Serialization;
+using Drift.TestUtilities.Hosts;
 using Drift.TestUtilities.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

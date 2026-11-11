@@ -16,6 +16,13 @@
       ],
       "rollForward": false
     },
+    "fallout.globaltool": {
+      "version": "10.5.0",
+      "commands": [
+        "fallout"
+      ],
+      "rollForward": false
+    },
     "dotnet-trx": {
       "version": "1.0.1",
       "commands": [

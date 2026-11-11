@@ -1,7 +1,7 @@
 bin/
 obj/
-.nuke/temp
-.nuke/parameters.local.json
+.fallout/temp
+.fallout/parameters.local.json
 *.user
 #*.idea
 .idea/.idea.Drift/.idea/watcherTasks.xml

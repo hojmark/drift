@@ -52,10 +52,16 @@ internal static class EndpointRouteBuilderExtensions {
 
       api.MapGet(
           "/spec",
-          ( [FromServices] SpecService service ) => Results.Text( service.GetYaml(), "text/yaml" )
+          ( [FromServices] SpecService service ) => {
+            var yaml = service.GetYaml();
+            return string.IsNullOrWhiteSpace( yaml )
+              ? Results.NoContent()
+              : Results.Text( yaml, "text/yaml" );
+          }
         )
         .WithSummary( "Get the coordinator spec" )
-        .Produces( StatusCodes.Status200OK, contentType: "text/yaml" );
+        .Produces<string>( StatusCodes.Status200OK, contentType: "text/yaml" )
+        .Produces( StatusCodes.Status204NoContent );
 
       api.MapGet(
           "/agents",

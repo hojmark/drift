@@ -22,6 +22,46 @@ namespace Drift.Coordinator.Host.Tests;
 
 internal sealed class CoordinatorHostIntegrationTests {
   [Test]
+  public async Task GetSpec_WhenNoSpecHasBeenUploaded_ReturnsNoContent() {
+    var dataLocation = new TemporaryCoordinatorDataLocation();
+    await using var coordinator = await RunningCoordinatorHost.StartAsync(
+      new CoordinatorConfiguration { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
+      NullLogger.Instance,
+      services => services.AddSingleton<ICoordinatorDataLocation>( dataLocation )
+    );
+
+    try {
+      using var httpClient = coordinator.CreateHttpClient();
+      using var response = await httpClient.GetAsync( "/api/v1/spec" );
+      using var client = ControlApiClient.Create( coordinator.Address );
+      var network = await client.GetSpecAsync( CancellationToken.None );
+
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( response.StatusCode, Is.EqualTo( HttpStatusCode.NoContent ) );
+        Assert.That( await response.Content.ReadAsByteArrayAsync(), Is.Empty );
+        Assert.That( network, Is.Null );
+      }
+
+      await client.ApplySpecAsync(
+        """
+        version: v1-preview
+        network:
+          subnets:
+            - address: 10.42.0.0/24
+          devices: []
+        """,
+        CancellationToken.None
+      );
+      var uploadedNetwork = await client.GetSpecAsync( CancellationToken.None );
+      Assert.That( uploadedNetwork?.Subnets.Single().Address, Is.EqualTo( "10.42.0.0/24" ) );
+    }
+    finally {
+      await coordinator.StopAsync();
+      Directory.Delete( dataLocation.Directory, true );
+    }
+  }
+
+  [Test]
   public async Task ServerStatus_IsAvailable() {
     await using var app = await RunningCoordinatorHost.StartAsync(
       new CoordinatorConfiguration { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },

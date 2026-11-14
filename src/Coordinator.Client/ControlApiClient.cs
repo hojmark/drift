@@ -25,6 +25,7 @@ namespace Drift.Coordinator.Client;
 /// </summary>
 public sealed class ControlApiClient : IDisposable {
   private readonly ControlClient _generatedClient;
+  private readonly IRequestAdapter _requestAdapter;
 
   // Used for handwritten SSE which Kiota does not support.
 #pragma warning disable S1133
@@ -32,11 +33,12 @@ public sealed class ControlApiClient : IDisposable {
 #pragma warning restore S1133
   private readonly HttpClient _httpClient;
 
-  private ControlApiClient( HttpClient httpClient, ControlClient generatedClient ) {
+  private ControlApiClient( HttpClient httpClient, IRequestAdapter requestAdapter, ControlClient generatedClient ) {
     // Keep as long as _httpClient is in use
 #pragma warning disable CS0618
     _httpClient = httpClient;
 #pragma warning restore CS0618
+    _requestAdapter = requestAdapter;
     _generatedClient = generatedClient;
   }
 
@@ -47,7 +49,7 @@ public sealed class ControlApiClient : IDisposable {
     var requestAdapter = new HttpClientRequestAdapter( new AnonymousAuthenticationProvider(), httpClient: httpClient ) {
       BaseUrl = httpClient.BaseAddress.ToString().TrimEnd( '/' )
     };
-    return new ControlApiClient( httpClient, new ControlClient( requestAdapter ) );
+    return new ControlApiClient( httpClient, requestAdapter, new ControlClient( requestAdapter ) );
   }
 
   /// <summary>
@@ -73,11 +75,19 @@ public sealed class ControlApiClient : IDisposable {
   /// <summary>
   /// Gets the coordinator's persisted specification.
   /// </summary>
-  public async Task<Network> GetSpecAsync( CancellationToken cancellationToken ) {
+  public async Task<Network?> GetSpecAsync( CancellationToken cancellationToken ) {
     try {
-      await using var stream = await _generatedClient.Api.V1.Spec.GetAsync(
-        cancellationToken: cancellationToken
-      ) ?? throw new InvalidOperationException( "The coordinator returned an empty spec response." );
+      var request = _generatedClient.Api.V1.Spec.ToGetRequestInformation();
+      await using var stream = await _requestAdapter.SendPrimitiveAsync<Stream>(
+        request,
+        default,
+        cancellationToken
+      );
+
+      if ( stream is null ) {
+        return null;
+      }
+
       return YamlConverter.Deserialize( stream ).Network;
     }
     catch ( ControlApiHttpException exception ) {

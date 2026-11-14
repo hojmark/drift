@@ -55,29 +55,55 @@
                 ]
               },
               "addresses": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    },
-                    "is_id": {
-                      "type": [
-                        "null",
-                        "boolean"
-                      ]
-                    }
+                "type": "object",
+                "properties": {
+                  "ipv4": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
                   },
-                  "required": [
-                    "type",
-                    "value"
-                  ],
-                  "additionalProperties": false
-                }
+                  "mac": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "hostname": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "info": {
+                "type": [
+                  "null",
+                  "object"
+                ],
+                "properties": {
+                  "ipv4": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "mac": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "hostname": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                },
+                "additionalProperties": false
               },
               "state": {
                 "enum": [
@@ -102,6 +128,133 @@
         }
       },
       "additionalProperties": false
+    },
+    "server": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "address": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "address"
+      ],
+      "additionalProperties": false
+    },
+    "settings": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "unknown_devices": {
+          "enum": [
+            "disallowed",
+            "allowed",
+            null
+          ]
+        },
+        "undeclared_connections": {
+          "enum": [
+            "blocked",
+            "reachable",
+            null
+          ]
+        },
+        "ping_throttling": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "scan_only_declared_subnets": {
+          "type": [
+            "null",
+            "boolean"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "agents": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "policy": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "to": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "expect": {
+                  "type": "string"
+                },
+                "port": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "protocol": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "probe": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "fallback": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                }
+              },
+              "required": [
+                "to",
+                "expect"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "address"
+        ],
+        "additionalProperties": false
+      }
     }
   },
   "required": [

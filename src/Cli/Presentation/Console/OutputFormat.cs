@@ -16,15 +16,12 @@ internal enum OutputFormat {
   /// <summary>
   /// Log-style console output.
   /// </summary>
-  Log = 2
+  Log = 2,
 
-  // TODO support
-  /*
   /// <summary>
   /// JSON format console output.
   /// </summary>
-  // Json = 3,
-  */
+  Json = 3,
 }
 
 internal static class OutputFormatSettingExtensions {

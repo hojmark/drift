@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Agent.Host\Agent.Host.csproj" />
+    <ProjectReference Include="..\Coordinator.Host\Coordinator.Host.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Drift.Common.Schemas;
+using Drift.Spec.Dtos.V1_preview;
 using Json.Schema;
 using Json.Schema.Generation;
 
@@ -19,7 +20,7 @@ public static class SchemaGenerator {
 
   public static string Generate( SpecVersion version ) {
     return version switch {
-      SpecVersion.V1_preview => Generate<Dtos.V1_preview.DriftSpec>( version ),
+      SpecVersion.V1_preview => Generate<DriftSpec>( version ),
       _ => throw new ArgumentOutOfRangeException( nameof(version), version, "Unknown spec version" )
     };
   }

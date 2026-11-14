@@ -41,10 +41,24 @@ sealed partial class NukeBuild {
 
   Target TestLocal => _ => _
     .DependsOn( Test )
+    .AssuredAfterFailure()
     .Executes( () => {
         var result = ProcessTasks.StartProcess(
           "dotnet",
-          "trx --verbosity verbose",
+          "trx", //"trx --verbosity verbose",
+          workingDirectory: RootDirectory
+        );
+        result.AssertZeroExitCode();
+      }
+    );
+
+  Target TestUnitLocal => _ => _
+    .DependsOn( TestUnit )
+    .AssuredAfterFailure()
+    .Executes( () => {
+        var result = ProcessTasks.StartProcess(
+          "dotnet",
+          "trx", //"trx --verbosity verbose",
           workingDirectory: RootDirectory
         );
         result.AssertZeroExitCode();
@@ -70,7 +84,7 @@ sealed partial class NukeBuild {
     );
 
   Target TestE2E => _ => _
-    .DependsOn( TestE2E_General, TestE2E_Binary, TestE2E_Container );
+    .DependsOn( TestE2E_General, TestE2E_Binary, TestE2E_Container, TestE2E_Clab );
 
   Target TestE2E_General => _ => _
     .DependsOn( Build )
@@ -81,7 +95,7 @@ sealed partial class NukeBuild {
         Log.Information( "Running general E2E tests" );
 
         DotNetTest( settings => settings
-          .SetProjectFile( Solution.Cli_E2ETests_General )
+          .SetProjectFile( Solution.E2E.Cli_E2ETests_General )
           .SetConfiguration( Configuration )
           .ConfigureLoggers( MsBuildVerbosityParsed )
           .SetBlameHangTimeout( "60s" )
@@ -105,7 +119,7 @@ sealed partial class NukeBuild {
         var envVars = new Dictionary<string, string> { { "DRIFT_BINARY_PATH", driftBinary }, };
 
         DotNetTest( settings => settings
-          .SetProjectFile( Solution.Cli_E2ETests_Binary )
+          .SetProjectFile( Solution.E2E.Cli_E2ETests_Binary )
           .SetConfiguration( Configuration )
           .ConfigureLoggers( MsBuildVerbosityParsed )
           .SetBlameHangTimeout( "60s" )
@@ -118,7 +132,7 @@ sealed partial class NukeBuild {
     );
 
   Target TestE2E_Container => _ => _
-    .DependsOn( PublishBinaries, BuildContainerImage )
+    .DependsOn( BuildContainerImage )
     .After( TestUnit )
     .OnlyWhenDynamic( () => Platform != DotNetRuntimeIdentifier.win_x64 )
     .Executes( async () => {
@@ -145,7 +159,7 @@ sealed partial class NukeBuild {
           }
 
           return settings
-            .SetProjectFile( Solution.Cli_E2ETests_Container )
+            .SetProjectFile( Solution.E2E.Cli_E2ETests_Container )
             .SetConfiguration( Configuration )
             .ConfigureLoggers( MsBuildVerbosityParsed )
             .SetBlameHangTimeout( "60s" )

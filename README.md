@@ -73,14 +73,14 @@ docker run -it --rm --network host docker.io/hojmark/drift scan -i
   Automatically detect devices and services, then use that information to define your desired state.
   Discover IP addresses, MAC addresses, and open ports.
 
-- 🧱 **Subnet Access Detection** _(coming soon)_  
-  Detects whether access between subnets is possible, highlighting potential firewall rule issues.
-
 - 📦 **CLI**  
   Manage everything from the command line — interactively or in scripts — with multiple output formats.
 
-- 🌍 **Distributed Scanning** _(coming soon)_  
+- 🌍 **Distributed Scanning**  
   Deploy agents across subnets for complete network visibility.
+
+- 🧱 **Subnet Access Detection** _(coming soon)_  
+  Detects whether access between subnets is possible, highlighting potential firewall rule issues.
 
 - 🔁 **Continuous Monitoring** _(coming soon)_  
   Automate scans and receive alerts when drift is detected.
@@ -118,8 +118,33 @@ JSON Schemas are available to enable editor auto-completion and validation:
   }
   ```
 
+- [**Server configuration schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Coordinator.Host/embedded_resources/schemas/drift-server-v1-preview.schema.json)
+  and [**agent configuration schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Agent.Host/embedded_resources/schemas/drift-agent-v1-preview.schema.json)  
+  For the Drift server (`drift server start`) and agent (`drift agent start`).
+
 There’s no official documentation site yet — if you run into trouble, feel free
 to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a).
+
+### ▸ How do I configure the CLI, server and agent?
+
+The CLI, server (`drift server start`) and agent (`drift agent start`) read their configuration from these sources. Each one overrides the one before it:
+
+1. Built-in defaults
+2. A JSON file: `~/.config/drift/server.json` or `~/.config/drift/agent.json` (optional)
+3. Environment variables prefixed with `DRIFT_SERVER_` or `DRIFT_AGENT_`. Use `__` to separate nested keys,
+   e.g. `DRIFT_SERVER_REQUESTLOGGING__ENABLED=false`
+4. Command-line options, e.g. `--port`
+
+Example `server.json`:
+
+```json
+{
+  "port": 51510,
+  "agentPort": 51515,
+  "listenForAgents": true,
+  "requestLogging": { "enabled": true }
+}
+```
 
 ### ▸ What can be automatically discovered?
 

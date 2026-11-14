@@ -25,12 +25,17 @@ public static class ExitCodes {
   public const int GeneralError = 2;
 
   /// <summary>
+  /// Indicates that the operation was canceled.
+  /// </summary>
+  public const int Canceled = 3;
+
+  /// <summary>
   /// Indicates that a command timed out.
   /// </summary>
-  public const int TimeOutError = 3;
+  public const int TimeOutError = 4;
 
   /// <summary>
   /// Indicates that a spec validation error occurred.
   /// </summary>
-  public const int SpecValidationError = 4;
+  public const int SpecValidationError = 5;
 }

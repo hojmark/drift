@@ -11,6 +11,7 @@ using Drift.Messaging.Protocol.Agent.Subnets;
 using Drift.Scanning.Subnets.Interface;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using RpcException = Grpc.Core.RpcException;
 
 namespace Drift.Coordinator.Services.Scans;
 
@@ -24,15 +25,17 @@ public sealed class ScanService(
   ILogger logger
 ) {
   private readonly ConcurrentDictionary<Guid, ScanState> _scans = new();
+  private int _scanCounter;
 
   public bool Exists( Guid id ) => _scans.ContainsKey( id );
 
   public ScanStartResult Start( StartScanCommand command ) {
     var id = Guid.NewGuid();
-    var scan = new ScanState( id );
+    var scan = new ScanState( id, Interlocked.Increment( ref _scanCounter ) );
     _scans[id] = scan;
     logger.LogInformation(
-      "Coordinator scan {ScanId} queued with {PingsPerSecond} pings per second",
+      "Scan #{ScanNo} ({ScanId}) queued with {PingsPerSecond} pings per second",
+      scan.No,
       id,
       command.PingsPerSecond
     );
@@ -90,8 +93,8 @@ public sealed class ScanService(
         .ToList();
       var enrolledAgents = agentDirectory.GetEnrolledAgents();
       logger.LogInformation(
-        "Coordinator scan {ScanId} started with {SubnetCount} requested subnets and {AgentCount} enrolled agents",
-        scan.Id,
+        "Scan #{ScanNo} started with {SubnetCount} requested subnets and {AgentCount} enrolled agents",
+        scan.No,
         requestedCidrs.Count,
         enrolledAgents.Count
       );
@@ -99,7 +102,7 @@ public sealed class ScanService(
       if ( enrolledAgents.Count > 0 ) {
         remoteAssignments = await GetRemoteAssignmentsAsync(
           scope.ServiceProvider.GetRequiredService<AgentGateway>(),
-          scan.Id,
+          scan.No,
           enrolledAgents,
           requestedCidrs,
           cancellationToken
@@ -108,17 +111,22 @@ public sealed class ScanService(
 
       var remoteCidrs = remoteAssignments.Select( assignment => assignment.Cidr ).ToHashSet();
       var localSubnets = await scope.ServiceProvider.GetRequiredService<IInterfaceSubnetProvider>().GetAsync();
-      var reachableCidrs = localSubnets.Select( subnet => subnet.Cidr ).Concat( remoteCidrs ).ToHashSet();
+      var localInterfaceCidrs = localSubnets.Select( subnet => subnet.Cidr ).ToHashSet();
+      var reachableCidrs = localInterfaceCidrs.Concat( remoteCidrs ).ToHashSet();
       var unreachableCidrs = requestedCidrs.Except( reachableCidrs ).ToList();
       foreach ( var unreachableCidr in unreachableCidrs ) {
         logger.LogWarning(
-          "Coordinator scan {ScanId}: declared subnet {Cidr} is not reachable locally or through an enrolled agent",
-          scan.Id,
+          "Scan #{ScanNo}: declared subnet {Cidr} is not reachable locally or through an online agent; it will not be scanned",
+          scan.No,
           unreachableCidr
         );
       }
 
-      var localCidrs = requestedCidrs.Where( cidr => !remoteCidrs.Contains( cidr ) ).ToList();
+      // Only scan subnets the coordinator is directly attached to. Subnets that belong to an offline agent must not be
+      // scanned from here, as that would report the coordinator's view of the subnet as if it were the agent's.
+      var localCidrs = requestedCidrs
+        .Where( cidr => !remoteCidrs.Contains( cidr ) && localInterfaceCidrs.Contains( cidr ) )
+        .ToList();
       var results = new List<SubnetScanResult>();
       results.AddRange( unreachableCidrs.Select( cidr => new SubnetScanResult {
         CidrBlock = cidr,
@@ -127,16 +135,16 @@ public sealed class ScanService(
         Progress = Percentage.Zero
       } ) );
       logger.LogInformation(
-        "Coordinator scan {ScanId} assigned {RemoteSubnetCount} subnets to agents and will scan {LocalSubnetCount} locally",
-        scan.Id,
+        "Scan #{ScanNo} assigned {RemoteSubnetCount} subnets to agents and will scan {LocalSubnetCount} locally",
+        scan.No,
         remoteAssignments.Count,
         localCidrs.Count
       );
 
       if ( localCidrs.Count > 0 ) {
         logger.LogInformation(
-          "Coordinator scan {ScanId} starting local scan of {SubnetCount} subnets",
-          scan.Id,
+          "Scan #{ScanNo} starting local scan of {SubnetCount} subnets",
+          scan.No,
           localCidrs.Count
         );
         var options = new NetworkScanOptions { Cidrs = localCidrs, PingsPerSecond = command.PingsPerSecond };
@@ -155,8 +163,8 @@ public sealed class ScanService(
         var agentGateway = scope.ServiceProvider.GetRequiredService<AgentGateway>();
         foreach ( var assignment in remoteAssignments ) {
           logger.LogInformation(
-            "Coordinator scan {ScanId} starting remote scan of {Cidr} on agent {AgentId}",
-            scan.Id,
+            "Scan #{ScanNo} starting remote scan of {Cidr} on agent {AgentId}",
+            scan.No,
             assignment.Cidr,
             assignment.Agent.Id
           );
@@ -182,8 +190,8 @@ public sealed class ScanService(
         Progress = Percentage.Hundred
       } );
       logger.LogInformation(
-        "Coordinator scan {ScanId} completed with {SubnetCount} subnet results and status {Status}",
-        scan.Id,
+        "Scan #{ScanNo} completed with {SubnetCount} subnet results and status {Status}",
+        scan.No,
         results.Count,
         status
       );
@@ -193,7 +201,7 @@ public sealed class ScanService(
       scan.Events.Writer.TryComplete();
     }
     catch ( Exception exception ) {
-      logger.LogError( exception, "Control scan {ScanId} failed", scan.Id );
+      logger.LogError( exception, "Scan #{ScanNo} failed", scan.No );
       scan.Update( ScanStatus.Failed, 0 );
       scan.Events.Writer.TryComplete();
     }
@@ -201,7 +209,7 @@ public sealed class ScanService(
 
   private async Task<List<(EnrolledAgent Agent, CidrBlock Cidr)>> GetRemoteAssignmentsAsync(
     AgentGateway agentGateway,
-    Guid scanId,
+    int scanNo,
     IReadOnlyCollection<EnrolledAgent> enrolledAgents,
     IReadOnlyCollection<CidrBlock> requestedCidrs,
     CancellationToken cancellationToken
@@ -211,8 +219,8 @@ public sealed class ScanService(
     foreach ( var enrolledAgent in enrolledAgents ) {
       try {
         logger.LogDebug(
-          "Coordinator scan {ScanId} querying agent {AgentId} for available subnets",
-          scanId,
+          "Scan #{ScanNo} querying agent {AgentId} for available subnets",
+          scanNo,
           enrolledAgent.Id
         );
         var response = await agentGateway.RequestAsync<SubnetsRequest, SubnetsResponse>(
@@ -224,8 +232,8 @@ public sealed class ScanService(
         var assignedCidrs = response.Subnets.Where( requestedCidrs.Contains ).ToArray();
         assignments.AddRange( assignedCidrs.Select( cidr => ( Agent: enrolledAgent, Cidr: cidr ) ) );
         logger.LogInformation(
-          "Coordinator scan {ScanId} agent {AgentId} reported {ReportedSubnetCount} subnets; assigned {AssignedSubnetCount}",
-          scanId,
+          "Scan #{ScanNo}: agent {AgentId} reported {ReportedSubnetCount} subnets; assigned {AssignedSubnetCount}",
+          scanNo,
           enrolledAgent.Id,
           response.Subnets.Count,
           assignedCidrs.Length
@@ -235,8 +243,12 @@ public sealed class ScanService(
         throw;
       }
       catch ( Exception exception ) {
-        LogStaleAgent(
-          enrolledAgent,
+        logger.LogError(
+          exception,
+          "Scan #{ScanNo}: unable to query subnets from agent {AgentId} at {Address}; skipping agent. Its subnets will not be scanned unless the coordinator is directly attached to them. Reason: {Reason}",
+          scanNo,
+          enrolledAgent.Id,
+          enrolledAgent.Address,
           GetRootCauseMessage( exception )
         );
       }
@@ -249,20 +261,18 @@ public sealed class ScanService(
       .ToList();
   }
 
-  private void LogStaleAgent( EnrolledAgent agent, string reason ) {
-    logger.LogWarning(
-      "Unable to query subnets from agent {AgentId} at {Address}; scanning its subnets locally. Reason: {Reason}",
-      agent.Id,
-      agent.Address,
-      reason
-    );
+  internal static string GetRootCauseMessage( Exception exception ) {
+    var rootCause = exception.GetBaseException();
+    return rootCause switch {
+      // gRPC keeps the underlying transport error in Status.DebugException rather than InnerException, and its Message
+      // embeds the full status, e.g. Status(StatusCode="Unavailable", Detail="...", DebugException="...").
+      RpcException { Status.DebugException: { } debugException } => debugException.GetBaseException().Message,
+      RpcException rpcException => rpcException.Status.Detail,
+      _ => rootCause.Message
+    };
   }
 
-  private static string GetRootCauseMessage( Exception exception ) {
-    return exception.GetBaseException().Message;
-  }
-
-  private sealed class ScanState( Guid id ) {
+  private sealed class ScanState( Guid id, int no ) {
     private readonly Lock _lock = new();
     private ScanStatus _status = ScanStatus.Queued;
     private byte _progress;
@@ -270,6 +280,7 @@ public sealed class ScanService(
     private NetworkScanResult? _result;
 
     public Guid Id => id;
+    public int No => no;
     public NetworkScanResult? Result => _result;
     public long EventId => Interlocked.Read( ref _eventId );
 

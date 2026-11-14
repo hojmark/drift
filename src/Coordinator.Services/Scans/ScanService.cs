@@ -279,7 +279,6 @@ public sealed class ScanService(
     private long _eventId;
     private NetworkScanResult? _result;
 
-    public Guid Id => id;
     public int No => no;
     public NetworkScanResult? Result => _result;
     public long EventId => Interlocked.Read( ref _eventId );

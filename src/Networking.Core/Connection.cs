@@ -18,7 +18,8 @@ internal sealed class Connection : IMessageStreamConnection {
   private readonly CancellationTokenSource? _connectionCancellation;
   private readonly CancellationToken _applicationStoppingToken;
   private readonly ILogger _logger;
-  private int _disposeStarted;
+  private readonly Lock _disposeLock = new();
+  private Task? _disposeTask;
   private int _closedLocally;
 
   private Connection(
@@ -134,11 +135,29 @@ internal sealed class Connection : IMessageStreamConnection {
 
   internal ValueTask DisposeAfterCompletionAsync() => DisposeCoreAsync();
 
-  private async ValueTask DisposeCoreAsync() {
-    if ( Interlocked.Exchange( ref _disposeStarted, 1 ) != 0 ) {
-      return;
+  /// <summary>
+  /// Disposal runs once; concurrent and subsequent callers await the same task, so no caller
+  /// returns before disposal has actually completed.
+  /// </summary>
+  private ValueTask DisposeCoreAsync() {
+    Task<Task>? starter = null;
+    Task disposeTask;
+
+    lock ( _disposeLock ) {
+      if ( _disposeTask == null ) {
+        // Publish the task under the lock, but start it outside so disposal callbacks don't run while holding it
+        starter = new Task<Task>( DisposeOnceAsync );
+        _disposeTask = starter.Unwrap();
+      }
+
+      disposeTask = _disposeTask;
     }
 
+    starter?.RunSynchronously();
+    return new ValueTask( disposeTask );
+  }
+
+  private async Task DisposeOnceAsync() {
     _correlator.FailPendingRequests(
       new IOException( $"Messaging stream for agent '{Stream.RemoteId}' was closed." )
     );

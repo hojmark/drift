@@ -1,3 +1,4 @@
+using Drift.Agent.Host;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Tests.Utils;
 using Drift.Common.IO;
@@ -62,7 +63,7 @@ internal sealed class AgentCommandTests {
 
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-      Assert.That( output.ToString(), Does.Contain( $"Port: {Ports.AgentDefault} (gRPC)" ) );
+      Assert.That( output.ToString(), Does.Contain( $"Port: {AgentOptions.DefaultPort} (gRPC)" ) );
       Assert.That( output.ToString(), Does.Contain( "Agent stopped" ) );
       Assert.That( error.ToString(), Is.Empty );
     }

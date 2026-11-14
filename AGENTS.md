@@ -36,7 +36,7 @@ The solution is split into focused projects. The main ones:
 | Project | Role |
 | --- | --- |
 | `Cli` | Entry point; commands: `init`, `scan`, `agent start`; AOT-compiled |
-| `Cli.Abstractions` | Shared CLI constants: exit codes, env var names, port numbers, file names |
+| `Cli.Abstractions` | Shared CLI constants: exit codes, env var names/prefixes, file names |
 | `Cli.Settings` | User settings file (`~/.config/drift/settings.json`) |
 | `Domain` | Core value types: `Network`, `Device`, `Inventory`, `CidrBlock`, `Port`, `AgentId` |
 | `Spec` | YAML spec parsing and validation into declared-state domain types |
@@ -49,15 +49,18 @@ The solution is split into focused projects. The main ones:
 | `Networking.Server` | Hosts the inbound gRPC service for messaging endpoints |
 | `Messaging.Protocol.Agent` | Agent request/response message contracts (e.g. scan, subnets) |
 | `Messaging.Client` | Typed agent client built on top of `Networking.Client`/`Networking.Core` |
-| `Agent.Host` | Hosts an agent's messaging/gRPC endpoint (Kestrel/ASP.NET Core) |
-| `Coordinator.Host` | Coordinator-side host counterpart to `Agent.Host` (work in progress) |
+| `Agent.Host` | Hosts an agent's messaging/gRPC endpoint (Kestrel/ASP.NET Core); `AgentOptions` (`agent.json`) |
+| `Coordinator.Host` | Coordinator-side host counterpart to `Agent.Host` (work in progress); `CoordinatorOptions` (`server.json`) |
+| `Hosting` | Shared host plumbing: request logging/exception middleware, configuration source helpers |
 | `Common` | Shared cross-cutting helpers: IO, logging, network utilities, embedded resources |
 | `Common.Schemas` | Shared JSON Schema generation helpers (e.g. lowercase enum naming) |
 | `Serialization` | Cross-module serialization helpers |
 | `TestUtilities` | Shared test helpers (loggers, Verify/snapshot settings) used by `*.Tests` projects |
 | `ArchTests` | ArchUnitNET tests enforcing dependency rules and naming conventions |
 
-Schema generators live in `Spec.SchemaGenerator.Cli` and `Cli.Settings.SchemaGenerator.Cli` — they produce JSON Schema from C# types.
+Schema generators live in `Spec.SchemaGenerator.Cli`, `Cli.Settings.SchemaGenerator.Cli` and `Hosting.SchemaGenerator.Cli` (server/agent config) — they produce JSON Schema from C# types (`dotnet nuke GenerateSchemas`).
+
+**Host configuration**: `server start`/`agent start` resolve `CoordinatorOptions`/`AgentOptions` via `Microsoft.Extensions.Configuration` — defaults < `server.json`/`agent.json` in the config dir (optional; no command-line override of the path) < `DRIFT_SERVER_*`/`DRIFT_AGENT_*` env vars < explicit CLI options. Binding uses the configuration binding source generator (AOT-safe) with `ErrorOnUnknownConfiguration`. Hosts take resolved options objects and clear the default ASP.NET Core configuration sources. CLI options for these values must have no `DefaultValueFactory`, so that an option that isn't given doesn't override the file.
 
 `Networking.*` and `Messaging.*` implement the role-agnostic transport layer (see naming rule below); `Agent.Host` and `Coordinator.Host` build role-specific hosting on top of it.
 

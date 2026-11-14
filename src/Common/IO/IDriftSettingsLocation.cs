@@ -15,4 +15,16 @@ public interface IDriftSettingsLocation {
       return Path.Combine( Directory, Files.SettingsFileName );
     }
   }
+
+  string ServerConfigFile {
+    get {
+      return Path.Combine( Directory, Files.ServerConfigFileName );
+    }
+  }
+
+  string AgentConfigFile {
+    get {
+      return Path.Combine( Directory, Files.AgentConfigFileName );
+    }
+  }
 }

@@ -11,7 +11,7 @@ using Target = Nuke.Common.Target;
 
 sealed partial class NukeBuild {
   Target GenerateSchemas => _ => _
-    .DependsOn( GenerateSpecSchema, GenerateSettingsSchema );
+    .DependsOn( GenerateSpecSchema, GenerateSettingsSchema, GenerateHostConfigSchemas );
 
   Target GenerateSpecSchema => _ => _
     .Executes( () => {
@@ -35,14 +35,30 @@ sealed partial class NukeBuild {
       }
     );
 
-  private void RunSchemaGenerator( AbsolutePath projectFile, AbsolutePath outputDirectory ) {
+  Target GenerateHostConfigSchemas => _ => _
+    .Executes( () => {
+        using var _ = new OperationTimer( nameof(GenerateHostConfigSchemas) );
+
+        RunSchemaGenerator(
+          Solution.Hosting_SchemaGenerator_Cli.Path,
+          Solution.Coordinator.Coordinator_Host.Directory / "embedded_resources" / "schemas",
+          "server"
+        );
+        RunSchemaGenerator(
+          Solution.Hosting_SchemaGenerator_Cli.Path,
+          Solution.Agent.Agent_Host.Directory / "embedded_resources" / "schemas",
+          "agent"
+        );
+      }
+    );
+
+  private void RunSchemaGenerator( AbsolutePath projectFile, AbsolutePath outputDirectory, string? role = null ) {
     Log.Information( "Generating schema from {Project} into {OutputDirectory}", projectFile, outputDirectory );
 
     DotNetRun( s => s
       .SetProjectFile( projectFile )
       .SetConfiguration( Configuration )
-      .SetApplicationArguments( outputDirectory )
+      .SetApplicationArguments( role is null ? outputDirectory : $"{role} {outputDirectory}" )
     );
   }
-
 }

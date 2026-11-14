@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hojmark.github.io/drift/schemas/drift-server-v1-preview.schema.json",
+  "type": "object",
+  "properties": {
+    "port": {
+      "type": "integer"
+    },
+    "agentPort": {
+      "type": "integer"
+    },
+    "listenForAgents": {
+      "type": "boolean"
+    },
+    "requestLogging": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

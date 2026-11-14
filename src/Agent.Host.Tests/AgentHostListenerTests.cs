@@ -14,7 +14,7 @@ internal sealed class AgentHostListenerTests {
     using var cancellation = new CancellationTokenSource();
     var ready = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
     var runTask = AgentHost.Run(
-      new AgentConfiguration { Port = null },
+      new AgentOptions { Listen = false },
       NullLogger.Instance,
       services => {
         services.AddSingleton<IAgentDataLocation>( new TestAgentDataLocation() );

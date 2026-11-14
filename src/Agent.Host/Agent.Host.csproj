@@ -1,5 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <!-- AOT/trim-safe IConfiguration binding (replaces reflection-based ConfigurationBinder calls) -->
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="embedded_resources\**\*" />
+  </ItemGroup>
+
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
@@ -10,6 +19,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Common.Schemas\Common.Schemas.csproj" />
+    <ProjectReference Include="..\Hosting\Hosting.csproj" />
     <ProjectReference Include="..\Messaging.Protocol.Agent\Messaging.Protocol.Agent.csproj" />
     <ProjectReference Include="..\Messaging.Client\Messaging.Client.csproj" />
     <ProjectReference Include="..\Networking.Server\Networking.Server.csproj" />

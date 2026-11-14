@@ -146,7 +146,7 @@ internal sealed class StatusCommandTests {
         """
     );
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
-      new CoordinatorConfiguration { Port = controlPort },
+      new CoordinatorOptions { Port = controlPort, ListenForAgents = false },
       NullLogger.Instance,
       services => services.AddSingleton<ICoordinatorDataLocation>( dataLocation )
     );

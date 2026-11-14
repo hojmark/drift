@@ -19,7 +19,7 @@ internal sealed class LogForgingTests {
   public async Task Enrollment_AgentIdWithLineBreak_IsRejectedAndNotLogged( string endpoint ) {
     var logger = new StringLogger();
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
-      new CoordinatorConfiguration { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
+      new CoordinatorOptions { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
       logger
     );
     using var client = coordinator.CreateHttpClient();
@@ -47,7 +47,7 @@ internal sealed class LogForgingTests {
   public async Task RequestPath_WithEncodedLineBreak_IsLoggedEncoded() {
     var logger = new StringLogger();
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
-      new CoordinatorConfiguration { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
+      new CoordinatorOptions { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
       logger
     );
     using var client = coordinator.CreateHttpClient();

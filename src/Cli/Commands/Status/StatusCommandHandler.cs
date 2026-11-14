@@ -168,9 +168,19 @@ internal sealed class StatusCommandHandler(
     console.MarkupLine( "[bold]CLI[/]" );
     console.MarkupLine( "-------------------------------" );
 
-    console.MarkupLine( $"  Data directory: {dataLocation.Directory}" );
-    console.MarkupLine( $"  Settings directory: {settingsLocation.Directory}" );
+    RenderDirectory( console, "Data directory", dataLocation.Directory );
+    RenderDirectory( console, "Settings directory", settingsLocation.Directory );
     RenderLocalAddresses( console );
+  }
+
+  /// <summary>
+  /// Renders the directory as a file:// hyperlink (OSC 8).
+  /// </summary>
+  private static void RenderDirectory( IAnsiConsole console, string label, string directory ) {
+    var line = new Paragraph( $"  {label}: " );
+    line.Append( directory, style: null, link: new Link( new Uri( directory ).AbsoluteUri ) );
+    console.Write( line );
+    console.WriteLine();
   }
 
   private static string FormatStatus( string status ) {

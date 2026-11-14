@@ -6,6 +6,7 @@ using Drift.Spec.Schema;
 using Drift.Spec.Serialization;
 using Drift.Spec.Validation;
 using Microsoft.Extensions.Logging;
+using YamlDotNet.Core;
 
 namespace Drift.Cli.SpecFile;
 
@@ -44,18 +45,29 @@ internal class FileSystemSpecProvider( IOutputManager output ) : ISpecFileProvid
         specFileContents = await sr.ReadToEndAsync();
       }
 
-      var isValid = SpecValidator.Validate( specFileContents, SpecVersion.V1_preview ).IsValid;
+      var validationResult = SpecValidator.Validate( specFileContents, SpecVersion.V1_preview );
 
-      if ( isValid ) {
+      if ( validationResult.IsValid ) {
         output.Normal.WriteLineSuccess( "Valid" );
       }
       else {
         output.Normal.WriteLineError( "Validation failed" );
+        foreach ( var error in validationResult.Errors ) {
+          output.Normal.WriteLineError( $"  {error}" );
+          output.Log.LogWarning( "Spec validation error: {Error}", error.ToString() );
+        }
       }
 
-      // output.Normal.WriteLine();
+      // A spec that violates the schema is still used if it can be loaded; only abort if it can't.
+      try {
+        spec = YamlConverter.Deserialize( specFileContents );
+      }
+      catch ( YamlException exception ) {
+        output.Log.LogError( exception, "Network spec could not be loaded: {SpecPath}", filePath );
+        output.Normal.WriteLineError( $"Network spec could not be loaded: {filePath}" );
+        throw new InvalidSpecException( $"Network spec could not be loaded: {filePath}", exception );
+      }
 
-      spec = YamlConverter.Deserialize( specFileContents );
       spec.Network.Id = GetNetworkId( filePath );
 
       output.Log.LogDebug( "Network ID: {ID}", spec.Network.Id );

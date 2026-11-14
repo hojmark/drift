@@ -122,7 +122,6 @@ JSON Schemas are available to enable editor auto-completion and validation:
   and [**agent configuration schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Agent.Host/embedded_resources/schemas/drift-agent-v1-preview.schema.json)  
   For the Drift server (`drift server start`) and agent (`drift agent start`).
 
-
 There’s no official documentation site yet — if you run into trouble, feel free
 to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a).
 

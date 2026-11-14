@@ -92,7 +92,7 @@ internal sealed partial class InstallPsTests {
         shell,
         new() {
           { "DRIFT_INSTALL_DIR", installDir },
-          { "GITHUB_TOKEN", null } // Note: the only test accessing APIs anonymously
+          // { "GITHUB_TOKEN", null } // Note: the only test accessing APIs anonymously
         }
       ).ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" {version}" );
 

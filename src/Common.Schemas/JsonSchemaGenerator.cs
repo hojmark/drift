@@ -19,6 +19,10 @@ public static class JsonSchemaGenerator {
     PropertyNameResolver = PropertyNameResolvers.CamelCase, Generators = { new LowerCaseEnumGenerator() }
   };
 
+  /// <summary>
+  /// Generates a JSON schema for a type.
+  /// </summary>
+  /// <typeparam name="T">The type to generate a schema for.</typeparam>
   /// <param name="fileName">Schema file name, used to build the schema's published <c>$id</c>.</param>
   public static string Generate<T>( string fileName ) {
     var schema = new JsonSchemaBuilder()

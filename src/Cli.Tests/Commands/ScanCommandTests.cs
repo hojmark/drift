@@ -231,6 +231,42 @@ internal sealed partial class ScanCommandTests {
   }
 
   [Test]
+  public async Task UnloadableSpec_ReturnsSpecValidationError() {
+    // Arrange: legacy (pre-agent) address format, which no longer deserializes
+    var dir = Directory.CreateTempSubdirectory( "drift-test-" );
+    try {
+      var specPath = Path.Combine( dir.FullName, "legacy.spec.yaml" );
+      await File.WriteAllTextAsync(
+        specPath,
+        """
+        version: v1-preview
+        network:
+          devices:
+            - id: client1
+              addresses:
+                - type: ip-v4
+                  value: 192.168.0.101
+        """
+      );
+      var serviceConfig = ConfigureServices( [DefaultInterface], [] );
+
+      // Act
+      var (exitCode, output, error) = await DriftTestCli.InvokeAsync( $"scan {specPath}", serviceConfig );
+
+      // Assert
+      var allOutput = output.ToString() + error;
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( exitCode, Is.EqualTo( ExitCodes.SpecValidationError ) );
+        Assert.That( allOutput, Does.Contain( "Network spec could not be loaded" ) );
+        Assert.That( allOutput, Does.Not.Contain( "   at " ), "Stack trace should not be printed" );
+      }
+    }
+    finally {
+      dir.Delete( recursive: true );
+    }
+  }
+
+  [Test]
   public async Task WithSpec_DeclaredSubnetNotOnLocalInterface_Warns() {
     var inventory = new Inventory {
       Network = new Network { Subnets = [new DeclaredSubnet { Address = "192.168.10.0/24" }] }
@@ -243,7 +279,9 @@ internal sealed partial class ScanCommandTests {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
       Assert.That(
         output.ToString() + error,
-        Does.Contain( "Declared subnet 192.168.10.0/24 is not reachable from the local environment." )
+        Does.Contain(
+          "Declared subnet 192.168.10.0/24 is not directly attached; scanning via routing (MAC addresses unavailable)."
+        )
       );
     }
   }

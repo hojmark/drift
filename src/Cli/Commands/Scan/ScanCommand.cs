@@ -78,9 +78,9 @@ internal sealed class ScanCommandHandler(
       return await RunServerScanAsync( parameters, target, cancellationToken );
     }
 
-    var (inventory, loadFailed) = await LoadInventoryAsync( parameters.SpecFile );
-    if ( loadFailed ) {
-      return ExitCodes.GeneralError;
+    var (inventory, errorExitCode) = await LoadInventoryAsync( parameters.SpecFile );
+    if ( errorExitCode != null ) {
+      return errorExitCode.Value;
     }
 
     if ( inventory.Agents.Count > 0 ) {
@@ -116,16 +116,18 @@ internal sealed class ScanCommandHandler(
     return exitCode;
   }
 
-  private async Task<(Inventory inventory, bool loadFailed)> LoadInventoryAsync( FileInfo? specFile ) {
+  /// <returns>The loaded inventory, or an exit code if the spec could not be loaded (already reported).</returns>
+  private async Task<(Inventory inventory, int? errorExitCode)> LoadInventoryAsync( FileInfo? specFile ) {
+    var empty = new Inventory { Network = new Network(), Agents = [] };
     try {
       var loadedInventory = await specProvider.GetDeserializedAsync( specFile );
-      return (
-        loadedInventory ?? new Inventory { Network = new Network(), Agents = [] },
-        false
-      );
+      return ( loadedInventory ?? empty, null );
     }
     catch ( FileNotFoundException ) {
-      return ( new Inventory { Network = new Network(), Agents = [] }, true );
+      return ( empty, ExitCodes.GeneralError );
+    }
+    catch ( InvalidSpecException ) {
+      return ( empty, ExitCodes.SpecValidationError );
     }
   }
 
@@ -135,12 +137,17 @@ internal sealed class ScanCommandHandler(
       .Where( subnet => subnet.Enabled != false )
       .Select( subnet => new CidrBlock( subnet.Address ) )
       .ToHashSet();
-    var reachableSubnets = localSubnets.Select( subnet => subnet.Cidr ).ToHashSet();
-    foreach ( var unreachableSubnet in declaredSubnets.Except( reachableSubnets ) ) {
+    // Declared subnets that aren't on a local interface are still scanned: they may be reachable via routing
+    // (gateway, VPN, static routes). MAC addresses aren't available for those, as ARP is link-local.
+    var attachedSubnets = localSubnets.Select( subnet => subnet.Cidr ).ToHashSet();
+    foreach ( var routedSubnet in declaredSubnets.Except( attachedSubnets ) ) {
       output.Normal.WriteLineWarning(
-        $"Declared subnet {unreachableSubnet} is not reachable from the local environment."
+        $"Declared subnet {routedSubnet} is not directly attached; scanning via routing (MAC addresses unavailable)."
       );
-      output.Log.LogWarning( "Declared subnet {Cidr} is not reachable from the local environment", unreachableSubnet );
+      output.Log.LogWarning(
+        "Declared subnet {Cidr} is not directly attached; scanning via routing (MAC addresses unavailable)",
+        routedSubnet
+      );
     }
 
     var subnetProvider = new CompositeSubnetProvider(
@@ -188,7 +195,7 @@ internal sealed class ScanCommandHandler(
     );
   }
 
-  private Task<int> StartUiAsync(
+  private async Task<int> StartUiAsync(
     ScanParameters parameters,
     Inventory inventory,
     IScanOrchestrator scanOrchestrator,
@@ -196,7 +203,7 @@ internal sealed class ScanCommandHandler(
     CancellationToken cancellationToken
   ) {
     if ( parameters.Interactive ) {
-      var ui = new InteractiveUi(
+      await using var ui = new InteractiveUi(
         output,
         inventory.Network,
         scanOrchestrator,
@@ -206,11 +213,11 @@ internal sealed class ScanCommandHandler(
         serviceProvider.GetRequiredService<IConsoleKeyWatcher>(),
         serviceProvider.GetRequiredService<IConsoleResizeWatcher>()
       );
-      return ui.RunAsync( cancellationToken );
+      return await ui.RunAsync( cancellationToken );
     }
     else {
       var ui = new NonInteractiveUi( output, scanOrchestrator );
-      return ui.RunAsync( scanRequest, inventory.Network, parameters.OutputFormat, cancellationToken );
+      return await ui.RunAsync( scanRequest, inventory.Network, parameters.OutputFormat, cancellationToken );
     }
   }
 }

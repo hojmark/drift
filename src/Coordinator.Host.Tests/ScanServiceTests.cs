@@ -69,7 +69,9 @@ internal sealed class ScanServiceTests {
     var orchestrator = new ControlledScanOrchestrator();
     var services = new ServiceCollection();
     services.AddScoped<IScanOrchestrator>( _ => orchestrator );
-    services.AddScoped<IInterfaceSubnetProvider, EmptyInterfaceSubnetProvider>();
+    services.AddScoped<IInterfaceSubnetProvider>( _ =>
+      new FixedInterfaceSubnetProvider( new CidrBlock( "192.168.1.0/24" ) )
+    );
     await using var provider = services.BuildServiceProvider();
     var service = new ScanService(
       provider.GetRequiredService<IServiceScopeFactory>(),
@@ -128,6 +130,94 @@ internal sealed class ScanServiceTests {
     Assert.That( logger.ToString(), Does.Contain( "declared subnet 192.168.10.0/24 is not reachable" ) );
   }
 
+  [Test]
+  public async Task Start_DoesNotScanUnreachableSubnetLocally() {
+    var orchestrator = new RecordingScanOrchestrator();
+    var services = new ServiceCollection();
+    services.AddScoped<IScanOrchestrator>( _ => orchestrator );
+    services.AddScoped<IInterfaceSubnetProvider>( _ =>
+      new FixedInterfaceSubnetProvider( new CidrBlock( "192.168.1.0/24" ) )
+    );
+    await using var provider = services.BuildServiceProvider();
+    var service = new ScanService(
+      provider.GetRequiredService<IServiceScopeFactory>(),
+      new InMemoryAgentDirectory( [] ),
+      new CoordinatorSpec( new Inventory { Network = new() } ),
+      NullLogger.Instance
+    );
+
+    var response = service.Start( new StartScanCommand {
+      Cidrs = [new CidrBlock( "192.168.1.0/24" ), new CidrBlock( "192.168.10.0/24" )]
+    } );
+    for ( var attempt = 0;
+         attempt < 100 && service.Get( response.ScanId ).Status is not ScanStatus.Completed;
+         attempt++ ) {
+      await Task.Delay( 10 );
+    }
+
+    var result = service.GetResult( response.ScanId );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( orchestrator.ScannedCidrs, Is.EqualTo( new[] { new CidrBlock( "192.168.1.0/24" ) } ) );
+      Assert.That(
+        result.Subnets.Single( subnet => subnet.CidrBlock == new CidrBlock( "192.168.10.0/24" ) ).Status,
+        Is.EqualTo( ScanResultStatus.Error )
+      );
+    }
+  }
+
+  [Test]
+  public void GetRootCauseMessage_RpcExceptionWithDebugException_ReturnsTransportError() {
+    var exception = new Grpc.Core.RpcException( new Grpc.Core.Status(
+      Grpc.Core.StatusCode.Unavailable,
+      "Error connecting to subchannel.",
+      new HttpRequestException( "Wrapper", new System.Net.Sockets.SocketException( 111 ) )
+    ) );
+
+    Assert.That(
+      ScanService.GetRootCauseMessage( exception ),
+      Is.EqualTo( new System.Net.Sockets.SocketException( 111 ).Message )
+    );
+  }
+
+  [Test]
+  public void GetRootCauseMessage_RpcExceptionWithoutDebugException_ReturnsStatusDetail() {
+    var exception = new Grpc.Core.RpcException(
+      new Grpc.Core.Status( Grpc.Core.StatusCode.Unavailable, "Error connecting to subchannel." )
+    );
+
+    Assert.That( ScanService.GetRootCauseMessage( exception ), Is.EqualTo( "Error connecting to subchannel." ) );
+  }
+
+  [Test]
+  public void GetRootCauseMessage_OtherException_ReturnsInnermostMessage() {
+    var exception = new InvalidOperationException( "Outer", new TimeoutException( "Inner" ) );
+
+    Assert.That( ScanService.GetRootCauseMessage( exception ), Is.EqualTo( "Inner" ) );
+  }
+
+  private sealed class RecordingScanOrchestrator : IScanOrchestrator {
+    public event EventHandler<NetworkScanResult>? ResultUpdated;
+
+    public List<CidrBlock> ScannedCidrs {
+      get;
+    } = [];
+
+    public Task<NetworkScanResult> ScanAsync(
+      NetworkScanOptions options,
+      Microsoft.Extensions.Logging.ILogger logger,
+      CancellationToken cancellationToken
+    ) {
+      ScannedCidrs.AddRange( options.Cidrs );
+      var result = new NetworkScanResult {
+        Metadata = new Metadata { StartedAt = DateTime.UtcNow, EndedAt = DateTime.UtcNow },
+        Progress = Percentage.Hundred,
+        Status = ScanResultStatus.Success
+      };
+      ResultUpdated?.Invoke( this, result );
+      return Task.FromResult( result );
+    }
+  }
+
   private sealed class TestScanOrchestrator : IScanOrchestrator {
     public event EventHandler<NetworkScanResult>? ResultUpdated;
 
@@ -178,6 +268,13 @@ internal sealed class ScanServiceTests {
     }
 
     public void Complete() => _completion.SetResult();
+  }
+
+  private sealed class FixedInterfaceSubnetProvider( params CidrBlock[] cidrs ) : IInterfaceSubnetProvider {
+    public List<INetworkInterface> GetInterfaces() => [];
+
+    public Task<List<ResolvedSubnet>> GetAsync() =>
+      Task.FromResult( cidrs.Select( cidr => new ResolvedSubnet( cidr, SubnetSource.Local ) ).ToList() );
   }
 
   private sealed class EmptyInterfaceSubnetProvider : IInterfaceSubnetProvider {

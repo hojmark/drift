@@ -36,7 +36,7 @@
   device.
 
 - **Agent**  
-  A running instance of Drift in agent mode that reports network state to other Drift peers.
+  A running instance of Drift in agent mode (`drift agent start`) that reports network state to a Drift server (`drift server start`).
   Agents help ensure full network visibility by uncovering state that's only observable when scanning from specific subnets.
 
 ## Concepts

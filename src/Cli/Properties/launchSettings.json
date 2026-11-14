@@ -59,6 +59,12 @@
       "commandLineArgs": "agent start ~ --port 51516",
       "dotnetRunMessages": true,
       "environmentVariables": {}
+    },
+    "server start": {
+      "commandName": "Project",
+      "commandLineArgs": "server start -o log --no-agent-port",
+      "dotnetRunMessages": true,
+      "environmentVariables": {}
     }
   }
 }

@@ -105,6 +105,10 @@ internal sealed class ScanCommandHandler(
 
     using var client = ControlApiClient.Create( target.ServerAddress! );
     var spec = await client.GetSpecAsync( cancellationToken );
+    if ( spec is null ) {
+      output.Normal.WriteLineError( "No spec has been uploaded to the coordinator." );
+      return ExitCodes.GeneralError;
+    }
 
     using var scanOrchestrator = new RemoteScanOrchestrator( client, output.GetLogger() );
     var inventory = new Inventory { Network = spec };

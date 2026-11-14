@@ -73,14 +73,14 @@ docker run -it --rm --network host docker.io/hojmark/drift scan -i
   Automatically detect devices and services, then use that information to define your desired state.
   Discover IP addresses, MAC addresses, and open ports.
 
-- 🧱 **Subnet Access Detection** _(coming soon)_  
-  Detects whether access between subnets is possible, highlighting potential firewall rule issues.
-
 - 📦 **CLI**  
   Manage everything from the command line — interactively or in scripts — with multiple output formats.
 
-- 🌍 **Distributed Scanning** _(coming soon)_  
+- 🌍 **Distributed Scanning**  
   Deploy agents across subnets for complete network visibility.
+
+- 🧱 **Subnet Access Detection** _(coming soon)_  
+  Detects whether access between subnets is possible, highlighting potential firewall rule issues.
 
 - 🔁 **Continuous Monitoring** _(coming soon)_  
   Automate scans and receive alerts when drift is detected.

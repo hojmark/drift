@@ -50,6 +50,12 @@ internal sealed class NonInteractiveUi( IOutputManager output, IScanOrchestrator
 
     if ( result.Status == ScanResultStatus.Error ) {
       output.Normal.WriteLineError( "Scan failed." );
+      foreach ( var subnet in result.Subnets.Where( subnet => subnet.Status == ScanResultStatus.Error ) ) {
+        var errorMessage = subnet.ErrorMessage ?? "The subnet scan failed without additional details.";
+        output.Normal.WriteLineError( $"  {subnet.CidrBlock}: {errorMessage}" );
+        output.Log.LogError( "Subnet scan failed for {Cidr}: {ErrorMessage}", subnet.CidrBlock, errorMessage );
+      }
+
       output.Log.LogError(
         "Scan failed with {ErrorCount} subnet error(s)",
         result.Subnets.Count( subnet => subnet.Status == ScanResultStatus.Error )

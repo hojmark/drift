@@ -114,11 +114,15 @@ public sealed class ScanService(
       var localInterfaceCidrs = localSubnets.Select( subnet => subnet.Cidr ).ToHashSet();
       var reachableCidrs = localInterfaceCidrs.Concat( remoteCidrs ).ToHashSet();
       var unreachableCidrs = requestedCidrs.Except( reachableCidrs ).ToList();
+      var localInterfaceDescription = localInterfaceCidrs.Count == 0
+        ? "none detected"
+        : string.Join( ", ", localInterfaceCidrs.OrderBy( cidr => cidr.ToString(), StringComparer.Ordinal ) );
       foreach ( var unreachableCidr in unreachableCidrs ) {
         logger.LogWarning(
-          "Scan #{ScanNo}: declared subnet {Cidr} is not reachable locally or through an online agent; it will not be scanned",
+          "Scan #{ScanNo}: declared subnet {Cidr} is not reachable locally or through an online agent; it will not be scanned. Coordinator interfaces: {Interfaces}",
           scan.No,
-          unreachableCidr
+          unreachableCidr,
+          localInterfaceDescription
         );
       }
 
@@ -132,6 +136,8 @@ public sealed class ScanService(
         CidrBlock = cidr,
         Metadata = new Metadata { StartedAt = DateTime.UtcNow, EndedAt = DateTime.UtcNow },
         Status = ScanResultStatus.Error,
+        ErrorMessage =
+          $"Not scanned: no online agent reports this subnet, and it is not directly attached to the coordinator. Coordinator interfaces: {localInterfaceDescription}.",
         Progress = Percentage.Zero
       } ) );
       logger.LogInformation(

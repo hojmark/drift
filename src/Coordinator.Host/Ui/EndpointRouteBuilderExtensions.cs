@@ -1,4 +1,5 @@
 using System.Reflection;
+using Drift.Common.EmbeddedResources;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -25,6 +26,11 @@ internal static class EndpointRouteBuilderExtensions {
          Version: {Version}
          API docs: /api
          """
+      ).ExcludeFromDescription();
+
+      endpoints.MapGet(
+        "/favicon.ico",
+        () => Results.File( EmbeddedResourceProvider.GetStream( "favicon.ico" ), "image/x-icon" )
       ).ExcludeFromDescription();
     }
   }

@@ -25,7 +25,7 @@ internal sealed class CoordinatorHostIntegrationTests {
   public async Task GetSpec_WhenNoSpecHasBeenUploaded_ReturnsNoContent() {
     var dataLocation = new TemporaryCoordinatorDataLocation();
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
-      new CoordinatorConfiguration { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
+      new CoordinatorOptions { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
       NullLogger.Instance,
       services => services.AddSingleton<ICoordinatorDataLocation>( dataLocation )
     );
@@ -64,7 +64,7 @@ internal sealed class CoordinatorHostIntegrationTests {
   [Test]
   public async Task ServerStatus_IsAvailable() {
     await using var app = await RunningCoordinatorHost.StartAsync(
-      new CoordinatorConfiguration { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
+      new CoordinatorOptions { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
       NullLogger.Instance
     );
     using var client = app.CreateHttpClient();
@@ -79,7 +79,7 @@ internal sealed class CoordinatorHostIntegrationTests {
   [Test]
   public async Task ApiDocsUi_IsAvailable() {
     await using var app = await RunningCoordinatorHost.StartAsync(
-      new CoordinatorConfiguration { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
+      new CoordinatorOptions { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
       NullLogger.Instance
     );
     using var client = app.CreateHttpClient();
@@ -100,7 +100,7 @@ internal sealed class CoordinatorHostIntegrationTests {
     var agentPort = TcpUtils.GetFreePort();
     var dataLocation = new TemporaryCoordinatorDataLocation();
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
-      new CoordinatorConfiguration { Port = controlPort, AgentPort = agentPort },
+      new CoordinatorOptions { Port = controlPort, AgentPort = agentPort },
       NullLogger.Instance,
       services => services.AddSingleton<ICoordinatorDataLocation>( dataLocation )
     );
@@ -166,8 +166,8 @@ internal sealed class CoordinatorHostIntegrationTests {
     );
 
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
-      new CoordinatorConfiguration {
-        Port = controlPort, AgentPort = coordinatorAgentPort, EnableRequestLogging = false
+      new CoordinatorOptions {
+        Port = controlPort, AgentPort = coordinatorAgentPort, RequestLogging = { Enabled = false }
       },
       coordinatorLogger,
       services => {
@@ -259,8 +259,8 @@ internal sealed class CoordinatorHostIntegrationTests {
     );
 
     await using var coordinator = await RunningCoordinatorHost.StartAsync(
-      new CoordinatorConfiguration {
-        Port = controlPort, AgentPort = coordinatorAgentPort, EnableRequestLogging = false
+      new CoordinatorOptions {
+        Port = controlPort, AgentPort = coordinatorAgentPort, RequestLogging = { Enabled = false }
       },
       coordinatorLogger,
       services => {

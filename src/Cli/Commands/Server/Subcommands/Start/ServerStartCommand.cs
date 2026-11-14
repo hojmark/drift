@@ -9,6 +9,7 @@ using Drift.Coordinator.Host;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Drift.Cli.Commands.Server.Subcommands.Start;
 
@@ -28,6 +29,7 @@ internal class ServerStartCommand : CommandBase<ServerStartParameters, ServerSta
 internal class ServerStartCommandHandler(
   IOutputManager output,
   IDriftDataLocation driftDataLocation,
+  IDriftSettingsLocation driftSettingsLocation,
   NestedHostLifetime? coordinatorLifetime = null,
   CoordinatorHostServiceConfiguration? hostServiceConfiguration = null
 )
@@ -51,10 +53,16 @@ internal class ServerStartCommandHandler(
     }*/
 
     try {
+      var options = HostOptionsLoader.Load(
+        driftSettingsLocation.ServerConfigFile,
+        EnvVarPrefix.Server,
+        CoordinatorOptions.Bind,
+        logger
+      );
+      parameters.ApplyTo( options );
+
       await CoordinatorHost.Run(
-        new CoordinatorConfiguration {
-          Port = parameters.Port, AgentPort = parameters.NoAgentPort ? null : parameters.PortAgent
-        },
+        options,
         logger,
         services => {
           // The host uses the same data location as the CLI
@@ -64,6 +72,19 @@ internal class ServerStartCommandHandler(
         cancellationToken,
         coordinatorLifetime?.Ready
       );
+    }
+    catch ( HostConfigurationException e ) {
+      // The message is actionable on its own; a stack trace would only obscure a configuration mistake
+#pragma warning disable S6667
+      logger.LogError( "{Message}", e.Message );
+#pragma warning restore S6667
+      return ExitCodes.GeneralError;
+    }
+    catch ( OptionsValidationException e ) {
+#pragma warning disable S6667
+      logger.LogError( "Invalid server configuration: {Message}", e.Message );
+#pragma warning restore S6667
+      return ExitCodes.GeneralError;
     }
     catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
       // Graceful shutdown via cancellation

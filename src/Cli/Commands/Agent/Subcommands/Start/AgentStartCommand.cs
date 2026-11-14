@@ -9,6 +9,7 @@ using Drift.Common.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Drift.Cli.Commands.Agent.Subcommands.Start;
 
@@ -27,6 +28,7 @@ internal class AgentStartCommand : CommandBase<AgentStartParameters, AgentStartC
 internal class AgentStartCommandHandler(
   IOutputManager output,
   IDriftDataLocation driftDataLocation,
+  IDriftSettingsLocation driftSettingsLocation,
   NestedHostLifetime? agentLifetime = null,
   AgentHostServiceConfiguration? hostServiceConfiguration = null
 )
@@ -50,8 +52,16 @@ internal class AgentStartCommandHandler(
     }*/
 
     try {
+      var options = HostOptionsLoader.Load(
+        driftSettingsLocation.AgentConfigFile,
+        EnvVarPrefix.Agent,
+        AgentOptions.Bind,
+        logger
+      );
+      parameters.ApplyTo( options );
+
       await AgentHost.Run(
-        new AgentConfiguration { Port = parameters.Port },
+        options,
         logger,
         services => {
           // The host uses the same data location as the CLI
@@ -61,6 +71,19 @@ internal class AgentStartCommandHandler(
         cancellationToken,
         agentLifetime?.Ready
       );
+    }
+    catch ( HostConfigurationException e ) {
+      // The message is actionable on its own; a stack trace would only obscure a configuration mistake
+#pragma warning disable S6667
+      logger.LogError( "{Message}", e.Message );
+#pragma warning restore S6667
+      return ExitCodes.GeneralError;
+    }
+    catch ( OptionsValidationException e ) {
+#pragma warning disable S6667
+      logger.LogError( "Invalid agent configuration: {Message}", e.Message );
+#pragma warning restore S6667
+      return ExitCodes.GeneralError;
     }
     catch ( OperationCanceledException ) when ( cancellationToken.IsCancellationRequested ) {
       // Graceful shutdown via cancellation

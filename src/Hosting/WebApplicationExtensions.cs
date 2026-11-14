@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Drift.Coordinator.Host.Logging;
+namespace Drift.Hosting;
 
 public static class WebApplicationExtensions {
   // Request paths are logged in their encoded form using ToUriComponent(), so decoded control characters such as line breaks (e.g. from %0A)
   // can't be used to forge log entries.
   extension( WebApplication app ) {
-    internal void AddRequestLogging( ILogger logger ) {
+    public void AddRequestLogging( ILogger logger ) {
       app.Use( async ( context, next ) => {
         var stopwatch = Stopwatch.StartNew();
         logger.LogInformation(
@@ -36,7 +36,7 @@ public static class WebApplicationExtensions {
       } );
     }
 
-    internal void AddGlobalExceptionHandling( ILogger logger ) {
+    public void AddGlobalExceptionHandling( ILogger logger ) {
       app.UseExceptionHandler( errorApp => errorApp.Run( async context => {
         var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
         logger.LogError(

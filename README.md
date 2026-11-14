@@ -118,8 +118,34 @@ JSON Schemas are available to enable editor auto-completion and validation:
   }
   ```
 
+- [**Server configuration schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Coordinator.Host/embedded_resources/schemas/drift-server-v1-preview.schema.json)
+  and [**agent configuration schema**](https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/src/Agent.Host/embedded_resources/schemas/drift-agent-v1-preview.schema.json)  
+  For the Drift server (`drift server start`) and agent (`drift agent start`).
+
+
 There’s no official documentation site yet — if you run into trouble, feel free
 to [open a discussion](https://github.com/hojmark/drift/discussions/categories/q-a).
+
+### ▸ How do I configure the CLI, server and agent?
+
+The CLI, server (`drift server start`) and agent (`drift agent start`) read their configuration from these sources. Each one overrides the one before it:
+
+1. Built-in defaults
+2. A JSON file: `~/.config/drift/server.json` or `~/.config/drift/agent.json` (optional)
+3. Environment variables prefixed with `DRIFT_SERVER_` or `DRIFT_AGENT_`. Use `__` to separate nested keys,
+   e.g. `DRIFT_SERVER_REQUESTLOGGING__ENABLED=false`
+4. Command-line options, e.g. `--port`
+
+Example `server.json`:
+
+```json
+{
+  "port": 51510,
+  "agentPort": 51515,
+  "listenForAgents": true,
+  "requestLogging": { "enabled": true }
+}
+```
 
 ### ▸ What can be automatically discovered?
 

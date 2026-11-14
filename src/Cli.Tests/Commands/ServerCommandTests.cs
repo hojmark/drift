@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using Drift.Cli.Abstractions;
 using Drift.Cli.Tests.Utils;
 using Drift.Common.IO;
+using Drift.Coordinator.Host;
 using Drift.TestUtilities;
 using Drift.TestUtilities.Hosts;
 using Drift.TestUtilities.IO;
@@ -69,8 +70,8 @@ internal sealed partial class ServerCommandTests {
 
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
-      Assert.That( output.ToString(), Does.Contain( $"Control API port: {Ports.AgentDefault - 5} (HTTP)" ) );
-      Assert.That( output.ToString(), Does.Contain( $"Agent port: {Ports.AgentDefault} (gRPC)" ) );
+      Assert.That( output.ToString(), Does.Contain( $"Control API port: {CoordinatorOptions.DefaultPort} (HTTP)" ) );
+      Assert.That( output.ToString(), Does.Contain( $"Agent port: {CoordinatorOptions.DefaultAgentPort} (gRPC)" ) );
       Assert.That( output.ToString(), Does.Contain( "Server stopped" ) );
       Assert.That( error.ToString(), Is.Empty );
     }

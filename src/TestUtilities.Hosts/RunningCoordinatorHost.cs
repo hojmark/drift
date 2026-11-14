@@ -26,7 +26,7 @@ public sealed class RunningCoordinatorHost : IAsyncDisposable {
   }
 
   public static async Task<RunningCoordinatorHost> StartAsync(
-    CoordinatorConfiguration configuration,
+    CoordinatorOptions options,
     ILogger logger,
     Action<IServiceCollection>? configureServices = null,
     IDriftDataLocation? dataLocation = null
@@ -39,11 +39,11 @@ public sealed class RunningCoordinatorHost : IAsyncDisposable {
 
     var cancellation = new CancellationTokenSource();
     var ready = new TaskCompletionSource( TaskCreationOptions.RunContinuationsAsynchronously );
-    var address = new Uri( $"http://127.0.0.1:{configuration.Port}" );
+    var address = new Uri( $"http://127.0.0.1:{options.Port}" );
     var host = new RunningCoordinatorHost(
       address,
       cancellation,
-      CoordinatorHost.Run( configuration, logger, configure, cancellation.Token, ready )
+      CoordinatorHost.Run( options, logger, configure, cancellation.Token, ready )
     );
 
     try {

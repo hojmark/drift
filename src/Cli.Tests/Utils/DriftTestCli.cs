@@ -118,7 +118,8 @@ internal static class DriftTestCli {
     CancellationToken cancellationToken,
     Action<IServiceCollection>? configureAgentHostServices = null,
     Action<IServiceCollection>? configureCoordinatorHostServices = null,
-    IDriftDataLocation? dataLocation = null
+    IDriftDataLocation? dataLocation = null,
+    IDriftSettingsLocation? settingsLocation = null
   ) {
     var cts = CancellationTokenSource.CreateLinkedTokenSource( cancellationToken );
 
@@ -128,6 +129,7 @@ internal static class DriftTestCli {
       configureAgentHostServices: configureAgentHostServices,
       configureCoordinatorHostServices: configureCoordinatorHostServices,
       redirectConsole: false,
+      settingsLocation: settingsLocation,
       dataLocation: dataLocation,
       cancellationToken: cts.Token
     );
@@ -142,7 +144,8 @@ internal static class DriftTestCli {
     string args,
     CancellationToken cancellationToken,
     Action<IServiceCollection>? configure = null,
-    IDriftDataLocation? dataLocation = null
+    IDriftDataLocation? dataLocation = null,
+    IDriftSettingsLocation? settingsLocation = null
   ) {
     var lifetime = new NestedHostLifetime();
 
@@ -153,7 +156,8 @@ internal static class DriftTestCli {
       },
       cancellationToken,
       configureAgentHostServices: configure,
-      dataLocation: dataLocation
+      dataLocation: dataLocation,
+      settingsLocation: settingsLocation
     );
 
     // Wait for either readiness or command exit
@@ -174,7 +178,8 @@ internal static class DriftTestCli {
     string args,
     CancellationToken cancellationToken,
     Action<IServiceCollection>? configure = null,
-    IDriftDataLocation? dataLocation = null
+    IDriftDataLocation? dataLocation = null,
+    IDriftSettingsLocation? settingsLocation = null
   ) {
     var lifetime = new NestedHostLifetime();
 
@@ -185,7 +190,8 @@ internal static class DriftTestCli {
       },
       cancellationToken,
       configureCoordinatorHostServices: configure,
-      dataLocation: dataLocation
+      dataLocation: dataLocation,
+      settingsLocation: settingsLocation
     );
 
     // Wait for either readiness or command exit

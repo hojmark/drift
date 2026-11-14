@@ -1,9 +1,10 @@
 using Drift.Common;
 using Drift.Common.IO;
 using Drift.Coordinator.Api;
-using Drift.Coordinator.Host.Logging;
 using Drift.Coordinator.Host.Ui;
 using Drift.Domain.ExecutionEnvironment;
+using Drift.Hosting;
+using Drift.Hosting.Configuration;
 using Drift.Messaging.Protocol.Agent;
 using Drift.Networking.Client;
 using Drift.Networking.Core;
@@ -14,31 +15,42 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Drift.Coordinator.Host;
 
 public static class CoordinatorHost {
+  /// <summary>
+  /// Runs the coordinator host until <paramref name="cancellationToken"/> is canceled.
+  /// </summary>
+  /// <param name="options">Fully resolved options, e.g. from <see cref="CoordinatorOptions.Bind"/>.</param>
+  /// <exception cref="OptionsValidationException"><paramref name="options"/> are invalid.</exception>
   public static Task Run(
-    CoordinatorConfiguration configuration,
+    CoordinatorOptions options,
     ILogger logger,
     Action<IServiceCollection>? configureServices,
     CancellationToken cancellationToken,
     TaskCompletionSource? ready = null
   ) {
-    var app = Build( configuration, logger, configureServices, ready );
+    OptionsValidation.ThrowIfAny<CoordinatorOptions>( options.Validate() );
+    var app = Build( options, logger, configureServices, ready );
     return app.RunAsync( cancellationToken );
   }
 
   private static WebApplication Build(
-    CoordinatorConfiguration configuration,
+    CoordinatorOptions options,
     ILogger logger,
     Action<IServiceCollection>? configureServices = null,
     TaskCompletionSource? ready = null
   ) {
     var builder = WebApplication.CreateSlimBuilder();
+    // Options are resolved by the caller. Drop default sources (appsettings.json in the working directory,
+    // ASPNETCORE_*/DOTNET_* environment variables) so they can't silently change the host's behavior.
+    builder.Configuration.Sources.Clear();
 
     builder.Logging.ClearProviders();
     builder.Services.AddSingleton( logger );
+    builder.Services.AddSingleton( Options.Create( options ) );
     builder.Services.AddSingleton<IExecutionEnvironmentProvider, EnvironmentExecutionEnvironmentProvider>();
 
     var messagingOptions = new MessagingOptions {
@@ -46,9 +58,9 @@ public static class CoordinatorHost {
     };
     builder.Services.AddMessagingCore( messagingOptions );
     builder.Services.AddMessagingClient();
-    if ( configuration.AgentPort is not null ) {
-      builder.Services.AddMessagingServer( options => {
-        options.EnableDetailedErrors = true;
+    if ( options.ListenForAgents ) {
+      builder.Services.AddMessagingServer( serverOptions => {
+        serverOptions.EnableDetailedErrors = true;
       } );
     }
 
@@ -57,18 +69,18 @@ public static class CoordinatorHost {
 
     configureServices?.Invoke( builder.Services );
 
-    builder.WebHost.ConfigureKestrel( options => {
+    builder.WebHost.ConfigureKestrel( kestrel => {
       // Agent gRPC
-      if ( configuration.AgentPort is not null ) {
-        options.ListenAnyIP(
-          configuration.AgentPort.Value,
+      if ( options.ListenForAgents ) {
+        kestrel.ListenAnyIP(
+          options.AgentPort,
           o => o.Protocols = HttpProtocols.Http2 // gRPC requires HTTP/2
         );
       }
 
       // UI HTTP
-      options.ListenAnyIP(
-        configuration.Port,
+      kestrel.ListenAnyIP(
+        options.Port,
         o => o.Protocols = HttpProtocols.Http1
       );
     } );
@@ -81,20 +93,20 @@ public static class CoordinatorHost {
     app.Services.GetRequiredService<ICoordinatorDataLocation>().EnsureCreated();
 
     app.AddGlobalExceptionHandling( logger );
-    if ( configuration.EnableRequestLogging ) {
+    if ( options.RequestLogging.Enabled ) {
       app.AddRequestLogging( logger );
     }
 
     app.MapUi();
     app.MapCoordinatorApi();
-    if ( configuration.AgentPort is not null ) {
+    if ( options.ListenForAgents ) {
       app.MapMessagingServerEndpoints();
     }
 
     app.MapOpenApi( "/api/v1/openapi.json" );
-    app.MapSwaggerUI( "api", options => {
-        options.SwaggerEndpoint( "/api/v1/openapi.json", "Control API v1" );
-        options.DocumentTitle = "Drift API";
+    app.MapSwaggerUI( "api", swagger => {
+        swagger.SwaggerEndpoint( "/api/v1/openapi.json", "Control API v1" );
+        swagger.DocumentTitle = "Drift API";
       }
     );
 
@@ -103,9 +115,9 @@ public static class CoordinatorHost {
         "Coordinator data directory: {DataDirectory}",
         app.Services.GetRequiredService<ICoordinatorDataLocation>().Directory
       );
-      logger.LogInformation( "Control API port: {Port} (HTTP)", configuration.Port );
-      if ( configuration.AgentPort is not null ) {
-        logger.LogInformation( "Agent port: {Port} (gRPC)", configuration.AgentPort.Value );
+      logger.LogInformation( "Control API port: {Port} (HTTP)", options.Port );
+      if ( options.ListenForAgents ) {
+        logger.LogInformation( "Agent port: {Port} (gRPC)", options.AgentPort );
       }
       else {
         logger.LogWarning(

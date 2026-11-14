@@ -38,7 +38,7 @@ public sealed class RunningAgentHost : IAsyncDisposable {
     var host = new RunningAgentHost(
       port,
       cancellation,
-      AgentHost.Run( new AgentConfiguration { Port = port }, logger, configure, cancellation.Token, ready )
+      AgentHost.Run( new AgentOptions { Port = port }, logger, configure, cancellation.Token, ready )
     );
 
     try {

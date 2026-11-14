@@ -606,7 +606,8 @@
       },
       "ServerStatusDtoValue": {
         "enum": [
-          "Ready"
+          "Ready",
+          "SpecMissing"
         ]
       },
       "StartScanRequest": {

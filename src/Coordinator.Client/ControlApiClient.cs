@@ -150,6 +150,7 @@ public sealed class ControlApiClient : IDisposable {
 
       return new CoordinatorStatus( response.Status switch {
         Generated.Models.ServerStatusDtoValue.Ready => CoordinatorServiceStatus.Ready,
+        Generated.Models.ServerStatusDtoValue.SpecMissing => CoordinatorServiceStatus.SpecMissing,
         _ => throw new InvalidOperationException( "The coordinator returned an unknown service status." )
       } );
     }

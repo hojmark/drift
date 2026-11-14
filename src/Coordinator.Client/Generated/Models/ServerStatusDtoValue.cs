@@ -12,5 +12,9 @@ namespace Drift.Coordinator.Client.Generated.Models
         #pragma warning disable CS1591
         Ready,
         #pragma warning restore CS1591
+        [EnumMember(Value = "SpecMissing")]
+        #pragma warning disable CS1591
+        SpecMissing,
+        #pragma warning restore CS1591
     }
 }

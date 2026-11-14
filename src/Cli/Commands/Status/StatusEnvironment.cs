@@ -9,5 +9,7 @@ internal sealed record StatusEnvironment(
   bool IsLocal,
   string State,
   IReadOnlyCollection<CoordinatorAgentStatus> Agents,
-  string? Error
+  string? Error,
+  string SpecSummary = "",
+  FileInfo? LocalSpecFile = null
 );

@@ -8,5 +8,6 @@ public sealed record ServerStatusDto(
 );
 
 public enum ServerStatusDtoValue {
-  Ready
+  Ready,
+  SpecMissing
 }

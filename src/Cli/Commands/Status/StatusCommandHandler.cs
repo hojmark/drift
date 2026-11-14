@@ -6,9 +6,11 @@ using Drift.Cli.Presentation.Console.Logging;
 using Drift.Cli.Presentation.Console.Managers.Abstractions;
 using Drift.Cli.Settings.V1_preview;
 using Drift.Cli.Settings.V1_preview.Environments;
+using Drift.Cli.SpecFile;
 using Drift.Common.IO;
 using Drift.Coordinator.Client;
 using Drift.Coordinator.Client.Models;
+using Drift.Spec.Serialization;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
@@ -31,6 +33,7 @@ internal sealed class StatusCommandHandler(
 
     var environments = new List<StatusEnvironment>();
     if ( string.Equals( activeEnvironment, BuiltInEnvironmentNames.Local, StringComparison.OrdinalIgnoreCase ) ) {
+      var (localSpecFile, specSummary) = GetLocalSpecStatus();
       environments.Add(
         new StatusEnvironment(
           BuiltInEnvironmentNames.Local,
@@ -39,7 +42,9 @@ internal sealed class StatusCommandHandler(
           true,
           "Local scanning",
           [],
-          null
+          null,
+          specSummary,
+          localSpecFile
         )
       );
     }
@@ -95,16 +100,26 @@ internal sealed class StatusCommandHandler(
       using var client = ControlApiClient.Create( address );
       var statusTask = client.GetStatusAsync( probeCancellation.Token );
       var agentsTask = client.GetAgentsAsync( probeCancellation.Token );
-      await Task.WhenAll( statusTask, agentsTask );
+      var specTask = client.GetSpecAsync( probeCancellation.Token );
+      await Task.WhenAll( statusTask, agentsTask, specTask );
+      var spec = await specTask;
+      var specSummary = spec is null
+        ? "none"
+        : $"uploaded — {FormatCount( spec.Subnets.Count, "subnet" )}, {FormatCount( spec.Devices.Count, "device" )}";
+      var state = ( await statusTask ).Status switch {
+        CoordinatorServiceStatus.SpecMissing => "Spec missing",
+        var status => status.ToString()
+      };
 
       return new StatusEnvironment(
         environment.Name,
         environment.Address,
         isActive,
         false,
-        ( await statusTask ).Status.ToString(),
+        state,
         await agentsTask,
-        null
+        null,
+        specSummary
       );
     }
     catch ( OperationCanceledException ) when ( !cancellationToken.IsCancellationRequested ) {
@@ -146,6 +161,8 @@ internal sealed class StatusCommandHandler(
         continue;
       }
 
+      RenderSpecStatus( console, environment );
+
       if ( environment.IsLocal ) {
         continue;
       }
@@ -183,8 +200,59 @@ internal sealed class StatusCommandHandler(
     console.WriteLine();
   }
 
+  private static void RenderSpecStatus( IAnsiConsole console, StatusEnvironment environment ) {
+    if ( environment.SpecSummary == "Not uploaded" ) {
+      console.MarkupLine( "  Spec: [yellow]not uploaded[/]" );
+      return;
+    }
+
+    if ( environment.SpecSummary.StartsWith( "Uploaded", StringComparison.Ordinal ) ) {
+      var details = environment.SpecSummary["Uploaded".Length..];
+      console.MarkupLine( $"  Spec: uploaded{Escape( details )}" );
+      return;
+    }
+
+    var line = new Paragraph( "  Spec: " );
+    if ( environment.LocalSpecFile is { } specFile ) {
+      line.Append(
+        specFile.FullName,
+        style: null,
+        link: new Link( new Uri( specFile.FullName ).AbsoluteUri )
+      );
+      line.Append( $" — {environment.SpecSummary}" );
+    }
+    else {
+      line.Append( environment.SpecSummary );
+    }
+
+    console.Write( line );
+    console.WriteLine();
+  }
+
+  private (FileInfo? SpecFile, string Summary) GetLocalSpecStatus() {
+    var specFile = new SpecFilePathResolver( output, Directory.GetCurrentDirectory() ).Resolve( null );
+    if ( specFile is null ) {
+      return ( null, "Not found" );
+    }
+
+    try {
+      var network = YamlConverter.Deserialize( File.ReadAllText( specFile.FullName ) ).Network;
+      return (
+        specFile,
+        $"{FormatCount( network.Subnets.Count, "subnet" )}, {FormatCount( network.Devices.Count, "device" )}"
+      );
+    }
+    catch ( Exception exception ) {
+      output.Log.LogDebug( exception, "Could not read local spec details from {SpecPath}", specFile.FullName );
+      return ( specFile, "details unavailable" );
+    }
+  }
+
+  private static string FormatCount( int count, string resource ) =>
+    $"{count} {resource}{( count == 1 ? string.Empty : "s" )}";
+
   private static string FormatStatus( string status ) {
-    var escapedStatus = Escape( status );
+    var escapedStatus = Escape( status.ToLowerInvariant() );
     return status switch {
       "Connected" or "Ready" => $"[green]{escapedStatus}[/]",
       "Unavailable" or "Failed" => $"[red]{escapedStatus}[/]",

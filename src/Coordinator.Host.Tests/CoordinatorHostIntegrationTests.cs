@@ -63,17 +63,39 @@ internal sealed class CoordinatorHostIntegrationTests {
 
   [Test]
   public async Task ServerStatus_IsAvailable() {
+    var dataLocation = new TemporaryCoordinatorDataLocation();
     await using var app = await RunningCoordinatorHost.StartAsync(
       new CoordinatorOptions { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
-      NullLogger.Instance
+      NullLogger.Instance,
+      services => services.AddSingleton<ICoordinatorDataLocation>( dataLocation )
     );
     using var client = app.CreateHttpClient();
     using var response = await client.GetAsync( "/api/v1/status" );
 
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( response.StatusCode, Is.EqualTo( HttpStatusCode.OK ) );
-      Assert.That( await response.Content.ReadAsStringAsync(), Is.EqualTo( "{\"status\":\"Ready\"}" ) );
+      Assert.That( await response.Content.ReadAsStringAsync(), Is.EqualTo( "{\"status\":\"SpecMissing\"}" ) );
     }
+
+    using var controlApiClient = ControlApiClient.Create( app.Address );
+    await controlApiClient.ApplySpecAsync(
+      """
+      version: v1-preview
+      network:
+        subnets: []
+        devices: []
+      """,
+      CancellationToken.None
+    );
+    using var readyResponse = await client.GetAsync( "/api/v1/status" );
+
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( readyResponse.StatusCode, Is.EqualTo( HttpStatusCode.OK ) );
+      Assert.That( await readyResponse.Content.ReadAsStringAsync(), Is.EqualTo( "{\"status\":\"Ready\"}" ) );
+    }
+
+    await app.StopAsync();
+    Directory.Delete( dataLocation.Directory, true );
   }
 
   [Test]

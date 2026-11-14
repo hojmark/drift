@@ -6,6 +6,7 @@ using Drift.Coordinator.Services.Agents;
 using Drift.Coordinator.Services.Models;
 using Drift.Coordinator.Services.Scans;
 using Drift.Coordinator.Services.Spec;
+using Drift.Coordinator.Services.State;
 using Drift.Domain;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +25,8 @@ internal static class EndpointRouteBuilderExtensions {
 
       api.MapGet(
           "/status",
-          () => Results.Ok( ServerStatusService.GetStatus().ToDto() )
+          ( [FromServices] ICoordinatorSpecStore specStore ) =>
+            Results.Ok( ServerStatusService.GetStatus( specStore ).ToDto() )
         )
         .WithSummary( "Get server status" )
         .Produces<ServerStatusDto>();

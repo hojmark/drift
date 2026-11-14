@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text.Json.Serialization;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Discovered;
 
@@ -14,6 +15,12 @@ public class SubnetScanResult : ScanResultBase {
     get;
     init;
   } = [];
+
+  [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingNull )]
+  public string? ErrorMessage {
+    get;
+    init;
+  }
 
   public IReadOnlySet<IpV4Address> DiscoveryAttempts {
     get;

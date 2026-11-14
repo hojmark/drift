@@ -162,6 +162,13 @@ internal sealed class ScanServiceTests {
         result.Subnets.Single( subnet => subnet.CidrBlock == new CidrBlock( "192.168.10.0/24" ) ).Status,
         Is.EqualTo( ScanResultStatus.Error )
       );
+      Assert.That(
+        result.Subnets.Single( subnet => subnet.CidrBlock == new CidrBlock( "192.168.10.0/24" ) ).ErrorMessage,
+        Is.EqualTo(
+          "Not scanned: no online agent reports this subnet, and it is not directly attached to the coordinator. " +
+          "Coordinator interfaces: 192.168.1.0/24."
+        )
+      );
     }
   }
 

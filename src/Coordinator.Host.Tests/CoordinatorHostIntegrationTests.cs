@@ -95,6 +95,24 @@ internal sealed class CoordinatorHostIntegrationTests {
   }
 
   [Test]
+  public async Task Favicon_IsServedAsAnIcon() {
+    await using var coordinator = await RunningCoordinatorHost.StartAsync(
+      new CoordinatorOptions { Port = TcpUtils.GetFreePort(), AgentPort = TcpUtils.GetFreePort() },
+      NullLogger.Instance
+    );
+    using var client = coordinator.CreateHttpClient();
+
+    using var response = await client.GetAsync( "/favicon.ico" );
+    var content = await response.Content.ReadAsByteArrayAsync();
+
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( response.StatusCode, Is.EqualTo( HttpStatusCode.OK ) );
+      Assert.That( response.Content.Headers.ContentType?.MediaType, Is.EqualTo( "image/x-icon" ) );
+      Assert.That( content.Take( 4 ), Is.EqualTo( new byte[] { 0, 0, 1, 0 } ) );
+    }
+  }
+
+  [Test]
   public async Task Enrollment_UndeclaredAgent_ReturnsUsefulError() {
     var controlPort = TcpUtils.GetFreePort();
     var agentPort = TcpUtils.GetFreePort();

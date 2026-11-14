@@ -49,6 +49,7 @@
         "CreateRelease",
         "CreateWindowsArtifacts",
         "DeleteUntaggedImages",
+        "GenerateHostConfigSchemas",
         "GenerateSchemas",
         "GenerateSettingsSchema",
         "GenerateSpecSchema",

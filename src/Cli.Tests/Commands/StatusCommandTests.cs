@@ -72,8 +72,10 @@ internal sealed class StatusCommandTests {
         "status",
         settingsLocation: SettingsLocation
       );
-      var rendered = string.Join( " ",
-        output.ToString()!.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries ) );
+      var rendered = string.Join(
+        " ",
+        output.ToString()!.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries )
+      );
 
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
@@ -260,8 +262,10 @@ internal sealed class StatusCommandTests {
         "status",
         settingsLocation: SettingsLocation
       );
-      var rendered = string.Join( " ",
-        output.ToString()!.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries ) );
+      var rendered = string.Join(
+        " ",
+        output.ToString()!.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries )
+      );
 
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );

@@ -329,9 +329,11 @@ public sealed class ScanService(
           id,
           status,
           progress,
+#pragma warning disable SA1118
           partialResult is null
             ? null
             : JsonSerializer.SerializeToElement( partialResult, ScanJsonSerializerContext.Default.NetworkScanResult )
+#pragma warning restore SA1118
         );
         Events.Writer.TryWrite( scanEvent );
       }

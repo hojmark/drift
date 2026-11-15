@@ -67,7 +67,8 @@ internal sealed class LinuxFpingSubnetScanner : ISubnetScanner {
       cancellationToken
     );
 
-    var result = FpingScanResultMapper.Create( options.Cidr, discoveredDevices, fping, startedAt, DateTime.Now );
+    var result =
+      FpingScanResultMapper.Create( options.Cidr, ipRange, discoveredDevices, fping, startedAt, DateTime.Now );
 
     if ( result.Status == ScanResultStatus.Error ) {
       logger.LogError( "{ErrorMessage}", result.ErrorMessage );

@@ -44,6 +44,7 @@ internal sealed class FpingScanResultMapperTests {
   private static SubnetScanResult CreateResult( int exitCode, string standardError = "" ) {
     return FpingScanResultMapper.Create(
       Cidr,
+      IpRange,
       DiscoveredDevices,
       new ToolResult( string.Empty, standardError, exitCode, false ),
       startedAt: DateTime.UnixEpoch,

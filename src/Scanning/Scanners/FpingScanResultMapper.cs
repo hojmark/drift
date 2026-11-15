@@ -32,7 +32,7 @@ internal static class FpingScanResultMapper {
       errorMessage = $"fping failed with exit code {toolResult.ExitCode}.{errorDetails}";
     }
 
-    // TODO not correct
+    // TODO not correct. need probe result for each device to determine this
     var discoveryAttempts = discoveredDevices
       .SelectMany( device => device.Addresses.OfType<IpV4Address>() )
       .ToImmutableHashSet();

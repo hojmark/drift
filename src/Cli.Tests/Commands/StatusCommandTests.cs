@@ -43,7 +43,7 @@ internal sealed class StatusCommandTests {
       Assert.That( output.ToString(), Does.Contain( "Settings directory:" ) );
       Assert.That( output.ToString(), Does.Contain( "Local addresses:" ) );
       Assert.That( output.ToString(), Does.Contain( "local @ local" ) );
-      Assert.That( output.ToString(), Does.Contain( "Status: Local scanning" ) );
+      Assert.That( output.ToString(), Does.Contain( "Status: local scanning" ) );
       Assert.That( output.ToString(), Does.Contain( "Spec: Not found" ) );
     }
   }
@@ -157,7 +157,7 @@ internal sealed class StatusCommandTests {
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
       Assert.That( error.ToString(), Is.Empty );
-      Assert.That( output.ToString(), Does.Contain( "Status: Unavailable" ) );
+      Assert.That( output.ToString(), Does.Contain( "Status: unavailable" ) );
       Assert.That( output.ToString(), Does.Contain( "Status probe timed out after 2 seconds." ) );
       Assert.That( DateTime.UtcNow - started, Is.LessThan( TimeSpan.FromSeconds( 5 ) ) );
     }
@@ -210,13 +210,13 @@ internal sealed class StatusCommandTests {
         Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
         Assert.That( error.ToString(), Is.Empty );
         Assert.That( rendered, Does.Contain( $"site-a @ {coordinator.Address}" ) );
-        Assert.That( rendered, Does.Contain( "Status: Spec missing" ) );
-        Assert.That( rendered, Does.Not.Contain( "Status: Ready" ) );
-        Assert.That( rendered, Does.Contain( "Spec: Not uploaded" ) );
+        Assert.That( rendered, Does.Contain( "Status: spec missing" ) );
+        Assert.That( rendered, Does.Not.Contain( "Status: ready" ) );
+        Assert.That( rendered, Does.Contain( "Spec: none" ) );
         Assert.That( rendered, Does.Contain( "Agents (1):" ) );
         Assert.That(
           rendered,
-          Does.Contain( $"agent_one @ http://127.0.0.1:{agentPort}/ — Connected" )
+          Does.Contain( $"agent_one @ http://127.0.0.1:{agentPort}/ — connected" )
         );
       }
     }
@@ -266,8 +266,8 @@ internal sealed class StatusCommandTests {
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
         Assert.That( error.ToString(), Is.Empty );
-        Assert.That( rendered, Does.Contain( "Status: Ready" ) );
-        Assert.That( rendered, Does.Contain( "Spec: Uploaded — 1 subnet, 0 devices" ) );
+        Assert.That( rendered, Does.Contain( "Status: ready" ) );
+        Assert.That( rendered, Does.Contain( "Spec: uploaded — 1 subnet, 0 devices" ) );
       }
     }
     finally {

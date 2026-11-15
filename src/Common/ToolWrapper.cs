@@ -5,6 +5,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Drift.Common;
 
+public record ToolResult( string StdOut, string ErrOut, int ExitCode, bool Cancelled );
+
 [SuppressMessage( "Major Code Smell", "S3264:Events should be invoked", Justification = "False positive" )]
 public class ToolWrapper( string toolPath, Dictionary<string, string?>? environment = null ) {
   private readonly string _toolPath = toolPath ?? throw new ArgumentNullException( nameof(toolPath) );
@@ -13,7 +15,7 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
 
   public event Action<string?>? ErrorDataReceived;
 
-  public async Task<(string StdOut, string ErrOut, int ExitCode, bool Cancelled)> ExecuteAsync(
+  public async Task<ToolResult> ExecuteAsync(
     string arguments,
     ILogger? logger = null,
     CancellationToken cancellationToken = default
@@ -65,7 +67,7 @@ public class ToolWrapper( string toolPath, Dictionary<string, string?>? environm
     var stdOut = await outputTask;
     var errOut = await errorTask;
 
-    return ( stdOut, errOut, exitCode, cancelled );
+    return new ToolResult( stdOut, errOut, exitCode, cancelled );
   }
 
   private static async Task<string> ReadStreamAsync(

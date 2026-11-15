@@ -67,7 +67,7 @@ internal sealed partial class InstallPsTests {
   }
 
   private static void PrintInstallOutput(
-    (string StdOut, string ErrOut, int ExitCode, bool Cancelled) result,
+    ToolResult result,
     string shell
   ) {
     Console.WriteLine( $"--------------- install.ps1 output ({shell}) -----------------" );

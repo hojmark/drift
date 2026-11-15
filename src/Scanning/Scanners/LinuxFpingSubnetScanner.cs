@@ -67,38 +67,11 @@ internal sealed class LinuxFpingSubnetScanner : ISubnetScanner {
       cancellationToken
     );
 
-    // Exit code 1 means the scan completed but some hosts did not reply (which is very expected)
-    var status = fping.Cancelled
-      ? ScanResultStatus.Canceled
-      : fping.ExitCode <= 1
-        ? ScanResultStatus.Success
-        : ScanResultStatus.Error;
+    var result = FpingScanResultMapper.Create( options.Cidr, discoveredDevices, fping, startedAt, DateTime.Now );
 
-    string? errorMessage = null;
-    if ( status == ScanResultStatus.Error ) {
-      var errorDetails = string.IsNullOrWhiteSpace( fping.ErrOut )
-        ? string.Empty
-        : $" {fping.ErrOut.Trim()}";
-      errorMessage = $"fping failed with exit code {fping.ExitCode}.{errorDetails}";
-      logger.LogError( "{ErrorMessage}", errorMessage );
+    if ( result.Status == ScanResultStatus.Error ) {
+      logger.LogError( "{ErrorMessage}", result.ErrorMessage );
     }
-
-    var discoveryAttempts = discoveredDevices
-      .SelectMany( device => device.Addresses.OfType<IpV4Address>() )
-      .ToImmutableHashSet();
-
-    if ( status == ScanResultStatus.Success ) {
-      discoveryAttempts = ipRange.Select( ip => new IpV4Address( ip ) ).ToImmutableHashSet();
-    }
-
-    var result = new SubnetScanResult {
-      Metadata = new Metadata { StartedAt = startedAt, EndedAt = DateTime.Now },
-      Status = status,
-      CidrBlock = options.Cidr,
-      DiscoveredDevices = discoveredDevices,
-      DiscoveryAttempts = discoveryAttempts,
-      ErrorMessage = errorMessage
-    };
 
     ResultUpdated?.Invoke( this, result );
 

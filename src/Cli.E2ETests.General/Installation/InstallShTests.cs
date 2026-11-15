@@ -36,7 +36,7 @@ internal sealed partial class InstallShTests {
     }
   }
 
-  private static void PrintInstallOutput( (string StdOut, string ErrOut, int ExitCode, bool Cancelled) result ) {
+  private static void PrintInstallOutput( ToolResult result ) {
     Console.WriteLine( "------------------- install.sh output ----------------------" );
 
     Console.WriteLine( result.StdOut );

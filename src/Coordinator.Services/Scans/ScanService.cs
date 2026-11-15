@@ -154,8 +154,18 @@ public sealed class ScanService(
           localCidrs.Count
         );
         var options = new NetworkScanOptions { Cidrs = localCidrs, PingsPerSecond = command.PingsPerSecond };
+        var precomputedResults = results.ToList();
         EventHandler<NetworkScanResult> progress = ( _, result ) =>
-          scan.Update( ScanStatus.Running, result.Progress.Value );
+          scan.Update(
+            ScanStatus.Running,
+            result.Progress.Value,
+            new NetworkScanResult {
+              Metadata = result.Metadata,
+              Status = result.Status,
+              Progress = result.Progress,
+              Subnets = precomputedResults.Concat( result.Subnets ).ToList()
+            }
+          );
         scanOrchestrator.ResultUpdated += progress;
         try {
           results.AddRange( ( await scanOrchestrator.ScanAsync( options, logger, cancellationToken ) ).Subnets );
@@ -178,6 +188,8 @@ public sealed class ScanService(
             await agentGateway.RequestStreamingAsync<ScanSubnetRequest, ScanSubnetProgress, ScanSubnetResponse>(
               assignment.Agent.Id,
               new ScanSubnetRequest { Cidr = assignment.Cidr, PingsPerSecond = command.PingsPerSecond },
+              // TODO Agent progress only carries a percentage, so devices on agent-scanned subnets are not shown live
+              //  (only on completion). Stream partial results from agents, like local scans do above.
               progress => scan.Update( ScanStatus.Running, progress.ProgressPercentage ),
               TimeSpan.FromMinutes( 10 ),
               cancellationToken
@@ -308,11 +320,19 @@ public sealed class ScanService(
       }
     }
 
-    public void Update( ScanStatus status, byte progress ) {
+    public void Update( ScanStatus status, byte progress, NetworkScanResult? partialResult = null ) {
       lock ( _lock ) {
         _status = status;
         _progress = progress;
-        var scanEvent = new ScanEventData( ++_eventId, id, status, progress );
+        var scanEvent = new ScanEventData(
+          ++_eventId,
+          id,
+          status,
+          progress,
+          partialResult is null
+            ? null
+            : JsonSerializer.SerializeToElement( partialResult, ScanJsonSerializerContext.Default.NetworkScanResult )
+        );
         Events.Writer.TryWrite( scanEvent );
       }
     }

@@ -20,7 +20,7 @@ internal sealed class RemoteScanOrchestrator(
   ) {
     logger.LogDebug( "Starting coordinator scan" );
     var scanId = await client.StartScanAsync( options.PingsPerSecond, cancellationToken );
-    coordinatorLogger.LogInformation( "Coordinator scan {ScanId} started", scanId );
+    coordinatorLogger.LogInformation( "Coordinator scan started ({ScanId})", scanId );
 
     NetworkScanResult? latest = null;
     try {

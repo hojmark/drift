@@ -1,4 +1,4 @@
-﻿Coordinator scan <scan-id> started
+﻿Coordinator scan started (<scan-id>)
 
 192.168.0.0/24 (1 devices)
 └── 192.168.0.100   AA-BB-C0-A8-00-64    Online (unknown device)

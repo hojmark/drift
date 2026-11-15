@@ -299,8 +299,8 @@ internal sealed class AgentTestHarness : IAsyncDisposable {
   private static string NormalizeOutput( string output ) {
     return Regex.Replace(
       Regex.Replace( output, @"[ \t]+(?=\r?$)", string.Empty, RegexOptions.Multiline ),
-      "Coordinator scan [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-      "Coordinator scan <scan-id>",
+      "Coordinator scan started \\([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\)",
+      "Coordinator scan started (<scan-id>)",
       RegexOptions.IgnoreCase
     );
   }

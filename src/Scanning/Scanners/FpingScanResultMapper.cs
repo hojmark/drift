@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Net;
 using Drift.Common;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
@@ -10,6 +11,7 @@ namespace Drift.Scanning.Scanners;
 internal static class FpingScanResultMapper {
   internal static SubnetScanResult Create(
     CidrBlock cidr,
+    IReadOnlyCollection<IPAddress> ipRange,
     IReadOnlyCollection<DiscoveredDevice> discoveredDevices,
     ToolResult toolResult,
     DateTime startedAt,
@@ -30,9 +32,14 @@ internal static class FpingScanResultMapper {
       errorMessage = $"fping failed with exit code {toolResult.ExitCode}.{errorDetails}";
     }
 
+    // TODO not correct
     var discoveryAttempts = discoveredDevices
       .SelectMany( device => device.Addresses.OfType<IpV4Address>() )
       .ToImmutableHashSet();
+
+    if ( status == ScanResultStatus.Success ) {
+      discoveryAttempts = ipRange.Select( ip => new IpV4Address( ip ) ).ToImmutableHashSet();
+    }
 
     return new SubnetScanResult {
       Metadata = new Metadata { StartedAt = startedAt, EndedAt = endedAt },

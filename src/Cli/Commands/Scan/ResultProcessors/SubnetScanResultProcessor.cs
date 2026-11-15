@@ -91,7 +91,7 @@ internal static class SubnetScanResultProcessor {
     var deviceRenderState = DeviceRenderState.From( declaredState, discoveredState, unknownAllowed );
     deviceRenderState = ip == null || scanResult.DiscoveryAttempts.Contains( new IpV4Address( ip ) )
       ? deviceRenderState
-      : new DeviceRenderState( deviceRenderState.State, deviceRenderState.Icon, "[grey bold]Unknown[/]" );
+      : new DeviceRenderState( deviceRenderState.State, deviceRenderState.Icon, "[red]Unknown (not scanned)[/]" );
 
     var vendor = macAddress is { } m ? OuiDatabase.LookupVendor( m ) : null;
 

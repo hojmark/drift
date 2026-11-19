@@ -1,0 +1,21 @@
+using Drift.Common.IO;
+
+namespace Drift.Coordinator.Host.Tests.Utils;
+
+// TODO duplicate type
+internal sealed class TemporaryCoordinatorDataLocation : ICoordinatorDataLocation {
+  public string Directory {
+    get;
+  } = System.IO.Directory.CreateTempSubdirectory( "drift-coordinator-test-" ).FullName;
+
+  public string SpecFile => Path.Combine( Directory, "spec.yaml" );
+
+  public string AgentEnrollmentFile => Path.Combine( Directory, "agent-enrollment.json" );
+
+  public string ScansDirectory => Path.Combine( Directory, "scans" );
+
+  public void EnsureCreated() {
+    System.IO.Directory.CreateDirectory( Directory );
+    System.IO.Directory.CreateDirectory( ScansDirectory );
+  }
+}

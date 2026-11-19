@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net;
 using System.Runtime.Versioning;
@@ -40,7 +41,9 @@ internal sealed class LinuxFpingSubnetScanner : ISubnetScanner {
         return;
       }
 
-      discoveredDevices.Add( new DiscoveredDevice { Addresses = [new IpV4Address( data )] } );
+      discoveredDevices.Add( new DiscoveredDevice {
+        Addresses = new DeviceAddressSet( ip: new IpV4Address( data ) ).ToAddresses()
+      } );
       var elapsed = stopwatch.Elapsed;
       var estimatedScanned = elapsed.TotalSeconds * options.PingsPerSecond;
       var progress = Math.Min( 99, Math.Ceiling( ( estimatedScanned / ipRange.Count ) * 100 ) );
@@ -51,6 +54,9 @@ internal sealed class LinuxFpingSubnetScanner : ISubnetScanner {
           CidrBlock = options.Cidr,
           Status = ScanResultStatus.InProgress,
           DiscoveredDevices = discoveredDevices,
+          DiscoveryAttempts = discoveredDevices
+            .SelectMany( device => device.Addresses.OfType<IpV4Address>() )
+            .ToImmutableHashSet(),
           Progress = (Percentage) progress
         } );
     };
@@ -61,17 +67,12 @@ internal sealed class LinuxFpingSubnetScanner : ISubnetScanner {
       cancellationToken
     );
 
-    if ( fping.ExitCode != 0 ) {
-      // TODO
-      // logger?.LogError( fping.ErrOut );
-    }
+    var result =
+      FpingScanResultMapper.Create( options.Cidr, ipRange, discoveredDevices, fping, startedAt, DateTime.Now );
 
-    var result = new SubnetScanResult {
-      Metadata = new Metadata { StartedAt = startedAt, EndedAt = DateTime.Now },
-      Status = fping.ExitCode == 0 ? ScanResultStatus.Success : ScanResultStatus.Error,
-      CidrBlock = options.Cidr,
-      DiscoveredDevices = discoveredDevices
-    };
+    if ( result.Status == ScanResultStatus.Error ) {
+      logger.LogError( "{ErrorMessage}", result.ErrorMessage );
+    }
 
     ResultUpdated?.Invoke( this, result );
 

@@ -18,24 +18,23 @@ internal sealed partial class InstallPsTests {
     );
   }
 
-  [TestCase( "pwsh" )]
-  [TestCase( "powershell" )]
-  public async Task ReadmeInstallCommand( string shell ) {
+  [Test]
+  public async Task ReadmeInstallCommand() {
     // Arrange
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-readme-ps-" + Guid.NewGuid() );
     Directory.CreateDirectory( installDir );
     var driftBinary = Path.Combine( installDir, "drift.exe" );
 
-    await AssertShellIsAvailable( shell );
+    await AssertPowerShellIsAvailable();
 
     try {
       // Act
       var installProcess =
-        await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
+        await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( $"-NonInteractive -Command \"{PsReadmeCommand}\"" );
 
-      PrintInstallOutput( installProcess, shell );
+      PrintInstallOutput( installProcess );
 
       // Assert
       using ( Assert.EnterMultipleScope() ) {

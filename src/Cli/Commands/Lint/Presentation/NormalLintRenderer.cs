@@ -6,12 +6,13 @@ namespace Drift.Cli.Commands.Lint.Presentation;
 
 internal class NormalLintRenderer( INormalOutput output ) : IRenderer<ValidationResult> {
   public void Render( ValidationResult result ) {
-    output.WriteLineValidity( result.IsValid );
+    if ( result.IsValid ) {
+      output.WriteLineSuccess( "Valid" );
+      return;
+    }
 
-    if ( !result.IsValid ) {
-      foreach ( var error in result.Errors ) {
-        output.WriteLineError( $"• {error}" );
-      }
+    foreach ( var error in result.Errors ) {
+      output.WriteLineError( $"{error}" );
     }
   }
 }

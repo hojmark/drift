@@ -1,0 +1,15 @@
+﻿-------------------------------------- PREVIEW ---------------------------------------------
+Distributed scanning via agents is a preview feature and should be used with caution.
+All communication between CLI/server/agent is unencrypted. Do not use on untrusted networks.
+--------------------------------------------------------------------------------------------
+
+ ___          _    __   _
+|   \   _ _  (_)  / _| | |_
+| |) | | '_| | | |  _| |  _|
+|___/  |_|   |_| |_|    \__| AGENT 
+
+Version: <version>
+Port: <port>
+Agent started
+Agent stopping...
+Agent stopped

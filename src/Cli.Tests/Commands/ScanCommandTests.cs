@@ -5,20 +5,25 @@ using Drift.Cli.Commands.Init.Helpers;
 using Drift.Cli.Presentation.Rendering;
 using Drift.Cli.SpecFile;
 using Drift.Cli.Tests.Utils;
+using Drift.Cli.Tests.Utils.Testing;
 using Drift.Domain;
 using Drift.Domain.Device.Addresses;
 using Drift.Domain.Device.Declared;
 using Drift.Domain.Device.Discovered;
 using Drift.Domain.Extensions;
 using Drift.Domain.Scan;
+using Drift.Scanning.Scanners.Factories;
 using Drift.Scanning.Subnets.Interface;
 using Drift.Scanning.Tests.Utils;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NetworkInterface = Drift.Scanning.Subnets.Interface.NetworkInterface;
 
 namespace Drift.Cli.Tests.Commands;
 
-internal sealed class ScanCommandTests {
+internal sealed partial class ScanCommandTests {
+  private const string SpecName = "unittest";
+
   private static readonly INetworkInterface DefaultInterface = new NetworkInterface {
     Description = "eth0", OperationalStatus = OperationalStatus.Up, UnicastAddress = new CidrBlock( "192.168.0.0/24" )
   };
@@ -170,7 +175,7 @@ internal sealed class ScanCommandTests {
     var serviceConfig = ConfigureServices( interfaces, discoveredDevices );
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan", serviceConfig );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( "scan", serviceConfig );
     // var exitCode = await config.InvokeAsync( $"scan -o {outputFormat}" );
 
     // Assert
@@ -202,7 +207,7 @@ internal sealed class ScanCommandTests {
     );
 
     // Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan unittest", serviceConfig );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( $"scan {SpecName}", serviceConfig );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
@@ -216,12 +221,68 @@ internal sealed class ScanCommandTests {
   [Test]
   public async Task NonExistingSpecOption() {
     // Arrange / Act
-    var (exitCode, output, error) = await DriftTestCli.InvokeFromTestAsync( "scan blah_spec.yaml" );
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( "scan blah_spec.yaml" );
 
     // Assert
     using ( Assert.EnterMultipleScope() ) {
       Assert.That( exitCode, Is.EqualTo( ExitCodes.GeneralError ) );
       await Verify( output.ToString() + error );
+    }
+  }
+
+  [Test]
+  public async Task UnloadableSpec_ReturnsSpecValidationError() {
+    // Arrange: legacy (pre-agent) address format, which no longer deserializes
+    var dir = Directory.CreateTempSubdirectory( "drift-test-" );
+    try {
+      var specPath = Path.Combine( dir.FullName, "legacy.spec.yaml" );
+      await File.WriteAllTextAsync(
+        specPath,
+        """
+        version: v1-preview
+        network:
+          devices:
+            - id: client1
+              addresses:
+                - type: ip-v4
+                  value: 192.168.0.101
+        """
+      );
+      var serviceConfig = ConfigureServices( [DefaultInterface], [] );
+
+      // Act
+      var (exitCode, output, error) = await DriftTestCli.InvokeAsync( $"scan {specPath}", serviceConfig );
+
+      // Assert
+      var allOutput = output.ToString() + error;
+      using ( Assert.EnterMultipleScope() ) {
+        Assert.That( exitCode, Is.EqualTo( ExitCodes.SpecValidationError ) );
+        Assert.That( allOutput, Does.Contain( "Network spec could not be loaded" ) );
+        Assert.That( allOutput, Does.Not.Contain( "   at " ), "Stack trace should not be printed" );
+      }
+    }
+    finally {
+      dir.Delete( recursive: true );
+    }
+  }
+
+  [Test]
+  public async Task WithSpec_DeclaredSubnetNotOnLocalInterface_Warns() {
+    var inventory = new Inventory {
+      Network = new Network { Subnets = [new DeclaredSubnet { Address = "192.168.10.0/24" }] }
+    };
+    var serviceConfig = ConfigureServices( [], [], inventory );
+
+    var (exitCode, output, error) = await DriftTestCli.InvokeAsync( $"scan {SpecName}", serviceConfig );
+
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
+      Assert.That(
+        output.ToString() + error,
+        Does.Contain(
+          "Declared subnet 192.168.10.0/24 is not directly attached; scanning via routing (MAC addresses unavailable)."
+        )
+      );
     }
   }
 
@@ -231,36 +292,56 @@ internal sealed class ScanCommandTests {
     Inventory? inventory = null
   ) {
     return services => {
-      services.AddScoped<IInterfaceSubnetProvider>( _ =>
-        new PredefinedInterfaceSubnetProvider( interfaces )
+      services.Replace( ServiceDescriptor.Scoped<IInterfaceSubnetProvider>( _ =>
+          new PredefinedInterfaceSubnetProvider( interfaces )
+        )
       );
 
       if ( inventory != null ) {
         services.AddScoped<ISpecFileProvider>( _ =>
-          new PredefinedSpecProvider( new Dictionary<string, Inventory> { { "unittest", inventory } } )
+          new PredefinedSpecProvider( new Dictionary<string, Inventory> { { SpecName, inventory } } )
         );
       }
 
-      services.AddScoped<INetworkScanner>( _ => new PredefinedResultNetworkScanner(
+      services.AddScoped<IScanOrchestrator>( _ => new PredefinedScanOrchestrator(
           new NetworkScanResult {
             Metadata = new Metadata { StartedAt = default, EndedAt = default },
             Status = ScanResultStatus.Success,
-            Subnets = [
-              new SubnetScanResult {
-                CidrBlock = DefaultInterface.UnicastAddress!.Value,
-                DiscoveredDevices = discoveredDevices,
-                Metadata = new Metadata { StartedAt = default, EndedAt = default },
-                Status = ScanResultStatus.Success,
-                // TODO could/should also include ip's of non-discovered devices?
-                DiscoveryAttempts = discoveredDevices.Select( d =>
-                    new IpV4Address( d.Get( AddressType.IpV4 ) ?? throw new Exception( "Device had no IPv4" ) )
-                  )
-                  .ToImmutableHashSet()
-              }
-            ]
+            Subnets = interfaces.Count > 0
+              ? [
+                new SubnetScanResult {
+                  CidrBlock = DefaultInterface.UnicastAddress!.Value,
+                  DiscoveredDevices = discoveredDevices,
+                  Metadata = new Metadata { StartedAt = default, EndedAt = default },
+                  Status = ScanResultStatus.Success,
+                  // TODO could/should also include ip's of non-discovered devices?
+                  DiscoveryAttempts = discoveredDevices.Select( d =>
+                      new IpV4Address( d.Get( AddressType.IpV4 ) ?? throw new Exception( "Device had no IPv4" ) )
+                    )
+                    .ToImmutableHashSet()
+                }
+              ]
+              : []
           }
         )
       );
+
+      // Register ISubnetScannerFactory for agent tests
+      // Build a map of CIDR -> SubnetScanResult based on interfaces
+      var resultsByCidr = interfaces.ToDictionary(
+        iface => iface.UnicastAddress!.Value,
+        iface => new SubnetScanResult {
+          CidrBlock = iface.UnicastAddress!.Value,
+          DiscoveredDevices = discoveredDevices,
+          Metadata = new Metadata { StartedAt = default, EndedAt = default },
+          Status = ScanResultStatus.Success,
+          DiscoveryAttempts = discoveredDevices.Select( d =>
+              new IpV4Address( d.Get( AddressType.IpV4 ) ?? throw new Exception( "Device had no IPv4" ) )
+            )
+            .ToImmutableHashSet()
+        }
+      );
+      services.AddScoped<ISubnetScannerFactory>( _ => new MockSubnetScannerFactory( resultsByCidr ) );
     };
   }
 }

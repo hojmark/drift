@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Sockets;
-
 namespace Drift.Domain.Device.Addresses;
 
 public readonly record struct IpV4Address : IDeviceAddress {

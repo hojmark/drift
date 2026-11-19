@@ -22,8 +22,10 @@ internal sealed class IpNetworkUtilsTests {
   public void CidrPrefixLengthAndNetMaskConversionTest( string mask, int expectedPrefixLength ) {
     var prefixLength = IpNetworkUtils.GetCidrPrefixLength( IPAddress.Parse( mask ) );
     var subnet = IpNetworkUtils.GetNetmask( prefixLength );
-    Assert.That( prefixLength, Is.EqualTo( expectedPrefixLength ) );
-    Assert.That( subnet, Is.EqualTo( IPAddress.Parse( mask ) ) );
+    using ( Assert.EnterMultipleScope() ) {
+      Assert.That( prefixLength, Is.EqualTo( expectedPrefixLength ) );
+      Assert.That( subnet, Is.EqualTo( IPAddress.Parse( mask ) ) );
+    }
   }
 
   // TODO revise implementation, the three largest ranges take a long time

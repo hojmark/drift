@@ -35,6 +35,14 @@
   One or more addresses (MAC, IPv4, IPv6, and/or hostname) that together serve as a unique identifier for a network
   device.
 
+- **Agent**  
+  A running Drift instance running in agent mode (`drift agent start`) that reports network state to a Drift server.
+  Agents help ensure full network visibility by uncovering state that's only observable when scanning from specific subnets.
+
+- **Server / Coordinator**  
+  A running Drift instance running in server mode (`drift server start`) that hosts the control API and UI and coordinates connected agents. The codebase
+  refers to the server role as the coordinator.
+
 ## Concepts
 
 ### Device ID

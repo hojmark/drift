@@ -1,0 +1,38 @@
+{
+  "descriptionHash": "37AF5D247AD89E1A125E97F78DF5753B8B7EA79EEF57FFD27A780480F562221708627ECF17B8952DE98301A18B210061E548388267A42EECC66A3AF504F93A2A",
+  "descriptionLocation": "../../Coordinator.Api.OpenApi/openapi.json",
+  "lockFileVersion": "1.0.0",
+  "kiotaVersion": "1.35.0",
+  "clientClassName": "ControlClient",
+  "typeAccessModifier": "Internal",
+  "clientNamespaceName": "Drift.Coordinator.Client.Generated",
+  "language": "CSharp",
+  "usesBackingStore": false,
+  "excludeBackwardCompatible": true,
+  "includeAdditionalData": false,
+  "disableSSLValidation": false,
+  "serializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Text.TextSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Form.FormSerializationWriterFactory",
+    "Microsoft.Kiota.Serialization.Multipart.MultipartSerializationWriterFactory"
+  ],
+  "deserializers": [
+    "Microsoft.Kiota.Serialization.Json.JsonParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Text.TextParseNodeFactory",
+    "Microsoft.Kiota.Serialization.Form.FormParseNodeFactory"
+  ],
+  "structuredMimeTypes": [
+    "application/json",
+    "text/plain;q=0.9",
+    "application/x-www-form-urlencoded;q=0.2",
+    "multipart/form-data;q=0.1"
+  ],
+  "includePatterns": [],
+  "excludePatterns": [],
+  "disabledValidationRules": [
+    "NoServerEntry",
+    "KnownAndNotSupportedFormats"
+  ],
+  "allowedExternalOrigins": []
+}

@@ -20,7 +20,7 @@ namespace Drift.Cli.Commands.Scan.ResultProcessors;
 
 internal static class SubnetScanResultProcessor {
   private const string Na = "n/a";
-  private static int _deviceIdCounter = 0;
+  private static int _deviceIdCounter;
 
   internal static List<Device> Process( SubnetScanResult scanResult, Network? network ) {
     // TODO test throw new Exception( "ads" );
@@ -91,7 +91,7 @@ internal static class SubnetScanResultProcessor {
     var deviceRenderState = DeviceRenderState.From( declaredState, discoveredState, unknownAllowed );
     deviceRenderState = ip == null || scanResult.DiscoveryAttempts.Contains( new IpV4Address( ip ) )
       ? deviceRenderState
-      : new DeviceRenderState( deviceRenderState.State, deviceRenderState.Icon, "[grey bold]Unknown[/]" );
+      : new DeviceRenderState( deviceRenderState.State, deviceRenderState.Icon, "[red]Unknown (not scanned)[/]" );
 
     var vendor = macAddress is { } m ? OuiDatabase.LookupVendor( m ) : null;
 

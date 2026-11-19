@@ -37,19 +37,18 @@ internal sealed partial class InstallPsTests {
     }
   }
 
-  private static async Task AssertShellIsAvailable( string shell ) {
-    var check = await new ToolWrapper( shell ).ExecuteAsync( "-NonInteractive -Command \"exit 0\"" );
+  private static async Task AssertPowerShellIsAvailable() {
+    var check = await new ToolWrapper( "pwsh" ).ExecuteAsync( "-NonInteractive -Command \"exit 0\"" );
     Assert.That(
       check.ExitCode,
       Is.EqualTo( 0 ),
-      $"Pre-condition failed: '{shell}' is not available or not functional on this machine (exit code: {check.ExitCode})"
+      $"Pre-condition failed: 'pwsh' is not available or not functional on this machine (exit code: {check.ExitCode})"
     );
   }
 
-  [TestCase( "pwsh" )]
-  [TestCase( "powershell" )]
-  public async Task InstallScriptHasValidSyntax( string shell ) {
-    await AssertShellIsAvailable( shell );
+  [Test]
+  public async Task InstallScriptHasValidSyntax() {
+    await AssertPowerShellIsAvailable();
 
     var escapedScriptPath = InstallScript.Replace( "'", "''" );
     var command =
@@ -57,20 +56,17 @@ internal sealed partial class InstallPsTests {
       "[System.Management.Automation.Language.Parser]::ParseFile(" +
       $"'{escapedScriptPath}', [ref]$tokens, [ref]$errors); " +
       "if ($errors.Count -gt 0) { $errors | Format-List; exit 1 } }";
-    var result = await new ToolWrapper( shell ).ExecuteAsync( $"-NoProfile -NonInteractive -Command \"{command}\"" );
+    var result = await new ToolWrapper( "pwsh" ).ExecuteAsync( $"-NoProfile -NonInteractive -Command \"{command}\"" );
 
     Assert.That(
       result.ExitCode,
       Is.EqualTo( ScriptExitCodeSuccess ),
-      $"PowerShell syntax check failed for {shell}. Output: {result.StdOut}{Environment.NewLine}{result.ErrOut}"
+      $"PowerShell syntax check failed. Output: {result.StdOut}{Environment.NewLine}{result.ErrOut}"
     );
   }
 
-  private static void PrintInstallOutput(
-    (string StdOut, string ErrOut, int ExitCode, bool Cancelled) result,
-    string shell
-  ) {
-    Console.WriteLine( $"--------------- install.ps1 output ({shell}) -----------------" );
+  private static void PrintInstallOutput( ToolResult result ) {
+    Console.WriteLine( "--------------- install.ps1 output -----------------" );
 
     Console.WriteLine( result.StdOut );
 

@@ -22,7 +22,6 @@ public static class AgentHost {
   /// <summary>
   /// Runs the agent host until <paramref name="cancellationToken"/> is canceled.
   /// </summary>
-  /// <param name="options">Fully resolved options, e.g. from <see cref="AgentOptions.Bind"/>.</param>
   /// <exception cref="OptionsValidationException"><paramref name="options"/> are invalid.</exception>
   public static Task Run(
     AgentOptions options,

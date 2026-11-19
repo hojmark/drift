@@ -9,7 +9,8 @@ using Drift.TestUtilities.IO;
 namespace Drift.Cli.Tests.Commands;
 
 /// <summary>
-/// Server/agent configuration resolution: defaults &lt; config file &lt; environment variables &lt; command-line options.
+/// Server/agent configuration resolution order: defaults - config file - environment variables - command-line options.
+/// Command-line options taking highest precedence.
 /// </summary>
 internal sealed class HostConfigurationTests {
   private const string RequestLogLine = "HTTP request started";

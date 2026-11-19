@@ -76,11 +76,15 @@ internal sealed class StatusCommandTests {
         " ",
         output.ToString()!.Split( (char[]?) null, StringSplitOptions.RemoveEmptyEntries )
       );
+      var renderedWithoutWhitespace = string.Concat( rendered.Where( character => !char.IsWhiteSpace( character ) ) );
+      var expectedSpecPath = string.Concat(
+        Path.Combine( specDirectory, "drift.spec.yaml" ).Where( character => !char.IsWhiteSpace( character ) )
+      );
 
       using ( Assert.EnterMultipleScope() ) {
         Assert.That( exitCode, Is.EqualTo( ExitCodes.Success ) );
         Assert.That( error.ToString(), Is.Empty );
-        Assert.That( rendered, Does.Contain( $"Spec: {Path.Combine( specDirectory, "drift.spec.yaml" )}" ) );
+        Assert.That( renderedWithoutWhitespace, Does.Contain( $"Spec:{expectedSpecPath}" ) );
         Assert.That( rendered, Does.Contain( "1 subnet, 0 devices" ) );
       }
     }

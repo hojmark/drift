@@ -34,11 +34,12 @@ drift scan -i
 ### Windows 🪟
 
 > [!IMPORTANT]
-> If script execution is blocked, run `powershell.exe -ExecutionPolicy Unrestricted` before running the install command.
+> This installer requires [PowerShell 7 or later](https://learn.microsoft.com/powershell/).
+> If script execution is blocked, run `pwsh -ExecutionPolicy Unrestricted` before running the install command.
 
 Install
 
-```powershell
+```pwsh
 irm https://raw.githubusercontent.com/hojmark/drift/refs/heads/main/install.ps1 | iex
 ```
 
@@ -46,7 +47,7 @@ If Drift is already installed, it will be updated to the latest version.
 
 Then run
 
-```powershell
+```pwsh
 # Create a network spec using auto-discovery
 drift init
 

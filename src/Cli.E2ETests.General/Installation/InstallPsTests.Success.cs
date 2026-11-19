@@ -6,9 +6,8 @@ namespace Drift.Cli.E2ETests.General.Installation;
 
 internal sealed partial class InstallPsTests {
   // TODO split test into at least two parts
-  [TestCase( "pwsh" )]
-  [TestCase( "powershell" )]
-  public async Task InstallLatestVersion( string shell ) {
+  [Test]
+  public async Task InstallLatestVersion() {
     // Arrange: create a temporary install directory
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-" + Guid.NewGuid() );
@@ -17,10 +16,10 @@ internal sealed partial class InstallPsTests {
 
     try {
       // Act: run the install script
-      var installProcess = await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
+      var installProcess = await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
         .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\"" );
 
-      PrintInstallOutput( installProcess, shell );
+      PrintInstallOutput( installProcess );
 
       // Assert: binary exists
       using ( Assert.EnterMultipleScope() ) {
@@ -30,7 +29,6 @@ internal sealed partial class InstallPsTests {
 
       // Assert: install.ps1 output
       await Verify( installProcess.StdOut )
-        .UseTextForParameters( $"{shell}_INSTALL_OUTPUT" )
         .ScrubLinesWithReplace( line =>
           Regex.Replace(
             Regex.Replace(
@@ -74,9 +72,8 @@ internal sealed partial class InstallPsTests {
     }
   }
 
-  [TestCase( "pwsh" )]
-  [TestCase( "powershell" )]
-  public async Task InstallSpecificVersion( string shell ) {
+  [Test]
+  public async Task InstallSpecificVersion() {
     const string version = "v1.0.0-alpha.7";
 
     var tempDir = Path.GetTempPath();
@@ -84,19 +81,19 @@ internal sealed partial class InstallPsTests {
     Directory.CreateDirectory( installDir );
     var driftBinary = Path.Combine( installDir, "drift.exe" );
 
-    await AssertShellIsAvailable( shell );
+    await AssertPowerShellIsAvailable();
 
     try {
       // Act
       var installProcess = await new ToolWrapper(
-        shell,
+        "pwsh",
         new() {
           { "DRIFT_INSTALL_DIR", installDir },
           // { "GITHUB_TOKEN", null } // Note: the only test accessing APIs anonymously
         }
       ).ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" {version}" );
 
-      PrintInstallOutput( installProcess, shell );
+      PrintInstallOutput( installProcess );
 
       // Assert: exit code and binary presence
       using ( Assert.EnterMultipleScope() ) {
@@ -113,7 +110,6 @@ internal sealed partial class InstallPsTests {
 
       // Assert: install.ps1 output snapshot
       await Verify( installProcess.StdOut )
-        .UseTextForParameters( $"{shell}_INSTALL_OUTPUT" )
         .ScrubLinesWithReplace( line => {
             var stripped = Regex.Replace( line, @">> Installing to .+\.\.\.", ">> Installing to {INSTALL_DIR}..." );
             stripped = Regex.Replace(
@@ -144,9 +140,8 @@ internal sealed partial class InstallPsTests {
     }
   }
 
-  [TestCase( "pwsh" )]
-  [TestCase( "powershell" )]
-  public async Task UpgradeFromPreviousVersion( string shell ) {
+  [Test]
+  public async Task UpgradeFromPreviousVersion() {
     const string previousVersion = "v1.0.0-alpha.7";
 
     var tempDir = Path.GetTempPath();
@@ -154,15 +149,15 @@ internal sealed partial class InstallPsTests {
     Directory.CreateDirectory( installDir );
     var driftBinary = Path.Combine( installDir, "drift.exe" );
 
-    await AssertShellIsAvailable( shell );
+    await AssertPowerShellIsAvailable();
 
     try {
       // Act: install the specific previous version
       var firstInstall =
-        await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
+        await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\" {previousVersion}" );
 
-      PrintInstallOutput( firstInstall, shell );
+      PrintInstallOutput( firstInstall );
 
       // Assert: first install succeeded
       using ( Assert.EnterMultipleScope() ) {
@@ -180,10 +175,10 @@ internal sealed partial class InstallPsTests {
 
       // Act: upgrade by installing the latest (no version arg), reusing the same install directory
       var secondInstall =
-        await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
+        await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\"" );
 
-      PrintInstallOutput( secondInstall, shell );
+      PrintInstallOutput( secondInstall );
 
       // Assert: upgrade succeeded
       using ( Assert.EnterMultipleScope() ) {
@@ -204,9 +199,8 @@ internal sealed partial class InstallPsTests {
     }
   }
 
-  [TestCase( "pwsh" )]
-  [TestCase( "powershell" )]
-  public async Task InstallCreatesDirectoryIfMissing( string shell ) {
+  [Test]
+  public async Task InstallCreatesDirectoryIfMissing() {
     var tempDir = Path.GetTempPath();
     // Point to a directory that does not exist yet
     var installDir = Path.Combine( tempDir, "drift-install-ps-newdir-" + Guid.NewGuid(), "nested", "drift" );
@@ -217,10 +211,10 @@ internal sealed partial class InstallPsTests {
 
       // Act
       var installProcess =
-        await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
+        await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\"" );
 
-      PrintInstallOutput( installProcess, shell );
+      PrintInstallOutput( installProcess );
 
       // Assert
       using ( Assert.EnterMultipleScope() ) {
@@ -235,10 +229,9 @@ internal sealed partial class InstallPsTests {
     }
   }
 
-  [TestCase( "pwsh" )]
-  [TestCase( "powershell" )]
+  [Test]
   [NonParallelizable]
-  public async Task InstallAddsToUserPath( string shell ) {
+  public async Task InstallAddsToUserPath() {
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-path-" + Guid.NewGuid() );
     Directory.CreateDirectory( installDir );
@@ -254,10 +247,10 @@ internal sealed partial class InstallPsTests {
     try {
       // Act
       var installProcess =
-        await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
+        await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
           .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\"" );
 
-      PrintInstallOutput( installProcess, shell );
+      PrintInstallOutput( installProcess );
 
       Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
 
@@ -279,10 +272,9 @@ internal sealed partial class InstallPsTests {
     }
   }
 
-  [TestCase( "pwsh" )]
-  [TestCase( "powershell" )]
+  [Test]
   [NonParallelizable]
-  public async Task InstallDoesNotDuplicateInUserPath( string shell ) {
+  public async Task InstallDoesNotDuplicateInUserPath() {
     var tempDir = Path.GetTempPath();
     var installDir = Path.Combine( tempDir, "drift-install-ps-nodup-" + Guid.NewGuid() );
     Directory.CreateDirectory( installDir );
@@ -300,10 +292,10 @@ internal sealed partial class InstallPsTests {
       // Act: run install twice to make sure no duplicates accumulate either
       for ( var i = 0; i < 2; i++ ) {
         var installProcess =
-          await new ToolWrapper( shell, new() { { "DRIFT_INSTALL_DIR", installDir } } )
+          await new ToolWrapper( "pwsh", new() { { "DRIFT_INSTALL_DIR", installDir } } )
             .ExecuteAsync( $"-NonInteractive -File \"{InstallScript}\"" );
 
-        PrintInstallOutput( installProcess, shell );
+        PrintInstallOutput( installProcess );
         Assert.That( installProcess.ExitCode, Is.EqualTo( ScriptExitCodeSuccess ) );
       }
 

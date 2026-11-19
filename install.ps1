@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+#Requires -Version 7.0
 
 [CmdletBinding()]
 param(
@@ -11,17 +11,10 @@ $ErrorActionPreference = "Stop"
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-# pwsh (PowerShell Core) supports Unicode/emoji output; Windows PowerShell 5.1 does not.
-$UseEmoji = $PSVersionTable.PSEdition -eq "Core"
-
 # Ensure emoji characters survive the stdout pipe/redirect on all Windows terminals.
-if ($UseEmoji) {
-  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-}
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # Build emoji strings at runtime so no non-ASCII bytes appear in this source file.
-# PowerShell 5.1 reads files using the system code page when no BOM is present,
-# which would corrupt raw UTF-8 multi-byte sequences embedded in string literals.
 $EmojiSearch    = [char]::ConvertFromUtf32(0x1F50D)  # 🔍
 $EmojiDown      = [char]::ConvertFromUtf32(0x1F53D)  # 🔽
 $EmojiPackage   = [char]::ConvertFromUtf32(0x1F4E6)  # 📦
@@ -29,22 +22,17 @@ $EmojiRocket    = [char]::ConvertFromUtf32(0x1F680)  # 🚀
 $EmojiOk        = [char]::ConvertFromUtf32(0x2705)   # ✅
 $EmojiFail      = [char]::ConvertFromUtf32(0x274C)   # ❌
 
-# ANSI formatting — pwsh only; empty strings on PS 5.1 so interpolation is always safe.
-if ($UseEmoji) {
-  $Esc   = [char]27
-  $Bold  = "$Esc[1m"
-  $Green = "$Esc[32m"
-  $Reset = "$Esc[0m"
-} else {
-  $Bold = ""; $Green = ""; $Reset = ""
-}
+$Esc   = [char]27
+$Bold  = "$Esc[1m"
+$Green = "$Esc[32m"
+$Reset = "$Esc[0m"
 
 function Write-Step {
   param([string]$Emoji, [string]$Msg)
-  if ($UseEmoji) { Write-Output "$Emoji $Msg" } else { Write-Output ">> $Msg" }
+  Write-Output "$Emoji $Msg"
 }
-function Write-Ok   { param([string]$Msg) if ($UseEmoji) { Write-Output "$EmojiOk ${Green}${Bold}$Msg${Reset}" } else { Write-Output "[OK] $Msg" } }
-function Write-Fail { param([string]$Msg) if ($UseEmoji) { Write-Output "$EmojiFail $Msg" } else { Write-Output "[ERROR] $Msg" } }
+function Write-Ok   { param([string]$Msg) Write-Output "$EmojiOk ${Green}${Bold}$Msg${Reset}" }
+function Write-Fail { param([string]$Msg) Write-Output "$EmojiFail $Msg" }
 function Write-Note { param([string]$Msg) Write-Output "   $Msg" }
 
 function Exit-WithError {

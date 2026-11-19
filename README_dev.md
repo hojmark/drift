@@ -36,8 +36,12 @@
   device.
 
 - **Agent**  
-  A running instance of Drift in agent mode (`drift agent start`) that reports network state to a Drift server (`drift server start`).
+  A running Drift instance running in agent mode (`drift agent start`) that reports network state to a Drift server.
   Agents help ensure full network visibility by uncovering state that's only observable when scanning from specific subnets.
+
+- **Server / Coordinator**  
+  A running Drift instance running in server mode (`drift server start`) that hosts the control API and UI and coordinates connected agents. The codebase
+  refers to the server role as the coordinator.
 
 ## Concepts
 

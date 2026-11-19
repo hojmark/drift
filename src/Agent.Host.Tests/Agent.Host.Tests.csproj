@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Agent.Host\Agent.Host.csproj" />
+    <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
